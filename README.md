@@ -41,7 +41,7 @@ async, push to remote repo, exception should be raised for conflict
 
 ### git pull
 
-sync, needs to return json data, only used for initialization.
+sync, needs to return once finished, only used for initialization.
 
 ```
 {
@@ -51,13 +51,12 @@ sync, needs to return json data, only used for initialization.
 
 ### save
 
-async, write content to file, add and commit locally
+async,add and commit locally
 
 ```
 {
-	"command": "save",
-	"data": {
-		...
-	}
+	"command": "commit",
+	"files": ["file1", "dir1/file2"],
+	"message": "commit message, optional"
 }
 ```
