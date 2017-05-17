@@ -105,10 +105,11 @@ class AllProjects(Resource):
             project_lock.acquire(project_name)
             if not os.path.exists(project_dir_path):
                 os.makedirs(project_dir_path)
-            data[project_name] = templates.get('master_config')
-            data[project_name]['sources'] = project_sources
+            data[project_name] = templates.get('project')
+            data[project_name]['master_config'] = templates.get('master_config')
+            data[project_name]['master_config']['sources'] = project_sources
             with open(os.path.join(project_dir_path, 'master_config.json'), 'w') as f:
-                f.write(json.dumps(data[project_name]))
+                f.write(json.dumps(data[project_name]['master_config'], indent=4))
             logger.info('project %s created.' % project_name)
             return rest.created()
         except Exception as e:
@@ -133,7 +134,6 @@ class AllProjects(Resource):
 
         return rest.deleted()
 
-
 @api.route('/projects/<project_name>')
 class Project(Resource):
     def post(self, project_name):
@@ -145,7 +145,7 @@ class Project(Resource):
             return rest.bad_request('Invalid sources.')
         try:
             project_lock.acquire(project_name)
-            data[project_name] = project_sources
+            data[project_name]['master_config'] = project_sources
             return rest.created()
         except Exception as e:
             logger.error('Updating project %s: %s' % (project_name, e.message))
@@ -162,15 +162,52 @@ class Project(Resource):
         return data[project_name]
 
     def delete(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
         try:
             project_lock.acquire(project_name)
             del data[project_name]
             # shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
+            return rest.deleted()
         except Exception as e:
             logger.error('deleting project %s: %s' % (project_name, e.message))
             return rest.internal_error('deleting project %s error, halted.' % project_name)
         finally:
             project_lock.remove(project_name)
+
+@api.route('/projects/<project_name>/entities/<kg_id>/tags')
+class EntityTags(Resource):
+
+    def get(self, project_name, kg_id):
+        if project_name not in data:
+            return rest.not_found()
+        if kg_id not in data[project_name]['entities']:
+            return rest.not_found()
+
+        return data[project_name]['entities'][kg_id]['tags']
+
+    def post(self, project_name, kg_id):
+        if project_name not in data:
+            return rest.not_found()
+
+        input = request.get_json(force=True)
+        kg_id = input.get('kg_id', '')
+        if len(kg_id) == 0:
+            return rest.bad_request()
+        tags = input.get('tags', [])
+
+        try:
+            project_lock.acquire(project_name)
+            if kg_id not in data[project_name]['entities']:
+                data[project_name]['entities'][kg_id] = templates.get('entity')
+            data[project_name]['entities'][kg_id]['tags'] = tags
+            return rest.created()
+        except Exception as e:
+            logger.error('deleting project %s: %s' % (project_name, e.message))
+            return rest.internal_error('deleting project %s error, halted.' % project_name)
+        finally:
+            project_lock.release(project_name)
+
 
 
 if __name__ == '__main__':
@@ -188,12 +225,13 @@ if __name__ == '__main__':
             if not os.path.isdir(project_dir_path) or project_name == '.git':
                 continue
 
+            data[project_name] = templates.get('project')
             # master_config
             master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
             if not os.path.exists(master_config_file_path):
                 logger.error('Missing master_config.json file for ' + project_name)
             with open(master_config_file_path, 'r') as f:
-                data[project_name] = json.loads(f.read())
+                data[project_name]['master_config'] = json.loads(f.read())
 
         # run app
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
