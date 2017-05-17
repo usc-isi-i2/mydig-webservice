@@ -20,5 +20,6 @@ def exists(data=''):
 def not_found(data=''):
     return {'status_code': 404, 'error_message': data}, 404
 
+
 def internal_error(data=''):
     return {'status_code': 500, 'error_message': data}, 500

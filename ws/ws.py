@@ -88,15 +88,16 @@ class Debug(Resource):
 @api.route('/projects')
 class AllProjects(Resource):
     def post(self):
-        global data
-
-        if 'project_name' not in request.form:
-            return rest.bad_request('Missing project name.')
-        project_name = request.form['project_name']
-        if len(project_name) >= 256:
+        input = request.get_json(force=True)
+        project_name = input.get('project_name', '')
+        if len(project_name) == 0 or len(project_name) >= 256:
             return rest.bad_request('Invalid project name.')
-        if request.form['project_name'] in data:
+        if project_name in data:
             return rest.exists('Project name already exists.')
+        project_sources = input.get('sources', [])
+        if len(project_sources) == 0:
+            return rest.bad_request('Invalid sources.')
+
 
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
@@ -105,6 +106,7 @@ class AllProjects(Resource):
             if not os.path.exists(project_dir_path):
                 os.makedirs(project_dir_path)
             data[project_name] = templates.get('master_config')
+            data[project_name]['sources'] = project_sources
             with open(os.path.join(project_dir_path, 'master_config.json'), 'w') as f:
                 f.write(json.dumps(data[project_name]))
             logger.info('project %s created.' % project_name)
@@ -115,11 +117,9 @@ class AllProjects(Resource):
             project_lock.release(project_name)
 
     def get(self):
-        global data
         return data.keys()
 
     def delete(self):
-        global data
         for project_name in data.keys(): # not iterkeys(), need to do del in iteration
             try:
                 project_lock.acquire(project_name)
@@ -137,24 +137,35 @@ class AllProjects(Resource):
 @api.route('/projects/<project_name>')
 class Project(Resource):
     def post(self, project_name):
-        global data
-        pass
+        if project_name not in data:
+            return rest.not_found()
+        input = request.get_json(force=True)
+        project_sources = input.get('sources', [])
+        if len(project_sources) == 0:
+            return rest.bad_request('Invalid sources.')
+        try:
+            project_lock.acquire(project_name)
+            data[project_name] = project_sources
+            return rest.created()
+        except Exception as e:
+            logger.error('Updating project %s: %s' % (project_name, e.message))
+            return rest.internal_error('Updating project %s error, halted.' % project_name)
+        finally:
+            project_lock.release(project_name)
 
     def put(self, project_name):
         return self.post(project_name)
 
     def get(self, project_name):
-        global data
         if project_name not in data:
             return rest.not_found()
         return data[project_name]
 
     def delete(self, project_name):
-        global data
         try:
             project_lock.acquire(project_name)
             del data[project_name]
-            shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
+            # shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
         except Exception as e:
             logger.error('deleting project %s: %s' % (project_name, e.message))
             return rest.internal_error('deleting project %s error, halted.' % project_name)
