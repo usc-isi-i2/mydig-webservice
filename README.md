@@ -3,12 +3,13 @@
 ## Components
 
 - Rest service (Flask app)
-- IO Handler (local daemon process)
-	- command parser
-	- git controller
-	- file system controller
+- Git synchronizer (local daemon process)
 
-## IO handler command
+## Rest service
+
+All the input and output are formatted in json, please set `Content-Type` to `application/json` in header.
+
+## Sync command
 
 Format in json:
 
@@ -24,7 +25,6 @@ general return format:
 ```
 {
 	"return_code": 0 (success) / 1+ (fail),
-	"data": "object or string when return code is 0",
 	"error_message": "error message when return code is a positive integer"
 }
 ```
