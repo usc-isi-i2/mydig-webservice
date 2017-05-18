@@ -5,8 +5,9 @@ import json
 import types
 import threading
 
-from flask import Flask
+from flask import Flask, render_template
 from flask import request, abort, redirect, url_for
+from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
 
 from config import config
@@ -22,6 +23,7 @@ logger.setLevel(config['logging']['level'])
 
 # flask app
 app = Flask(__name__)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 api = Api(app)
 def api_route(self, *args, **kwargs):
     def wrapper(cls):
@@ -83,6 +85,11 @@ class Debug(Resource):
             'data': data
         }
         return debug_info
+
+
+@app.route('/spec')
+def spec():
+    return render_template('swagger_index.html')
 
 
 @api.route('/projects')

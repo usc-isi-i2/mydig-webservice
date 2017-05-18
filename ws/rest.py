@@ -1,12 +1,12 @@
 # https://docs.microsoft.com/en-us/rest/api/storageservices/common-rest-api-error-codes
 
 
-def created(data=''):
+def created(data=None):
     return data, 201
 
 
-def deleted(data=''):
-    return data, 204
+def deleted():
+    return '', 204
 
 
 def bad_request(data=''):

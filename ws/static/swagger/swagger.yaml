@@ -1,0 +1,100 @@
+swagger: "2.0"
+info:
+  description: "API reference of MyDIG web service."
+  version: "1.0.0"
+  title: "MyDig web service API reference"
+  contact:
+    email: "yixiangy@isi.edu"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "127.0.0.1:5000"
+basePath: ""
+schemes:
+- "http"
+paths:
+  /projects:
+    post:
+      tags:
+      - "projects"
+      summary: "Create a new project"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/project"
+      responses:
+        201:
+          description: "created"
+        404:
+          description: "not found"
+        409:
+          description: "exists"
+    get:
+      tags:
+      - "projects"
+      summary: "Get a list of all project names"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete all projects"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        204:
+          description: "deleted"
+        404:
+          description: "not found"
+
+
+definitions:
+  source:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+      url:
+        type: "string"
+      index_name:
+        type: "string"
+      elastic_search_doctype:
+        type: "string"
+      elastic_search_query:
+        type: "object"
+      start_date:
+        type: "string"
+      end_date:
+        type: "string"
+  project:
+    type: "object"
+    properties:
+      project_name:
+        type: "string"
+        example: "my-project-1"
+      sources:
+        type: "array"
+        items:
+          $ref: "#/definitions/source"
