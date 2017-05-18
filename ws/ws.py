@@ -209,6 +209,50 @@ class EntityTags(Resource):
             project_lock.release(project_name)
 
 
+@api.route('/projects/<project_name>/fields')
+class AllFields(Resource):
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+        input = request.get_json(force=True)
+        field_name = input.get('field_name', '')
+        if len(field_name) == 0:
+            return rest.bad_request()
+        if field_name in data[project_name]['master_config']['fields']:
+            return rest.exists()
+        field_object = input.get('field_object', {})
+
+        try:
+            project_lock.acquire(project_name)
+            data[project_name]['master_config']['fields'][field_name] = field_object
+            return rest.created()
+        except Exception as e:
+            logger.error('creating field %s in project: %s' % (field_name, project_name, e.message))
+            return rest.internal_error('creating field %s in project %s error, halted.' % field_name, project_name)
+        finally:
+            project_lock.release(project_name)
+
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+        return data[project_name]['master_config']['fields']
+
+    def delete(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+
+        try:
+            project_lock.acquire(project_name)
+            data[project_name]['master_config']['fields'] = {}
+            return rest.deleted()
+        except Exception as e:
+            logger.error('deleting all fields in project %s: %s' % (project_name, e.message))
+            return rest.internal_error('deleting all fields in project %s error, halted.' % project_name)
+        finally:
+            project_lock.remove(project_name)
+
+
+
 
 if __name__ == '__main__':
     try:

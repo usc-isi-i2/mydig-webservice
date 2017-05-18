@@ -12,7 +12,7 @@ project = {
 master_config = {
   'root_name': 'Ad',
   'sources': [],
-  'fields': [],
+  'fields': {},
   'glossaries': {}
 }
 
