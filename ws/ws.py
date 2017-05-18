@@ -5,7 +5,7 @@ import json
 import types
 import threading
 
-from flask import Flask, render_template
+from flask import Flask, render_template, Response
 from flask import request, abort, redirect, url_for
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
@@ -89,7 +89,14 @@ class Debug(Resource):
 
 @app.route('/spec')
 def spec():
-    return render_template('swagger_index.html')
+    return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='/spec.yaml')
+
+
+@app.route('/spec.yaml')
+def spec_file_path():
+    with open('spec.yaml', 'r') as f:
+        content = f.read()
+    return Response(content, mimetype='text/x-yaml')
 
 
 @api.route('/projects')

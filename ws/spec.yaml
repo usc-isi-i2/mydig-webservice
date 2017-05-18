@@ -2,12 +2,12 @@ swagger: "2.0"
 info:
   description: "API reference of MyDIG web service."
   version: "1.0.0"
-  title: "MyDig web service API reference"
-  contact:
-    email: "yixiangy@isi.edu"
-  license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  title: "MyDIG web service API reference"
+#  contact:
+#    email: "yixiangy@isi.edu"
+#  license:
+#    name: "Apache 2.0"
+#    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 host: "127.0.0.1:5000"
 basePath: ""
 schemes:
