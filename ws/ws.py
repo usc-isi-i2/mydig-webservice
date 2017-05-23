@@ -283,6 +283,54 @@ class AllFields(Resource):
 
 
 
+@api.route('/projects/<project_name>/fields/<field_name>')
+class Field(Resource):
+    def get(self, project_name, field_name):
+        if project_name not in data:
+            return rest.not_found()
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found()
+        return data[project_name]['master_config']['fields'][field_name]
+
+    def post(self, project_name, field_name):
+        if project_name not in data:
+            return rest.not_found()
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found()
+        input = request.get_json(force=True)
+        field = input.get('field', {})
+        if len(field) == 0:
+            return rest.bad_request('Invalid field.')
+        try:
+            project_lock.acquire(project_name)
+            data[project_name]['master_config']['fields'][field_name] = field
+            return rest.created()
+        except Exception as e:
+            logger.error('updating field %s in project %s: %s' % (field_name, project_name, e.message))
+            return rest.internal_error('updating field %s in project %s error, halted.' % (field_name, project_name))
+        finally:
+            project_lock.release(project_name)
+
+    def put(self, project_name, field_name):
+        return self.post(project_name, field_name)
+
+    def delete(self, project_name, field_name):
+        if project_name not in data:
+            return rest.not_found()
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found()
+        try:
+            project_lock.acquire(project_name)
+            del data[project_name]['master_config']['fields'][field_name]
+            return rest.deleted()
+        except Exception as e:
+            logger.error('deleting field %s in project %s: %s' % (field_name, project_name, e.message))
+            return rest.internal_error('deleting field %s in project %s error, halted.' % (field_name, project_name))
+        finally:
+            project_lock.release(project_name)
+
+
+
 
 if __name__ == '__main__':
     try:
