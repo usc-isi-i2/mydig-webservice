@@ -197,6 +197,34 @@ class Project(Resource):
         finally:
             project_lock.remove(project_name)
 
+
+@api.route('/projects/<project_name>/tags')
+class ProjectTags(Resource):
+    def get(self, project_name):
+        # return all the tags created for this project
+        if project_name not in data:
+            return rest.not_found("Project \'{}\' not found".format(project_name))
+        return list(data[project_name]['tags']) if 'tags' in data[project_name] else []
+
+    def delete(self, project_name):
+        # delete all the tags for this project
+        if project_name not in data:
+            return rest.not_found("Project \'{}\' not found".format(project_name))
+        data[project_name].pop('tags', None)
+        return rest.deleted('All \'tags\' for the project: \'{}\' have been deleted'.format(project_name))
+
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found("Project \'{}\' not found".format(project_name))
+        # create a tag for this project
+        if 'tags' not in data[project_name]:
+            data[project_name]['tags'] = set()
+        tag = request.get_json(force=True).get('tag_name', '')
+        data[project_name]['tags'].add(tag)
+        return rest.created('Tag: \'{}\' added for the project \'{}\''.format(tag, project_name))
+
+
+
 @api.route('/projects/<project_name>/entities/<kg_id>/tags')
 class EntityTags(Resource):
 
