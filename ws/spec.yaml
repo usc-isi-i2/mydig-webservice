@@ -68,7 +68,85 @@ paths:
           description: "deleted"
         404:
           description: "not found"
-
+  /projects/{project_name}:
+    post:
+      tags:
+      - "projects"
+      summary: "Update a project"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/project"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    put:
+      tags:
+      - "projects"
+      summary: "Update a project (same as POST)"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/project"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "projects"
+      summary: "Get project by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete project by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        204:
+          description: "deleted"
+        404:
+          description: "not found"
 
 definitions:
   source:
