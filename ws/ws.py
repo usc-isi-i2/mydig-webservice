@@ -11,6 +11,7 @@ from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
 
 from config import config
+from elastic_manager.elastic_manager import  ES
 import templates
 import rest
 
@@ -148,6 +149,13 @@ class AllProjects(Resource):
 
         return rest.deleted()
 
+
+@api.route('/')
+class Home(Resource):
+    def get(self):
+        return 'Welcome'
+
+
 @api.route('/projects/<project_name>')
 class Project(Resource):
     def post(self, project_name):
@@ -215,6 +223,14 @@ class EntityTags(Resource):
             if kg_id not in data[project_name]['entities']:
                 data[project_name]['entities'][kg_id] = templates.get('entity')
             data[project_name]['entities'][kg_id]['tags'] = tags
+            # load into elasticsearch as well
+            for tag in tags:
+                tag_doc = dict()
+                tag_doc['kg_id'] = kg_id
+                tag_doc['tag_name'] = tag
+                if 'write_es' in data:
+                    es = ES(data['write_es']['es_url'])
+                    es.load_data(data['write_es']['index'], tags, tag_doc, tag)
             return rest.created()
         except Exception as e:
             logger.error('deleting project %s: %s' % (project_name, e.message))
@@ -339,8 +355,13 @@ if __name__ == '__main__':
             with open(master_config_file_path, 'r') as f:
                 data[project_name]['master_config'] = json.loads(f.read())
 
+        if 'write_es' in config:
+            data['write_es'] = dict()
+            data['write_es']['index'] = config['write_es']['index']
+            data['write_es']['es_url'] = config['write_es']['es_url']
         # run app
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
 
     except Exception as e:
+        print e
         logger.error(e.message)
