@@ -1,6 +1,6 @@
 import json
 from elasticsearch import Elasticsearch
-form elasticsearch import helpers
+from elasticsearch import helpers
 import requests
 
 class ES(object):
