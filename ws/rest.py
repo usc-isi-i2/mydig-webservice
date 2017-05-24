@@ -5,6 +5,10 @@ def created(data=None):
     return data, 201
 
 
+def ok(data=None):
+    return data, 201
+
+
 def deleted(data=''):
     return '', 204
 

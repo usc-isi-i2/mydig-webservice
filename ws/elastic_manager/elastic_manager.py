@@ -25,6 +25,7 @@ class ES(object):
                 return self.load_data(index, doc_type, doc, doc_id)
             except Exception as e:
                 print e
+                return None
 
     def create_index(self, index_name, es_mapping):
         command = self.es_url + "/" + index_name
@@ -45,10 +46,29 @@ class ES(object):
                 "_type": doc_type,
                 "_id": doc[doc_id],
                 "_source": {
-                    "any": "data" + json.dumps(doc),
+                    json.dumps(doc),
                 }
             }
             for doc in docs
             ]
 
         helpers.bulk(self.es, actions)
+
+    def retrieve_doc(self, index, doc_type, ids):
+        if not isinstance(ids, list):
+            ids = [ids]
+        query = "{\"query\": {\"ids\": {\"values\":" + json.dumps(ids) + "}}}"
+        print query
+        try:
+            return self.es.search(index=index, doc_type=doc_type, body=query, filter_path=['hits.hits._source'])
+        except:
+            # try once more
+            try:
+                return self.es.search(index=index, doc_type=doc_type, body=query, filter_path=['hits.hits._source'])
+            except Exception as e:
+                print e
+                return None
+
+if __name__ == '__main__':
+    es = ES('http://10.1.94.103:9201')
+    print es.retrieve_doc('dig-etk-gt','ads', ["092F55350A6125D8550D7652F867EBB9EB027C8EADA2CC1BAC0BEB1F48FE6D2B","33A5467DEA140814ED4C3A65EEB638029F4986EA7D7685E9D5957C3E5337C4EB"])

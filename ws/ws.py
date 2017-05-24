@@ -11,7 +11,7 @@ from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
 
 from config import config
-from elastic_manager.elastic_manager import  ES
+from elastic_manager.elastic_manager import ES
 import templates
 import rest
 
@@ -26,15 +26,21 @@ logger.setLevel(config['logging']['level'])
 app = Flask(__name__)
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 api = Api(app)
+
+
 def api_route(self, *args, **kwargs):
     def wrapper(cls):
         self.add_resource(cls, *args, **kwargs)
         return cls
+
     return wrapper
+
+
 api.route = types.MethodType(api_route, api)
 
 # in-memory data
 data = {}
+
 
 # lock for each project
 # treat it as a singleton
@@ -64,10 +70,11 @@ class ProjectLock(object):
             return
         try:
             l = self._lock[name]
-            del self._lock[name] # remove lock name first, then release
+            del self._lock[name]  # remove lock name first, then release
             l.release()
         except:
             pass
+
 
 project_lock = ProjectLock()
 
@@ -113,7 +120,6 @@ class AllProjects(Resource):
         if len(project_sources) == 0:
             return rest.bad_request('Invalid sources.')
 
-
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
         try:
@@ -136,7 +142,7 @@ class AllProjects(Resource):
         return data.keys()
 
     def delete(self):
-        for project_name in data.keys(): # not iterkeys(), need to do del in iteration
+        for project_name in data.keys():  # not iterkeys(), need to do del in iteration
             try:
                 project_lock.acquire(project_name)
                 del data[project_name]
@@ -224,10 +230,8 @@ class ProjectTags(Resource):
         return rest.created('Tag: \'{}\' added for the project \'{}\''.format(tag, project_name))
 
 
-
 @api.route('/projects/<project_name>/entities/<kg_id>/tags')
 class EntityTags(Resource):
-
     def get(self, project_name, kg_id):
         if project_name not in data:
             return rest.not_found()
@@ -241,30 +245,58 @@ class EntityTags(Resource):
             return rest.not_found()
 
         input = request.get_json(force=True)
-        kg_id = input.get('kg_id', '')
         if len(kg_id) == 0:
             return rest.bad_request()
-        tags = input.get('tags', [])
+        tag = input.get('tags', [])
+        human_annotation = input.get('human_annotation', '')
 
         try:
             project_lock.acquire(project_name)
             if kg_id not in data[project_name]['entities']:
-                data[project_name]['entities'][kg_id] = templates.get('entity')
-            data[project_name]['entities'][kg_id]['tags'] = tags
-            # load into elasticsearch as well
-            for tag in tags:
-                tag_doc = dict()
-                tag_doc['kg_id'] = kg_id
-                tag_doc['tag_name'] = tag
-                if 'write_es' in data:
-                    es = ES(data['write_es']['es_url'])
-                    es.load_data(data['write_es']['index'], tags, tag_doc, tag)
+                data[project_name]['entities'][kg_id] = dict()
+
+            if tag not in data[project_name]['entities'][kg_id]:
+                data[project_name]['entities'][kg_id][tag] = dict()
+                data[project_name]['entities'][kg_id][tag]['version'] = 1.0
+            else:
+                data[project_name]['entities'][kg_id][tag]['version'] += 1.0
+            data[project_name]['entities'][kg_id][tag]['human_annotation'] = human_annotation
+            data[project_name]['entities'][kg_id][tag]['tag_name'] = tag
+            # load the results into doc in ES
+            self.add_tag_kg_id(kg_id, data[project_name]['entities'][kg_id][tag])
             return rest.created()
         except Exception as e:
             logger.error('deleting project %s: %s' % (project_name, e.message))
             return rest.internal_error('deleting project %s error, halted.' % project_name)
         finally:
             project_lock.release(project_name)
+
+    @staticmethod
+    def add_tag_kg_id(kg_id, tag_d):
+        es = ES(data['write_es']['es_url'])
+        hits = es.retrieve_doc(data['write_es']['index'], data['write_es']['doc_type'], kg_id)
+        if hits:
+            # should retrieve one doc
+            doc = hits['hits'][0]['_source']
+            if 'knowledge_graph' not in doc:
+                doc['knowledge_graph'] = dict()
+            doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_d['tag_name'],
+                                                              tag_d['version'],
+                                                              tag_d['human_annotation'])
+            res = es.load_data(data['write_es']['index'], data['write_es']['doc_type'], doc, doc['doc_id'])
+            if res:
+                return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_d['tag_name'], kg_id))
+
+        else:
+            return rest.not_found('doc: \'{}\' not found in elasticsearch'.format(kg_id))
+
+    @staticmethod
+    def add_tag_to_kg(kg, tag_name, version, human_annotation):
+        if tag_name not in kg:
+            kg[tag_name] = dict()
+        kg[tag_name]['version'] = version
+        kg[tag_name]['human_annotation'] = human_annotation
+        return kg
 
 
 @api.route('/projects/<project_name>/fields')
@@ -308,7 +340,6 @@ class AllFields(Resource):
             return rest.internal_error('deleting all fields in project %s error, halted.' % project_name)
         finally:
             project_lock.remove(project_name)
-
 
 
 @api.route('/projects/<project_name>/fields/<field_name>')
@@ -356,8 +387,6 @@ class Field(Resource):
             return rest.internal_error('deleting field %s in project %s error, halted.' % (field_name, project_name))
         finally:
             project_lock.release(project_name)
-
-
 
 
 if __name__ == '__main__':
