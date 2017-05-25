@@ -281,7 +281,6 @@ class EntityTags(Resource):
             write_to_file(file_content, file_name)
             # load the results into doc in ES
             self.add_tag_kg_id(kg_id, tag, human_annotation)
-
             return rest.created()
         except Exception as e:
             print e
