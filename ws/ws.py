@@ -14,6 +14,7 @@ from config import config
 from elastic_manager.elastic_manager import ES
 import templates
 import rest
+import codecs
 
 # logger
 logger = logging.getLogger('mydig-webservice.log')
@@ -40,6 +41,12 @@ api.route = types.MethodType(api_route, api)
 
 # in-memory data
 data = {}
+
+
+def write_to_file(content, file_path):
+    o = codecs.open(file_path, 'w')
+    o.write(content)
+    o.close()
 
 
 # lock for each project
@@ -246,9 +253,15 @@ class EntityTags(Resource):
         input = request.get_json(force=True)
         if len(kg_id) == 0:
             return rest.bad_request()
-        tag = input.get('tags', [])
-        human_annotation = input.get('human_annotation', '')
+        tag = input.get('tags', '')
+        if not tag or tag.strip() == '':
+            return rest.bad_request('input is not a valid tag')
 
+        human_annotation = str(input.get('human_annotation', ''))
+
+        if not human_annotation or human_annotation.strip() == '' or (
+                human_annotation != '1' and human_annotation != '0'):
+            return rest.bad_request('invalid human annotation, value can be either 1(true) or 0(false)')
         try:
             project_lock.acquire(project_name)
             if kg_id not in data[project_name]['entities']:
@@ -259,12 +272,19 @@ class EntityTags(Resource):
                 data[project_name]['entities'][kg_id][tag]['version'] = 1.0
             else:
                 data[project_name]['entities'][kg_id][tag]['version'] += 1.0
-            data[project_name]['entities'][kg_id][tag]['human_annotation'] = human_annotation
             data[project_name]['entities'][kg_id][tag]['tag_name'] = tag
+            data[project_name]['entities'][kg_id][tag]['human_annotation'] = human_annotation
+
+            # write to file as well
+            file_content = kg_id + '\t' + human_annotation + '\n'
+            file_name = config['repo']['local_path'] + "/" + project_name + "/entity_annotations/" + tag + ".json"
+            write_to_file(file_content, file_name)
             # load the results into doc in ES
             self.add_tag_kg_id(kg_id, data[project_name]['entities'][kg_id][tag])
+
             return rest.created()
         except Exception as e:
+            print e
             logger.error('deleting project %s: %s' % (project_name, e.message))
             return rest.internal_error('deleting project %s error, halted.' % project_name)
         finally:

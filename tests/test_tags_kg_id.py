@@ -24,7 +24,7 @@ class FlaskrTestCase(unittest.TestCase):
         # print response
 
     def test_add_tag_entity(self):
-        req_data = dict({'project_name': 'test_project_1'})
+        req_data = dict({'project_name': 'sample-project'})
         req_data['sources'] = [{"type": "cdr", "url": "http://...", "index_name": "name of the index",
                                 "elastic_search_doctype": "the type in elastic search", "elastic_search_query": {},
                                 "start_date": "date-in-iso-format-at-any-resolution",
@@ -33,7 +33,7 @@ class FlaskrTestCase(unittest.TestCase):
         req_data = dict()
         req_data['human_annotation'] = 0
         req_data['tags'] = 'test-tag'
-        response = self.app.post("/projects/test_project_1/entities/092F55350A6125D8550D7652F867EBB9EB027C8EADA2CC1BAC0BEB1F48FE6D2B/tags", data=json.dumps(req_data))
+        response = self.app.post("/projects/sample-project/entities/092F55350A6125D8550D7652F867EBB9EB027C8EADA2CC1BAC0BEB1F48FE6D2B/tags", data=json.dumps(req_data))
         print response
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ config = {
         'port': 5000,
     },
     'repo': {
-        'local_path': '../../mydig-projects',
+        'local_path': '/Users/amandeep/Github/mydig-projects',
     },
     'logging': {
         'file_path': 'log.log',
