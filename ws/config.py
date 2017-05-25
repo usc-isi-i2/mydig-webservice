@@ -15,7 +15,8 @@ config = {
         'level': logging.INFO
     },
     'write_es': {
-        'index': 'dig-sample-sample',
-        'es_url': 'http://some_valid_url:9200'
+        'index': 'dig-etk-gt',
+        'es_url': 'http://10.1.94.103:9201',
+        'doc_type': 'ads'
     }
 }

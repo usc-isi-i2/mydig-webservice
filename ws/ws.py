@@ -243,7 +243,6 @@ class EntityTags(Resource):
     def post(self, project_name, kg_id):
         if project_name not in data:
             return rest.not_found()
-
         input = request.get_json(force=True)
         if len(kg_id) == 0:
             return rest.bad_request()
@@ -273,17 +272,19 @@ class EntityTags(Resource):
 
     @staticmethod
     def add_tag_kg_id(kg_id, tag_d):
-        es = ES(data['write_es']['es_url'])
-        hits = es.retrieve_doc(data['write_es']['index'], data['write_es']['doc_type'], kg_id)
+        es = ES(config['write_es']['es_url'])
+        hits = es.retrieve_doc(config['write_es']['index'], config['write_es']['doc_type'], kg_id)
         if hits:
             # should retrieve one doc
-            doc = hits['hits'][0]['_source']
+            # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
+            doc = hits['hits']['hits'][0]['_source']
+
             if 'knowledge_graph' not in doc:
                 doc['knowledge_graph'] = dict()
             doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_d['tag_name'],
                                                               tag_d['version'],
                                                               tag_d['human_annotation'])
-            res = es.load_data(data['write_es']['index'], data['write_es']['doc_type'], doc, doc['doc_id'])
+            res = es.load_data(config['write_es']['index'], config['write_es']['doc_type'], doc, doc['doc_id'])
             if res:
                 return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_d['tag_name'], kg_id))
 
