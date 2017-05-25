@@ -264,23 +264,23 @@ class EntityTags(Resource):
             return rest.bad_request('invalid human annotation, value can be either 1(true) or 0(false)')
         try:
             project_lock.acquire(project_name)
-            if kg_id not in data[project_name]['entities']:
-                data[project_name]['entities'][kg_id] = dict()
 
-            if tag not in data[project_name]['entities'][kg_id]:
-                data[project_name]['entities'][kg_id][tag] = dict()
-                data[project_name]['entities'][kg_id][tag]['version'] = 1.0
-            else:
-                data[project_name]['entities'][kg_id][tag]['version'] += 1.0
-            data[project_name]['entities'][kg_id][tag]['tag_name'] = tag
-            data[project_name]['entities'][kg_id][tag]['human_annotation'] = human_annotation
+            if tag not in data[project_name]['entities']:
+                data[project_name]['entities'][tag] = dict()
 
-            # write to file as well
-            file_content = kg_id + '\t' + human_annotation + '\n'
+            if kg_id not in data[project_name]['entities'][tag]:
+                data[project_name]['entities'][tag][kg_id] = dict()
+            data[project_name]['entities'][tag][kg_id]['human_annotation'] = human_annotation
+
+            # write all annotations for this tag to file
+            tag_annotation = data[project_name]['entities'][tag]
+            file_content = ''
+            for id in tag_annotation.keys():
+                file_content += id + '\t' + tag_annotation[id]['human_annotation'] + '\n'
             file_name = config['repo']['local_path'] + "/" + project_name + "/entity_annotations/" + tag + ".json"
             write_to_file(file_content, file_name)
             # load the results into doc in ES
-            self.add_tag_kg_id(kg_id, data[project_name]['entities'][kg_id][tag])
+            self.add_tag_kg_id(kg_id, tag, human_annotation)
 
             return rest.created()
         except Exception as e:
@@ -291,7 +291,7 @@ class EntityTags(Resource):
             project_lock.release(project_name)
 
     @staticmethod
-    def add_tag_kg_id(kg_id, tag_d):
+    def add_tag_kg_id(kg_id, tag_name, human_annotation):
         es = ES(config['write_es']['es_url'])
         hits = es.retrieve_doc(config['write_es']['index'], config['write_es']['doc_type'], kg_id)
         if hits:
@@ -301,23 +301,20 @@ class EntityTags(Resource):
 
             if 'knowledge_graph' not in doc:
                 doc['knowledge_graph'] = dict()
-            doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_d['tag_name'],
-                                                              tag_d['version'],
-                                                              tag_d['human_annotation'])
+            doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_name, human_annotation)
             res = es.load_data(config['write_es']['index'], config['write_es']['doc_type'], doc, doc['doc_id'])
             if res:
-                return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_d['tag_name'], kg_id))
+                return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_name, kg_id))
 
         else:
             return rest.not_found('doc: \'{}\' not found in elasticsearch'.format(kg_id))
 
     @staticmethod
-    def add_tag_to_kg(kg, tag_name, version, human_annotation):
+    def add_tag_to_kg(kg, tag_name, human_annotation):
         if '_tags' not in kg:
             kg['_tags'] = dict()
         if tag_name not in kg['_tags']:
             kg['_tags'][tag_name] = dict()
-        kg['_tags'][tag_name]['version'] = version
         kg['_tags'][tag_name]['human_annotation'] = human_annotation
         return kg
 
