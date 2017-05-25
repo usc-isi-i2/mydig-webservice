@@ -293,10 +293,12 @@ class EntityTags(Resource):
 
     @staticmethod
     def add_tag_to_kg(kg, tag_name, version, human_annotation):
-        if tag_name not in kg:
-            kg[tag_name] = dict()
-        kg[tag_name]['version'] = version
-        kg[tag_name]['human_annotation'] = human_annotation
+        if '_tags' not in kg:
+            kg['_tags'] = dict()
+        if tag_name not in kg['_tags']:
+            kg['_tags'][tag_name] = dict()
+        kg['_tags'][tag_name]['version'] = version
+        kg['_tags'][tag_name]['human_annotation'] = human_annotation
         return kg
 
 
