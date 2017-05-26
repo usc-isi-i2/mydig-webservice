@@ -90,6 +90,23 @@ def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
 
 
+def read_entity_annotations_from_disk(dir_path):
+    entities = dict()
+    for tag_file in os.listdir(dir_path):
+        tag_name = tag_file[0:len(tag_file)-5]
+        tag_file_path = os.path.join(dir_path, tag_file)
+        f = codecs.open(tag_file_path, 'r')
+        entities[tag_name] = dict()
+        for line in f:
+            line = line.replace('\n', '')
+            vals = line.split('\t')
+            kg_id = vals[0]
+            human_annotation = vals[1]
+            entities[tag_name][kg_id] = dict()
+            entities[tag_name][kg_id]['human_annotation'] = human_annotation
+    return entities
+
+
 @api.route('/debug')
 class Debug(Resource):
     def get(self):
@@ -410,31 +427,21 @@ class Field(Resource):
 
 if __name__ == '__main__':
     try:
-        # sync data
-        # pull
-        # if not os.path.exists(config['local_repo_path']):
-        #     logging.info('create')
-        #     os.exit()
-
 
         # init
         for project_name in os.listdir(config['repo']['local_path']):
             project_dir_path = _get_project_dir_path(project_name)
-            if not os.path.isdir(project_dir_path) or project_name == '.git':
-                continue
 
-            data[project_name] = templates.get('project')
-            # master_config
-            master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
-            if not os.path.exists(master_config_file_path):
-                logger.error('Missing master_config.json file for ' + project_name)
-            with open(master_config_file_path, 'r') as f:
-                data[project_name]['master_config'] = json.loads(f.read())
-
-        if 'write_es' in config:
-            data['write_es'] = dict()
-            data['write_es']['index'] = config['write_es']['index']
-            data['write_es']['es_url'] = config['write_es']['es_url']
+            if os.path.isdir(project_dir_path) and not project_name.startswith('.'):
+                data[project_name] = templates.get('project')
+                # master_config
+                master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
+                if not os.path.exists(master_config_file_path):
+                    logger.error('Missing master_config.json file for ' + project_name)
+                with open(master_config_file_path, 'r') as f:
+                    data[project_name]['master_config'] = json.loads(f.read())
+                data[project_name]['entities'] = read_entity_annotations_from_disk(
+                    project_dir_path + "/entity_annotations")
         # run app
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
 
