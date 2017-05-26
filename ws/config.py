@@ -4,7 +4,7 @@ config = {
     'debug': True,
     'server': {
         'host': '127.0.0.1',
-        'port': 5000,
+        'port': 9875,
     },
     'repo': {
         'local_path': '/Users/amandeep/Github/mydig-projects',
