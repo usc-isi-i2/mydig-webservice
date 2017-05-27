@@ -93,7 +93,7 @@ def _get_project_dir_path(project_name):
 def read_entity_annotations_from_disk(dir_path):
     entities = dict()
     for tag_file in os.listdir(dir_path):
-        tag_name = tag_file[0:len(tag_file)-5]
+        tag_name = tag_file[0:len(tag_file) - 5]
         tag_file_path = os.path.join(dir_path, tag_file)
         f = codecs.open(tag_file_path, 'r')
         entities[tag_name] = dict()
@@ -341,9 +341,13 @@ class FieldAnnotationsForEntity(Resource):
         if kg_id not in data[project_name]['field_annotations']:
             return rest.not_found('Field annotations not found for project: {}, kg_id: {}'.format(project_name, kg_id))
         if field_name not in data[project_name]['field_annotations'][kg_id]:
-            return rest.not_found('Field annotations not found for project: {}, kg_id: {}, field: {}'.format(project_name, kg_id, field_name))
+            return rest.not_found(
+                'Field annotations not found for project: {}, kg_id: {}, field: {}'.format(project_name, kg_id,
+                                                                                           field_name))
         if key not in data[project_name]['field_annotations'][kg_id][field_name]:
-            return rest.not_found('Field annotations not found for project: {}, kg_id: {}, field: {}, key: {}'.format(project_name, kg_id, field_name, key))
+            return rest.not_found(
+                'Field annotations not found for project: {}, kg_id: {}, field: {}, key: {}'.format(project_name, kg_id,
+                                                                                                    field_name, key))
 
         return data[project_name]['field_annotations'][kg_id][field_name][key]
 
@@ -354,7 +358,6 @@ class FieldAnnotationsForEntity(Resource):
     def put(self):
         # do something
         pass
-
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/tags')
@@ -380,7 +383,7 @@ class EntityTags(Resource):
         human_annotation = str(input.get('human_annotation', ''))
 
         if not human_annotation or human_annotation.strip() == '' or (
-                human_annotation != '1' and human_annotation != '0'):
+                        human_annotation != '1' and human_annotation != '0'):
             return rest.bad_request('invalid human annotation, value can be either 1(true) or 0(false)')
         try:
             project_lock.acquire(project_name)
