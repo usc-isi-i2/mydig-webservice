@@ -107,6 +107,28 @@ def read_entity_annotations_from_disk(dir_path):
     return entities
 
 
+def read_field_annotations_from_disk(file_path):
+    if os.path.exists(file_path):
+        field_annotations = dict()
+        f = codecs.open(file_path, 'r')
+        for line in f:
+            line = line.replace('\n', '')
+            vals = line.split('\t')
+            kg_id = vals[0]
+            field_name = vals[1]
+            key = vals[2]
+            human_annotation = vals[3]
+            if kg_id not in field_annotations:
+                field_annotations[kg_id] = dict()
+            if field_name not in field_annotations[kg_id]:
+                field_annotations[kg_id][field_name] = dict()
+            if key not in field_annotations[kg_id][field_name]:
+                field_annotations[kg_id][field_name][key] = dict()
+            field_annotations[kg_id][field_name][key]['human_annotation'] = human_annotation
+        return field_annotations
+    return {}
+
+
 @api.route('/debug')
 class Debug(Resource):
     def get(self):
@@ -252,6 +274,87 @@ class ProjectTags(Resource):
         tag = request.get_json(force=True).get('tag_name', '')
         data[project_name]['tags'].add(tag)
         return rest.created('Tag: \'{}\' added for the project \'{}\''.format(tag, project_name))
+
+
+@api.route('projects/<project_name>/fields/<field_name>/annotations/')
+class EntityAnnotations(Resource):
+    def get(self):
+        # do something
+        pass
+
+    def delete(self):
+        # do something
+        pass
+
+    def post(self, project_name, field_name):
+        if project_name not in data:
+            return rest.not_found('Project: {} not found'.format(project_name))
+        if 'field_annotations' not in data[project_name]:
+            data[project_name]['field_annotations'] = dict()
+        post_data = request.get_json(force=True)
+        kg_id = post_data.get('kg_id', '')
+        if kg_id.strip() == '':
+            return rest.bad_request('invalid kg_id')
+        human_annotation = post_data.get('human_annotation', '')
+        if human_annotation.strip() == '':
+            return rest.bad_request('invalid human_annotation')
+        key = post_data.get('key', '')
+        if key.strip() == '':
+            return rest.bad_request('invalid key')
+
+        if kg_id not in data[project_name]['human_annotation']:
+            data[project_name]['human_annotation'][kg_id] = dict()
+
+        if field_name not in data[project_name]['human_annotation'][kg_id]:
+            data[project_name]['human_annotation'][kg_id][field_name] = dict()
+
+        if key not in data[project_name]['human_annotation'][kg_id][field_name]:
+            data[project_name]['human_annotation'][kg_id][field_name][key] = dict()
+
+        data[project_name]['human_annotation'][kg_id][field_name][key]['human_annotation'] = human_annotation
+        # write to file
+        file_content = ''
+        field_annotations = data[project_name]['field_annotations']
+        for kg_id in field_annotations.keys():
+            field_names = field_annotations[kg_id]
+            for field_name in field_names.keys():
+                field_keys = field_names[field_name]
+                for key in field_keys.keys():
+                    human_annotation = field_keys[key]['human_annotation']
+                    file_content += kg_id + '\t' + field_name + '\t' + key + '\t' + human_annotation + "\n"
+        file_name = config['repo']['local_path'] + "/" + project_name + "/field_annotations/field_annotations.json"
+        write_to_file(file_content, file_name)
+        # load into ES
+        # TODO TO DO
+        return rest.created('Annotation created')
+
+
+@api.route('projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
+class FieldAnnotationsForEntity(Resource):
+    def get(self, project_name, kg_id, field_name, key):
+        if project_name not in data:
+            return rest.not_found('Project: {} not found'.format(project_name))
+        if 'field_annotations' not in data[project_name]:
+            data[project_name]['field_annotations'] = dict()
+            # nothing can be found now, as we are creating the field_annotations right now
+            return rest.not_found('Field annotations not found for project: {} '.format(project_name))
+        if kg_id not in data[project_name]['field_annotations']:
+            return rest.not_found('Field annotations not found for project: {}, kg_id: {}'.format(project_name, kg_id))
+        if field_name not in data[project_name]['field_annotations'][kg_id]:
+            return rest.not_found('Field annotations not found for project: {}, kg_id: {}, field: {}'.format(project_name, kg_id, field_name))
+        if key not in data[project_name]['field_annotations'][kg_id][field_name]:
+            return rest.not_found('Field annotations not found for project: {}, kg_id: {}, field: {}, key: {}'.format(project_name, kg_id, field_name, key))
+
+        return data[project_name]['field_annotations'][kg_id][field_name][key]
+
+    def delete(self):
+        # do something
+        pass
+
+    def put(self):
+        # do something
+        pass
+
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/tags')
@@ -442,6 +545,9 @@ if __name__ == '__main__':
                     data[project_name]['master_config'] = json.loads(f.read())
                 data[project_name]['entities'] = read_entity_annotations_from_disk(
                     project_dir_path + "/entity_annotations")
+
+                data[project_name]['field_annotations'] = read_field_annotations_from_disk(
+                    project_dir_path + "/field_annotations/field_annotations.json")
         # run app
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
 
