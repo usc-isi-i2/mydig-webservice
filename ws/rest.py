@@ -5,11 +5,11 @@ def created(data=None):
     return data, 201
 
 
-def ok(data=None):
-    return data, 201
+def ok(data=''):
+    return data, 200
 
 
-def deleted(data=''):
+def deleted():
     return '', 204
 
 
@@ -18,7 +18,7 @@ def bad_request(data=''):
 
 
 def exists(data=''):
-    return {'status_code': 400, 'error_message': data}, 409
+    return {'status_code': 409, 'error_message': data}, 409
 
 
 def not_found(data=''):

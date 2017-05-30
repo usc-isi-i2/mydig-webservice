@@ -276,7 +276,7 @@ class ProjectTags(Resource):
         return rest.created('Tag: \'{}\' added for the project \'{}\''.format(tag, project_name))
 
 
-@api.route('projects/<project_name>/fields/<field_name>/annotations/')
+@api.route('/projects/<project_name>/fields/<field_name>/annotations')
 class EntityAnnotations(Resource):
     def get(self):
         # do something
@@ -329,7 +329,7 @@ class EntityAnnotations(Resource):
         return rest.created('Annotation created')
 
 
-@api.route('projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
+@api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
 class FieldAnnotationsForEntity(Resource):
     def get(self, project_name, kg_id, field_name, key):
         if project_name not in data:
