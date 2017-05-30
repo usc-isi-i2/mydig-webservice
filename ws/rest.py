@@ -1,7 +1,7 @@
 # https://docs.microsoft.com/en-us/rest/api/storageservices/common-rest-api-error-codes
 
 
-def created(data=None):
+def created(data={}):
     return data, 201
 
 

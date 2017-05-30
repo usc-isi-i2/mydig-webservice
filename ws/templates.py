@@ -6,8 +6,20 @@ def get(name):
 
 project = {
     'master_config': {}, # master_config
-    'entities': {} # 'kg-id': entity
+    'entities': {}, # 'kg-id': entity
+    'tags': [],
+    'field_annotations': {}
 }
+
+# field_annotations = {
+#     kg_id: {
+#         field_name: {
+#             key: {
+#                 'human_annotation': 0/1
+#             }
+#         }
+#     },
+# }
 
 master_config = {
   'root_name': 'Ad',
@@ -17,6 +29,4 @@ master_config = {
 }
 
 entity = {
-    'kg_id': '',
-    'tags': []
 }

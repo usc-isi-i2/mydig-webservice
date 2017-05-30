@@ -177,6 +177,10 @@ class AllProjects(Resource):
             data[project_name]['master_config']['sources'] = project_sources
             with open(os.path.join(project_dir_path, 'master_config.json'), 'w') as f:
                 f.write(json.dumps(data[project_name]['master_config'], indent=4))
+
+            os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
+            write_to_file('', os.path.join(project_dir_path, 'field_annotations/field_annotations.json'))
+            os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
             logger.info('project %s created.' % project_name)
             return rest.created()
         except Exception as e:
@@ -263,7 +267,7 @@ class ProjectTags(Resource):
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
         data[project_name].pop('tags', None)
-        return rest.deleted('All \'tags\' for the project: \'{}\' have been deleted'.format(project_name))
+        return rest.deleted()
 
     def post(self, project_name):
         if project_name not in data:
@@ -273,7 +277,7 @@ class ProjectTags(Resource):
             data[project_name]['tags'] = set()
         tag = request.get_json(force=True).get('tag_name', '')
         data[project_name]['tags'].add(tag)
-        return rest.created('Tag: \'{}\' added for the project \'{}\''.format(tag, project_name))
+        return rest.created()
 
 
 @api.route('/projects/<project_name>/fields/<field_name>/annotations')
@@ -302,16 +306,16 @@ class EntityAnnotations(Resource):
         if key.strip() == '':
             return rest.bad_request('invalid key')
 
-        if kg_id not in data[project_name]['human_annotation']:
-            data[project_name]['human_annotation'][kg_id] = dict()
+        if kg_id not in data[project_name]['field_annotations']:
+            data[project_name]['field_annotations'][kg_id] = dict()
 
-        if field_name not in data[project_name]['human_annotation'][kg_id]:
-            data[project_name]['human_annotation'][kg_id][field_name] = dict()
+        if field_name not in data[project_name]['field_annotations'][kg_id]:
+            data[project_name]['field_annotations'][kg_id][field_name] = dict()
 
-        if key not in data[project_name]['human_annotation'][kg_id][field_name]:
-            data[project_name]['human_annotation'][kg_id][field_name][key] = dict()
+        if key not in data[project_name]['field_annotations'][kg_id][field_name]:
+            data[project_name]['field_annotations'][kg_id][field_name][key] = dict()
 
-        data[project_name]['human_annotation'][kg_id][field_name][key]['human_annotation'] = human_annotation
+        data[project_name]['field_annotations'][kg_id][field_name][key]['human_annotation'] = human_annotation
         # write to file
         file_content = ''
         field_annotations = data[project_name]['field_annotations']
@@ -326,7 +330,7 @@ class EntityAnnotations(Resource):
         write_to_file(file_content, file_name)
         # load into ES
         # TODO TO DO
-        return rest.created('Annotation created')
+        return rest.created()
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
@@ -546,11 +550,13 @@ if __name__ == '__main__':
                     logger.error('Missing master_config.json file for ' + project_name)
                 with open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
-                data[project_name]['entities'] = read_entity_annotations_from_disk(
-                    project_dir_path + "/entity_annotations")
 
-                data[project_name]['field_annotations'] = read_field_annotations_from_disk(
-                    project_dir_path + "/field_annotations/field_annotations.json")
+                entity_annotations_path = os.path.join(project_dir_path, 'entity_annotations')
+                data[project_name]['entities'] = read_entity_annotations_from_disk(entity_annotations_path)
+
+                field_annotations_path = os.path.join(project_dir_path, 'field_annotations/field_annotations.json')
+                data[project_name]['field_annotations'] = read_field_annotations_from_disk(field_annotations_path)
+
         # run app
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
 
