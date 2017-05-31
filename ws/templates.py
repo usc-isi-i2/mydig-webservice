@@ -7,7 +7,6 @@ def get(name):
 project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
-    'tags': set(),
     'field_annotations': {}
 }
 
@@ -22,10 +21,11 @@ project = {
 # }
 
 master_config = {
-  'root_name': 'Ad',
-  'sources': [],
-  'fields': {},
-  'glossaries': {}
+    'root_name': 'Ad',
+    'sources': [],
+    'fields': {},
+    'tags': set(), # will be converted to list when dumps
+    'glossaries': {}
 }
 
 entity = {

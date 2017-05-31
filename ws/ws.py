@@ -4,6 +4,8 @@ import logging
 import json
 import types
 import threading
+import copy
+
 
 from flask import Flask, render_template, Response
 from flask import request, abort, redirect, url_for
@@ -47,6 +49,11 @@ def write_to_file(content, file_path):
     o = codecs.open(file_path, 'w')
     o.write(content)
     o.close()
+
+def json_encode(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError
 
 
 # lock for each project
@@ -131,12 +138,13 @@ def read_field_annotations_from_disk(file_path):
 
 @api.route('/debug')
 class Debug(Resource):
+
     def get(self):
         if not config['debug']:
             return abort(404)
         debug_info = {
             'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
-            'data': data
+            'data': json.loads(json.dumps(data, default=json_encode))
         }
         return debug_info
 
@@ -176,7 +184,7 @@ class AllProjects(Resource):
             data[project_name]['master_config'] = templates.get('master_config')
             data[project_name]['master_config']['sources'] = project_sources
             with open(os.path.join(project_dir_path, 'master_config.json'), 'w') as f:
-                f.write(json.dumps(data[project_name]['master_config'], indent=4))
+                f.write(json.dumps(data[project_name]['master_config'], indent=4, default=json_encode))
 
             os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
             write_to_file('', os.path.join(project_dir_path, 'field_annotations/field_annotations.json'))
@@ -260,13 +268,13 @@ class ProjectTags(Resource):
         # return all the tags created for this project
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
-        return list(data[project_name]['tags']) if 'tags' in data[project_name] else []
+        return list(data[project_name]['master_config']['tags'])
 
     def delete(self, project_name):
         # delete all the tags for this project
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
-        data[project_name]['tags'] = []
+        data[project_name]['master_config']['tags'] = set()
         return rest.deleted()
 
     def post(self, project_name):
@@ -274,9 +282,9 @@ class ProjectTags(Resource):
             return rest.not_found("Project \'{}\' not found".format(project_name))
         # create a tag for this project
         if 'tags' not in data[project_name]:
-            data[project_name]['tags'] = set()
+            data[project_name]['master_config']['tags'] = set()
         tag = request.get_json(force=True).get('tag_name', '')
-        data[project_name]['tags'].add(tag)
+        data[project_name]['master_config']['tags'].add(tag)
         return rest.created()
 
 
@@ -285,9 +293,9 @@ class Tag(Resource):
     def delete(self, project_name, tag_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
-        if tag_name not in data[project_name]['tags']:
+        if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found('Tag {} not found'.format(tag_name))
-        data[project_name]['tags'].remove(tag_name)
+        data[project_name]['master_config']['tags'].remove(tag_name)
         return rest.deleted()
 
 
@@ -565,6 +573,7 @@ if __name__ == '__main__':
                     logger.error('Missing master_config.json file for ' + project_name)
                 with open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
+                    data[project_name]['master_config']['tags'] = set(data[project_name]['master_config']['tags'])
 
                 entity_annotations_path = os.path.join(project_dir_path, 'entity_annotations')
                 data[project_name]['entities'] = read_entity_annotations_from_disk(entity_annotations_path)
