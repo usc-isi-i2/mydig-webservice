@@ -50,10 +50,11 @@ def write_to_file(content, file_path):
     o.write(content)
     o.close()
 
-def json_encode(obj):
-    if isinstance(obj, set):
-        return list(obj)
-    raise TypeError
+# set to list
+# def json_encode(obj):
+#     if isinstance(obj, set):
+#         return list(obj)
+#     raise TypeError
 
 
 # lock for each project
@@ -144,7 +145,7 @@ class Debug(Resource):
             return abort(404)
         debug_info = {
             'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
-            'data': json.loads(json.dumps(data, default=json_encode))
+            'data': data
         }
         return debug_info
 
@@ -159,6 +160,12 @@ def spec_file_path():
     with open('spec.yaml', 'r') as f:
         content = f.read()
     return Response(content, mimetype='text/x-yaml')
+
+
+@api.route('/')
+class Home(Resource):
+    def get(self):
+        return 'Welcome'
 
 
 @api.route('/projects')
@@ -184,7 +191,7 @@ class AllProjects(Resource):
             data[project_name]['master_config'] = templates.get('master_config')
             data[project_name]['master_config']['sources'] = project_sources
             with open(os.path.join(project_dir_path, 'master_config.json'), 'w') as f:
-                f.write(json.dumps(data[project_name]['master_config'], indent=4, default=json_encode))
+                f.write(json.dumps(data[project_name]['master_config'], indent=4))
 
             os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
             write_to_file('', os.path.join(project_dir_path, 'field_annotations/field_annotations.json'))
@@ -212,12 +219,6 @@ class AllProjects(Resource):
                 project_lock.remove(project_name)
 
         return rest.deleted()
-
-
-@api.route('/')
-class Home(Resource):
-    def get(self):
-        return 'Welcome'
 
 
 @api.route('/projects/<project_name>')
@@ -268,60 +269,155 @@ class ProjectTags(Resource):
         # return all the tags created for this project
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
-        return list(data[project_name]['master_config']['tags'])
+        return data[project_name]['master_config']['tags']
 
     def delete(self, project_name):
         # delete all the tags for this project
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
-        data[project_name]['master_config']['tags'] = set()
+        data[project_name]['master_config']['tags'] = dict()
         return rest.deleted()
 
     def post(self, project_name):
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
-        # create a tag for this project
-        if 'tags' not in data[project_name]:
-            data[project_name]['master_config']['tags'] = set()
-        tag = request.get_json(force=True).get('tag_name', '')
-        data[project_name]['master_config']['tags'].add(tag)
+
+        input = request.get_json(force=True)
+        tag_name = input.get('tag_name', '')
+        if len(tag_name) == 0:
+            return rest.bad_request('Invalid tag name')
+        if tag_name in data[project_name]['master_config']['tags']:
+            return rest.exists('Tag name already exists')
+        tag_object = input.get('tag_object', {})
+        if 'name' not in tag_object or tag_object['name'] != tag_name:
+            return rest.bad_request('Name of tag is not correct')
+        data[project_name]['master_config']['tags'][tag_name] = tag_object
         return rest.created()
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>')
 class Tag(Resource):
+    def get(self, project_name, tag_name):
+        if project_name not in data:
+            return rest.not_found("Project {} not found".format(project_name))
+        if tag_name not in data[project_name]['master_config']['tag']:
+            return rest.not_found("Tag {} not found".format(tag_name))
+        return data[project_name]['master_config']['tag'][tag_name]
+
+    def post(self, project_name, tag_name):
+        # user is not allowed to update tag_name
+        if project_name not in data:
+            return rest.not_found("Project {} not found".format(project_name))
+        if tag_name not in data[project_name]['master_config']['tags']:
+            return rest.not_found("Tag {} not found".format(tag_name))
+        input = request.get_json(force=True)
+        tag_object = input.get('tag_object', {})
+        if 'name' not in tag_object or tag_object['name'] != tag_name:
+            return rest.bad_request('Name of tag is not correct')
+        data[project_name]['master_config']['tags'][tag_name] = tag_object
+        return rest.created()
+
+    def put(self, project_name, tag_name):
+        return self.post(project_name, tag_name)
+
     def delete(self, project_name, tag_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
         if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found('Tag {} not found'.format(tag_name))
-        data[project_name]['master_config']['tags'].remove(tag_name)
+        del data[project_name]['master_config']['tags'][tag_name]
         return rest.deleted()
 
 
-@api.route('/projects/<project_name>/fields/<field_name>/annotations')
-class EntityAnnotations(Resource):
-    def get(self, project_name, field_name):
-        pass
-        # if project_name not in data:
-        #     return rest.not_found('Project: {} not found'.format(project_name))
-        # if field_name not in data[project_name]:
-        #     return rest.not_found('Field name not found')
-        # return data[project_name][field_name]
+@api.route('/projects/<project_name>/fields')
+class ProjectFields(Resource):
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+        input = request.get_json(force=True)
+        field_name = input.get('field_name', '')
+        if len(field_name) == 0:
+            return rest.bad_request('Invalid field name')
+        if field_name in data[project_name]['master_config']['fields']:
+            return rest.exists('Field name already exists')
+        field_object = input.get('field_object', {})
 
-    def delete(self):
-        # do something
-        pass
+        data[project_name]['master_config']['fields'][field_name] = field_object
+        return rest.created()
+
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+        return data[project_name]['master_config']['fields']
+
+    def delete(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+
+        data[project_name]['master_config']['fields'] = dict()
+        return rest.deleted()
+
+
+@api.route('/projects/<project_name>/fields/<field_name>')
+class Field(Resource):
+    def get(self, project_name, field_name):
+        if project_name not in data:
+            return rest.not_found()
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found()
+        return data[project_name]['master_config']['fields'][field_name]
 
     def post(self, project_name, field_name):
         if project_name not in data:
+            return rest.not_found()
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found()
+        input = request.get_json(force=True)
+        field_object = input.get('field_object', {})
+        if 'name' not in field_object or field_object['name'] != field_name:
+            return rest.bad_request('Name of tag is not correct')
+        data[project_name]['master_config']['fields'][field_name] = field_object
+        return rest.created()
+
+    def put(self, project_name, field_name):
+        return self.post(project_name, field_name)
+
+    def delete(self, project_name, field_name):
+        if project_name not in data:
+            return rest.not_found()
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found()
+
+        del data[project_name]['master_config']['fields'][field_name]
+        return rest.deleted()
+
+
+@api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations')
+class EntityAnnotations(Resource):
+    def get(self, project_name, kg_id, field_name):
+        if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
-        if 'field_annotations' not in data[project_name]:
-            data[project_name]['field_annotations'] = dict()
+        if kg_id not in data[project_name]['field_annotations']:
+            return rest.not_found('kg_id {} not found'.format(kg_id))
+        if field_name not in data[project_name]['field_annotations'][kg_id]:
+            return rest.not_found('Field name {} not found'.format(field_name))
+        return data[project_name]['field_annotations'][kg_id][field_name]
+
+    def delete(self, project_name, kg_id, field_name):
+        if project_name not in data:
+            return rest.not_found('Project: {} not found'.format(project_name))
+        if kg_id not in data[project_name]['field_annotations']:
+            return rest.not_found('kg_id {} not found'.format(kg_id))
+        if field_name not in data[project_name]['field_annotations'][kg_id]:
+            return rest.not_found('Field name {} not found'.format(field_name))
+        data[project_name]['field_annotations'][kg_id][field_name] = dict()
+        return rest.deleted()
+
+    def post(self, project_name, kg_id, field_name):
+        if project_name not in data:
+            return rest.not_found('Project: {} not found'.format(project_name))
+
         post_data = request.get_json(force=True)
-        kg_id = post_data.get('kg_id', '')
-        if kg_id.strip() == '':
-            return rest.bad_request('invalid kg_id')
         human_annotation = post_data.get('human_annotation', '')
         if human_annotation.strip() == '':
             return rest.bad_request('invalid human_annotation')
@@ -349,10 +445,9 @@ class EntityAnnotations(Resource):
                 for key in field_keys.keys():
                     human_annotation = field_keys[key]['human_annotation']
                     file_content += kg_id + '\t' + field_name + '\t' + key + '\t' + human_annotation + "\n"
-        file_name = config['repo']['local_path'] + "/" + project_name + "/field_annotations/field_annotations.json"
+        file_name = os.path.join(_get_project_dir_path(project_name), "/field_annotations/field_annotations.json")
         write_to_file(file_content, file_name)
         # load into ES
-        # TODO TO DO
         return rest.created()
 
 
@@ -427,7 +522,7 @@ class EntityTags(Resource):
             file_content = ''
             for id in tag_annotation.keys():
                 file_content += id + '\t' + tag_annotation[id]['human_annotation'] + '\n'
-            file_name = config['repo']['local_path'] + "/" + project_name + "/entity_annotations/" + tag + ".json"
+            file_name = os.path.join(_get_project_dir_path(project_name), "/entity_annotations/" + tag + ".json")
             write_to_file(file_content, file_name)
             # load the results into doc in ES
             self.add_tag_kg_id(kg_id, tag, human_annotation)
@@ -468,96 +563,6 @@ class EntityTags(Resource):
         return kg
 
 
-@api.route('/projects/<project_name>/fields')
-class AllFields(Resource):
-    def post(self, project_name):
-        if project_name not in data:
-            return rest.not_found()
-        input = request.get_json(force=True)
-        field_name = input.get('field_name', '')
-        if len(field_name) == 0:
-            return rest.bad_request()
-        if field_name in data[project_name]['master_config']['fields']:
-            return rest.exists()
-        field_object = input.get('field_object', {})
-
-        try:
-            project_lock.acquire(project_name)
-            data[project_name]['master_config']['fields'][field_name] = field_object
-            return rest.created()
-        except Exception as e:
-            logger.error('creating field %s in project: %s' % (field_name, project_name, e.message))
-            return rest.internal_error('creating field %s in project %s error, halted.' % field_name, project_name)
-        finally:
-            project_lock.release(project_name)
-
-    def get(self, project_name):
-        if project_name not in data:
-            return rest.not_found()
-        return data[project_name]['master_config']['fields']
-
-    def delete(self, project_name):
-        if project_name not in data:
-            return rest.not_found()
-
-        try:
-            project_lock.acquire(project_name)
-            data[project_name]['master_config']['fields'] = {}
-            return rest.deleted()
-        except Exception as e:
-            logger.error('deleting all fields in project %s: %s' % (project_name, e.message))
-            return rest.internal_error('deleting all fields in project %s error, halted.' % project_name)
-        finally:
-            project_lock.remove(project_name)
-
-
-@api.route('/projects/<project_name>/fields/<field_name>')
-class Field(Resource):
-    def get(self, project_name, field_name):
-        if project_name not in data:
-            return rest.not_found()
-        if field_name not in data[project_name]['master_config']['fields']:
-            return rest.not_found()
-        return data[project_name]['master_config']['fields'][field_name]
-
-    def post(self, project_name, field_name):
-        if project_name not in data:
-            return rest.not_found()
-        if field_name not in data[project_name]['master_config']['fields']:
-            return rest.not_found()
-        input = request.get_json(force=True)
-        field = input.get('field', {})
-        if len(field) == 0:
-            return rest.bad_request('Invalid field.')
-        try:
-            project_lock.acquire(project_name)
-            data[project_name]['master_config']['fields'][field_name] = field
-            return rest.created()
-        except Exception as e:
-            logger.error('updating field %s in project %s: %s' % (field_name, project_name, e.message))
-            return rest.internal_error('updating field %s in project %s error, halted.' % (field_name, project_name))
-        finally:
-            project_lock.release(project_name)
-
-    def put(self, project_name, field_name):
-        return self.post(project_name, field_name)
-
-    def delete(self, project_name, field_name):
-        if project_name not in data:
-            return rest.not_found()
-        if field_name not in data[project_name]['master_config']['fields']:
-            return rest.not_found()
-        try:
-            project_lock.acquire(project_name)
-            del data[project_name]['master_config']['fields'][field_name]
-            return rest.deleted()
-        except Exception as e:
-            logger.error('deleting field %s in project %s: %s' % (field_name, project_name, e.message))
-            return rest.internal_error('deleting field %s in project %s error, halted.' % (field_name, project_name))
-        finally:
-            project_lock.release(project_name)
-
-
 if __name__ == '__main__':
     try:
 
@@ -573,7 +578,6 @@ if __name__ == '__main__':
                     logger.error('Missing master_config.json file for ' + project_name)
                 with open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
-                    data[project_name]['master_config']['tags'] = set(data[project_name]['master_config']['tags'])
 
                 entity_annotations_path = os.path.join(project_dir_path, 'entity_annotations')
                 data[project_name]['entities'] = read_entity_annotations_from_disk(entity_annotations_path)
