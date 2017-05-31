@@ -7,13 +7,14 @@ class OozieJobs(object):
     def __init__(self, oozie_url='http://localhost:11000/oozie'):
         self.oozie_url = oozie_url
 
-    def submit_oozie_jobs(self, config_xml):
-        oozie_url = self.oozie_url + "/v1/jobs"
+    def submit_oozie_jobs(self, property_dict):
+        oozie_url = self.oozie_url + "/v1/jobs?action=start"
 
         # open files in binary mode
         # config_xml = codecs.open('config.xml, 'r')
-        files = {'file': config_xml}
-        response = requests.post(oozie_url, files=files)
+        headers = {'Content-Type': 'application/xml'}
+        payload = OozieJobs.create_worfklow_xml(property_dict)
+        response = requests.post(oozie_url, data=payload, headers=headers)
         return response
 
     def manage_job(self, job_id, action):
@@ -23,6 +24,32 @@ class OozieJobs(object):
         response = requests.put(oozie_url)
         return response
 
+    @staticmethod
+    def append_property_toXML(XML, name, value):
+        XML += "<property><name>{}</name><value>{}</value></property>".format(name, value)
+        return XML
+
+    @staticmethod
+    def create_worfklow_xml(property_dict):
+        payload = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><configuration>"
+        for key in property_dict.keys():
+            payload = OozieJobs.append_property_toXML(payload, key, property_dict[key])
+        payload += "</configuration>"
+        return payload
+
+
+if __name__ == '__main__':
+    property_dict = dict()
+    property_dict["user.name"] = "skaraman"
+    property_dict["oozie.wf.application.path"] = "<hdfs_path>"
+    property_dict["jobTracker"] = "memex-rm.xdata.data-tactics-corp.com:8032"
+    property_dict["nameNode"] = "hdfs://memex"
+    property_dict["DAYTOPROCESS"] = "2017-04-02"
+    property_dict["TABLE_SHA1"] = "escorts_images_sha1_infos_ext_dev"
+    property_dict["TABLE_UPDATE"] = "escorts_images_updates_dev"
+    property_dict["ES_DOMAIN"] = "escorts"
+    oj = OozieJobs()
+    oj.submit_oozie_jobs(property_dict)
 """
 Sample config.xml
 <configuration>
