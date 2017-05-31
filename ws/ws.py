@@ -266,7 +266,7 @@ class ProjectTags(Resource):
         # delete all the tags for this project
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
-        data[project_name].pop('tags', None)
+        data[project_name]['tags'] = []
         return rest.deleted()
 
     def post(self, project_name):
@@ -280,11 +280,26 @@ class ProjectTags(Resource):
         return rest.created()
 
 
+@api.route('/projects/<project_name>/tags/<tag_name>')
+class Tag(Resource):
+    def delete(self, project_name, tag_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if tag_name not in data[project_name]['tags']:
+            return rest.not_found('Tag {} not found'.format(tag_name))
+        data[project_name]['tags'].remove(tag_name)
+        return rest.deleted()
+
+
 @api.route('/projects/<project_name>/fields/<field_name>/annotations')
 class EntityAnnotations(Resource):
-    def get(self):
-        # do something
+    def get(self, project_name, field_name):
         pass
+        # if project_name not in data:
+        #     return rest.not_found('Project: {} not found'.format(project_name))
+        # if field_name not in data[project_name]:
+        #     return rest.not_found('Field name not found')
+        # return data[project_name][field_name]
 
     def delete(self):
         # do something

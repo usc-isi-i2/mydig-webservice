@@ -7,7 +7,7 @@ def get(name):
 project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
-    'tags': [],
+    'tags': set(),
     'field_annotations': {}
 }
 
