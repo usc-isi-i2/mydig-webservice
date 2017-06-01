@@ -156,6 +156,7 @@ class AllProjects(Resource):
             os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
             write_to_file(json.dumps({}), os.path.join(project_dir_path, 'field_annotations/field_annotations.json'))
             os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
+            write_to_file(json.dumps({}), os.path.join(project_dir_path, 'entity_annotations/entity_annotations.json'))
             logger.info('project %s created.' % project_name)
             return rest.created()
         except Exception as e:
@@ -193,6 +194,9 @@ class Project(Resource):
         try:
             project_lock.acquire(project_name)
             data[project_name]['master_config'] = project_sources
+            # write to file
+            file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+            write_to_file(json.dumps(data[project_name], indent=4), file_path)
             return rest.created()
         except Exception as e:
             logger.error('Updating project %s: %s' % (project_name, e.message))
@@ -214,7 +218,7 @@ class Project(Resource):
         try:
             project_lock.acquire(project_name)
             del data[project_name]
-            # shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
+            shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
             return rest.deleted()
         except Exception as e:
             logger.error('deleting project %s: %s' % (project_name, e.message))
@@ -236,6 +240,9 @@ class ProjectTags(Resource):
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
         data[project_name]['master_config']['tags'] = dict()
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.deleted()
 
     def post(self, project_name):
@@ -252,6 +259,9 @@ class ProjectTags(Resource):
         if 'name' not in tag_object or tag_object['name'] != tag_name:
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['tags'][tag_name] = tag_object
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.created()
 
 
@@ -275,6 +285,9 @@ class Tag(Resource):
         if 'name' not in tag_object or tag_object['name'] != tag_name:
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['tags'][tag_name] = tag_object
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.created()
 
     def put(self, project_name, tag_name):
@@ -286,6 +299,9 @@ class Tag(Resource):
         if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found('Tag {} not found'.format(tag_name))
         del data[project_name]['master_config']['tags'][tag_name]
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.deleted()
 
 
@@ -303,6 +319,9 @@ class ProjectFields(Resource):
         field_object = input.get('field_object', {})
 
         data[project_name]['master_config']['fields'][field_name] = field_object
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.created()
 
     def get(self, project_name):
@@ -315,6 +334,9 @@ class ProjectFields(Resource):
             return rest.not_found()
 
         data[project_name]['master_config']['fields'] = dict()
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.deleted()
 
 
@@ -337,6 +359,9 @@ class Field(Resource):
         if 'name' not in field_object or field_object['name'] != field_name:
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['fields'][field_name] = field_object
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.created()
 
     def put(self, project_name, field_name):
@@ -347,8 +372,10 @@ class Field(Resource):
             return rest.not_found()
         if field_name not in data[project_name]['master_config']['fields']:
             return rest.not_found()
-
         del data[project_name]['master_config']['fields'][field_name]
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+        write_to_file(json.dumps(data[project_name], indent=4), file_path)
         return rest.deleted()
 
 
@@ -380,6 +407,10 @@ class EntityTags(Resource):
                 data[project_name]['entities'][kg_id] = dict()
             if tag_name not in data[project_name]['entities'][kg_id]:
                 data[project_name]['entities'][kg_id][tag_name] = dict()
+
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
         return rest.created()
 
 
@@ -467,7 +498,7 @@ class FieldAnnotations(Resource):
         data[project_name]['field_annotations'][kg_id][field_name] = dict()
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-        write_to_file(json.dumps(data[project_name]['field_annotations']), file_path)
+        write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
         # TODO
         return rest.deleted()
@@ -502,7 +533,7 @@ class FieldAnnotations(Resource):
         }
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-        write_to_file(json.dumps(data[project_name]['field_annotations']), file_path)
+        write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
         # TODO
         return rest.created()
@@ -541,7 +572,7 @@ class FieldKeyAnnotations(Resource):
         del data[project_name]['field_annotations'][kg_id][field_name][key]
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-        write_to_file(json.dumps(data[project_name]['field_annotations']), file_path)
+        write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
         # TODO
         return rest.deleted()
@@ -566,7 +597,7 @@ class FieldKeyAnnotations(Resource):
         data[project_name]['field_annotations'][kg_id][field_name][key]['human_annotation'] = human_annotation
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-        write_to_file(json.dumps(data[project_name]['field_annotations']), file_path)
+        write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
         # TODO
         return rest.created()
@@ -614,9 +645,9 @@ if __name__ == '__main__':
                 with open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
 
-                # entity_annotations_path = os.path.join(project_dir_path, 'entity_annotations')
-                # with open(entity_annotations_path, 'r') as f:
-                #     data[project_name]['entities'] = json.loads(f.read())
+                entity_annotations_path = os.path.join(project_dir_path, 'entity_annotations/entity_annotations.json')
+                with open(entity_annotations_path, 'r') as f:
+                    data[project_name]['entities'] = json.loads(f.read())
 
                 field_annotations_path = os.path.join(project_dir_path, 'field_annotations/field_annotations.json')
                 with open(field_annotations_path, 'r') as f:
