@@ -392,6 +392,100 @@ class Field(Resource):
         return rest.deleted()
 
 
+@api.route('/projects/<project_name>/entities/<kg_id>/tags')
+class EntityTags(Resource):
+    def get(self, project_name, kg_id):
+        if project_name not in data:
+            return rest.not_found()
+        if kg_id not in data[project_name]['entities']:
+            return rest.not_found()
+
+        return data[project_name]['entities'][kg_id]['tags']
+
+    def post(self, project_name, kg_id):
+        if project_name not in data:
+            return rest.not_found()
+
+        input = request.get_json(force=True)
+        tags = input.get('tags', [])
+        if len(tags) == 0:
+            return rest.bad_request('No tags given')
+        # tag should be exist
+        for tag_name in tags:
+            if tag_name not in data[project_name]['master_config']['tags']:
+                return rest.bad_request('Tag {} is not exist'.format(tag_name))
+        # add tags to entity
+        for tag_name in tags:
+            if kg_id not in data[project_name]['entities']:
+                data[project_name]['entities'][kg_id] = dict()
+            if tag_name not in data[project_name]['entities'][kg_id]:
+                data[project_name]['entities'][kg_id][tag_name] = dict()
+        return rest.created()
+
+
+    # def post(self, project_name, kg_id):
+    #     if project_name not in data:
+    #         return rest.not_found()
+    #     input = request.get_json(force=True)
+    #     if len(kg_id) == 0:
+    #         return rest.bad_request()
+    #     tag = input.get('tags', '')
+    #     if not tag or tag.strip() == '':
+    #         return rest.bad_request('input is not a valid tag')
+    #
+    #     human_annotation = str(input.get('human_annotation', ''))
+    #
+    #     if not human_annotation or human_annotation.strip() == '' or (
+    #                     human_annotation != '1' and human_annotation != '0'):
+    #         return rest.bad_request('invalid human annotation, value can be either 1(true) or 0(false)')
+    #
+    #     if tag not in data[project_name]['entities']:
+    #         data[project_name]['entities'][tag] = dict()
+    #
+    #     if kg_id not in data[project_name]['entities'][tag]:
+    #         data[project_name]['entities'][tag][kg_id] = dict()
+    #     data[project_name]['entities'][tag][kg_id]['human_annotation'] = human_annotation
+    #
+    #     # write all annotations for this tag to file
+    #     tag_annotation = data[project_name]['entities'][tag]
+    #     file_content = ''
+    #     for id in tag_annotation.keys():
+    #         file_content += id + '\t' + tag_annotation[id]['human_annotation'] + '\n'
+    #     file_name = os.path.join(_get_project_dir_path(project_name), "/entity_annotations/" + tag + ".json")
+    #     write_to_file(file_content, file_name)
+    #     # load the results into doc in ES
+    #     self.add_tag_kg_id(kg_id, tag, human_annotation)
+    #     return rest.created()
+    #
+    # @staticmethod
+    # def add_tag_kg_id(kg_id, tag_name, human_annotation):
+    #     es = ES(config['write_es']['es_url'])
+    #     hits = es.retrieve_doc(config['write_es']['index'], config['write_es']['doc_type'], kg_id)
+    #     if hits:
+    #         # should retrieve one doc
+    #         # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
+    #         doc = hits['hits']['hits'][0]['_source']
+    #
+    #         if 'knowledge_graph' not in doc:
+    #             doc['knowledge_graph'] = dict()
+    #         doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_name, human_annotation)
+    #         res = es.load_data(config['write_es']['index'], config['write_es']['doc_type'], doc, doc['doc_id'])
+    #         if res:
+    #             return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_name, kg_id))
+    #
+    #     else:
+    #         return rest.not_found('doc: \'{}\' not found in elasticsearch'.format(kg_id))
+    #
+    # @staticmethod
+    # def add_tag_to_kg(kg, tag_name, human_annotation):
+    #     if '_tags' not in kg:
+    #         kg['_tags'] = dict()
+    #     if tag_name not in kg['_tags']:
+    #         kg['_tags'][tag_name] = dict()
+    #     kg['_tags'][tag_name]['human_annotation'] = human_annotation
+    #     return kg
+
+
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations')
 class EntityAnnotations(Resource):
     def get(self, project_name, kg_id, field_name):
@@ -482,86 +576,28 @@ class FieldAnnotationsForEntity(Resource):
         pass
 
 
-@api.route('/projects/<project_name>/entities/<kg_id>/tags')
-class EntityTags(Resource):
-    def get(self, project_name, kg_id):
-        if project_name not in data:
-            return rest.not_found()
-        if kg_id not in data[project_name]['entities']:
-            return rest.not_found()
+@api.route('/projects/<project-name>/tags/<tag_name>/annotations/<entity>/annotations')
+class TagAnnotationsForEntities(Resource):
+    def delete(self, project_name, tag_name, enntity):
+        pass
 
-        return data[project_name]['entities'][kg_id]['tags']
+    def get(self, project_name, tag_name, enntity):
+        pass
 
-    def post(self, project_name, kg_id):
-        if project_name not in data:
-            return rest.not_found()
-        input = request.get_json(force=True)
-        if len(kg_id) == 0:
-            return rest.bad_request()
-        tag = input.get('tags', '')
-        if not tag or tag.strip() == '':
-            return rest.bad_request('input is not a valid tag')
+    def post(self, project_name, tag_name, enntity):
+        pass
 
-        human_annotation = str(input.get('human_annotation', ''))
+    def put(self, project_name, tag_name, enntity):
+        return self.post(project_name, tag_name, enntity)
 
-        if not human_annotation or human_annotation.strip() == '' or (
-                        human_annotation != '1' and human_annotation != '0'):
-            return rest.bad_request('invalid human annotation, value can be either 1(true) or 0(false)')
-        try:
-            project_lock.acquire(project_name)
 
-            if tag not in data[project_name]['entities']:
-                data[project_name]['entities'][tag] = dict()
+@api.route('/projects/<project-name>/tags/<tag_name>/annotations/<entity>/annotations/<kg_id>')
+class TagAnnotationsForAnEntity(Resource):
+    def delete(self, project_name, tag_name, enntity, kg_id):
+        pass
 
-            if kg_id not in data[project_name]['entities'][tag]:
-                data[project_name]['entities'][tag][kg_id] = dict()
-            data[project_name]['entities'][tag][kg_id]['human_annotation'] = human_annotation
-
-            # write all annotations for this tag to file
-            tag_annotation = data[project_name]['entities'][tag]
-            file_content = ''
-            for id in tag_annotation.keys():
-                file_content += id + '\t' + tag_annotation[id]['human_annotation'] + '\n'
-            file_name = os.path.join(_get_project_dir_path(project_name), "/entity_annotations/" + tag + ".json")
-            write_to_file(file_content, file_name)
-            # load the results into doc in ES
-            self.add_tag_kg_id(kg_id, tag, human_annotation)
-            return rest.created()
-        except Exception as e:
-            print e
-            logger.error('deleting project %s: %s' % (project_name, e.message))
-            return rest.internal_error('deleting project %s error, halted.' % project_name)
-        finally:
-            project_lock.release(project_name)
-
-    @staticmethod
-    def add_tag_kg_id(kg_id, tag_name, human_annotation):
-        es = ES(config['write_es']['es_url'])
-        hits = es.retrieve_doc(config['write_es']['index'], config['write_es']['doc_type'], kg_id)
-        if hits:
-            # should retrieve one doc
-            # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
-            doc = hits['hits']['hits'][0]['_source']
-
-            if 'knowledge_graph' not in doc:
-                doc['knowledge_graph'] = dict()
-            doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_name, human_annotation)
-            res = es.load_data(config['write_es']['index'], config['write_es']['doc_type'], doc, doc['doc_id'])
-            if res:
-                return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_name, kg_id))
-
-        else:
-            return rest.not_found('doc: \'{}\' not found in elasticsearch'.format(kg_id))
-
-    @staticmethod
-    def add_tag_to_kg(kg, tag_name, human_annotation):
-        if '_tags' not in kg:
-            kg['_tags'] = dict()
-        if tag_name not in kg['_tags']:
-            kg['_tags'][tag_name] = dict()
-        kg['_tags'][tag_name]['human_annotation'] = human_annotation
-        return kg
-
+    def get(self, project_name, tag_name, enntity, kg_id):
+        pass
 
 if __name__ == '__main__':
     try:

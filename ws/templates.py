@@ -20,6 +20,15 @@ project = {
 #     },
 # }
 
+
+# entities = {
+#     kg_id: {
+#         tag_name: {
+#             'human_annotation': 0/1
+#         }
+#     }
+# }
+
 default_tags = {
     'movement': {
         'name': 'movement',
