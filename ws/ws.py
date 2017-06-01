@@ -534,9 +534,7 @@ class FieldAnnotations(Resource):
         if key not in data[project_name]['field_annotations'][kg_id][field_name]:
             data[project_name]['field_annotations'][kg_id][field_name][key] = dict()
 
-        data[project_name]['field_annotations'][kg_id][field_name][key] = {
-            'human_annotation': human_annotation
-        }
+        data[project_name]['field_annotations'][kg_id][field_name][key]['human_annotation'] = human_annotation
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
         write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
@@ -622,7 +620,11 @@ class TagAnnotationsForEntities(Resource):
         if entity_name not in data[project_name]['entities']:
             return rest.not_found('Entity {} not found'.format(entity_name))
 
-        del data[project_name]['entities'][entity_name]
+        for kg_item in data[project_name]['entities'][entity_name]:
+            if tag_name in kg_item:
+                if 'human_annotation' in kg_item[tag_name]:
+                    del kg_item[tag_name]['human_annotation']
+        return rest.deleted()
 
     def get(self, project_name, tag_name, entity_name):
         if project_name not in data:
@@ -630,15 +632,34 @@ class TagAnnotationsForEntities(Resource):
         if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found('Tag {} not found'.format(tag_name))
 
-        for kg_id in data[project_name]['entities']:
-            pass
-
+        result = []
+        if entity_name in data[project_name]['entities']:
+            for kg_item in data[project_name]['entities'][entity_name]:
+                if tag_name in kg_item:
+                    result.append(kg_item)
+        return result
 
     def post(self, project_name, tag_name, entity_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
         if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found('Tag {} not found'.format(tag_name))
+        if entity_name not in data[project_name]['entities']:
+            return rest.not_found('Entity {} not found'.format(entity_name))
+
+        input = request.get_json(force=True)
+        kg_id = input.get('kg_id', '')
+        if len(kg_id) == 0:
+            return rest.bad_request('Invalid kg_id')
+        human_annotation = input.get('human_annotation', -1)
+        if not isinstance(human_annotation, int) or human_annotation == -1:
+            return rest.bad_request('Invalid human annotation')
+
+        if kg_id not in data[project_name]['entities'][entity_name]:
+            return rest.not_found('kg_id {} not found'.format(kg_id))
+
+        data[project_name]['entities'][entity_name][kg_id]['human_annotation'] = human_annotation
+        return rest.created()
 
 
     def put(self, project_name, tag_name, entity_name):
@@ -647,11 +668,36 @@ class TagAnnotationsForEntities(Resource):
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
 class TagAnnotationsForAnEntity(Resource):
-    def delete(self, project_name, tag_name, entity, kg_id):
-        pass
+    def delete(self, project_name, tag_name, entity_name, kg_id):
+        if project_name not in data:
+            return rest.not_found('Project: {} not found'.format(project_name))
+        if tag_name not in data[project_name]['master_config']['tags']:
+            return rest.not_found('Tag {} not found'.format(tag_name))
+        if entity_name not in data[project_name]['entities']:
+            return rest.not_found('Entity {} not found'.format(entity_name))
+        if kg_id not in data[project_name]['entities'][entity_name]:
+            return rest.not_found('kg_id {} not found'.format(kg_id))
 
-    def get(self, project_name, tag_name, entity, kg_id):
-        pass
+        if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
+            return rest.not_found('kg_id {} not found'.format(kg_id))
+        if 'human_annotation' in data[project_name]['entities'][entity_name][kg_id][tag_name]:
+            del data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation']
+        return rest.deleted()
+
+    def get(self, project_name, tag_name, entity_name, kg_id):
+        if project_name not in data:
+            return rest.not_found('Project: {} not found'.format(project_name))
+        if tag_name not in data[project_name]['master_config']['tags']:
+            return rest.not_found('Tag {} not found'.format(tag_name))
+        if entity_name not in data[project_name]['entities']:
+            return rest.not_found('Entity {} not found'.format(entity_name))
+        if kg_id not in data[project_name]['entities'][entity_name]:
+            return rest.not_found('kg_id {} not found'.format(kg_id))
+
+        if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
+            return rest.not_found('kg_id {} not found'.format(kg_id))
+        
+        return data[project_name]['entities'][entity_name][kg_id][tag_name]
 
 if __name__ == '__main__':
     try:
