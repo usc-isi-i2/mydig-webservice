@@ -195,7 +195,7 @@ class Project(Resource):
             return rest.bad_request('Invalid sources.')
         try:
             project_lock.acquire(project_name)
-            data[project_name]['master_config'] = project_sources
+            data[project_name]['master_config']['sources'] = project_sources
             # write to file
             file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
             write_to_file(json.dumps(data[project_name], indent=4), file_path)
@@ -272,9 +272,11 @@ class Tag(Resource):
     def get(self, project_name, tag_name):
         if project_name not in data:
             return rest.not_found("Project {} not found".format(project_name))
-        if tag_name not in data[project_name]['master_config']['tag']:
+        print data[project_name].keys()
+        print data[project_name]['master_config']
+        if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found("Tag {} not found".format(tag_name))
-        return data[project_name]['master_config']['tag'][tag_name]
+        return data[project_name]['master_config']['tags'][tag_name]
 
     def post(self, project_name, tag_name):
         # user is not allowed to update tag_name
@@ -696,7 +698,9 @@ class TagAnnotationsForAnEntity(Resource):
 
         if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
             return rest.not_found('kg_id {} not found'.format(kg_id))
-        
+        # if 'human_annotation' not in data[project_name]['entities'][entity_name][kg_id][tag_name]:
+        #     return rest.not_found('No human_annotation')
+
         return data[project_name]['entities'][entity_name][kg_id][tag_name]
 
 if __name__ == '__main__':

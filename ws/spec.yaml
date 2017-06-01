@@ -72,7 +72,7 @@ paths:
     post:
       tags:
       - "projects"
-      summary: "Update a project"
+      summary: "Update project by name"
       description: ""
       operationId: ""
       consumes:
@@ -80,9 +80,11 @@ paths:
       produces:
       - "application/json"
       parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
       - in: "body"
         name: "body"
-        description: ""
         required: true
         schema:
           $ref: "#/definitions/project"
@@ -96,7 +98,7 @@ paths:
     put:
       tags:
       - "projects"
-      summary: "Update a project (same as POST)"
+      summary: "Update project ny name (same as POST)"
       description: ""
       operationId: ""
       consumes:
@@ -104,9 +106,11 @@ paths:
       produces:
       - "application/json"
       parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
       - in: "body"
         name: "body"
-        description: ""
         required: true
         schema:
           $ref: "#/definitions/project"
@@ -127,6 +131,10 @@ paths:
       - "application/json"
       produces:
       - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
       responses:
         200:
           description: "success"
@@ -142,6 +150,183 @@ paths:
       - "application/json"
       produces:
       - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        404:
+          description: "not found"
+  /projects/{project_name}/tags:
+    post:
+      tags:
+      - "projects"
+      summary: "Create a tag"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/create_tag"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exist"
+    get:
+      tags:
+      - "projects"
+      summary: "Get all tags"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        200:
+          description: "success"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete all tags"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        404:
+          description: "not found"
+  /projects/{project_name}/tags/{tag_name}:
+    post:
+      tags:
+      - "projects"
+      summary: "Update tag by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/update_tag"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    put:
+      tags:
+      - "projects"
+      summary: "Update tag by name (same as POST)"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/update_tag"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "projects"
+      summary: "Get tag by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      responses:
+        200:
+          description: "success"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete tag by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
       responses:
         204:
           description: "deleted"
@@ -176,3 +361,32 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/source"
+  tag:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      description:
+        type: "string"
+      include_in_menu:
+        type: "boolean"
+      positive_class_precision:
+        type: "number"
+        format: "float"
+      negative_class_precision:
+        type: "number"
+        format: "float"
+  create_tag:
+    type: "object"
+    properties:
+      tag_name:
+        type: "string"
+        description: "same as name in tag object"
+      tag_object:
+        $ref: "#/definitions/tag"
+  update_tag:
+    type: "object"
+    properties:
+      tag_object:
+        $ref: "#/definitions/tag"
+
