@@ -393,7 +393,7 @@ class EntityTags(Resource):
         if kg_id not in data[project_name]['entities'][entity_name]:
             return rest.not_found('kg_id {} not found'.format(kg_id))
 
-        return data[project_name]['entities'][entity_name][kg_id]['tags']
+        return data[project_name]['entities'][entity_name][kg_id]
 
     def post(self, project_name, entity_name, kg_id):
         if project_name not in data:
