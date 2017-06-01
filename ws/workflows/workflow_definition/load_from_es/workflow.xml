@@ -1,0 +1,40 @@
+<workflow-app name="get_docs_from_es_summer_eval_2017" xmlns="uri:oozie:workflow:0.5">
+    <start to="shell-1120"/>
+    <kill name="Kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <action name="shell-1120">
+        <shell xmlns="uri:oozie:shell-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>mapred.input.dir.recursive</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>oozie.action.max.output.data</name>
+                    <value>8192</value>
+                </property>
+            </configuration>
+            <exec>./run.sh</exec>
+              <argument>${OUTPUT_PATH}</argument>
+              <argument>${ES_INDEX}</argument>
+              <argument>${ES_DOC}</argument>
+              <argument>${ES_HOST}</argument>
+              <argument>${ES_PORT}</argument>
+              <argument>${ES_USER}</argument>
+              <argument>${ES_PASSWORD}</argument>
+              <argument>-q ${QUERY}</argument>
+            <file>/user/worker/summer_evaluation_2017/lib/es/load_from_es.py#load_from_es.py</file>
+            <file>/user/worker/summer_evaluation_2017/lib/es/python-lib.zip#python-lib.zip</file>
+            <file>/user/worker/summer_evaluation_2017/lib/es/run.sh#run.sh</file>
+            <file>/user/worker/summer_evaluation_2017/lib/es/elasticsearch-hadoop-5.2.1.jar#elasticsearch-hadoop-5.2.1.jar</file>
+            <file>/user/worker/summer_evaluation_2017/lib/es/spark-examples_2.10-1.0.0-cdh5.1.5.jar#spark-examples_2.10-1.0.0-cdh5.1.5.jar</file>
+              <capture-output/>
+        </shell>
+        <ok to="End"/>
+        <error to="Kill"/>
+    </action>
+    <end name="End"/>
+</workflow-app>
