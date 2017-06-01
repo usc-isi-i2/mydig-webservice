@@ -94,13 +94,13 @@ master_config = {
     'glossaries': {}
 }
 
-entity = {
-}
-
-tag = {
-    'name': 'name',
-    'description': '',
-    'include_in_menu': False,
-    'positive_class_precision': 0.0,
-    'negative_class_precision': 0.0
-}
+# entity = {
+# }
+#
+# tag = {
+#     'name': 'name',
+#     'description': '',
+#     'include_in_menu': False,
+#     'positive_class_precision': 0.0,
+#     'negative_class_precision': 0.0
+# }
