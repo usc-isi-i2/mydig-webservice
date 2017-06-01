@@ -2,6 +2,7 @@ import os
 import shutil
 import logging
 import json
+import yaml
 import types
 import threading
 
@@ -118,8 +119,9 @@ def spec():
 @app.route('/spec.yaml')
 def spec_file_path():
     with open('spec.yaml', 'r') as f:
-        content = f.read()
-    return Response(content, mimetype='text/x-yaml')
+        c = yaml.load(f)
+        c['host'] = '{}:{}'.format(config['server']['host'], config['server']['port'])
+    return Response(yaml.dump(c), mimetype='text/x-yaml')
 
 
 @api.route('/')
