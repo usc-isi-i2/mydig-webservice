@@ -90,3 +90,8 @@ ENV/
 .ropeproject
 
 .idea/
+
+# nohup file
+ws/*.out
+# back of the config file
+ws/config.py.*
