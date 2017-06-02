@@ -13,6 +13,7 @@ basePath: ""
 schemes:
 - "http"
 paths:
+  # projects
   /projects:
     post:
       tags:
@@ -159,6 +160,7 @@ paths:
           description: "deleted"
         404:
           description: "not found"
+  # tags
   /projects/{project_name}/tags:
     post:
       tags:
@@ -225,78 +227,6 @@ paths:
       responses:
         204:
           description: "deleted"
-        404:
-          description: "not found"
-  /projects/{project_name}/fields:
-    post:
-      tags:
-      - "projects"
-      summary: "Create a field"
-      description: ""
-      operationId: ""
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "project_name"
-        required: true
-      - in: "body"
-        name: "body"
-        description: ""
-        required: true
-        schema:
-          $ref: "#/definitions/create_field"
-      responses:
-        201:
-          description: "created"
-        400:
-          description: "bad request"
-        404:
-          description: "not found"
-        409:
-          description: "exist"
-    get:
-      tags:
-      - "projects"
-      summary: "Get a field"
-      description: ""
-      operationId: ""
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "project_name"
-        required: true
-      responses:
-        200:
-          description: "ok"
-        400:
-          description: "bad request"
-        404:
-          description: "not found"
-    delete:
-      tags:
-      - "projects"
-      summary: "Get a field"
-      description: ""
-      operationId: ""
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "project_name"
-        required: true
-      responses:
-        204:
-          description: "deleted"
-        400:
-          description: "bad request"
         404:
           description: "not found"
   /projects/{project_name}/tags/{tag_name}:
@@ -404,6 +334,189 @@ paths:
           description: "deleted"
         404:
           description: "not found"
+  # fields
+  /projects/{project_name}/fields:
+    post:
+      tags:
+      - "projects"
+      summary: "Create a field"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/create_field"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exist"
+    get:
+      tags:
+      - "projects"
+      summary: "Get all fields"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete all fields"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  /projects/{project_name}/fields/{field_name}:
+    post:
+      tags:
+      - "projects"
+      summary: "Update field by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/update_field"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    put:
+      tags:
+      - "projects"
+      summary: "Update field by name (same as POST)"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/update_field"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "projects"
+      summary: "Get field by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete field by name"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  # add tag to entity
   /projects/{project_name}/entities/{entity_name}/{kg_id}/tags:
     post:
       tags:
@@ -463,11 +576,195 @@ paths:
           description: "ok"
         404:
           description: "not found"
+  # field annotation
+  /projects/{project_name}/entities/{kg_id}/fields/{field_name}/annotations:
+    post:
+      tags:
+      - "projects"
+      summary: "Create / update annotation for a field of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/field_annotation"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    put:
+      tags:
+      - "projects"
+      summary: "Create / update annotation for a field of an entity (same as POST)"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/field_annotation"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "projects"
+      summary: "Get annotations for a field of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete annotations for a field of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  /projects/{project_name}/entities/{kg_id}/fields/{field_name}/annotations/{key}:
+    get:
+      tags:
+      - "projects"
+      summary: "Get annotation for field by key"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      - in: "path"
+        name: "key"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete annotation for field by key"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      - in: "path"
+        name: "field_name"
+        required: true
+      - in: "path"
+        name: "key"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  # tag annotation
   /projects/{project_name}/tags/{tag_name}/annotations/{entity_name}/annotations:
     post:
       tags:
       - "projects"
-      summary: "Update annotations for a tag of an entity"
+      summary: "Create / update annotation for a tag of an entity type"
       description: ""
       operationId: ""
       consumes:
@@ -500,7 +797,7 @@ paths:
     put:
       tags:
       - "projects"
-      summary: "Update annotations for a tag of an entity (same as POST)"
+      summary: "Create / update annotation for a tag of an entity type (same as POST)"
       description: ""
       operationId: ""
       consumes:
@@ -533,7 +830,7 @@ paths:
     get:
       tags:
       - "projects"
-      summary: "Get annotations for a tag of an entity"
+      summary: "Get annotations for a tag of an entity type"
       description: ""
       operationId: ""
       consumes:
@@ -560,7 +857,7 @@ paths:
     delete:
       tags:
       - "projects"
-      summary: "Delete annotations for a tag of an entity"
+      summary: "Delete annotations for a tag of an entity type"
       description: ""
       operationId: ""
       consumes:
@@ -588,7 +885,7 @@ paths:
     get:
       tags:
       - "projects"
-      summary: "Get annotation for a tag of an instance of an entity"
+      summary: "Get annotation for a tag of entity by kg_id"
       description: ""
       operationId: ""
       consumes:
@@ -618,7 +915,7 @@ paths:
     delete:
       tags:
       - "projects"
-      summary: "Delete annotation for a tag of an instance of an entity"
+      summary: "Delete annotation for a tag of entity by kg_id"
       description: ""
       operationId: ""
       consumes:
@@ -717,6 +1014,11 @@ definitions:
     properties:
       tag_object:
         $ref: "#/definitions/tag"
+  update_field:
+    type: "object"
+    properties:
+      field_object:
+        $ref: "#/definitions/field"
   tag_name_array:
     type: "object"
     properties:
@@ -732,5 +1034,11 @@ definitions:
         type: "string"
       human_annotation:
         type: "integer"
-
+  field_annotation:
+    type: "object"
+    properties:
+      key:
+        type: "string"
+      human_annotation:
+        type: "integer"
 
