@@ -198,7 +198,7 @@ class Project(Resource):
             data[project_name]['master_config']['sources'] = project_sources
             # write to file
             file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-            write_to_file(json.dumps(data[project_name], indent=4), file_path)
+            write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
             return rest.created()
         except Exception as e:
             logger.error('Updating project %s: %s' % (project_name, e.message))
@@ -244,7 +244,7 @@ class ProjectTags(Resource):
         data[project_name]['master_config']['tags'] = dict()
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.deleted()
 
     def post(self, project_name):
@@ -263,7 +263,7 @@ class ProjectTags(Resource):
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.created()
 
 
@@ -291,7 +291,7 @@ class Tag(Resource):
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.created()
 
     def put(self, project_name, tag_name):
@@ -305,7 +305,7 @@ class Tag(Resource):
         del data[project_name]['master_config']['tags'][tag_name]
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.deleted()
 
 
@@ -325,7 +325,7 @@ class ProjectFields(Resource):
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.created()
 
     def get(self, project_name):
@@ -340,7 +340,7 @@ class ProjectFields(Resource):
         data[project_name]['master_config']['fields'] = dict()
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.deleted()
 
 
@@ -365,7 +365,7 @@ class Field(Resource):
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.created()
 
     def put(self, project_name, field_name):
@@ -379,7 +379,7 @@ class Field(Resource):
         del data[project_name]['master_config']['fields'][field_name]
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name], indent=4), file_path)
+        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.deleted()
 
 
@@ -718,13 +718,13 @@ class TagAnnotationsForInstanceOfEntity(Resource):
 
         return data[project_name]['entities'][entity_name][kg_id][tag_name]
 
+import copy
 if __name__ == '__main__':
     try:
 
         # init
         for project_name in os.listdir(config['repo']['local_path']):
             project_dir_path = _get_project_dir_path(project_name)
-
             if os.path.isdir(project_dir_path) and not project_name.startswith('.'):
                 data[project_name] = templates.get('project')
 
@@ -742,6 +742,7 @@ if __name__ == '__main__':
                 with open(field_annotations_path, 'r') as f:
                     data[project_name]['field_annotations'] = json.loads(f.read())
 
+        # print json.dumps(data, indent=4)
         # run app
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
 

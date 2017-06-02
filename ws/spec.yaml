@@ -227,6 +227,78 @@ paths:
           description: "deleted"
         404:
           description: "not found"
+  /projects/{project_name}/fields:
+    post:
+      tags:
+      - "projects"
+      summary: "Create a field"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/create_field"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exist"
+    get:
+      tags:
+      - "projects"
+      summary: "Get a field"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Get a field"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
   /projects/{project_name}/tags/{tag_name}:
     post:
       tags:
@@ -425,6 +497,39 @@ paths:
           description: "bad request"
         404:
           description: "not found"
+    put:
+      tags:
+      - "projects"
+      summary: "Update annotations for a tag of an entity (same as POST)"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/tag_annotation_entity"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
     get:
       tags:
       - "projects"
@@ -584,6 +689,13 @@ definitions:
       negative_class_precision:
         type: "number"
         format: "float"
+  field:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      description:
+        type: "string"
   create_tag:
     type: "object"
     properties:
@@ -592,6 +704,14 @@ definitions:
         description: "same as name in tag object"
       tag_object:
         $ref: "#/definitions/tag"
+  create_field:
+    type: "object"
+    properties:
+      field_name:
+        type: "string"
+        description: "same as name in field object"
+      field_object:
+        $ref: "#/definitions/field"
   update_tag:
     type: "object"
     properties:
