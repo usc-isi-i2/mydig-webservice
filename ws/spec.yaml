@@ -332,6 +332,153 @@ paths:
           description: "deleted"
         404:
           description: "not found"
+  /projects/{project_name}/entities/{entity_name}/{kg_id}/tags:
+    post:
+      tags:
+      - "projects"
+      summary: "Add tags to an entity instance"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/tag_name_array"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "projects"
+      summary: "Get all tags of an entity instance"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      responses:
+        200:
+          description: "success"
+        404:
+          description: "not found"
+  /projects/{project_name}/tags/{tag_name}/annotations/{entity_name}/annotations:
+    post:
+      tags:
+      - "projects"
+      summary: "Update annotations for a tag of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/tag_annotation_entity"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "projects"
+      summary: "Get annotations for a tag of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      responses:
+        200:
+          description: "success"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete annotations for a tag of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
 
 definitions:
   source:
@@ -389,4 +536,20 @@ definitions:
     properties:
       tag_object:
         $ref: "#/definitions/tag"
+  tag_name_array:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        items:
+          description: "tag name (tag should be created first)"
+          type: "string"
+  tag_annotation_entity:
+    type: "object"
+    properties:
+      kg_id:
+        type: "string"
+      human_annotation:
+        type: "integer"
+
 

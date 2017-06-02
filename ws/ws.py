@@ -546,7 +546,7 @@ class FieldAnnotations(Resource):
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
-class FieldKeyAnnotations(Resource):
+class FieldInstanceAnnotations(Resource):
     def get(self, project_name, kg_id, field_name, key):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -613,7 +613,7 @@ class FieldKeyAnnotations(Resource):
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations')
-class TagAnnotationsForEntities(Resource):
+class TagAnnotationsForEntity(Resource):
     def delete(self, project_name, tag_name, entity_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -622,8 +622,8 @@ class TagAnnotationsForEntities(Resource):
         if entity_name not in data[project_name]['entities']:
             return rest.not_found('Entity {} not found'.format(entity_name))
 
-        for kg_item in data[project_name]['entities'][entity_name]:
-            if tag_name in kg_item:
+        for kg_item in data[project_name]['entities'][entity_name].values():
+            if tag_name in kg_item.iterkeys():
                 if 'human_annotation' in kg_item[tag_name]:
                     del kg_item[tag_name]['human_annotation']
         return rest.deleted()
@@ -634,11 +634,12 @@ class TagAnnotationsForEntities(Resource):
         if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found('Tag {} not found'.format(tag_name))
 
-        result = []
+        result = dict()
         if entity_name in data[project_name]['entities']:
-            for kg_item in data[project_name]['entities'][entity_name]:
-                if tag_name in kg_item:
-                    result.append(kg_item)
+            for kg_id, kg_item in data[project_name]['entities'][entity_name].iteritems():
+                for tag_name_, annotation in kg_item.iteritems():
+                    if tag_name == tag_name_:
+                        result[kg_id] = annotation
         return result
 
     def post(self, project_name, tag_name, entity_name):
@@ -660,7 +661,13 @@ class TagAnnotationsForEntities(Resource):
         if kg_id not in data[project_name]['entities'][entity_name]:
             return rest.not_found('kg_id {} not found'.format(kg_id))
 
-        data[project_name]['entities'][entity_name][kg_id]['human_annotation'] = human_annotation
+        if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
+            return rest.not_found('Tag {} not found'.format(tag_name))
+
+        data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation'] = human_annotation
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
         return rest.created()
 
 
@@ -669,7 +676,7 @@ class TagAnnotationsForEntities(Resource):
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
-class TagAnnotationsForAnEntity(Resource):
+class TagAnnotationsForInstanceOfEntity(Resource):
     def delete(self, project_name, tag_name, entity_name, kg_id):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
