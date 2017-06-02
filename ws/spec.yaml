@@ -50,7 +50,7 @@ paths:
       - "application/json"
       responses:
         200:
-          description: "success"
+          description: "ok"
         404:
           description: "not found"
     delete:
@@ -137,7 +137,7 @@ paths:
         required: true
       responses:
         200:
-          description: "success"
+          description: "ok"
         404:
           description: "not found"
     delete:
@@ -205,7 +205,7 @@ paths:
         required: true
       responses:
         200:
-          description: "success"
+          description: "ok"
         404:
           description: "not found"
     delete:
@@ -307,7 +307,7 @@ paths:
         required: true
       responses:
         200:
-          description: "success"
+          description: "ok"
         404:
           description: "not found"
     delete:
@@ -388,7 +388,7 @@ paths:
         required: true
       responses:
         200:
-          description: "success"
+          description: "ok"
         404:
           description: "not found"
   /projects/{project_name}/tags/{tag_name}/annotations/{entity_name}/annotations:
@@ -447,7 +447,7 @@ paths:
         required: true
       responses:
         200:
-          description: "success"
+          description: "ok"
         400:
           description: "bad request"
         404:
@@ -471,6 +471,67 @@ paths:
         required: true
       - in: "path"
         name: "entity_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  /projects/{project_name}/tags/{tag_name}/annotations/{entity_name}/annotations/{kg_id}:
+    get:
+      tags:
+      - "projects"
+      summary: "Get annotation for a tag of an instance of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "projects"
+      summary: "Delete annotation for a tag of an instance of an entity"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "tag_name"
+        required: true
+      - in: "path"
+        name: "entity_name"
+        required: true
+      - in: "path"
+        name: "kg_id"
         required: true
       responses:
         204:

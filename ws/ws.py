@@ -626,6 +626,10 @@ class TagAnnotationsForEntity(Resource):
             if tag_name in kg_item.iterkeys():
                 if 'human_annotation' in kg_item[tag_name]:
                     del kg_item[tag_name]['human_annotation']
+
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
         return rest.deleted()
 
     def get(self, project_name, tag_name, entity_name):
@@ -691,6 +695,10 @@ class TagAnnotationsForInstanceOfEntity(Resource):
             return rest.not_found('kg_id {} not found'.format(kg_id))
         if 'human_annotation' in data[project_name]['entities'][entity_name][kg_id][tag_name]:
             del data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation']
+
+        # write to file
+        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
         return rest.deleted()
 
     def get(self, project_name, tag_name, entity_name, kg_id):
