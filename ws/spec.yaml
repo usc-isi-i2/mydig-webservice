@@ -786,7 +786,7 @@ paths:
         description: ""
         required: true
         schema:
-          $ref: "#/definitions/tag_annotation_entity"
+          $ref: "#/definitions/tag_annotation"
       responses:
         201:
           description: "created"
@@ -819,7 +819,7 @@ paths:
         description: ""
         required: true
         schema:
-          $ref: "#/definitions/tag_annotation_entity"
+          $ref: "#/definitions/tag_annotation"
       responses:
         201:
           description: "created"
@@ -1027,7 +1027,7 @@ definitions:
         items:
           description: "tag name (tag should be created first)"
           type: "string"
-  tag_annotation_entity:
+  tag_annotation:
     type: "object"
     properties:
       kg_id:

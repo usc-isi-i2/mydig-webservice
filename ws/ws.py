@@ -120,7 +120,7 @@ def spec():
 def spec_file_path():
     with open('spec.yaml', 'r') as f:
         c = yaml.load(f)
-        c['host'] = '{}:{}'.format(config['server']['host'], config['server']['port'])
+        c['host'] = request.host
     return Response(yaml.dump(c), mimetype='text/x-yaml')
 
 
@@ -721,7 +721,7 @@ class TagAnnotationsForEntity(Resource):
 
         return data[project_name]['entities'][entity_name][kg_id][tag_name]
 
-import copy
+
 if __name__ == '__main__':
     try:
 
