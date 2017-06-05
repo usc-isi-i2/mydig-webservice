@@ -664,10 +664,16 @@ class TagAnnotationsForEntityType(Resource):
         if entity_name not in data[project_name]['entities']:
             return rest.not_found('Entity {} not found'.format(entity_name))
 
-        for kg_item in data[project_name]['entities'][entity_name].values():
-            if tag_name in kg_item.iterkeys():
-                if 'human_annotation' in kg_item[tag_name]:
-                    del kg_item[tag_name]['human_annotation']
+        for kg_id, kg_item in data[project_name]['entities'][entity_name].items():
+            # if tag_name in kg_item.iterkeys():
+            #     if 'human_annotation' in kg_item[tag_name]:
+            #         del kg_item[tag_name]['human_annotation']
+
+            # hard code
+            if tag_name in kg_item:
+                del kg_item[tag_name]
+            if len(kg_item) == 0:
+                del data[project_name]['entities'][entity_name][kg_id]
 
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
@@ -704,11 +710,16 @@ class TagAnnotationsForEntityType(Resource):
         if not isinstance(human_annotation, int) or human_annotation == -1:
             return rest.bad_request('Invalid human annotation')
 
-        if kg_id not in data[project_name]['entities'][entity_name]:
-            return rest.not_found('kg_id {} not found'.format(kg_id))
+        # if kg_id not in data[project_name]['entities'][entity_name]:
+        #     return rest.not_found('kg_id {} not found'.format(kg_id))
+        #
+        # if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
+        #     return rest.not_found('Tag {} not found'.format(tag_name))
 
-        if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
-            return rest.not_found('Tag {} not found'.format(tag_name))
+        if kg_id not in data[project_name]['entities'][entity_name]:
+            data[project_name]['entities'][entity_name][kg_id] = dict()
+
+        data[project_name]['entities'][entity_name][kg_id][tag_name] = dict()
 
         data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation'] = human_annotation
         # write to file
