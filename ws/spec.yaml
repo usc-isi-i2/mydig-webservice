@@ -517,7 +517,7 @@ paths:
         404:
           description: "not found"
   # add tag to entity
-  /projects/{project_name}/entities/{entity_name}/{kg_id}/tags:
+  /projects/{project_name}/entities/{kg_id}/tags:
     post:
       tags:
       - "projects"
@@ -531,9 +531,6 @@ paths:
       parameters:
       - in: "path"
         name: "project_name"
-        required: true
-      - in: "path"
-        name: "entity_name"
         required: true
       - in: "path"
         name: "kg_id"
@@ -566,9 +563,6 @@ paths:
         name: "project_name"
         required: true
       - in: "path"
-        name: "entity_name"
-        required: true
-      - in: "path"
         name: "kg_id"
         required: true
       responses:
@@ -576,6 +570,65 @@ paths:
           description: "ok"
         404:
           description: "not found"
+#  /projects/{project_name}/entities/{entity_name}/{kg_id}/tags:
+#    post:
+#      tags:
+#      - "projects"
+#      summary: "Add tags to an entity instance"
+#      description: ""
+#      operationId: ""
+#      consumes:
+#      - "application/json"
+#      produces:
+#      - "application/json"
+#      parameters:
+#      - in: "path"
+#        name: "project_name"
+#        required: true
+#      - in: "path"
+#        name: "entity_name"
+#        required: true
+#      - in: "path"
+#        name: "kg_id"
+#        required: true
+#      - in: "body"
+#        name: "body"
+#        description: ""
+#        required: true
+#        schema:
+#          $ref: "#/definitions/tag_name_array"
+#      responses:
+#        201:
+#          description: "created"
+#        400:
+#          description: "bad request"
+#        404:
+#          description: "not found"
+#    get:
+#      tags:
+#      - "projects"
+#      summary: "Get all tags of an entity instance"
+#      description: ""
+#      operationId: ""
+#      consumes:
+#      - "application/json"
+#      produces:
+#      - "application/json"
+#      parameters:
+#      - in: "path"
+#        name: "project_name"
+#        required: true
+#      - in: "path"
+#        name: "entity_name"
+#        required: true
+#      - in: "path"
+#        name: "kg_id"
+#        required: true
+#      responses:
+#        200:
+#          description: "ok"
+#        404:
+#          description: "not found"
   # field annotation
   /projects/{project_name}/entities/{kg_id}/fields/{field_name}/annotations:
     post:

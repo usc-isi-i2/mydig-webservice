@@ -98,19 +98,6 @@ def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
 
 
-@api.route('/debug')
-class Debug(Resource):
-
-    def get(self):
-        if not config['debug']:
-            return abort(404)
-        debug_info = {
-            'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
-            'data': data
-        }
-        return debug_info
-
-
 @app.route('/spec')
 def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='/spec.yaml')
@@ -124,10 +111,21 @@ def spec_file_path():
     return Response(yaml.dump(c), mimetype='text/x-yaml')
 
 
-@api.route('/')
-class Home(Resource):
+@app.route('/')
+def home():
+    return 'MyDIG Web Service'
+
+
+@api.route('/debug')
+class Debug(Resource):
     def get(self):
-        return 'Welcome'
+        if not config['debug']:
+            return abort(404)
+        debug_info = {
+            'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
+            'data': data
+        }
+        return debug_info
 
 
 @api.route('/projects')
@@ -383,19 +381,20 @@ class Field(Resource):
         return rest.deleted()
 
 
-@api.route('/projects/<project_name>/entities/<entity_name>/<kg_id>/tags')
+@api.route('/projects/<project_name>/entities/<kg_id>/tags')
 class EntityTags(Resource):
-    def get(self, project_name, entity_name, kg_id):
+    def get(self, project_name, kg_id):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
+        entity_name = 'Ad'
         if entity_name not in data[project_name]['entities']:
-            return rest.not_found('Entity {} not found'.format(entity_name))
+            data[project_name]['entities'][entity_name] = dict()
         if kg_id not in data[project_name]['entities'][entity_name]:
             return rest.not_found('kg_id {} not found'.format(kg_id))
 
         return data[project_name]['entities'][entity_name][kg_id]
 
-    def post(self, project_name, entity_name, kg_id):
+    def post(self, project_name, kg_id):
         if project_name not in data:
             return rest.not_found()
 
@@ -408,6 +407,7 @@ class EntityTags(Resource):
             if tag_name not in data[project_name]['master_config']['tags']:
                 return rest.bad_request('Tag {} is not exist'.format(tag_name))
         # add tags to entity
+        entity_name = 'Ad'
         for tag_name in tags:
             if entity_name not in data[project_name]['entities']:
                 data[project_name]['entities'][entity_name] = dict()
@@ -420,6 +420,45 @@ class EntityTags(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
         return rest.created()
+
+
+# @api.route('/projects/<project_name>/entities/<entity_name>/<kg_id>/tags')
+# class EntityTags(Resource):
+#     def get(self, project_name, entity_name, kg_id):
+#         if project_name not in data:
+#             return rest.not_found('Project {} not found'.format(project_name))
+#         if entity_name not in data[project_name]['entities']:
+#             return rest.not_found('Entity {} not found'.format(entity_name))
+#         if kg_id not in data[project_name]['entities'][entity_name]:
+#             return rest.not_found('kg_id {} not found'.format(kg_id))
+#
+#         return data[project_name]['entities'][entity_name][kg_id]
+#
+#     def post(self, project_name, entity_name, kg_id):
+#         if project_name not in data:
+#             return rest.not_found()
+#
+#         input = request.get_json(force=True)
+#         tags = input.get('tags', [])
+#         if len(tags) == 0:
+#             return rest.bad_request('No tags given')
+#         # tag should be exist
+#         for tag_name in tags:
+#             if tag_name not in data[project_name]['master_config']['tags']:
+#                 return rest.bad_request('Tag {} is not exist'.format(tag_name))
+#         # add tags to entity
+#         for tag_name in tags:
+#             if entity_name not in data[project_name]['entities']:
+#                 data[project_name]['entities'][entity_name] = dict()
+#             if kg_id not in data[project_name]['entities'][entity_name]:
+#                 data[project_name]['entities'][entity_name][kg_id] = dict()
+#             if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
+#                 data[project_name]['entities'][entity_name][kg_id][tag_name] = dict()
+#
+#         # write to file
+#         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+#         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+#         return rest.created()
 
 
     # def post(self, project_name, kg_id):
