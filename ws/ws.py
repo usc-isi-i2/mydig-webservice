@@ -5,12 +5,13 @@ import json
 import yaml
 import types
 import threading
+import werkzeug
 
 
 from flask import Flask, render_template, Response
 from flask import request, abort, redirect, url_for
 from flask_cors import CORS, cross_origin
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api, reqparse
 
 from config import config
 from elastic_manager.elastic_manager import ES
@@ -157,6 +158,7 @@ class AllProjects(Resource):
             write_to_file(json.dumps({}), os.path.join(project_dir_path, 'field_annotations/field_annotations.json'))
             os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
             write_to_file(json.dumps({}), os.path.join(project_dir_path, 'entity_annotations/entity_annotations.json'))
+            os.makedirs(os.path.join(project_dir_path, 'glossaries'))
             logger.info('project %s created.' % project_name)
             return rest.created()
         except Exception as e:
@@ -378,6 +380,48 @@ class Field(Resource):
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
         write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        return rest.deleted()
+
+
+@api.route('/projects/<project_name>/glossaries')
+class ProjectGlossaries(Resource):
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+
+        parse = reqparse.RequestParser()
+        parse.add_argument('glossary_file', type=werkzeug.FileStorage, location='files')
+        parse.add_argument('glossary_name')
+
+        args = parse.parse_args()
+
+        # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
+        name = args['glossary_name']
+        file = args['glossary_file']
+        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
+        # write_to_file(content, file_path)
+        file.save(file_path)
+        return rest.created()
+
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+
+        dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
+        ret = []
+        for file_name in os.listdir(dir_path):
+            name, ext = os.path.splitext(file_name)
+            if ext == '.txt':
+                ret.append(name)
+        return ret
+
+    def delete(self, project_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+
+        dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
+        shutil.rmtree(dir_path)
+        os.mkdir(dir_path) # recreate folder
         return rest.deleted()
 
 
