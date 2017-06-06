@@ -397,23 +397,22 @@ class ProjectGlossaries(Resource):
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
         name = args['glossary_name']
-        file = args['glossary_file']
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
+        if os.path.exists(file_path):
+            return rest.exists('Glossary name {} exists'.format(name))
+        file = args['glossary_file']
         # write_to_file(content, file_path)
         file.save(file_path)
+
+        data[project_name]['glossaries'].append(name)
+
         return rest.created()
 
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
 
-        dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
-        ret = []
-        for file_name in os.listdir(dir_path):
-            name, ext = os.path.splitext(file_name)
-            if ext == '.txt':
-                ret.append(name)
-        return ret
+        return data[project_name]['glossaries']
 
     def delete(self, project_name):
         if project_name not in data:
@@ -422,7 +421,52 @@ class ProjectGlossaries(Resource):
         dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
         shutil.rmtree(dir_path)
         os.mkdir(dir_path) # recreate folder
+        data[project_name]['glossaries'] = []
         return rest.deleted()
+
+
+@api.route('/projects/<project_name>/glossaries/<glossary_name>')
+class Glossary(Resource):
+    def post(self, project_name, glossary_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+
+        if glossary_name not in data[project_name]['glossaries']:
+            return rest.not_found('Glossary {} not found'.format(glossary_name))
+
+        # parse = reqparse.RequestParser()
+        # parse.add_argument('glossary_file', type=werkzeug.FileStorage, location='files')
+        #
+        # args = parse.parse_args()
+        #
+        # # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
+        # name = args['glossary_name']
+        # file = args['glossary_file']
+        # file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
+        # # write_to_file(content, file_path)
+        # file.save(file_path)
+        # return rest.created()
+
+    # def get(self, project_name):
+    #     if project_name not in data:
+    #         return rest.not_found('Project {} not found'.format(project_name))
+    #
+    #     dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
+    #     ret = []
+    #     for file_name in os.listdir(dir_path):
+    #         name, ext = os.path.splitext(file_name)
+    #         if ext == '.txt':
+    #             ret.append(name)
+    #     return ret
+    #
+    # def delete(self, project_name):
+    #     if project_name not in data:
+    #         return rest.not_found('Project {} not found'.format(project_name))
+    #
+    #     dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
+    #     shutil.rmtree(dir_path)
+    #     os.mkdir(dir_path) # recreate folder
+    #     return rest.deleted()
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/tags')
@@ -838,6 +882,12 @@ if __name__ == '__main__':
                 field_annotations_path = os.path.join(project_dir_path, 'field_annotations/field_annotations.json')
                 with open(field_annotations_path, 'r') as f:
                     data[project_name]['field_annotations'] = json.loads(f.read())
+
+                dir_path = os.path.join(project_dir_path, 'glossaries')
+                for file_name in os.listdir(dir_path):
+                    name, ext = os.path.splitext(file_name)
+                    if ext == '.txt':
+                        data[project_name]['glossaries'].append(name)
 
         # print json.dumps(data, indent=4)
         # run app
