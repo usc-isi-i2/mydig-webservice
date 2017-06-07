@@ -8,7 +8,8 @@ project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
     'field_annotations': {},
-    'glossaries': [] # no need to dump to file
+    'glossaries': [], # no need to dump to file
+    'es_prefix': ''
 }
 
 # field_annotations = {
@@ -93,7 +94,11 @@ master_config = {
     'root_name': 'Ad',
     'sources': [],
     'fields': copy.deepcopy(default_fields),
-    'tags': copy.deepcopy(default_tags)
+    'tags': copy.deepcopy(default_tags),
+    'index': {
+        'sample': '',
+        'full': 'dig-ht-gt'
+    }
 }
 
 # entity = {

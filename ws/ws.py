@@ -98,7 +98,6 @@ project_lock = ProjectLock()
 def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
 
-
 @app.route('/spec')
 def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='/spec.yaml')
@@ -272,8 +271,6 @@ class Tag(Resource):
     def get(self, project_name, tag_name):
         if project_name not in data:
             return rest.not_found("Project {} not found".format(project_name))
-        print data[project_name].keys()
-        print data[project_name]['master_config']
         if tag_name not in data[project_name]['master_config']['tags']:
             return rest.not_found("Tag {} not found".format(tag_name))
         return data[project_name]['master_config']['tags'][tag_name]
@@ -381,6 +378,34 @@ class Field(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
         write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.deleted()
+
+    # @staticmethod
+    # def add_tag_kg_id(kg_id, tag_name, human_annotation):
+    #     es = ES(config['']data[project_name]['es_prefix'])
+    #     hits = es.retrieve_doc(config['write_es']['index'], config['write_es']['doc_type'], kg_id)
+    #     if hits:
+    #         # should retrieve one doc
+    #         # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
+    #         doc = hits['hits']['hits'][0]['_source']
+    #
+    #         if 'knowledge_graph' not in doc:
+    #             doc['knowledge_graph'] = dict()
+    #         doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_name, human_annotation)
+    #         res = es.load_data(config['write_es']['index'], config['write_es']['doc_type'], doc, doc['doc_id'])
+    #         if res:
+    #             return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_name, kg_id))
+    #
+    #     else:
+    #         return rest.not_found('doc: \'{}\' not found in elasticsearch'.format(kg_id))
+    #
+    # @staticmethod
+    # def add_tag_to_kg(kg, tag_name, human_annotation):
+    #     if '_tags' not in kg:
+    #         kg['_tags'] = dict()
+    #     if tag_name not in kg['_tags']:
+    #         kg['_tags'][tag_name] = dict()
+    #     kg['_tags'][tag_name]['human_annotation'] = human_annotation
+    #     return kg
 
 
 @api.route('/projects/<project_name>/glossaries')
@@ -766,6 +791,7 @@ class TagAnnotationsForEntityType(Resource):
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+
         return rest.deleted()
 
     def get(self, project_name, tag_name, entity_name):
@@ -813,11 +839,62 @@ class TagAnnotationsForEntityType(Resource):
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+        # load to ES
+        self.add_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
+        self.add_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
+
         return rest.created()
 
 
     def put(self, project_name, tag_name, entity_name):
         return self.post(project_name, tag_name, entity_name)
+
+
+    @staticmethod
+    def add_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
+        es = ES(config['es']['url'])
+        index = data[project_name]['master_config']['index'][index_version]
+        type = data[project_name]['master_config']['root_name']
+        hits = es.retrieve_doc(index, type, kg_id)
+        if hits:
+            # should retrieve one doc
+            # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
+            doc = hits['hits']['hits'][0]['_source']
+            if 'knowledge_graph' not in doc:
+                doc['knowledge_graph'] = dict()
+            if '_tags' not in doc['knowledge_graph']:
+                doc['knowledge_graph']['_tags'] = dict()
+            if tag_name not in doc['knowledge_graph']['_tags']:
+                doc['knowledge_graph']['_tags'][tag_name] = dict()
+            doc['knowledge_graph']['_tags'][tag_name]['human_annotation'] = human_annotation
+            res = es.load_data(index, type, doc, doc['doc_id'])
+            if res:
+                return True
+
+        return False
+
+    @staticmethod
+    def remove_tag_annotation(index_version, project_name, kg_id, tag_name):
+        es = ES(config['es']['url'])
+        index = data[project_name]['master_config']['index'][index_version]
+        type = data[project_name]['master_config']['root_name']
+        hits = es.retrieve_doc(index, type, kg_id)
+        if hits:
+            doc = hits['hits']['hits'][0]['_source']
+            if 'knowledge_graph' not in doc:
+                return False
+            if '_tags' not in doc['knowledge_graph']:
+                return False
+            if tag_name not in doc['knowledge_graph']['_tags']:
+                return False
+            if 'human_annotation' not in doc['knowledge_graph']['_tags'][tag_name]:
+                return False
+            del doc['knowledge_graph']['_tags'][tag_name]['human_annotation']
+            res = es.load_data(index, type, doc, doc['doc_id'])
+            if res:
+                return True
+
+        return False
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
@@ -856,6 +933,9 @@ class TagAnnotationsForEntity(Resource):
             return rest.not_found('kg_id {} not found'.format(kg_id))
         # if 'human_annotation' not in data[project_name]['entities'][entity_name][kg_id][tag_name]:
         #     return rest.not_found('No human_annotation')
+
+        # TODO:
+        # return knowledge graph
 
         return data[project_name]['entities'][entity_name][kg_id][tag_name]
 
