@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import logging
 import json
@@ -785,6 +786,9 @@ class TagAnnotationsForEntityType(Resource):
             # hard code
             if tag_name in kg_item:
                 del kg_item[tag_name]
+                # remove from ES
+                self.remove_tag_annotation('full', project_name, kg_id, tag_name)
+                self.remove_tag_annotation('sample', project_name, kg_id, tag_name)
             if len(kg_item) == 0:
                 del data[project_name]['entities'][entity_name][kg_id]
 
@@ -840,8 +844,8 @@ class TagAnnotationsForEntityType(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
         # load to ES
-        self.add_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
-        self.add_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
+        self.update_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
+        self.update_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
 
         return rest.created()
 
@@ -851,50 +855,64 @@ class TagAnnotationsForEntityType(Resource):
 
 
     @staticmethod
-    def add_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
-        es = ES(config['es']['url'])
-        index = data[project_name]['master_config']['index'][index_version]
-        type = data[project_name]['master_config']['root_name']
-        hits = es.retrieve_doc(index, type, kg_id)
-        if hits:
-            # should retrieve one doc
-            # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
-            doc = hits['hits']['hits'][0]['_source']
-            if 'knowledge_graph' not in doc:
-                doc['knowledge_graph'] = dict()
-            if '_tags' not in doc['knowledge_graph']:
-                doc['knowledge_graph']['_tags'] = dict()
-            if tag_name not in doc['knowledge_graph']['_tags']:
-                doc['knowledge_graph']['_tags'][tag_name] = dict()
-            doc['knowledge_graph']['_tags'][tag_name]['human_annotation'] = human_annotation
-            res = es.load_data(index, type, doc, doc['doc_id'])
-            if res:
-                return True
+    def update_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
+        try:
+            es = ES(config['es']['url'])
+            index = data[project_name]['master_config']['index'][index_version]
+            type = data[project_name]['master_config']['root_name']
+            hits = es.retrieve_doc(index, type, kg_id)
+            if hits:
+                # should retrieve one doc
+                # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
+                doc = hits['hits']['hits'][0]['_source']
+                if 'knowledge_graph' not in doc:
+                    doc['knowledge_graph'] = dict()
+                if '_tags' not in doc['knowledge_graph']:
+                    doc['knowledge_graph']['_tags'] = dict()
+                if tag_name not in doc['knowledge_graph']['_tags']:
+                    doc['knowledge_graph']['_tags'][tag_name] = dict()
+                doc['knowledge_graph']['_tags'][tag_name]['human_annotation'] = human_annotation
+                res = es.load_data(index, type, doc, doc['doc_id'])
+                if res:
+                    return True
 
-        return False
+            return False
+        except Exception as e:
+            print e
+            logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'.format(
+                index_version, project_name, kg_id, tag_name
+            ))
 
     @staticmethod
     def remove_tag_annotation(index_version, project_name, kg_id, tag_name):
-        es = ES(config['es']['url'])
-        index = data[project_name]['master_config']['index'][index_version]
-        type = data[project_name]['master_config']['root_name']
-        hits = es.retrieve_doc(index, type, kg_id)
-        if hits:
-            doc = hits['hits']['hits'][0]['_source']
-            if 'knowledge_graph' not in doc:
-                return False
-            if '_tags' not in doc['knowledge_graph']:
-                return False
-            if tag_name not in doc['knowledge_graph']['_tags']:
-                return False
-            if 'human_annotation' not in doc['knowledge_graph']['_tags'][tag_name]:
-                return False
-            del doc['knowledge_graph']['_tags'][tag_name]['human_annotation']
-            res = es.load_data(index, type, doc, doc['doc_id'])
-            if res:
-                return True
+        try:
+            es = ES(config['es']['url'])
+            index = data[project_name]['master_config']['index'][index_version]
+            type = data[project_name]['master_config']['root_name']
+            hits = es.retrieve_doc(index, type, kg_id)
+            if hits:
+                doc = hits['hits']['hits'][0]['_source']
+                if 'knowledge_graph' not in doc:
+                    return False
+                if '_tags' not in doc['knowledge_graph']:
+                    return False
+                if tag_name not in doc['knowledge_graph']['_tags']:
+                    return False
+                if 'human_annotation' not in doc['knowledge_graph']['_tags'][tag_name]:
+                    return False
+                # here, I only removed 'human_annotation' instead of the whole tag
+                # for tag should be deleted in another api
+                del doc['knowledge_graph']['_tags'][tag_name]['human_annotation']
+                res = es.load_data(index, type, doc, doc['doc_id'])
+                if res:
+                    return True
 
-        return False
+            return False
+        except Exception as e:
+            print e
+            logger.warning('Fail to remove annotation from {}: project {}, kg_id {}, tag {}'.format(
+                index_version, project_name, kg_id, tag_name
+            ))
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
@@ -917,6 +935,10 @@ class TagAnnotationsForEntity(Resource):
         # write to file
         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+        # remove from ES
+        TagAnnotationsForEntityType.remove_tag_annotation('full', project_name, kg_id, tag_name)
+        TagAnnotationsForEntityType.remove_tag_annotation('sample', project_name, kg_id, tag_name)
+
         return rest.deleted()
 
     def get(self, project_name, tag_name, entity_name, kg_id):
@@ -954,6 +976,10 @@ if __name__ == '__main__':
                     logger.error('Missing master_config.json file for ' + project_name)
                 with open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
+                    # if 'index' not in data[project_name]['master_config'] or \
+                    #         any(k not in data[project_name]['master_config']['index'] for k in ('sample', 'full')):
+                    #     raise Exception('Missing index in project {}'.format(project_name))
+                    # sys.exit()
 
                 entity_annotations_path = os.path.join(project_dir_path, 'entity_annotations/entity_annotations.json')
                 with open(entity_annotations_path, 'r') as f:
