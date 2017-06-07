@@ -1056,8 +1056,8 @@ class TagAnnotationsForEntity(Resource):
             return None
         except Exception as e:
             print e
-            logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'.format(
-                index_version, project_name, kg_id, tag_name
+            logger.warning('Fail to update annotation to: project {}, kg_id {}, tag {}'.format(
+                project_name, kg_id, tag_name
             ))
 
 
