@@ -958,6 +958,9 @@ paths:
       - in: "path"
         name: "kg_id"
         required: true
+      - in: "query"
+        name: "kg"
+        required: false
       responses:
         200:
           description: "ok"
