@@ -1095,3 +1095,8 @@ definitions:
       human_annotation:
         type: "integer"
 
+securityDefinitions:
+  basicAuth:
+    type: basic
+security:
+  - basicAuth: []

@@ -118,6 +118,7 @@ def home():
 
 @api.route('/debug')
 class Debug(Resource):
+    @requires_auth
     def get(self):
         if not config['debug']:
             return abort(404)
