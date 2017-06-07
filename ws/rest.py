@@ -17,6 +17,10 @@ def bad_request(data=''):
     return {'status_code': 400, 'error_message': data}, 400
 
 
+def unauthorized(data=''):
+    return {'status_code': 401, 'error_message': data}, 401
+
+
 def exists(data=''):
     return {'status_code': 409, 'error_message': data}, 409
 

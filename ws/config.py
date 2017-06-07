@@ -18,5 +18,8 @@ config = {
         # http://10.1.94.103:9201
         # do not add / at the end
         'url': 'http://localhost:9200'
+    },
+    'users': {
+        'admin': '123' # basic YWRtaW46MTIz
     }
 }

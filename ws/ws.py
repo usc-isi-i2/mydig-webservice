@@ -1,5 +1,4 @@
 import os
-import sys
 import shutil
 import logging
 import json
@@ -7,7 +6,7 @@ import yaml
 import types
 import threading
 import werkzeug
-
+import codecs
 
 from flask import Flask, render_template, Response
 from flask import request, abort, redirect, url_for
@@ -18,7 +17,7 @@ from config import config
 from elastic_manager.elastic_manager import ES
 import templates
 import rest
-import codecs
+from basic_auth import requires_auth, requires_auth_html
 
 # logger
 logger = logging.getLogger('mydig-webservice.log')
@@ -131,6 +130,7 @@ class Debug(Resource):
 
 @api.route('/projects')
 class AllProjects(Resource):
+    @requires_auth
     def post(self):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
@@ -166,9 +166,11 @@ class AllProjects(Resource):
         finally:
             project_lock.release(project_name)
 
+    @requires_auth
     def get(self):
         return data.keys()
 
+    @requires_auth
     def delete(self):
         for project_name in data.keys():  # not iterkeys(), need to do del in iteration
             try:
@@ -186,6 +188,7 @@ class AllProjects(Resource):
 
 @api.route('/projects/<project_name>')
 class Project(Resource):
+    @requires_auth
     def post(self, project_name):
         if project_name not in data:
             return rest.not_found()
@@ -206,14 +209,17 @@ class Project(Resource):
         finally:
             project_lock.release(project_name)
 
+    @requires_auth
     def put(self, project_name):
         return self.post(project_name)
 
+    @requires_auth
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
         return data[project_name]
 
+    @requires_auth
     def delete(self, project_name):
         if project_name not in data:
             return rest.not_found()
@@ -231,12 +237,14 @@ class Project(Resource):
 
 @api.route('/projects/<project_name>/tags')
 class ProjectTags(Resource):
+    @requires_auth
     def get(self, project_name):
         # return all the tags created for this project
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
         return data[project_name]['master_config']['tags']
 
+    @requires_auth
     def delete(self, project_name):
         # delete all the tags for this project
         if project_name not in data:
@@ -247,6 +255,7 @@ class ProjectTags(Resource):
         write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.deleted()
 
+    @requires_auth
     def post(self, project_name):
         if project_name not in data:
             return rest.not_found("Project \'{}\' not found".format(project_name))
@@ -269,6 +278,7 @@ class ProjectTags(Resource):
 
 @api.route('/projects/<project_name>/tags/<tag_name>')
 class Tag(Resource):
+    @requires_auth
     def get(self, project_name, tag_name):
         if project_name not in data:
             return rest.not_found("Project {} not found".format(project_name))
@@ -276,6 +286,7 @@ class Tag(Resource):
             return rest.not_found("Tag {} not found".format(tag_name))
         return data[project_name]['master_config']['tags'][tag_name]
 
+    @requires_auth
     def post(self, project_name, tag_name):
         # user is not allowed to update tag_name
         if project_name not in data:
@@ -292,9 +303,11 @@ class Tag(Resource):
         write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.created()
 
+    @requires_auth
     def put(self, project_name, tag_name):
         return self.post(project_name, tag_name)
 
+    @requires_auth
     def delete(self, project_name, tag_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -309,6 +322,7 @@ class Tag(Resource):
 
 @api.route('/projects/<project_name>/fields')
 class ProjectFields(Resource):
+    @requires_auth
     def post(self, project_name):
         if project_name not in data:
             return rest.not_found()
@@ -326,11 +340,13 @@ class ProjectFields(Resource):
         write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.created()
 
+    @requires_auth
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
         return data[project_name]['master_config']['fields']
 
+    @requires_auth
     def delete(self, project_name):
         if project_name not in data:
             return rest.not_found()
@@ -344,6 +360,7 @@ class ProjectFields(Resource):
 
 @api.route('/projects/<project_name>/fields/<field_name>')
 class Field(Resource):
+    @requires_auth
     def get(self, project_name, field_name):
         if project_name not in data:
             return rest.not_found()
@@ -351,6 +368,7 @@ class Field(Resource):
             return rest.not_found()
         return data[project_name]['master_config']['fields'][field_name]
 
+    @requires_auth
     def post(self, project_name, field_name):
         if project_name not in data:
             return rest.not_found()
@@ -366,9 +384,11 @@ class Field(Resource):
         write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.created()
 
+    @requires_auth
     def put(self, project_name, field_name):
         return self.post(project_name, field_name)
 
+    @requires_auth
     def delete(self, project_name, field_name):
         if project_name not in data:
             return rest.not_found()
@@ -380,37 +400,10 @@ class Field(Resource):
         write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
         return rest.deleted()
 
-    # @staticmethod
-    # def add_tag_kg_id(kg_id, tag_name, human_annotation):
-    #     es = ES(config['']data[project_name]['es_prefix'])
-    #     hits = es.retrieve_doc(config['write_es']['index'], config['write_es']['doc_type'], kg_id)
-    #     if hits:
-    #         # should retrieve one doc
-    #         # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
-    #         doc = hits['hits']['hits'][0]['_source']
-    #
-    #         if 'knowledge_graph' not in doc:
-    #             doc['knowledge_graph'] = dict()
-    #         doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_name, human_annotation)
-    #         res = es.load_data(config['write_es']['index'], config['write_es']['doc_type'], doc, doc['doc_id'])
-    #         if res:
-    #             return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_name, kg_id))
-    #
-    #     else:
-    #         return rest.not_found('doc: \'{}\' not found in elasticsearch'.format(kg_id))
-    #
-    # @staticmethod
-    # def add_tag_to_kg(kg, tag_name, human_annotation):
-    #     if '_tags' not in kg:
-    #         kg['_tags'] = dict()
-    #     if tag_name not in kg['_tags']:
-    #         kg['_tags'][tag_name] = dict()
-    #     kg['_tags'][tag_name]['human_annotation'] = human_annotation
-    #     return kg
-
 
 @api.route('/projects/<project_name>/glossaries')
 class ProjectGlossaries(Resource):
+    @requires_auth
     def post(self, project_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -434,12 +427,14 @@ class ProjectGlossaries(Resource):
 
         return rest.created()
 
+    @requires_auth
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
 
         return data[project_name]['glossaries']
 
+    @requires_auth
     def delete(self, project_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -453,6 +448,7 @@ class ProjectGlossaries(Resource):
 
 @api.route('/projects/<project_name>/glossaries/<glossary_name>')
 class Glossary(Resource):
+    @requires_auth
     def post(self, project_name, glossary_name):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -497,6 +493,7 @@ class Glossary(Resource):
 
 @api.route('/projects/<project_name>/entities/<kg_id>/tags')
 class EntityTags(Resource):
+    @requires_auth
     def get(self, project_name, kg_id):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -508,6 +505,7 @@ class EntityTags(Resource):
 
         return data[project_name]['entities'][entity_name][kg_id]
 
+    @requires_auth
     def post(self, project_name, kg_id):
         if project_name not in data:
             return rest.not_found()
@@ -536,110 +534,9 @@ class EntityTags(Resource):
         return rest.created()
 
 
-# @api.route('/projects/<project_name>/entities/<entity_name>/<kg_id>/tags')
-# class EntityTags(Resource):
-#     def get(self, project_name, entity_name, kg_id):
-#         if project_name not in data:
-#             return rest.not_found('Project {} not found'.format(project_name))
-#         if entity_name not in data[project_name]['entities']:
-#             return rest.not_found('Entity {} not found'.format(entity_name))
-#         if kg_id not in data[project_name]['entities'][entity_name]:
-#             return rest.not_found('kg_id {} not found'.format(kg_id))
-#
-#         return data[project_name]['entities'][entity_name][kg_id]
-#
-#     def post(self, project_name, entity_name, kg_id):
-#         if project_name not in data:
-#             return rest.not_found()
-#
-#         input = request.get_json(force=True)
-#         tags = input.get('tags', [])
-#         if len(tags) == 0:
-#             return rest.bad_request('No tags given')
-#         # tag should be exist
-#         for tag_name in tags:
-#             if tag_name not in data[project_name]['master_config']['tags']:
-#                 return rest.bad_request('Tag {} is not exist'.format(tag_name))
-#         # add tags to entity
-#         for tag_name in tags:
-#             if entity_name not in data[project_name]['entities']:
-#                 data[project_name]['entities'][entity_name] = dict()
-#             if kg_id not in data[project_name]['entities'][entity_name]:
-#                 data[project_name]['entities'][entity_name][kg_id] = dict()
-#             if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
-#                 data[project_name]['entities'][entity_name][kg_id][tag_name] = dict()
-#
-#         # write to file
-#         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-#         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
-#         return rest.created()
-
-
-    # def post(self, project_name, kg_id):
-    #     if project_name not in data:
-    #         return rest.not_found()
-    #     input = request.get_json(force=True)
-    #     if len(kg_id) == 0:
-    #         return rest.bad_request()
-    #     tag = input.get('tags', '')
-    #     if not tag or tag.strip() == '':
-    #         return rest.bad_request('input is not a valid tag')
-    #
-    #     human_annotation = str(input.get('human_annotation', ''))
-    #
-    #     if not human_annotation or human_annotation.strip() == '' or (
-    #                     human_annotation != '1' and human_annotation != '0'):
-    #         return rest.bad_request('invalid human annotation, value can be either 1(true) or 0(false)')
-    #
-    #     if tag not in data[project_name]['entities']:
-    #         data[project_name]['entities'][tag] = dict()
-    #
-    #     if kg_id not in data[project_name]['entities'][tag]:
-    #         data[project_name]['entities'][tag][kg_id] = dict()
-    #     data[project_name]['entities'][tag][kg_id]['human_annotation'] = human_annotation
-    #
-    #     # write all annotations for this tag to file
-    #     tag_annotation = data[project_name]['entities'][tag]
-    #     file_content = ''
-    #     for id in tag_annotation.keys():
-    #         file_content += id + '\t' + tag_annotation[id]['human_annotation'] + '\n'
-    #     file_name = os.path.join(_get_project_dir_path(project_name), "/entity_annotations/" + tag + ".json")
-    #     write_to_file(file_content, file_name)
-    #     # load the results into doc in ES
-    #     self.add_tag_kg_id(kg_id, tag, human_annotation)
-    #     return rest.created()
-    #
-    # @staticmethod
-    # def add_tag_kg_id(kg_id, tag_name, human_annotation):
-    #     es = ES(config['write_es']['es_url'])
-    #     hits = es.retrieve_doc(config['write_es']['index'], config['write_es']['doc_type'], kg_id)
-    #     if hits:
-    #         # should retrieve one doc
-    #         # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
-    #         doc = hits['hits']['hits'][0]['_source']
-    #
-    #         if 'knowledge_graph' not in doc:
-    #             doc['knowledge_graph'] = dict()
-    #         doc['knowledge_graph'] = EntityTags.add_tag_to_kg(doc['knowledge_graph'], tag_name, human_annotation)
-    #         res = es.load_data(config['write_es']['index'], config['write_es']['doc_type'], doc, doc['doc_id'])
-    #         if res:
-    #             return rest.ok('Tag \'{}\' added to doc: \'{}\''.format(tag_name, kg_id))
-    #
-    #     else:
-    #         return rest.not_found('doc: \'{}\' not found in elasticsearch'.format(kg_id))
-    #
-    # @staticmethod
-    # def add_tag_to_kg(kg, tag_name, human_annotation):
-    #     if '_tags' not in kg:
-    #         kg['_tags'] = dict()
-    #     if tag_name not in kg['_tags']:
-    #         kg['_tags'][tag_name] = dict()
-    #     kg['_tags'][tag_name]['human_annotation'] = human_annotation
-    #     return kg
-
-
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations')
 class FieldAnnotations(Resource):
+    @requires_auth
     def get(self, project_name, kg_id, field_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -649,6 +546,7 @@ class FieldAnnotations(Resource):
             return rest.not_found('Field name {} not found'.format(field_name))
         return data[project_name]['field_annotations'][kg_id][field_name]
 
+    @requires_auth
     def delete(self, project_name, kg_id, field_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -666,6 +564,7 @@ class FieldAnnotations(Resource):
 
         return rest.deleted()
 
+    @requires_auth
     def post(self, project_name, kg_id, field_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -701,6 +600,7 @@ class FieldAnnotations(Resource):
 
         return rest.created()
 
+    @requires_auth
     def put(self, project_name, kg_id, field_name):
         return rest.post(project_name, kg_id, field_name)
 
@@ -775,6 +675,7 @@ class FieldAnnotations(Resource):
 
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
 class FieldInstanceAnnotations(Resource):
+    @requires_auth
     def get(self, project_name, kg_id, field_name, key):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -790,6 +691,7 @@ class FieldInstanceAnnotations(Resource):
 
         return data[project_name]['field_annotations'][kg_id][field_name][key]
 
+    @requires_auth
     def delete(self, project_name, kg_id, field_name, key):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
@@ -812,37 +714,10 @@ class FieldInstanceAnnotations(Resource):
         FieldAnnotations.remove_field_annotation('sample', project_name, kg_id, field_name, key)
         return rest.deleted()
 
-    # def post(self, project_name, kg_id, field_name, key):
-    #     if project_name not in data:
-    #         return rest.not_found('Project {} not found'.format(project_name))
-    #     if kg_id not in data[project_name]['field_annotations']:
-    #         return rest.not_found(
-    #             'Field annotations not found, kg_id: {}'.format(kg_id))
-    #     if field_name not in data[project_name]['field_annotations'][kg_id]:
-    #         return rest.not_found(
-    #             'Field annotations not found, kg_id: {}, field: {}'.format(kg_id, field_name))
-    #     if key not in data[project_name]['field_annotations'][kg_id][field_name]:
-    #         return rest.not_found(
-    #             'Field annotations not found, kg_id: {}, field: {}, key: {}'.format(kg_id, field_name, key))
-    #
-    #     input = request.get_json(force=True)
-    #     human_annotation = input.get('human_annotation', None)
-    #     if not isinstance(human_annotation, int) or human_annotation == -1:
-    #         return rest.bad_request('invalid human_annotation')
-    #     data[project_name]['field_annotations'][kg_id][field_name][key]['human_annotation'] = human_annotation
-    #     # write to file
-    #     file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-    #     write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
-    #     # load into ES
-    #     # TODO
-    #     return rest.created()
-    #
-    # def put(self, project_name, kg_id, field_name, key):
-    #     return self.post(project_name, kg_id, field_name, key)
-
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations')
 class TagAnnotationsForEntityType(Resource):
+    @requires_auth
     def delete(self, project_name, tag_name, entity_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -871,6 +746,7 @@ class TagAnnotationsForEntityType(Resource):
 
         return rest.deleted()
 
+    @requires_auth
     def get(self, project_name, tag_name, entity_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -885,6 +761,7 @@ class TagAnnotationsForEntityType(Resource):
                         result[kg_id] = annotation
         return result
 
+    @requires_auth
     def post(self, project_name, tag_name, entity_name):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -922,7 +799,7 @@ class TagAnnotationsForEntityType(Resource):
 
         return rest.created()
 
-
+    @requires_auth
     def put(self, project_name, tag_name, entity_name):
         return self.post(project_name, tag_name, entity_name)
 
@@ -990,6 +867,7 @@ class TagAnnotationsForEntityType(Resource):
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
 class TagAnnotationsForEntity(Resource):
+    @requires_auth
     def delete(self, project_name, tag_name, entity_name, kg_id):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
@@ -1014,6 +892,7 @@ class TagAnnotationsForEntity(Resource):
 
         return rest.deleted()
 
+    @requires_auth
     def get(self, project_name, tag_name, entity_name, kg_id):
         if project_name not in data:
             return rest.not_found('Project: {} not found'.format(project_name))
