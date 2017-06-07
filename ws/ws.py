@@ -661,7 +661,9 @@ class FieldAnnotations(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
         write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
-        # TODO
+        self.remove_field_annotation('full', project_name, kg_id, field_name)
+        self.remove_field_annotation('sample', project_name, kg_id, field_name)
+
         return rest.deleted()
 
     def post(self, project_name, kg_id, field_name):
@@ -694,11 +696,81 @@ class FieldAnnotations(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
         write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
-        # TODO
+        self.update_field_annotation('full', project_name, kg_id, field_name, key, human_annotation)
+        self.update_field_annotation('sample', project_name, kg_id, field_name, key, human_annotation)
+
         return rest.created()
 
     def put(self, project_name, kg_id, field_name):
         return rest.post(project_name, kg_id, field_name)
+
+
+    @staticmethod
+    def update_field_annotation(index_version, project_name, kg_id, field_name, key, human_annotation):
+        try:
+            es = ES(config['es']['url'])
+            index = data[project_name]['master_config']['index'][index_version]
+            type = data[project_name]['master_config']['root_name']
+            hits = es.retrieve_doc(index, type, kg_id)
+            if hits:
+                # should retrieve one doc
+                # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
+                doc = hits['hits']['hits'][0]['_source']
+                if 'knowledge_graph' not in doc:
+                    doc['knowledge_graph'] = dict()
+                if '_fields' not in doc['knowledge_graph']:
+                    doc['knowledge_graph']['_fields'] = dict()
+                if field_name not in doc['knowledge_graph']['_fields']:
+                    doc['knowledge_graph']['_fields'][field_name] = dict()
+                if key not in doc['knowledge_graph']['_fields'][field_name]:
+                    doc['knowledge_graph']['_fields'][field_name][key] = dict()
+                doc['knowledge_graph']['_fields'][field_name][key]['human_annotation'] = human_annotation
+                res = es.load_data(index, type, doc, doc['doc_id'])
+                if res:
+                    return True
+
+            return False
+        except Exception as e:
+            print e
+            logger.warning('Fail to update annotation to {}: project {}, kg_id {}, field {}, key {}'.format(
+                index_version, project_name, kg_id, field_name, key
+            ))
+
+    @staticmethod
+    def remove_field_annotation(index_version, project_name, kg_id, field_name, key=None):
+        try:
+            es = ES(config['es']['url'])
+            index = data[project_name]['master_config']['index'][index_version]
+            type = data[project_name]['master_config']['root_name']
+            hits = es.retrieve_doc(index, type, kg_id)
+            if hits:
+                doc = hits['hits']['hits'][0]['_source']
+                if 'knowledge_graph' not in doc:
+                    return False
+                if '_fields' not in doc['knowledge_graph']:
+                    return False
+                if field_name not in doc['knowledge_graph']['_fields']:
+                    return False
+                if key is None: # delete whole field
+                    del doc['knowledge_graph']['_fields'][field_name]
+                else:
+                    if key not in doc['knowledge_graph']['_fields'][field_name]:
+                        return False
+                    if 'human_annotation' not in doc['knowledge_graph']['_fields'][field_name][key]:
+                        return False
+                    # here, I only removed 'human_annotation' instead of the whole field
+                    del doc['knowledge_graph']['_fields'][field_name][key]['human_annotation']
+
+                res = es.load_data(index, type, doc, doc['doc_id'])
+                if res:
+                    return True
+
+            return False
+        except Exception as e:
+            print e
+            logger.warning('Fail to remove annotation from {}: project {}, kg_id {}, field {}, key {}'.format(
+                index_version, project_name, kg_id, field_name, key
+            ))
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
@@ -736,7 +808,8 @@ class FieldInstanceAnnotations(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
         write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
-        # TODO
+        FieldAnnotations.remove_field_annotation('full', project_name, kg_id, field_name, key)
+        FieldAnnotations.remove_field_annotation('sample', project_name, kg_id, field_name, key)
         return rest.deleted()
 
     # def post(self, project_name, kg_id, field_name, key):

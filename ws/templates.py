@@ -9,7 +9,6 @@ project = {
     'entities': {}, # 'kg-id': entity
     'field_annotations': {},
     'glossaries': [], # no need to dump to file
-    'es_prefix': ''
 }
 
 # field_annotations = {
