@@ -1029,10 +1029,36 @@ class TagAnnotationsForEntity(Resource):
         # if 'human_annotation' not in data[project_name]['entities'][entity_name][kg_id][tag_name]:
         #     return rest.not_found('No human_annotation')
 
-        # TODO:
+        ret = data[project_name]['entities'][entity_name][kg_id][tag_name]
         # return knowledge graph
+        parser = reqparse.RequestParser()
+        parser.add_argument('kg', required=False, type=bool, help='knowledge graph')
+        args = parser.parse_args()
 
-        return data[project_name]['entities'][entity_name][kg_id][tag_name]
+        if args['kg']:
+            ret['knowledge_graph'] = self.get_kg(project_name, kg_id, tag_name)
+
+        return ret
+
+    @staticmethod
+    def get_kg(project_name, kg_id, tag_name):
+        try:
+            es = ES(config['es']['url'])
+            index = data[project_name]['master_config']['index']['full']
+            type = data[project_name]['master_config']['root_name']
+            hits = es.retrieve_doc(index, type, kg_id)
+            if hits:
+                doc = hits['hits']['hits'][0]['_source']
+                if 'knowledge_graph' not in doc:
+                    return None
+                return doc['knowledge_graph']
+
+            return None
+        except Exception as e:
+            print e
+            logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'.format(
+                index_version, project_name, kg_id, tag_name
+            ))
 
 
 if __name__ == '__main__':
