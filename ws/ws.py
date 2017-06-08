@@ -7,6 +7,7 @@ import types
 import threading
 import werkzeug
 import codecs
+import csv
 
 from flask import Flask, render_template, Response
 from flask import request, abort, redirect, url_for
@@ -792,8 +793,9 @@ class TagAnnotationsForEntityType(Resource):
 
         data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation'] = human_annotation
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+        # file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+        # write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+        self.write_to_tag_file(project_name, tag_name)
         # load to ES
         self.update_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
         self.update_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
@@ -824,15 +826,18 @@ class TagAnnotationsForEntityType(Resource):
                     doc['knowledge_graph']['_tags'][tag_name] = dict()
                 doc['knowledge_graph']['_tags'][tag_name]['human_annotation'] = human_annotation
                 res = es.load_data(index, type, doc, doc['doc_id'])
-                if res:
-                    return True
+                if not res:
+                    logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+                   .format(index_version, project_name, kg_id, tag_name, index, type))
+                    return
 
-            return False
+            logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+                .format(index_version, project_name, kg_id, tag_name, index, type))
+            return
         except Exception as e:
             print e
-            logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'.format(
-                index_version, project_name, kg_id, tag_name
-            ))
+            logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'
+                .format(index_version, project_name, kg_id, tag_name))
 
     @staticmethod
     def remove_tag_annotation(index_version, project_name, kg_id, tag_name):
@@ -855,15 +860,41 @@ class TagAnnotationsForEntityType(Resource):
                 # for tag should be deleted in another api
                 del doc['knowledge_graph']['_tags'][tag_name]['human_annotation']
                 res = es.load_data(index, type, doc, doc['doc_id'])
-                if res:
-                    return True
+                if not res:
+                    logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+                        .format(index_version, project_name, kg_id, tag_name, index, type))
+                    return
 
-            return False
+            logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+                .format(index_version, project_name, kg_id, tag_name, index, type))
+            return
         except Exception as e:
             print e
             logger.warning('Fail to remove annotation from {}: project {}, kg_id {}, tag {}'.format(
                 index_version, project_name, kg_id, tag_name
             ))
+
+    @staticmethod
+    def write_to_tag_file(project_name, tag_name):
+        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/' + tag_name + '.csv')
+        tag_obj = data[project_name]['entities']
+        with open(file_path, 'w') as csvfile:
+            writer = csv.DictWriter(
+                csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
+                delimiter=' ', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writeheader()
+            for entity_name_, entity in tag_obj:
+                for kg_id_, kg in entity:
+                    for tag_name_, tag in kg:
+                        if tag_name_ == tag_name and 'human_annotation' in tag:
+                            writer.writerow(
+                                {'tag_name': tag_name_, 'entity_name': entity_name_,
+                                 'kg_id': kg_id_, 'human_annotation': tag['human_annotation']})
+
+    @staticmethod
+    def read_from_tag_file(project_name, tag_name):
+        pass
+
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
