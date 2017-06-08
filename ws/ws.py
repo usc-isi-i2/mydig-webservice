@@ -615,23 +615,27 @@ class FieldAnnotations(Resource):
             type = data[project_name]['master_config']['root_name']
             hits = es.retrieve_doc(index, type, kg_id)
             if hits:
-                # should retrieve one doc
-                # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
                 doc = hits['hits']['hits'][0]['_source']
                 if 'knowledge_graph' not in doc:
                     doc['knowledge_graph'] = dict()
-                if '_fields' not in doc['knowledge_graph']:
-                    doc['knowledge_graph']['_fields'] = dict()
-                if field_name not in doc['knowledge_graph']['_fields']:
-                    doc['knowledge_graph']['_fields'][field_name] = dict()
-                if key not in doc['knowledge_graph']['_fields'][field_name]:
-                    doc['knowledge_graph']['_fields'][field_name][key] = dict()
-                doc['knowledge_graph']['_fields'][field_name][key]['human_annotation'] = human_annotation
-                res = es.load_data(index, type, doc, doc['doc_id'])
-                if res:
-                    return True
+                if field_name not in doc['knowledge_graph']:
+                    doc['knowledge_graph'][field_name] = dict()
+                for field_instance in doc['knowledge_graph'][field_name]:
+                    if field_instance['key'] == key:
+                        field_instance['human_annotation'] = human_annotation
+                        break
 
-            return False
+                res = es.load_data(index, type, doc, doc['doc_id'])
+                if not res:
+                    logger.info('Fail to load data to {}: project {}, kg_id {}, field {}, key {}'.format(
+                        index_version, project_name, kg_id, field_name, key
+                    ))
+                    return
+
+            logger.info('Fail to retrieve from {}: project {}, kg_id {}, field {}, key {}'.format(
+                index_version, project_name, kg_id, field_name, key
+            ))
+            return
         except Exception as e:
             print e
             logger.warning('Fail to update annotation to {}: project {}, kg_id {}, field {}, key {}'.format(
@@ -648,23 +652,19 @@ class FieldAnnotations(Resource):
             if hits:
                 doc = hits['hits']['hits'][0]['_source']
                 if 'knowledge_graph' not in doc:
-                    return False
-                if '_fields' not in doc['knowledge_graph']:
-                    return False
-                if field_name not in doc['knowledge_graph']['_fields']:
-                    return False
-                if key is None: # delete whole field
-                    del doc['knowledge_graph']['_fields'][field_name]
-                else:
-                    if key not in doc['knowledge_graph']['_fields'][field_name]:
-                        return False
-                    if 'human_annotation' not in doc['knowledge_graph']['_fields'][field_name][key]:
-                        return False
-                    # here, I only removed 'human_annotation' instead of the whole field
-                    del doc['knowledge_graph']['_fields'][field_name][key]['human_annotation']
-
+                    return
+                if field_name not in doc['knowledge_graph']:
+                    return
+                for field_instance in doc['knowledge_graph'][field_name]:
+                    if key is None: # delete all annotations
+                        if 'human_annotation' in field_instance:
+                            del field_instance['human_annotation']
+                    else: # delete annotation of a specific key
+                        if field_instance['key'] == key:
+                            del field_instance['human_annotation']
+                            break
                 res = es.load_data(index, type, doc, doc['doc_id'])
-                if res:
+                if not res:
                     return True
 
             return False
@@ -793,9 +793,9 @@ class TagAnnotationsForEntityType(Resource):
 
         data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation'] = human_annotation
         # write to file
-        # file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-        # write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
-        self.write_to_tag_file(project_name, tag_name)
+        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+        # self.write_to_tag_file(project_name, tag_name)
         # load to ES
         self.update_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
         self.update_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
@@ -827,11 +827,11 @@ class TagAnnotationsForEntityType(Resource):
                 doc['knowledge_graph']['_tags'][tag_name]['human_annotation'] = human_annotation
                 res = es.load_data(index, type, doc, doc['doc_id'])
                 if not res:
-                    logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+                    logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
                    .format(index_version, project_name, kg_id, tag_name, index, type))
                     return
 
-            logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+            logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
                 .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
@@ -849,23 +849,23 @@ class TagAnnotationsForEntityType(Resource):
             if hits:
                 doc = hits['hits']['hits'][0]['_source']
                 if 'knowledge_graph' not in doc:
-                    return False
+                    return
                 if '_tags' not in doc['knowledge_graph']:
-                    return False
+                    return
                 if tag_name not in doc['knowledge_graph']['_tags']:
-                    return False
+                    return
                 if 'human_annotation' not in doc['knowledge_graph']['_tags'][tag_name]:
-                    return False
+                    return
                 # here, I only removed 'human_annotation' instead of the whole tag
                 # for tag should be deleted in another api
                 del doc['knowledge_graph']['_tags'][tag_name]['human_annotation']
                 res = es.load_data(index, type, doc, doc['doc_id'])
                 if not res:
-                    logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+                    logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
                         .format(index_version, project_name, kg_id, tag_name, index, type))
                     return
 
-            logger.warning('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
+            logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
                 .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
@@ -883,9 +883,9 @@ class TagAnnotationsForEntityType(Resource):
                 csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                 delimiter=' ', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             writer.writeheader()
-            for entity_name_, entity in tag_obj:
-                for kg_id_, kg in entity:
-                    for tag_name_, tag in kg:
+            for entity_name_, entity in tag_obj.iteritems():
+                for kg_id_, kg in entity.iteritems():
+                    for tag_name_, tag in kg.iteritems():
                         if tag_name_ == tag_name and 'human_annotation' in tag:
                             writer.writerow(
                                 {'tag_name': tag_name_, 'entity_name': entity_name_,
@@ -894,7 +894,6 @@ class TagAnnotationsForEntityType(Resource):
     @staticmethod
     def read_from_tag_file(project_name, tag_name):
         pass
-
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
