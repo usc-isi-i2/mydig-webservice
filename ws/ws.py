@@ -428,9 +428,9 @@ class ProjectGlossaries(Resource):
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
         name = args['glossary_name']
+        if name in data[project_name]['glossaries']:
+            return rest.exists('Glossary {} exists'.format(name))
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
-        if os.path.exists(file_path):
-            return rest.exists('Glossary name {} exists'.format(name))
         file = args['glossary_file']
         # write_to_file(content, file_path)
         file.save(file_path)

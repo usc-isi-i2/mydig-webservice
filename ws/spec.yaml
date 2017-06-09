@@ -164,7 +164,7 @@ paths:
   /projects/{project_name}/tags:
     post:
       tags:
-      - "projects"
+      - "tags"
       summary: "Create a tag"
       description: ""
       operationId: ""
@@ -193,7 +193,7 @@ paths:
           description: "exist"
     get:
       tags:
-      - "projects"
+      - "tags"
       summary: "Get all tags"
       description: ""
       operationId: ""
@@ -212,7 +212,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "tags"
       summary: "Delete all tags"
       description: ""
       operationId: ""
@@ -232,7 +232,7 @@ paths:
   /projects/{project_name}/tags/{tag_name}:
     post:
       tags:
-      - "projects"
+      - "tags"
       summary: "Update tag by name"
       description: ""
       operationId: ""
@@ -262,7 +262,7 @@ paths:
           description: "not found"
     put:
       tags:
-      - "projects"
+      - "tags"
       summary: "Update tag by name (same as POST)"
       description: ""
       operationId: ""
@@ -292,7 +292,7 @@ paths:
           description: "not found"
     get:
       tags:
-      - "projects"
+      - "tags"
       summary: "Get tag by name"
       description: ""
       operationId: ""
@@ -314,7 +314,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "tags"
       summary: "Delete tag by name"
       description: ""
       operationId: ""
@@ -338,7 +338,7 @@ paths:
   /projects/{project_name}/fields:
     post:
       tags:
-      - "projects"
+      - "fields"
       summary: "Create a field"
       description: ""
       operationId: ""
@@ -367,7 +367,7 @@ paths:
           description: "exist"
     get:
       tags:
-      - "projects"
+      - "fields"
       summary: "Get all fields"
       description: ""
       operationId: ""
@@ -388,7 +388,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "fields"
       summary: "Delete all fields"
       description: ""
       operationId: ""
@@ -410,7 +410,7 @@ paths:
   /projects/{project_name}/fields/{field_name}:
     post:
       tags:
-      - "projects"
+      - "fields"
       summary: "Update field by name"
       description: ""
       operationId: ""
@@ -440,7 +440,7 @@ paths:
           description: "not found"
     put:
       tags:
-      - "projects"
+      - "fields"
       summary: "Update field by name (same as POST)"
       description: ""
       operationId: ""
@@ -470,7 +470,7 @@ paths:
           description: "not found"
     get:
       tags:
-      - "projects"
+      - "fields"
       summary: "Get field by name"
       description: ""
       operationId: ""
@@ -494,7 +494,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "fields"
       summary: "Delete field by name"
       description: ""
       operationId: ""
@@ -516,11 +516,203 @@ paths:
           description: "bad request"
         404:
           description: "not found"
+  # glossaries
+  /projects/{project_name}/glossaries:
+    post:
+      tags:
+      - "glossaries"
+      summary: "Create a glossary"
+      description: ""
+      operationId: ""
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "formData"
+        name: "glossary_name"
+        description: ""
+        required: true
+      - in: "formData"
+        name: "glossary_file"
+        description: ""
+        required: true,
+        type : "file"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exist"
+    get:
+      tags:
+      - "glossaries"
+      summary: "Get a list of all glossaries"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "glossaries"
+      summary: "Delete all glossaries"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  /projects/{project_name}/glossaries/{glossary_name}:
+    post:
+      tags:
+      - "glossaries"
+      summary: "Update a glossary"
+      description: ""
+      operationId: ""
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "glossary_name"
+        description: ""
+        required: true
+      - in: "formData"
+        name: "glossary_file"
+        description: ""
+        required: true,
+        type : "file"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exist"
+    put:
+      tags:
+      - "glossaries"
+      summary: "Update a glossary (same as POST)"
+      description: ""
+      operationId: ""
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "glossary_name"
+        description: ""
+        required: true
+      - in: "formData"
+        name: "glossary_file"
+        description: ""
+        required: true,
+        type : "file"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exist"
+    get:
+      tags:
+      - "glossaries"
+      summary: "Get the content of a glossary"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "text/plain; charset=utf-8"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "glossary_name"
+        description: ""
+        required: true
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "glossaries"
+      summary: "Delete a glossary"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+      - in: "path"
+        name: "glossary_name"
+        description: ""
+        required: true
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+
   # add tag to entity
   /projects/{project_name}/entities/{kg_id}/tags:
     post:
       tags:
-      - "projects"
+      - "tags"
       summary: "Add tags to an entity instance"
       description: ""
       operationId: ""
@@ -550,7 +742,7 @@ paths:
           description: "not found"
     get:
       tags:
-      - "projects"
+      - "tags"
       summary: "Get all tags of an entity instance"
       description: ""
       operationId: ""
@@ -633,7 +825,7 @@ paths:
   /projects/{project_name}/entities/{kg_id}/fields/{field_name}/annotations:
     post:
       tags:
-      - "projects"
+      - "field annotations"
       summary: "Create / update annotation for a field of an entity"
       description: ""
       operationId: ""
@@ -666,7 +858,7 @@ paths:
           description: "not found"
     put:
       tags:
-      - "projects"
+      - "field annotations"
       summary: "Create / update annotation for a field of an entity (same as POST)"
       description: ""
       operationId: ""
@@ -699,7 +891,7 @@ paths:
           description: "not found"
     get:
       tags:
-      - "projects"
+      - "field annotations"
       summary: "Get annotations for a field of an entity"
       description: ""
       operationId: ""
@@ -726,7 +918,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "field annotations"
       summary: "Delete annotations for a field of an entity"
       description: ""
       operationId: ""
@@ -754,7 +946,7 @@ paths:
   /projects/{project_name}/entities/{kg_id}/fields/{field_name}/annotations/{key}:
     get:
       tags:
-      - "projects"
+      - "field annotations"
       summary: "Get annotation for field by key"
       description: ""
       operationId: ""
@@ -784,7 +976,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "field annotations"
       summary: "Delete annotation for field by key"
       description: ""
       operationId: ""
@@ -816,7 +1008,7 @@ paths:
   /projects/{project_name}/tags/{tag_name}/annotations/{entity_name}/annotations:
     post:
       tags:
-      - "projects"
+      - "tag annotations"
       summary: "Create / update annotation for a tag of an entity type"
       description: ""
       operationId: ""
@@ -849,7 +1041,7 @@ paths:
           description: "not found"
     put:
       tags:
-      - "projects"
+      - "tag annotations"
       summary: "Create / update annotation for a tag of an entity type (same as POST)"
       description: ""
       operationId: ""
@@ -882,7 +1074,7 @@ paths:
           description: "not found"
     get:
       tags:
-      - "projects"
+      - "tag annotations"
       summary: "Get annotations for a tag of an entity type"
       description: ""
       operationId: ""
@@ -909,7 +1101,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "tag annotations"
       summary: "Delete annotations for a tag of an entity type"
       description: ""
       operationId: ""
@@ -937,7 +1129,7 @@ paths:
   /projects/{project_name}/tags/{tag_name}/annotations/{entity_name}/annotations/{kg_id}:
     get:
       tags:
-      - "projects"
+      - "tag annotations"
       summary: "Get annotation for a tag of entity by kg_id"
       description: ""
       operationId: ""
@@ -970,7 +1162,7 @@ paths:
           description: "not found"
     delete:
       tags:
-      - "projects"
+      - "tag annotations"
       summary: "Delete annotation for a tag of entity by kg_id"
       description: ""
       operationId: ""
