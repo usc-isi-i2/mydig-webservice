@@ -11,7 +11,7 @@ import codecs
 import csv
 
 from flask import Flask, render_template, Response
-from flask import request, abort, redirect, url_for
+from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api, reqparse
 
@@ -468,39 +468,45 @@ class Glossary(Resource):
         if glossary_name not in data[project_name]['glossaries']:
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
-        # parse = reqparse.RequestParser()
-        # parse.add_argument('glossary_file', type=werkzeug.FileStorage, location='files')
-        #
-        # args = parse.parse_args()
-        #
-        # # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
-        # name = args['glossary_name']
-        # file = args['glossary_file']
-        # file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
-        # # write_to_file(content, file_path)
-        # file.save(file_path)
-        # return rest.created()
+        parse = reqparse.RequestParser()
+        parse.add_argument('glossary_file', type=werkzeug.FileStorage, location='files')
 
-    # def get(self, project_name):
-    #     if project_name not in data:
-    #         return rest.not_found('Project {} not found'.format(project_name))
-    #
-    #     dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
-    #     ret = []
-    #     for file_name in os.listdir(dir_path):
-    #         name, ext = os.path.splitext(file_name)
-    #         if ext == '.txt':
-    #             ret.append(name)
-    #     return ret
-    #
-    # def delete(self, project_name):
-    #     if project_name not in data:
-    #         return rest.not_found('Project {} not found'.format(project_name))
-    #
-    #     dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
-    #     shutil.rmtree(dir_path)
-    #     os.mkdir(dir_path) # recreate folder
-    #     return rest.deleted()
+        args = parse.parse_args()
+
+        # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
+        name = glossary_name
+        file = args['glossary_file']
+        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
+        file.save(file_path)
+        return rest.created()
+
+    @requires_auth
+    def put(self, project_name, glossary_name):
+        return self.post(project_name, glossary_name)
+
+    @requires_auth
+    def get(self, project_name, glossary_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+
+        if glossary_name not in data[project_name]['glossaries']:
+            return rest.not_found('Glossary {} not found'.format(glossary_name))
+
+        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
+        return send_file(file_path, 'text/plain', as_attachment=True, attachment_filename=glossary_name + '.txt')
+
+    @requires_auth
+    def delete(self, project_name, glossary_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+
+        if glossary_name not in data[project_name]['glossaries']:
+            return rest.not_found('Glossary {} not found'.format(glossary_name))
+
+        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
+        os.remove(file_path)
+        data[project_name]['glossaries'].remove(glossary_name)
+        return rest.deleted()
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/tags')
