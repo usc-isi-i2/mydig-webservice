@@ -73,20 +73,21 @@
 window.onload = function() {
   // Build a system
   const ui = SwaggerUIBundle({
-    url: "{{spec_path}}",
+    url: '{{spec_path}}',
     dom_id: '#swagger-ui',
     presets: [
       SwaggerUIBundle.presets.apis,
-//      SwaggerUIStandalonePreset
+      SwaggerUIStandalonePreset
     ],
     plugins: [
-//      SwaggerUIBundle.plugins.DownloadUrl
+      SwaggerUIBundle.plugins.DownloadUrl
     ],
 //    layout: "StandaloneLayout"
   })
 
   window.ui = ui
 }
+
 </script>
 </body>
 

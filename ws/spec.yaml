@@ -30,6 +30,7 @@ paths:
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/project"
       responses:
@@ -84,9 +85,12 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
+        type: "string"
       - in: "body"
         name: "body"
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/project"
       responses:
@@ -110,9 +114,11 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/project"
       responses:
@@ -136,6 +142,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -155,6 +162,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -176,10 +184,12 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/create_tag"
       responses:
@@ -205,6 +215,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -224,6 +235,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -244,13 +256,16 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/update_tag"
       responses:
@@ -274,13 +289,16 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/update_tag"
       responses:
@@ -304,9 +322,11 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -326,9 +346,11 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -350,10 +372,12 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/create_field"
       responses:
@@ -379,6 +403,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -400,6 +425,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -422,13 +448,16 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/update_field"
       responses:
@@ -452,13 +481,16 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/update_field"
       responses:
@@ -482,9 +514,11 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -506,9 +540,11 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -532,14 +568,17 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "formData"
         name: "glossary_name"
         description: ""
         required: true
+        description: ""
       - in: "formData"
         name: "glossary_file"
         description: ""
-        required: true,
+        required: true
+        description: ""
         type : "file"
       responses:
         201:
@@ -564,6 +603,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -585,6 +625,7 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -607,15 +648,18 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "glossary_name"
         description: ""
         required: true
+        description: ""
       - in: "formData"
         name: "glossary_file"
         description: ""
-        required: true,
-        type : "file"
+        required: true
+        description: ""
+        type: "file"
       responses:
         201:
           description: "created"
@@ -639,15 +683,18 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "glossary_name"
         description: ""
         required: true
+        description: ""
       - in: "formData"
         name: "glossary_file"
         description: ""
-        required: true,
-        type : "file"
+        required: true
+        description: ""
+        type: "file"
       responses:
         201:
           description: "created"
@@ -671,13 +718,17 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "glossary_name"
         description: ""
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
+          schema:
+            type: "file"
         400:
           description: "bad request"
         404:
@@ -696,10 +747,12 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "glossary_name"
         description: ""
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -707,7 +760,6 @@ paths:
           description: "bad request"
         404:
           description: "not found"
-
   # add tag to entity
   /projects/{project_name}/entities/{kg_id}/tags:
     post:
@@ -724,13 +776,16 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/tag_name_array"
       responses:
@@ -754,9 +809,11 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -777,16 +834,20 @@ paths:
 #      - in: "path"
 #        name: "project_name"
 #        required: true
+#        description: ""
 #      - in: "path"
 #        name: "entity_name"
 #        required: true
+#        description: ""
 #      - in: "path"
 #        name: "kg_id"
 #        required: true
+#        description: ""
 #      - in: "body"
 #        name: "body"
 #        description: ""
 #        required: true
+#        description: ""
 #        schema:
 #          $ref: "#/definitions/tag_name_array"
 #      responses:
@@ -810,12 +871,15 @@ paths:
 #      - in: "path"
 #        name: "project_name"
 #        required: true
+#        description: ""
 #      - in: "path"
 #        name: "entity_name"
 #        required: true
+#        description: ""
 #      - in: "path"
 #        name: "kg_id"
 #        required: true
+#        description: ""
 #      responses:
 #        200:
 #          description: "ok"
@@ -837,16 +901,20 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/field_annotation"
       responses:
@@ -870,16 +938,20 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/field_annotation"
       responses:
@@ -903,12 +975,15 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -930,12 +1005,15 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -958,15 +1036,19 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       - in: "path"
         name: "key"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -988,15 +1070,19 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "path"
         name: "field_name"
         required: true
+        description: ""
       - in: "path"
         name: "key"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -1020,16 +1106,20 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "path"
         name: "entity_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/tag_annotation"
       responses:
@@ -1053,16 +1143,20 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "path"
         name: "entity_name"
         required: true
+        description: ""
       - in: "body"
         name: "body"
         description: ""
         required: true
+        description: ""
         schema:
           $ref: "#/definitions/tag_annotation"
       responses:
@@ -1086,12 +1180,15 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "path"
         name: "entity_name"
         required: true
+        description: ""
       responses:
         200:
           description: "ok"
@@ -1113,12 +1210,15 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "path"
         name: "entity_name"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"
@@ -1141,18 +1241,23 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "path"
         name: "entity_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       - in: "query"
         name: "kg"
         required: false
+        description: ""
       responses:
         200:
           description: "ok"
@@ -1174,15 +1279,19 @@ paths:
       - in: "path"
         name: "project_name"
         required: true
+        description: ""
       - in: "path"
         name: "tag_name"
         required: true
+        description: ""
       - in: "path"
         name: "entity_name"
         required: true
+        description: ""
       - in: "path"
         name: "kg_id"
         required: true
+        description: ""
       responses:
         204:
           description: "deleted"

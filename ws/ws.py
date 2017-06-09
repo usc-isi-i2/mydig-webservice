@@ -493,7 +493,8 @@ class Glossary(Resource):
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
-        return send_file(file_path, 'text/plain', as_attachment=True, attachment_filename=glossary_name + '.txt')
+        return send_file(file_path, mimetype='text/plain',
+                         as_attachment=True, attachment_filename=glossary_name + '.txt')
 
     @requires_auth
     def delete(self, project_name, glossary_name):
