@@ -70,7 +70,19 @@ default_tags = {
     },
 }
 default_fields = {
-    'city': {'name': 'city', 'description': ''},
+    'city': {
+        'name': 'city',
+        'screen_label': 'City',
+        'description': 'city',
+        'type': 'location',
+        'show_in_search': True,
+        'show_in_facets': True,
+        'show_as_link': 'text',
+        'show_in_result': 'header',
+        'color': 'grey',
+        'icon': 'default',
+        'format': 'location'
+    },
     'weight': {'name': 'weight', 'description': ''},
     'review_id': {'name': 'review_id', 'description': ''},
     'service': {'name': 'service', 'description': ''},
@@ -109,4 +121,58 @@ master_config = {
 #     'include_in_menu': False,
 #     'positive_class_precision': 0.0,
 #     'negative_class_precision': 0.0
+# }
+
+field = {
+    'name': 'same as the key',
+    'screen_label': 'show on the screen',
+    'description': 'whatever',
+    'type': 'enum(string | location | image | date)',
+    'show_in_search': True,
+    'show_in_facets': True,
+    'show_as_link': 'enum(text | entity)',
+    'show_in_result': 'enum(header | detail | no)',
+    'color': 'enum(...)',
+    'icon': 'enum(...)',
+    'format': 'enum(normal | phone | email | location)'
+}
+
+# fields = {
+#     fields: [{                      # Defines the extraction fields used throughout the application.
+#         field: 'phone',               # The elasticsearch field.  Assume data structure '_source.knowledge_graph.<input>'.
+#         name: 'Telephone Number',     # Pretty name to show in the UI.
+#         type: 'string',               # Either 'string', 'location', 'image', or 'date'.
+#         search: True,                 # Whether to show this extraction in the search terms popup.
+#         facets: True,                 # Whether to show this extraction in the facets.
+#         link: 'entity',               # Whether to show this extraction as a link.  Either 'text' (uses raw text as link), 'entity' (uses entity page link),
+#                   #     'custom' (uses custom link property), or 'none'.
+#         showInResult: 'header',       # Whether to show this extraction in the search results.  Either 'header', 'detail', or 'no'.
+#         color: 'purple',              # The extraction icon (we will provide a list of available colors).
+#         icon: 'communication:phone',  # The extraction icon (we will just use polymer/fontawesome but provide a list of available icons).
+#         format: 'phone'               # Formatting function to transform extractions.  We will provide a list of available functions.  EX:  'phone' (add hypens),
+#               #     'email' (decode emails), 'location' (transform city:state:country:lat:lon strings).
+#     }],
+#     entities: [{
+#         field: 'phone',               # Defines the type of entity page.  Corresponds to a 'field' in the 'fields' array above.
+#         config: {},                   # Any page-specific config.
+#         left: [{                      # Defines the sections in the left column of the page.
+#             type: 'map',                # Defines the type of visualization.  EX:  'aggregation', 'date-histogram', 'event-drops', 'images', 'list', 'map'.
+#             field: 'city',              # The field of the data shown in the visualization.  Corresponds to a 'field' in the 'fields' array above.
+#             filter: True,               # Whether to let users filter on this data.
+#             config: {}                  # Any visualization-specific config.
+#         },
+#         {
+#             type: 'aggregation',
+#             field: 'phone',
+#             filter: True
+#         },
+#         {
+#             type: 'aggregation',
+#             field: 'email',
+#             filter: True
+#         }],
+#         right: [{                       # Defines the sections in the right column of the page.
+#
+#         }]
+#     }]
 # }

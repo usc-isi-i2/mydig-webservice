@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import logging
 import json
@@ -98,6 +99,15 @@ project_lock = ProjectLock()
 
 def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
+
+def _add_keys_to_dict(obj, keys): # dict, list
+    curr_obj = obj
+    for key in keys:
+        if key not in curr_obj:
+            curr_obj[key] = dict()
+        curr_obj = curr_obj[key]
+    return obj
+
 
 @app.route('/spec')
 def spec():
@@ -561,8 +571,8 @@ class FieldAnnotations(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
         write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
-        self.remove_field_annotation('full', project_name, kg_id, field_name)
-        self.remove_field_annotation('sample', project_name, kg_id, field_name)
+        self.es_remove_field_annotation('full', project_name, kg_id, field_name)
+        self.es_remove_field_annotation('sample', project_name, kg_id, field_name)
 
         return rest.deleted()
 
@@ -583,22 +593,13 @@ class FieldAnnotations(Resource):
         if not isinstance(human_annotation, int) or human_annotation == -1:
             return rest.bad_request('invalid human_annotation')
 
-        if kg_id not in data[project_name]['field_annotations']:
-            data[project_name]['field_annotations'][kg_id] = dict()
-
-        if field_name not in data[project_name]['field_annotations'][kg_id]:
-            data[project_name]['field_annotations'][kg_id][field_name] = dict()
-
-        if key not in data[project_name]['field_annotations'][kg_id][field_name]:
-            data[project_name]['field_annotations'][kg_id][field_name][key] = dict()
-
+        _add_keys_to_dict(data[project_name]['field_annotations'], [kg_id, field_name, key])
         data[project_name]['field_annotations'][kg_id][field_name][key]['human_annotation'] = human_annotation
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-        write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
+        self.write_to_field_file(project_name, field_name)
         # load into ES
-        self.update_field_annotation('full', project_name, kg_id, field_name, key, human_annotation)
-        self.update_field_annotation('sample', project_name, kg_id, field_name, key, human_annotation)
+        self.es_update_field_annotation('full', project_name, kg_id, field_name, key, human_annotation)
+        self.es_update_field_annotation('sample', project_name, kg_id, field_name, key, human_annotation)
 
         return rest.created()
 
@@ -608,7 +609,7 @@ class FieldAnnotations(Resource):
 
 
     @staticmethod
-    def update_field_annotation(index_version, project_name, kg_id, field_name, key, human_annotation):
+    def es_update_field_annotation(index_version, project_name, kg_id, field_name, key, human_annotation):
         try:
             es = ES(config['es']['url'])
             index = data[project_name]['master_config']['index'][index_version]
@@ -616,10 +617,7 @@ class FieldAnnotations(Resource):
             hits = es.retrieve_doc(index, type, kg_id)
             if hits:
                 doc = hits['hits']['hits'][0]['_source']
-                if 'knowledge_graph' not in doc:
-                    doc['knowledge_graph'] = dict()
-                if field_name not in doc['knowledge_graph']:
-                    doc['knowledge_graph'][field_name] = dict()
+                _add_keys_to_dict(doc, ['knowledge_graph', field_name])
                 for field_instance in doc['knowledge_graph'][field_name]:
                     if field_instance['key'] == key:
                         field_instance['human_annotation'] = human_annotation
@@ -643,7 +641,7 @@ class FieldAnnotations(Resource):
             ))
 
     @staticmethod
-    def remove_field_annotation(index_version, project_name, kg_id, field_name, key=None):
+    def es_remove_field_annotation(index_version, project_name, kg_id, field_name, key=None):
         try:
             es = ES(config['es']['url'])
             index = data[project_name]['master_config']['index'][index_version]
@@ -673,6 +671,42 @@ class FieldAnnotations(Resource):
             logger.warning('Fail to remove annotation from {}: project {}, kg_id {}, field {}, key {}'.format(
                 index_version, project_name, kg_id, field_name, key
             ))
+
+    @staticmethod
+    def write_to_field_file(project_name, field_name):
+        file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/' + field_name + '.csv')
+        field_obj = data[project_name]['field_annotations']
+        with open(file_path, 'w') as csvfile:
+            writer = csv.DictWriter(
+                csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
+                delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writeheader()
+            for kg_id_, kg_obj_ in field_obj.iteritems():
+                for field_name_, field_obj_ in kg_obj_.iteritems():
+                    if field_name_ == field_name:
+                        for key_, key_obj_ in field_obj_.iteritems():
+                            writer.writerow(
+                                {'field_name': field_name_, 'kg_id': kg_id_,
+                                 'key': key_, 'human_annotation': key_obj_['human_annotation']})
+
+    @staticmethod
+    def load_from_field_file(project_name):
+        dir_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations')
+        for file_name in os.listdir(dir_path):
+            name, ext = os.path.splitext(file_name)
+            if ext != '.csv':
+                continue
+            file_path = os.path.join(dir_path, file_name)
+            with open(file_path, 'r') as csvfile:
+                reader = csv.DictReader(
+                    csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
+                    delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+                next(reader, None) # skip header
+                for row in reader:
+                    _add_keys_to_dict(data[project_name]['field_annotations'],
+                                      [row['kg_id'], row['field_name'], row['key']])
+                    data[project_name]['field_annotations'][row['kg_id']][row['field_name']][row['key']][
+                        'human_annotation'] = row['human_annotation']
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations/<key>')
@@ -712,8 +746,8 @@ class FieldInstanceAnnotations(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
         write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
         # load into ES
-        FieldAnnotations.remove_field_annotation('full', project_name, kg_id, field_name, key)
-        FieldAnnotations.remove_field_annotation('sample', project_name, kg_id, field_name, key)
+        FieldAnnotations.es_remove_field_annotation('full', project_name, kg_id, field_name, key)
+        FieldAnnotations.es_remove_field_annotation('sample', project_name, kg_id, field_name, key)
         return rest.deleted()
 
 
@@ -737,14 +771,13 @@ class TagAnnotationsForEntityType(Resource):
             if tag_name in kg_item:
                 del kg_item[tag_name]
                 # remove from ES
-                self.remove_tag_annotation('full', project_name, kg_id, tag_name)
-                self.remove_tag_annotation('sample', project_name, kg_id, tag_name)
+                self.es_remove_tag_annotation('full', project_name, kg_id, tag_name)
+                self.es_remove_tag_annotation('sample', project_name, kg_id, tag_name)
             if len(kg_item) == 0:
                 del data[project_name]['entities'][entity_name][kg_id]
 
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+        self.write_to_tag_file(project_name, tag_name)
 
         return rest.deleted()
 
@@ -786,19 +819,13 @@ class TagAnnotationsForEntityType(Resource):
         # if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
         #     return rest.not_found('Tag {} not found'.format(tag_name))
 
-        if kg_id not in data[project_name]['entities'][entity_name]:
-            data[project_name]['entities'][entity_name][kg_id] = dict()
-
-        data[project_name]['entities'][entity_name][kg_id][tag_name] = dict()
-
+        _add_keys_to_dict(data[project_name]['entities'][entity_name], [kg_id, tag_name])
         data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation'] = human_annotation
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
-        # self.write_to_tag_file(project_name, tag_name)
+        self.write_to_tag_file(project_name, tag_name)
         # load to ES
-        self.update_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
-        self.update_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
+        self.es_update_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
+        self.es_update_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
 
         return rest.created()
 
@@ -808,22 +835,15 @@ class TagAnnotationsForEntityType(Resource):
 
 
     @staticmethod
-    def update_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
+    def es_update_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
         try:
             es = ES(config['es']['url'])
             index = data[project_name]['master_config']['index'][index_version]
             type = data[project_name]['master_config']['root_name']
             hits = es.retrieve_doc(index, type, kg_id)
             if hits:
-                # should retrieve one doc
-                # print json.dumps(hits['hits']['hits'][0]['_source'], indent=2)
                 doc = hits['hits']['hits'][0]['_source']
-                if 'knowledge_graph' not in doc:
-                    doc['knowledge_graph'] = dict()
-                if '_tags' not in doc['knowledge_graph']:
-                    doc['knowledge_graph']['_tags'] = dict()
-                if tag_name not in doc['knowledge_graph']['_tags']:
-                    doc['knowledge_graph']['_tags'][tag_name] = dict()
+                _add_keys_to_dict(doc, ['knowledge_graph', '_tags', tag_name])
                 doc['knowledge_graph']['_tags'][tag_name]['human_annotation'] = human_annotation
                 res = es.load_data(index, type, doc, doc['doc_id'])
                 if not res:
@@ -840,7 +860,7 @@ class TagAnnotationsForEntityType(Resource):
                 .format(index_version, project_name, kg_id, tag_name))
 
     @staticmethod
-    def remove_tag_annotation(index_version, project_name, kg_id, tag_name):
+    def es_remove_tag_annotation(index_version, project_name, kg_id, tag_name):
         try:
             es = ES(config['es']['url'])
             index = data[project_name]['master_config']['index'][index_version]
@@ -881,19 +901,34 @@ class TagAnnotationsForEntityType(Resource):
         with open(file_path, 'w') as csvfile:
             writer = csv.DictWriter(
                 csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
-                delimiter=' ', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+                delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             writer.writeheader()
-            for entity_name_, entity in tag_obj.iteritems():
-                for kg_id_, kg in entity.iteritems():
-                    for tag_name_, tag in kg.iteritems():
-                        if tag_name_ == tag_name and 'human_annotation' in tag:
+            for entity_name_, entity_obj_ in tag_obj.iteritems():
+                for kg_id_, kg_obj_ in entity_obj_.iteritems():
+                    for tag_name_, tag_obj_ in kg_obj_.iteritems():
+                        if tag_name_ == tag_name and 'human_annotation' in tag_obj_:
                             writer.writerow(
                                 {'tag_name': tag_name_, 'entity_name': entity_name_,
-                                 'kg_id': kg_id_, 'human_annotation': tag['human_annotation']})
+                                 'kg_id': kg_id_, 'human_annotation': tag_obj_['human_annotation']})
 
     @staticmethod
-    def read_from_tag_file(project_name, tag_name):
-        pass
+    def load_from_tag_file(project_name):
+        dir_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations')
+        for file_name in os.listdir(dir_path):
+            name, ext = os.path.splitext(file_name)
+            if ext != '.csv':
+                continue
+            file_path = os.path.join(dir_path, file_name)
+            with open(file_path, 'r') as csvfile:
+                reader = csv.DictReader(
+                    csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
+                    delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+                next(reader, None) # skip header
+                for row in reader:
+                    _add_keys_to_dict(data[project_name]['entities'],
+                        [row['entity_name'], row['kg_id'], row['tag_name']])
+                    data[project_name]['entities'][row['entity_name']][row['kg_id']][row['tag_name']][
+                        'human_annotation'] = row['human_annotation']
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>/annotations/<entity_name>/annotations/<kg_id>')
@@ -915,11 +950,10 @@ class TagAnnotationsForEntity(Resource):
             del data[project_name]['entities'][entity_name][kg_id][tag_name]['human_annotation']
 
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+        TagAnnotationsForEntityType.write_to_tag_file(project_name, tag_name)
         # remove from ES
-        TagAnnotationsForEntityType.remove_tag_annotation('full', project_name, kg_id, tag_name)
-        TagAnnotationsForEntityType.remove_tag_annotation('sample', project_name, kg_id, tag_name)
+        TagAnnotationsForEntityType.es_remove_tag_annotation('full', project_name, kg_id, tag_name)
+        TagAnnotationsForEntityType.es_remove_tag_annotation('sample', project_name, kg_id, tag_name)
 
         return rest.deleted()
 
@@ -990,13 +1024,9 @@ if __name__ == '__main__':
                     #     raise Exception('Missing index in project {}'.format(project_name))
                     # sys.exit()
 
-                entity_annotations_path = os.path.join(project_dir_path, 'entity_annotations/entity_annotations.json')
-                with open(entity_annotations_path, 'r') as f:
-                    data[project_name]['entities'] = json.loads(f.read())
+                TagAnnotationsForEntityType.load_from_tag_file(project_name)
 
-                field_annotations_path = os.path.join(project_dir_path, 'field_annotations/field_annotations.json')
-                with open(field_annotations_path, 'r') as f:
-                    data[project_name]['field_annotations'] = json.loads(f.read())
+                FieldAnnotations.load_from_field_file(project_name)
 
                 dir_path = os.path.join(project_dir_path, 'glossaries')
                 for file_name in os.listdir(dir_path):
