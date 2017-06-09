@@ -35,6 +35,7 @@ project = {
 default_tags = {
     'movement': {
         'name': 'movement',
+        'scree_label': 'movement',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -42,6 +43,7 @@ default_tags = {
     },
     'risky service': {
         'name': 'risky service',
+        'scree_label': 'risky service',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -49,6 +51,7 @@ default_tags = {
     },
     'France': {
         'name': 'France',
+        'scree_label': 'France',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -56,6 +59,7 @@ default_tags = {
     },
     'Australia': {
         'name': 'Australia',
+        'scree_label': 'Australia',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -63,6 +67,7 @@ default_tags = {
     },
     'United States': {
         'name': 'United States',
+        'scree_label': 'United States',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -81,7 +86,9 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'location'
+        'format': 'location',
+        'search_importance': 1,
+        'use_in_network_search': True
     },
     'weight': {'name': 'weight', 'description': ''},
     'review_id': {'name': 'review_id', 'description': ''},
@@ -118,24 +125,27 @@ master_config = {
 # tag = {
 #     'name': 'name',
 #     'description': '',
+#     'screen_label': 'show on the screen',
 #     'include_in_menu': False,
 #     'positive_class_precision': 0.0,
 #     'negative_class_precision': 0.0
 # }
 
-field = {
-    'name': 'same as the key',
-    'screen_label': 'show on the screen',
-    'description': 'whatever',
-    'type': 'enum(string | location | image | date)',
-    'show_in_search': True,
-    'show_in_facets': True,
-    'show_as_link': 'enum(text | entity)',
-    'show_in_result': 'enum(header | detail | no)',
-    'color': 'enum(...)',
-    'icon': 'enum(...)',
-    'format': 'enum(normal | phone | email | location)'
-}
+# field = {
+#     'name': 'same as the key',
+#     'screen_label': 'show on the screen',
+#     'description': 'whatever',
+#     'type': 'enum(string | location | image | date)',
+#     'show_in_search': True,
+#     'show_in_facets': True,
+#     'show_as_link': 'enum(text | entity)',
+#     'show_in_result': 'enum(header | detail | no)',
+#     'color': 'enum(...)',
+#     'icon': 'enum(...)',
+#     'format': 'enum(normal | phone | email | location)',
+#     'search_importance': 1, # (integer range in [1, 10])
+#     'use_in_network_search': True
+# }
 
 # fields = {
 #     fields: [{                      # Defines the extraction fields used throughout the application.
