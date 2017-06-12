@@ -53,6 +53,10 @@ def write_to_file(content, file_path):
     o.write(content)
     o.close()
 
+def update_master_config_file(project_name):
+    file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
+    write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+
 # set to list
 # def json_encode(obj):
 #     if isinstance(obj, set):
@@ -163,8 +167,7 @@ class AllProjects(Resource):
             data[project_name] = templates.get('project')
             data[project_name]['master_config'] = templates.get('master_config')
             data[project_name]['master_config']['sources'] = project_sources
-            with open(os.path.join(project_dir_path, 'master_config.json'), 'w') as f:
-                f.write(json.dumps(data[project_name]['master_config'], indent=4))
+            update_master_config_file(project_name)
 
             os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
             write_to_file(json.dumps({}), os.path.join(project_dir_path, 'field_annotations/field_annotations.json'))
@@ -212,8 +215,7 @@ class Project(Resource):
             project_lock.acquire(project_name)
             data[project_name]['master_config']['sources'] = project_sources
             # write to file
-            file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-            write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+            update_master_config_file(project_name)
             return rest.created()
         except Exception as e:
             logger.error('Updating project %s: %s' % (project_name, e.message))
@@ -263,8 +265,7 @@ class ProjectTags(Resource):
             return rest.not_found("Project \'{}\' not found".format(project_name))
         data[project_name]['master_config']['tags'] = dict()
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.deleted()
 
     @requires_auth
@@ -283,8 +284,7 @@ class ProjectTags(Resource):
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.created()
 
 
@@ -311,8 +311,7 @@ class Tag(Resource):
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.created()
 
     @requires_auth
@@ -327,8 +326,7 @@ class Tag(Resource):
             return rest.not_found('Tag {} not found'.format(tag_name))
         del data[project_name]['master_config']['tags'][tag_name]
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.deleted()
 
 
@@ -348,8 +346,7 @@ class ProjectFields(Resource):
 
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.created()
 
     @requires_auth
@@ -365,8 +362,7 @@ class ProjectFields(Resource):
 
         data[project_name]['master_config']['fields'] = dict()
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.deleted()
 
 
@@ -392,8 +388,7 @@ class Field(Resource):
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.created()
 
     @requires_auth
@@ -408,8 +403,7 @@ class Field(Resource):
             return rest.not_found()
         del data[project_name]['master_config']['fields'][field_name]
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'master_config.json')
-        write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
+        update_master_config_file(project_name)
         return rest.deleted()
 
 
@@ -428,14 +422,14 @@ class ProjectGlossaries(Resource):
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
         name = args['glossary_name']
-        if name in data[project_name]['glossaries']:
+        if name in data[project_name]['master_config']['glossaries']:
             return rest.exists('Glossary {} exists'.format(name))
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
         file = args['glossary_file']
         # write_to_file(content, file_path)
         file.save(file_path)
 
-        data[project_name]['glossaries'].append(name)
+        self.compute_statistics(project_name, name, file_path)
 
         return rest.created()
 
@@ -444,7 +438,7 @@ class ProjectGlossaries(Resource):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
 
-        return data[project_name]['glossaries']
+        return data[project_name]['master_config']['glossaries'].keys()
 
     @requires_auth
     def delete(self, project_name):
@@ -454,8 +448,29 @@ class ProjectGlossaries(Resource):
         dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
         shutil.rmtree(dir_path)
         os.mkdir(dir_path) # recreate folder
-        data[project_name]['glossaries'] = []
+        data[project_name]['master_config']['glossaries'] = dict()
+        update_master_config_file(project_name)
         return rest.deleted()
+
+    @staticmethod
+    def compute_statistics(project_name, glossary_name, file_path):
+        THRESHOLD = 15
+        ngram = {}
+        with open(file_path, 'r') as f:
+            line_count = 0
+            for line in f:
+                c = len(line)
+                if c == 0 or line == '\n' or line == '\r\n':
+                    continue
+                line_count += 1
+                if c > THRESHOLD:
+                    continue
+                ngram[c] = ngram.get(c, 0) + 1
+            data[project_name]['master_config']['glossaries'][glossary_name] = {
+                'ngram_distribution': ngram,
+                'entry_count': line_count
+            }
+            update_master_config_file(project_name)
 
 
 @api.route('/projects/<project_name>/glossaries/<glossary_name>')
@@ -465,7 +480,7 @@ class Glossary(Resource):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
 
-        if glossary_name not in data[project_name]['glossaries']:
+        if glossary_name not in data[project_name]['master_config']['glossaries']:
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
         parse = reqparse.RequestParser()
@@ -478,6 +493,7 @@ class Glossary(Resource):
         file = args['glossary_file']
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
         file.save(file_path)
+        ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path)
         return rest.created()
 
     @requires_auth
@@ -489,7 +505,7 @@ class Glossary(Resource):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
 
-        if glossary_name not in data[project_name]['glossaries']:
+        if glossary_name not in data[project_name]['master_config']['glossaries']:
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
@@ -501,12 +517,13 @@ class Glossary(Resource):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
 
-        if glossary_name not in data[project_name]['glossaries']:
+        if glossary_name not in data[project_name]['master_config']['glossaries']:
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
         os.remove(file_path)
-        data[project_name]['glossaries'].remove(glossary_name)
+        del data[project_name]['master_config']['glossaries'][glossary_name]
+        update_master_config_file(project_name)
         return rest.deleted()
 
 
@@ -1035,11 +1052,11 @@ if __name__ == '__main__':
 
                 FieldAnnotations.load_from_field_file(project_name)
 
-                dir_path = os.path.join(project_dir_path, 'glossaries')
-                for file_name in os.listdir(dir_path):
-                    name, ext = os.path.splitext(file_name)
-                    if ext == '.txt':
-                        data[project_name]['glossaries'].append(name)
+                # dir_path = os.path.join(project_dir_path, 'glossaries')
+                # for file_name in os.listdir(dir_path):
+                #     name, ext = os.path.splitext(file_name)
+                #     if ext == '.txt':
+                #         data[project_name]['glossaries'].append(name)
 
         # print json.dumps(data, indent=4)
         # run app

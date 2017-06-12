@@ -8,7 +8,7 @@ project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
     'field_annotations': {},
-    'glossaries': [], # no need to dump to file
+    # 'glossaries': {}
 }
 
 # field_annotations = {

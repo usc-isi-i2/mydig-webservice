@@ -558,7 +558,7 @@ paths:
       tags:
       - "glossaries"
       summary: "Create a glossary"
-      description: ""
+      description: "* (There's a bug in Swagger UI when posting a file, please ignore the errors in console)"
       operationId: ""
       consumes:
       - "multipart/form-data"
@@ -638,7 +638,7 @@ paths:
       tags:
       - "glossaries"
       summary: "Update a glossary"
-      description: ""
+      description: "* (There's a bug in Swagger UI when posting a file, please ignore the errors in console)"
       operationId: ""
       consumes:
       - "multipart/form-data"
@@ -713,7 +713,7 @@ paths:
       consumes:
       - "application/json"
       produces:
-      - "application/pdf"
+      - "text/plain"
       parameters:
       - in: "path"
         name: "project_name"
@@ -727,8 +727,8 @@ paths:
       responses:
         200:
           description: "ok"
-          schema:
-            type: "file"
+#          schema:
+#            type: "file"
         400:
           description: "bad request"
         404:
