@@ -8,15 +8,11 @@ config = {
     },
     'repo': {
         'local_path': '../../mydig-projects-test',
-        # make sure remote alias had been created
-        # https://help.github.com/articles/changing-a-remote-s-url/
-        # git remote set-url origin https://github.com/{owner}/{repo}.git
-        # and also generate & deploy ssh key
-        # https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
         'github': {
-            'ssh_key_file_path': '<file path>',
-            # 'username': 'usc-isi-i2',
-            # 'access_token': '<Access Token>'
+            'remote_url': '<remote url>',
+            # generate & deploy ssh key
+            # https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
+            'ssh_key_file_path': '<file path>'
         }
     },
     'logging': {

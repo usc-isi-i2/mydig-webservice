@@ -2,7 +2,6 @@ import multiprocessing
 from datetime import datetime
 
 import git
-from git import Repo
 
 from config import config
 
@@ -14,9 +13,10 @@ GIT_PULL_MSG = {128: "ERROR", 64: "FAST_FORWARD", 32: "FORCED_UPDATE", 4: "HEAD_
                 2: "NEW_HEAD", 1: "NEW_TAG", 16: "REJECTED", 8: "TAG_UPDATE"}
 
 
-repo = Repo(config['repo']['local_path'])
+repo = git.Repo(config['repo']['local_path'])
 repo.git.custom_environment(GIT_SSH_COMMAND='ssh -i ' + config['repo']['github']['ssh_key_file_path'])
 remote_obj = git.Remote(repo, 'origin')
+remote_obj.set_url(config['repo']['github']['remote_url'])
 
 
 def pull():
