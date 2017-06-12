@@ -4,3 +4,4 @@ Flask-Cors>=3.0.2
 Flask-RESTful>=0.3.5
 requests>=2.14.2
 PyYAML>=3.12
+gitpython>=2.1.3
