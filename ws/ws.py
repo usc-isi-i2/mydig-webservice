@@ -20,6 +20,7 @@ from elastic_manager.elastic_manager import ES
 import templates
 import rest
 from basic_auth import requires_auth, requires_auth_html
+import git_helper
 
 # logger
 logger = logging.getLogger('mydig-webservice.log')
@@ -131,6 +132,20 @@ def home():
     return 'MyDIG Web Service'
 
 
+@requires_auth_html
+@app.route('/git_sync/commit')
+def commit():
+    git_helper.commit(['*'])
+    return 'committed'
+
+
+@requires_auth_html
+@app.route('/git_sync/push')
+def push():
+    git_helper.push()
+    return 'pushed'
+
+
 @api.route('/debug')
 class Debug(Resource):
     @requires_auth
@@ -169,11 +184,15 @@ class AllProjects(Resource):
             data[project_name]['master_config']['sources'] = project_sources
             update_master_config_file(project_name)
 
+            # .gitignore file should be created for empty folder will not be show in commit
             os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
-            write_to_file(json.dumps({}), os.path.join(project_dir_path, 'field_annotations/field_annotations.json'))
+            write_to_file('', os.path.join(project_dir_path, 'field_annotations/.gitignore'))
             os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
-            write_to_file(json.dumps({}), os.path.join(project_dir_path, 'entity_annotations/entity_annotations.json'))
+            write_to_file('', os.path.join(project_dir_path, 'entity_annotations/.gitignore'))
             os.makedirs(os.path.join(project_dir_path, 'glossaries'))
+            write_to_file('', os.path.join(project_dir_path, 'glossaries/.gitignore'))
+
+            git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
             logger.info('project %s created.' % project_name)
             return rest.created()
         except Exception as e:
@@ -198,6 +217,7 @@ class AllProjects(Resource):
             finally:
                 project_lock.remove(project_name)
 
+        git_helper.commit(message='delete all projects')
         return rest.deleted()
 
 
@@ -216,6 +236,8 @@ class Project(Resource):
             data[project_name]['master_config']['sources'] = project_sources
             # write to file
             update_master_config_file(project_name)
+            git_helper.commit(files=[project_name + '/master_config.json'],
+                              message='update project {}'.format(project_name))
             return rest.created()
         except Exception as e:
             logger.error('Updating project %s: %s' % (project_name, e.message))
@@ -241,6 +263,8 @@ class Project(Resource):
             project_lock.acquire(project_name)
             del data[project_name]
             shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
+            git_helper.commit(files=[project_name + '/*'],
+                              message='delete project {}'.format(project_name))
             return rest.deleted()
         except Exception as e:
             logger.error('deleting project %s: %s' % (project_name, e.message))
@@ -266,6 +290,8 @@ class ProjectTags(Resource):
         data[project_name]['master_config']['tags'] = dict()
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete all tags: project {}'.format(project_name))
         return rest.deleted()
 
     @requires_auth
@@ -285,6 +311,8 @@ class ProjectTags(Resource):
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='create a tag: project {}, tag {}'.format(project_name, tag_name))
         return rest.created()
 
 
@@ -312,6 +340,8 @@ class Tag(Resource):
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='update a tag: project {}, tag {}'.format(project_name, tag_name))
         return rest.created()
 
     @requires_auth
@@ -327,6 +357,8 @@ class Tag(Resource):
         del data[project_name]['master_config']['tags'][tag_name]
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete a tag: project {}, tag {}'.format(project_name, tag_name))
         return rest.deleted()
 
 
@@ -347,6 +379,8 @@ class ProjectFields(Resource):
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='create a field: project {}, field {}'.format(project_name, field_name))
         return rest.created()
 
     @requires_auth
@@ -363,6 +397,8 @@ class ProjectFields(Resource):
         data[project_name]['master_config']['fields'] = dict()
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete all fields: project {}'.format(project_name))
         return rest.deleted()
 
 
@@ -389,6 +425,8 @@ class Field(Resource):
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='update a field: project {}, field {}'.format(project_name, field_name))
         return rest.created()
 
     @requires_auth
@@ -404,6 +442,8 @@ class Field(Resource):
         del data[project_name]['master_config']['fields'][field_name]
         # write to file
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete a field: project {}, field {}'.format(project_name, field_name))
         return rest.deleted()
 
 
@@ -430,6 +470,8 @@ class ProjectGlossaries(Resource):
         file.save(file_path)
 
         self.compute_statistics(project_name, name, file_path)
+        git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
+                          message='create a glossary: project {}, glossary {}'.format(project_name, name))
 
         return rest.created()
 
@@ -450,6 +492,8 @@ class ProjectGlossaries(Resource):
         os.mkdir(dir_path) # recreate folder
         data[project_name]['master_config']['glossaries'] = dict()
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
+                          message='delete all glossaries: project {}'.format(project_name))
         return rest.deleted()
 
     @staticmethod
@@ -459,13 +503,14 @@ class ProjectGlossaries(Resource):
         with open(file_path, 'r') as f:
             line_count = 0
             for line in f:
-                c = len(line)
-                if c == 0 or line == '\n' or line == '\r\n':
+                line = line.rstrip()
+                t = len(line.split(' '))
+                if t == 0:
                     continue
                 line_count += 1
-                if c > THRESHOLD:
+                if t > THRESHOLD:
                     continue
-                ngram[c] = ngram.get(c, 0) + 1
+                ngram[t] = ngram.get(t, 0) + 1
             data[project_name]['master_config']['glossaries'][glossary_name] = {
                 'ngram_distribution': ngram,
                 'entry_count': line_count
@@ -494,6 +539,8 @@ class Glossary(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
         file.save(file_path)
         ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path)
+        git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
+                          message='update a glossary: project {}, glossary {}'.format(project_name, name))
         return rest.created()
 
     @requires_auth
@@ -524,6 +571,8 @@ class Glossary(Resource):
         os.remove(file_path)
         del data[project_name]['master_config']['glossaries'][glossary_name]
         update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
+                          message='delete a glossary: project {}, glossary {}'.format(project_name, glossary_name))
         return rest.deleted()
 
 
@@ -1032,6 +1081,9 @@ class TagAnnotationsForEntity(Resource):
 if __name__ == '__main__':
     try:
 
+        if git_helper.pull() == 'ERROR':
+            raise Exception('Git pull error')
+
         # init
         for project_name in os.listdir(config['repo']['local_path']):
             project_dir_path = _get_project_dir_path(project_name)
@@ -1063,5 +1115,5 @@ if __name__ == '__main__':
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
 
     except Exception as e:
-        print e
+        print 'Exception:', e
         logger.error(e.message)
