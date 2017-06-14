@@ -31,7 +31,7 @@ logger.setLevel(config['logging']['level'])
 
 # flask app
 app = Flask(__name__)
-cors = CORS(app, resources={r"*": {"origins": "*"}})
+cors = CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
 api = Api(app)
 
 
@@ -1084,8 +1084,6 @@ class TagAnnotationsForEntity(Resource):
             logger.warning('Fail to update annotation to: project {}, kg_id {}, tag {}'.format(
                 project_name, kg_id, tag_name
             ))
-
-
 
 
 if __name__ == '__main__':
