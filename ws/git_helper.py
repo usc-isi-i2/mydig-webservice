@@ -14,9 +14,9 @@ GIT_PULL_MSG = {128: "ERROR", 64: "FAST_FORWARD", 32: "FORCED_UPDATE", 4: "HEAD_
 
 
 repo = git.Repo(config['repo']['local_path'])
-repo.git.custom_environment(GIT_SSH_COMMAND='ssh -i ' + config['repo']['github']['ssh_key_file_path'])
+repo.git.custom_environment(GIT_SSH_COMMAND='ssh -i ' + config['repo']['git']['ssh_key_file_path'])
 remote_obj = git.Remote(repo, 'origin')
-remote_obj.set_url(config['repo']['github']['remote_url'])
+remote_obj.set_url(config['repo']['git']['remote_url'])
 
 
 def pull():
@@ -26,21 +26,27 @@ def pull():
         # return flag
         return GIT_PULL_MSG.get(flag, 'Unknown: ' + str(flag))
 
+    if not config['repo']['git']['enable_sync']:
+        return
+
     # sync
     ret = _pull()
     return ret
 
 
-def commit(files=[], commit_message=str(datetime.now())):
-    def _commit(files, commit_message):
+def commit(files=['*'], message=str(datetime.now())):
+    def _commit(files, message):
         # print repo.untracked_files
         repo.index.add(files)
-        repo.index.commit(commit_message)
+        repo.index.commit(message)
+
+    if not config['repo']['git']['enable_sync']:
+        return
 
     # async
     if len(files) == 0:
         return
-    p = multiprocessing.Process(target=_commit, args=(files, commit_message,))
+    p = multiprocessing.Process(target=_commit, args=(files, message,))
     p.start()
     return
 
@@ -51,6 +57,9 @@ def push():
         flag = pushinfo[0].flags
         # return flag
         print GIT_PUSH_MSG.get(flag, 'Unknown: ' + str(flag))
+
+    if not config['repo']['git']['enable_sync']:
+        return
 
     # async
     p = multiprocessing.Process(target=_push)

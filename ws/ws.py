@@ -253,7 +253,7 @@ class Project(Resource):
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
-        return data[project_name]
+        return data[project_name]['master_config']
 
     @requires_auth
     def delete(self, project_name):
