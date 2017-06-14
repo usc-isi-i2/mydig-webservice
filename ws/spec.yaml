@@ -1308,26 +1308,32 @@ definitions:
         type: "string"
       url:
         type: "string"
-      index_name:
+      index:
         type: "string"
-      elastic_search_doctype:
-        type: "string"
-      elastic_search_query:
-        type: "object"
       start_date:
         type: "string"
       end_date:
         type: "string"
+      tlds:
+        type: "array"
+        items:
+          type: "string"
   project:
     type: "object"
     properties:
       project_name:
         type: "string"
-        example: "my-project-1"
       sources:
         type: "array"
         items:
           $ref: "#/definitions/source"
+      index:
+        type: "object"
+        properties:
+          full:
+            type: "string"
+          sample:
+            type: "string"
   tag:
     type: "object"
     properties:
@@ -1335,14 +1341,18 @@ definitions:
         type: "string"
       description:
         type: "string"
+      screen_label:
+        type: "string"
       include_in_menu:
         type: "boolean"
       positive_class_precision:
         type: "number"
         format: "float"
+        description: "range in [0, 1]"
       negative_class_precision:
         type: "number"
         format: "float"
+        description: "range in [0, 1]"
   field:
     type: "object"
     properties:
@@ -1379,6 +1389,17 @@ definitions:
         description: "range in [1, 10]"
       use_in_network_search:
         type: "boolean"
+      combine_fields:
+        type: "boolean"
+        description: "(optional)"
+      group_name:
+        type: "string"
+        description: "(optional)"
+      glossaries:
+        type: "array"
+        items:
+          type: "string"
+          description: "uploaded glossary's name"
   create_tag:
     type: "object"
     properties:

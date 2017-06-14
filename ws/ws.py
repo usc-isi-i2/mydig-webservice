@@ -132,18 +132,18 @@ def home():
     return 'MyDIG Web Service'
 
 
-@requires_auth_html
-@app.route('/git_sync/commit')
-def commit():
-    git_helper.commit(['*'])
-    return 'committed'
-
-
-@requires_auth_html
-@app.route('/git_sync/push')
-def push():
-    git_helper.push()
-    return 'pushed'
+# @requires_auth_html
+# @app.route('/git_sync/commit')
+# def commit():
+#     git_helper.commit(['*'])
+#     return 'committed'
+#
+#
+# @requires_auth_html
+# @app.route('/git_sync/push')
+# def push():
+#     git_helper.push()
+#     return 'pushed'
 
 
 @api.route('/debug')
@@ -172,6 +172,9 @@ class AllProjects(Resource):
         project_sources = input.get('sources', [])
         if len(project_sources) == 0:
             return rest.bad_request('Invalid sources.')
+        es_index = input.get('index', {})
+        if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
+            return rest.bad_request('Invalid index.')
 
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
@@ -182,6 +185,7 @@ class AllProjects(Resource):
             data[project_name] = templates.get('project')
             data[project_name]['master_config'] = templates.get('master_config')
             data[project_name]['master_config']['sources'] = project_sources
+            data[project_name]['master_config']['index'] = es_index
             update_master_config_file(project_name)
 
             # .gitignore file should be created for empty folder will not be show in commit
@@ -231,9 +235,13 @@ class Project(Resource):
         project_sources = input.get('sources', [])
         if len(project_sources) == 0:
             return rest.bad_request('Invalid sources.')
+        es_index = input.get('index', {})
+        if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
+            return rest.bad_request('Invalid index.')
         try:
             project_lock.acquire(project_name)
             data[project_name]['master_config']['sources'] = project_sources
+            data[project_name]['master_config']['index'] = es_index
             # write to file
             update_master_config_file(project_name)
             git_helper.commit(files=[project_name + '/master_config.json'],
@@ -1076,6 +1084,8 @@ class TagAnnotationsForEntity(Resource):
             logger.warning('Fail to update annotation to: project {}, kg_id {}, tag {}'.format(
                 project_name, kg_id, tag_name
             ))
+
+
 
 
 if __name__ == '__main__':

@@ -268,6 +268,9 @@ master_config = {
 #     'format': 'enum(normal | phone | email | location)',
 #     'search_importance': 1, # (integer range in [1, 10])
 #     'use_in_network_search': True
+#     'group_name': string optional,
+#     'combine_fields': boolean, optional
+#     'glossaries': [], optional
 # }
 
 # fields = {
