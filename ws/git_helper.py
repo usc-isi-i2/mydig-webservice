@@ -13,10 +13,11 @@ GIT_PULL_MSG = {128: "ERROR", 64: "FAST_FORWARD", 32: "FORCED_UPDATE", 4: "HEAD_
                 2: "NEW_HEAD", 1: "NEW_TAG", 16: "REJECTED", 8: "TAG_UPDATE"}
 
 
-repo = git.Repo(config['repo']['local_path'])
-repo.git.custom_environment(GIT_SSH_COMMAND='ssh -i ' + config['repo']['git']['ssh_key_file_path'])
-remote_obj = git.Remote(repo, 'origin')
-remote_obj.set_url(config['repo']['git']['remote_url'])
+if config['repo']['git']['enable_sync']:
+    repo = git.Repo(config['repo']['local_path'])
+    repo.git.custom_environment(GIT_SSH_COMMAND='ssh -i ' + config['repo']['git']['ssh_key_file_path'])
+    remote_obj = git.Remote(repo, 'origin')
+    remote_obj.set_url(config['repo']['git']['remote_url'])
 
 
 def pull():
