@@ -7,6 +7,7 @@ class ES(object):
     def __init__(self, es_url):
         self.es_url = es_url
         self.es = Elasticsearch([es_url], show_ssl_warnings=False)
+        print self.es
 
     def load_data(self, index, doc_type, doc, doc_id):
         # import certifi
@@ -58,6 +59,18 @@ class ES(object):
         if not isinstance(ids, list):
             ids = [ids]
         query = "{\"query\": {\"ids\": {\"values\":" + json.dumps(ids) + "}}}"
+        print query
+        try:
+            return self.es.search(index=index, doc_type=doc_type, body=query, filter_path=['hits.hits._source'])
+        except:
+            # try once more
+            try:
+                return self.es.search(index=index, doc_type=doc_type, body=query, filter_path=['hits.hits._source'])
+            except Exception as e:
+                print e
+                return None
+
+    def search(self, index, doc_type, query):
         print query
         try:
             return self.es.search(index=index, doc_type=doc_type, body=query, filter_path=['hits.hits._source'])

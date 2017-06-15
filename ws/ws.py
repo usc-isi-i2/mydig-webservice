@@ -1086,6 +1086,60 @@ class TagAnnotationsForEntity(Resource):
             ))
 
 
+@api.route('/projects/<project_name>/actions/<action_name>')
+class Actions(Resource):
+    @requires_auth
+    def post(self, project_name, action_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        if action_name == 'inferlink':
+            return self._invoke_inferlink(project_name)
+        elif action_name == 'etk':
+            return self._invoke_etk()
+        elif action_name == 'publish':
+            git_helper.push()
+            return rest.ok()
+        else:
+            return rest.not_found('action {} not found'.format(action_name))
+
+    def _invoke_inferlink(self, project_name):
+        sources = data[project_name]['master_config']['sources']
+        if len(sources) == 0:
+            return rest.bad_request('invalid sources')
+        for s in sources:
+            if 'tlds' not in s or len(s['tlds']) == 0:
+                return rest.bad_request('invalid tlds in sources')
+
+            query = '''
+            {
+                "size": 200,
+                "query": {
+                    "function_score": {
+                        "query": {
+                            "range": {
+                                "timestamp": {
+                                    "gte": "''' + s['start_date'] + '''",
+                                    "lt": "''' + s['end_date'] + '''",
+                                    "format": "yyyy-MM-dd"
+                                }
+                            }
+                        },
+                        "functions": [{"random_score":{}}]
+                    }
+                }
+            }
+            '''
+            es = ES(s['url'])
+            hits = es.search(s['index'], s['type'], query)
+            if hits:
+                docs = hits['hits']['hits']
+                print len(docs)
+
+    def _invoke_etk(self):
+        pass
+
+
 if __name__ == '__main__':
     try:
 
