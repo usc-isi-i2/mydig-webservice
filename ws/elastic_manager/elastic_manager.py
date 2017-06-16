@@ -7,7 +7,6 @@ class ES(object):
     def __init__(self, es_url):
         self.es_url = es_url
         self.es = Elasticsearch([es_url], show_ssl_warnings=False)
-        print self.es
 
     def load_data(self, index, doc_type, doc, doc_id):
         # import certifi

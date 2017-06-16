@@ -9,6 +9,9 @@ import threading
 import werkzeug
 import codecs
 import csv
+import multiprocessing
+import requests
+import urllib, httplib
 
 from flask import Flask, render_template, Response
 from flask import request, abort, redirect, url_for, send_file
@@ -159,6 +162,12 @@ class Debug(Resource):
         return debug_info
 
 
+    def post(self):
+        j = request.get_json(force=True)
+        print j
+        return rest.created()
+
+
 @api.route('/projects')
 class AllProjects(Resource):
     @requires_auth
@@ -195,6 +204,8 @@ class AllProjects(Resource):
             write_to_file('', os.path.join(project_dir_path, 'entity_annotations/.gitignore'))
             os.makedirs(os.path.join(project_dir_path, 'glossaries'))
             write_to_file('', os.path.join(project_dir_path, 'glossaries/.gitignore'))
+            os.makedirs(os.path.join(project_dir_path, 'pages'))
+            write_to_file('*\n', os.path.join(project_dir_path, 'pages/.gitignore'))
 
             git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
             logger.info('project %s created.' % project_name)
@@ -506,7 +517,7 @@ class ProjectGlossaries(Resource):
 
     @staticmethod
     def compute_statistics(project_name, glossary_name, file_path):
-        THRESHOLD = 15
+        THRESHOLD = 5
         ngram = {}
         with open(file_path, 'r') as f:
             line_count = 0
@@ -1103,6 +1114,82 @@ class Actions(Resource):
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
+    @staticmethod
+    def _inferlink_worker(project_name, sources, dir_path):
+
+        for s in sources:
+
+            cdr_ids = {}
+
+            # retrieve from es
+            for tld in s['tlds']:
+                query = '''
+                {
+                    "size": 200,
+                    "query": {
+                        "filtered":{
+                            "query": {
+                                "function_score": {
+                                    "query": {
+                                        "range": {
+                                            "timestamp": {
+                                                "gte": "''' + s['start_date'] + '''",
+                                                "lt": "''' + s['end_date'] + '''",
+                                                "format": "yyyy-MM-dd"
+                                            }
+                                        }
+                                    },
+                                    "functions": [{"random_score":{}}]
+                                }
+                            },
+                            "filter": {
+                                "and": {
+                                    "filters": [
+                                        {"exists" : {"field": "url"}},
+                                        {"exists" : {"field": "doc_id"}},
+                                        {"term": {"url.domain": "''' + tld + '''"}}
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+                '''
+                es = ES(s['url'])
+                hits = es.search(s['index'], s['type'], query)
+                if hits:
+                    docs = hits['hits']['hits']
+                    cdr_ids[tld] = list()
+                    file_path = os.path.join(dir_path, tld + '.jl')
+                    with open(file_path, 'w') as f:
+                        for d in docs:
+                            if 'raw_content' not in d['_source']:
+                                print '1'
+                            cdr_ids[tld].append(d['_source']['doc_id'])
+                            f.write(json.dumps(d))
+                            f.write('\n')
+
+            # invoke inferlink
+            host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
+            port = 5000
+            url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
+            payload = {
+                'tlds': s['tlds'],
+                'cdr_ids': cdr_ids
+            }
+
+            # print host, url, payload
+            # requests dosen't work well here on mac in multiprocessing mode, using httplib instead
+            params = json.dumps(payload)
+            headers = {'Content-type': 'application/json'}
+            conn = httplib.HTTPConnection(host, port, timeout=5)
+            conn.request('POST', url, params, headers)
+            resp = conn.getresponse()
+            if resp.status // 100 != 2:
+                logger.error('invoke inferlink server {}: {}'.format(host + url, resp.reason))
+
+            print 'action inferlink is done'
+
     def _invoke_inferlink(self, project_name):
         sources = data[project_name]['master_config']['sources']
         if len(sources) == 0:
@@ -1111,30 +1198,10 @@ class Actions(Resource):
             if 'tlds' not in s or len(s['tlds']) == 0:
                 return rest.bad_request('invalid tlds in sources')
 
-            query = '''
-            {
-                "size": 200,
-                "query": {
-                    "function_score": {
-                        "query": {
-                            "range": {
-                                "timestamp": {
-                                    "gte": "''' + s['start_date'] + '''",
-                                    "lt": "''' + s['end_date'] + '''",
-                                    "format": "yyyy-MM-dd"
-                                }
-                            }
-                        },
-                        "functions": [{"random_score":{}}]
-                    }
-                }
-            }
-            '''
-            es = ES(s['url'])
-            hits = es.search(s['index'], s['type'], query)
-            if hits:
-                docs = hits['hits']['hits']
-                print len(docs)
+        p = multiprocessing.Process(target=self._inferlink_worker,
+            args=(project_name, sources, os.path.join(_get_project_dir_path(project_name), 'pages')))
+        p.start()
+        return rest.created()
 
     def _invoke_etk(self):
         pass

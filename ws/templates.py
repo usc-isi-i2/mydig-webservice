@@ -257,15 +257,15 @@ master_config = {
 # field = {
 #     'name': 'same as the key',
 #     'screen_label': 'show on the screen',
+#     'screen_label_plural': 'screen label plural',
 #     'description': 'whatever',
-#     'type': 'enum(string | location | image | date)',
+#     'type': 'enum(string | location | username | date | email | hyphenated | phone | image)',
 #     'show_in_search': True,
 #     'show_in_facets': True,
 #     'show_as_link': 'enum(text | entity)',
 #     'show_in_result': 'enum(header | detail | no)',
 #     'color': 'enum(...)',
 #     'icon': 'enum(...)',
-#     'format': 'enum(normal | phone | email | location)',
 #     'search_importance': 1, # (integer range in [1, 10])
 #     'use_in_network_search': True
 #     'group_name': string optional,
