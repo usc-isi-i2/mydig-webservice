@@ -760,6 +760,37 @@ paths:
           description: "bad request"
         404:
           description: "not found"
+  # actions
+  /projects/{project_name}/actions/{action_name}:
+    post:
+      tags:
+      - "actions"
+      summary: "Invoke an action"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "action_name"
+        required: true
+        enum: ["publish", "inferlink", "etk"]
+        description: ""
+      responses:
+        201:
+          description: "created (action started)"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exist"
   # add tag to entity
   /projects/{project_name}/entities/{kg_id}/tags:
     post:
