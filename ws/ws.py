@@ -1186,7 +1186,7 @@ class Actions(Resource):
                             #     print 'no raw_content'
                             # print len(d['_source']['raw_content'])
                             cdr_ids[tld].append(d['_source']['doc_id'])
-                            f.write(json.dumps(d))
+                            f.write(json.dumps(d['_source']))
                             f.write('\n')
 
             # invoke inferlink

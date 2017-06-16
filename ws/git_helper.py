@@ -54,6 +54,8 @@ def commit(files=['*'], message=str(datetime.now())):
 
 def push():
     def _push():
+        remote_obj.pull('--rebase')
+
         pushinfo = remote_obj.push()
         flag = pushinfo[0].flags
         # return flag
