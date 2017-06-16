@@ -3,7 +3,8 @@ info:
   description: "API reference of MyDIG web service."
   version: "1.0.0"
   title: "MyDIG web service API reference"
-#  contact:
+  contact:
+    url: "http://usc-isi-i2.github.io/dig/"
 #    email: "yixiangy@isi.edu"
 #  license:
 #    name: "Apache 2.0"
@@ -789,67 +790,66 @@ paths:
           description: "bad request"
         404:
           description: "not found"
-        409:
-          description: "exist"
+
   # add tag to entity
-  /projects/{project_name}/entities/{kg_id}/tags:
-    post:
-      tags:
-      - "tags"
-      summary: "Add tags to an entity instance"
-      description: ""
-      operationId: ""
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "project_name"
-        required: true
-        description: ""
-      - in: "path"
-        name: "kg_id"
-        required: true
-        description: ""
-      - in: "body"
-        name: "body"
-        description: ""
-        required: true
-        description: ""
-        schema:
-          $ref: "#/definitions/tag_name_array"
-      responses:
-        201:
-          description: "created"
-        400:
-          description: "bad request"
-        404:
-          description: "not found"
-    get:
-      tags:
-      - "tags"
-      summary: "Get all tags of an entity instance"
-      description: ""
-      operationId: ""
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "project_name"
-        required: true
-        description: ""
-      - in: "path"
-        name: "kg_id"
-        required: true
-        description: ""
-      responses:
-        200:
-          description: "ok"
-        404:
-          description: "not found"
+#  /projects/{project_name}/entities/{kg_id}/tags:
+#    post:
+#      tags:
+#      - "tags"
+#      summary: "Add tags to an entity instance"
+#      description: ""
+#      operationId: ""
+#      consumes:
+#      - "application/json"
+#      produces:
+#      - "application/json"
+#      parameters:
+#      - in: "path"
+#        name: "project_name"
+#        required: true
+#        description: ""
+#      - in: "path"
+#        name: "kg_id"
+#        required: true
+#        description: ""
+#      - in: "body"
+#        name: "body"
+#        description: ""
+#        required: true
+#        description: ""
+#        schema:
+#          $ref: "#/definitions/tag_name_array"
+#      responses:
+#        201:
+#          description: "created"
+#        400:
+#          description: "bad request"
+#        404:
+#          description: "not found"
+#    get:
+#      tags:
+#      - "tags"
+#      summary: "Get all tags of an entity instance"
+#      description: ""
+#      operationId: ""
+#      consumes:
+#      - "application/json"
+#      produces:
+#      - "application/json"
+#      parameters:
+#      - in: "path"
+#        name: "project_name"
+#        required: true
+#        description: ""
+#      - in: "path"
+#        name: "kg_id"
+#        required: true
+#        description: ""
+#      responses:
+#        200:
+#          description: "ok"
+#        404:
+#          description: "not found"
 #  /projects/{project_name}/entities/{entity_name}/{kg_id}/tags:
 #    post:
 #      tags:

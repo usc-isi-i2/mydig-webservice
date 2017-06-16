@@ -595,47 +595,47 @@ class Glossary(Resource):
         return rest.deleted()
 
 
-@api.route('/projects/<project_name>/entities/<kg_id>/tags')
-class EntityTags(Resource):
-    @requires_auth
-    def get(self, project_name, kg_id):
-        if project_name not in data:
-            return rest.not_found('Project {} not found'.format(project_name))
-        entity_name = 'Ad'
-        if entity_name not in data[project_name]['entities']:
-            data[project_name]['entities'][entity_name] = dict()
-        if kg_id not in data[project_name]['entities'][entity_name]:
-            return rest.not_found('kg_id {} not found'.format(kg_id))
-
-        return data[project_name]['entities'][entity_name][kg_id]
-
-    @requires_auth
-    def post(self, project_name, kg_id):
-        if project_name not in data:
-            return rest.not_found()
-
-        input = request.get_json(force=True)
-        tags = input.get('tags', [])
-        if len(tags) == 0:
-            return rest.bad_request('No tags given')
-        # tag should be exist
-        for tag_name in tags:
-            if tag_name not in data[project_name]['master_config']['tags']:
-                return rest.bad_request('Tag {} is not exist'.format(tag_name))
-        # add tags to entity
-        entity_name = 'Ad'
-        for tag_name in tags:
-            if entity_name not in data[project_name]['entities']:
-                data[project_name]['entities'][entity_name] = dict()
-            if kg_id not in data[project_name]['entities'][entity_name]:
-                data[project_name]['entities'][entity_name][kg_id] = dict()
-            if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
-                data[project_name]['entities'][entity_name][kg_id][tag_name] = dict()
-
-        # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-        write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
-        return rest.created()
+# @api.route('/projects/<project_name>/entities/<kg_id>/tags')
+# class EntityTags(Resource):
+#     @requires_auth
+#     def get(self, project_name, kg_id):
+#         if project_name not in data:
+#             return rest.not_found('Project {} not found'.format(project_name))
+#         entity_name = 'Ad'
+#         if entity_name not in data[project_name]['entities']:
+#             data[project_name]['entities'][entity_name] = dict()
+#         if kg_id not in data[project_name]['entities'][entity_name]:
+#             return rest.not_found('kg_id {} not found'.format(kg_id))
+#
+#         return data[project_name]['entities'][entity_name][kg_id]
+#
+#     @requires_auth
+#     def post(self, project_name, kg_id):
+#         if project_name not in data:
+#             return rest.not_found()
+#
+#         input = request.get_json(force=True)
+#         tags = input.get('tags', [])
+#         if len(tags) == 0:
+#             return rest.bad_request('No tags given')
+#         # tag should be exist
+#         for tag_name in tags:
+#             if tag_name not in data[project_name]['master_config']['tags']:
+#                 return rest.bad_request('Tag {} is not exist'.format(tag_name))
+#         # add tags to entity
+#         entity_name = 'Ad'
+#         for tag_name in tags:
+#             if entity_name not in data[project_name]['entities']:
+#                 data[project_name]['entities'][entity_name] = dict()
+#             if kg_id not in data[project_name]['entities'][entity_name]:
+#                 data[project_name]['entities'][entity_name][kg_id] = dict()
+#             if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
+#                 data[project_name]['entities'][entity_name][kg_id][tag_name] = dict()
+#
+#         # write to file
+#         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
+#         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
+#         return rest.created()
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations')
@@ -660,12 +660,14 @@ class FieldAnnotations(Resource):
             return rest.not_found('Field name {} not found'.format(field_name))
         data[project_name]['field_annotations'][kg_id][field_name] = dict()
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-        write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
+        self.write_to_field_file(project_name, field_name)
         # load into ES
         self.es_remove_field_annotation('full', project_name, kg_id, field_name)
         self.es_remove_field_annotation('sample', project_name, kg_id, field_name)
-
+        # commit to git
+        git_helper.commit(files=[project_name + '/field_annotations/' + field_name + '.csv'],
+                          message='delete all field annotations: project {}, field {}, kg_id {}'
+                          .format(project_name, field_name, kg_id))
         return rest.deleted()
 
     @requires_auth
@@ -692,7 +694,10 @@ class FieldAnnotations(Resource):
         # load into ES
         self.es_update_field_annotation('full', project_name, kg_id, field_name, key, human_annotation)
         self.es_update_field_annotation('sample', project_name, kg_id, field_name, key, human_annotation)
-
+        # commit to git
+        git_helper.commit(files=[project_name + '/field_annotations/' + field_name + '.csv'],
+                          message='create / update a field annotation: project {}, field {}, kg_id {}'
+                          .format(project_name, field_name, kg_id))
         return rest.created()
 
     @requires_auth
@@ -835,11 +840,14 @@ class FieldInstanceAnnotations(Resource):
 
         del data[project_name]['field_annotations'][kg_id][field_name][key]
         # write to file
-        file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/field_annotations.json')
-        write_to_file(json.dumps(data[project_name]['field_annotations'], indent=4), file_path)
+        FieldAnnotations.write_to_field_file(project_name, field_name)
         # load into ES
         FieldAnnotations.es_remove_field_annotation('full', project_name, kg_id, field_name, key)
         FieldAnnotations.es_remove_field_annotation('sample', project_name, kg_id, field_name, key)
+        # commit to git
+        git_helper.commit(files=[project_name + '/field_annotations/' + field_name + '.csv'],
+                          message='delete a field annotation: project {}, field {}, kg_id {}, key {}'
+                          .format(project_name, field_name, kg_id, key))
         return rest.deleted()
 
 
@@ -870,6 +878,10 @@ class TagAnnotationsForEntityType(Resource):
 
         # write to file
         self.write_to_tag_file(project_name, tag_name)
+        # commit to git
+        git_helper.commit(files=[project_name + '/entity_annotations/' + tag_name + '.csv'],
+                          message='delete all tag annotations: project {}, entity {}, tag {}'
+                          .format(project_name, entity_name, tag_name))
 
         return rest.deleted()
 
@@ -918,7 +930,10 @@ class TagAnnotationsForEntityType(Resource):
         # load to ES
         self.es_update_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
         self.es_update_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
-
+        # commit to git
+        git_helper.commit(files=[project_name + '/entity_annotations/' + tag_name + '.csv'],
+                          message='create /update a tag annotation: project {}, entity {}, tag {}'
+                          .format(project_name, entity_name, tag_name))
         return rest.created()
 
     @requires_auth
@@ -1046,6 +1061,10 @@ class TagAnnotationsForEntity(Resource):
         # remove from ES
         TagAnnotationsForEntityType.es_remove_tag_annotation('full', project_name, kg_id, tag_name)
         TagAnnotationsForEntityType.es_remove_tag_annotation('sample', project_name, kg_id, tag_name)
+        # commit to git
+        git_helper.commit(files=[project_name + '/entity_annotations/' + tag_name + '.csv'],
+                          message='delete a tag annotation: project {}, entity {}, tag {}, kg_id {}'
+                          .format(project_name, entity_name, tag_name, kg_id))
 
         return rest.deleted()
 
@@ -1163,8 +1182,9 @@ class Actions(Resource):
                     file_path = os.path.join(dir_path, tld + '.jl')
                     with open(file_path, 'w') as f:
                         for d in docs:
-                            if 'raw_content' not in d['_source']:
-                                print '1'
+                            # if 'raw_content' not in d['_source']:
+                            #     print 'no raw_content'
+                            # print len(d['_source']['raw_content'])
                             cdr_ids[tld].append(d['_source']['doc_id'])
                             f.write(json.dumps(d))
                             f.write('\n')
