@@ -1364,7 +1364,7 @@ definitions:
         type: "string"
       type:
         type: "string"
-        description: "enum(string | location | image | date)"
+        description: "enum(string | location | username | date | email | hyphenated | phone | image)"
       show_in_search:
         type: "boolean"
       show_in_facets:
@@ -1374,16 +1374,13 @@ definitions:
         description: "enum(text | entity)"
       show_in_result:
         type: "string"
-        description: "enum(header | detail | no)"
+        description: "enum(header | detail | no | title | description)"
       color:
         type: "string"
         description: "enum(...)"
       icon:
         type: "string"
         description: "enum(...)"
-      format:
-        type: "string"
-        description: "enum(normal | phone | email | location)"
       search_importance:
         type: "integer"
         description: "range in [1, 10]"

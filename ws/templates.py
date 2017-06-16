@@ -263,7 +263,7 @@ master_config = {
 #     'show_in_search': True,
 #     'show_in_facets': True,
 #     'show_as_link': 'enum(text | entity)',
-#     'show_in_result': 'enum(header | detail | no)',
+#     'show_in_result': 'enum(header | detail | no | title | description)',
 #     'color': 'enum(...)',
 #     'icon': 'enum(...)',
 #     'search_importance': 1, # (integer range in [1, 10])
