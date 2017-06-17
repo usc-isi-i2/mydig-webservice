@@ -9,6 +9,10 @@ def ok(data=''):
     return data, 200
 
 
+def accepted(data=''):
+    return data, 202
+
+
 def deleted():
     return '', 204
 

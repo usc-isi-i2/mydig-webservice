@@ -784,8 +784,8 @@ paths:
         enum: ["publish", "inferlink", "etk"]
         description: ""
       responses:
-        201:
-          description: "created (action started)"
+        202:
+          description: "accepted (action started)"
         400:
           description: "bad request"
         404:

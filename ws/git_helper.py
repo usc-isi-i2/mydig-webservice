@@ -20,9 +20,9 @@ if config['repo']['git']['enable_sync']:
     remote_obj.set_url(config['repo']['git']['remote_url'])
 
 
-def pull():
-    def _pull():
-        pullinfo = remote_obj.pull()
+def pull(refspecs):
+    def _pull(refspecs):
+        pullinfo = remote_obj.pull(refspecs)
         flag = pullinfo[0].flags
         # return flag
         return GIT_PULL_MSG.get(flag, 'Unknown: ' + str(flag))
@@ -31,7 +31,7 @@ def pull():
         return
 
     # sync
-    ret = _pull()
+    ret = _pull(refspecs)
     return ret
 
 

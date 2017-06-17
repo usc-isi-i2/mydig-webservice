@@ -1129,7 +1129,7 @@ class Actions(Resource):
             return self._invoke_etk()
         elif action_name == 'publish':
             git_helper.push()
-            return rest.ok()
+            return rest.accepted()
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
@@ -1221,7 +1221,7 @@ class Actions(Resource):
         p = multiprocessing.Process(target=self._inferlink_worker,
             args=(project_name, sources, os.path.join(_get_project_dir_path(project_name), 'pages')))
         p.start()
-        return rest.created()
+        return rest.accepted()
 
     def _invoke_etk(self):
         pass
@@ -1230,7 +1230,7 @@ class Actions(Resource):
 if __name__ == '__main__':
     try:
 
-        if git_helper.pull() == 'ERROR':
+        if git_helper.pull('--rebase') == 'ERROR':
             raise Exception('Git pull error')
 
         # init
