@@ -4,9 +4,9 @@ from elasticsearch import helpers
 import requests
 
 class ES(object):
-    def __init__(self, es_url):
+    def __init__(self, es_url, http_auth=None):
         self.es_url = es_url
-        self.es = Elasticsearch([es_url], show_ssl_warnings=False)
+        self.es = Elasticsearch([es_url], show_ssl_warnings=False, http_auth=http_auth)
 
     def load_data(self, index, doc_type, doc, doc_id):
         # import certifi

@@ -12,6 +12,7 @@ import csv
 import multiprocessing
 import requests
 import urllib, httplib
+import copy
 
 from flask import Flask, render_template, Response
 from flask import request, abort, redirect, url_for, send_file
@@ -191,12 +192,22 @@ class AllProjects(Resource):
             project_lock.acquire(project_name)
             if not os.path.exists(project_dir_path):
                 os.makedirs(project_dir_path)
+
+            # create global gitignore file
+            write_to_file('credentials.json\n', os.path.join(project_dir_path, '.gitignore'))
+
+            # extract credentials to a separated file
+            credentials = self.extract_credentials_from_sources(project_sources)
+            write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
+
+            # initialize data structure
             data[project_name] = templates.get('project')
             data[project_name]['master_config'] = templates.get('master_config')
             data[project_name]['master_config']['sources'] = project_sources
             data[project_name]['master_config']['index'] = es_index
             update_master_config_file(project_name)
 
+            # create other dirs and files
             # .gitignore file should be created for empty folder will not be show in commit
             os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
             write_to_file('', os.path.join(project_dir_path, 'field_annotations/.gitignore'))
@@ -235,6 +246,30 @@ class AllProjects(Resource):
         git_helper.commit(message='delete all projects')
         return rest.deleted()
 
+    @staticmethod
+    def extract_credentials_from_sources(sources):
+        idx = 0
+        credentials = {}
+        for s in sources:
+            s['credential_id'] = str(idx)
+            credentials[idx] = {
+                'username': s.get('username', ''),
+                'password': s.get('password', '')
+            }
+        return credentials
+
+    @staticmethod
+    def get_authenticated_sources(project_name):
+        """don't store authenticated source"""
+        sources = copy.deepcopy(data[project_name]['master_config']['sources'])
+        with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
+            j = json.loads(f.read())
+            for s in sources:
+                id = s['credential_id']
+                if j[id]['username'] != '':
+                    s['http_auth'] = (j[id]['username'], j[id]['password'])
+        return sources
+
 
 @api.route('/projects/<project_name>')
 class Project(Resource):
@@ -251,6 +286,11 @@ class Project(Resource):
             return rest.bad_request('Invalid index.')
         try:
             project_lock.acquire(project_name)
+
+            # extract credentials to a separated file
+            credentials = AllProjects.extract_credentials_from_sources(project_sources)
+            write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
+
             data[project_name]['master_config']['sources'] = project_sources
             data[project_name]['master_config']['index'] = es_index
             # write to file
@@ -272,7 +312,15 @@ class Project(Resource):
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
-        return data[project_name]['master_config']
+        # construct return structure
+        ret = copy.deepcopy(data[project_name]['master_config'])
+        ret['sources'] = AllProjects.get_authenticated_sources(project_name)
+        for s in ret['sources']:
+            s['username'] = s['http_auth'][0]
+            s['password'] = s['http_auth'][1]
+            del s['http_auth']
+            del s['credential_id']
+        return ret
 
     @requires_auth
     def delete(self, project_name):
@@ -1174,7 +1222,7 @@ class Actions(Resource):
                     }
                 }
                 '''
-                es = ES(s['url'])
+                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
                 hits = es.search(s['index'], s['type'], query)
                 if hits:
                     docs = hits['hits']['hits']
@@ -1211,7 +1259,7 @@ class Actions(Resource):
             print 'action inferlink is done'
 
     def _invoke_inferlink(self, project_name):
-        sources = data[project_name]['master_config']['sources']
+        sources = AllProjects.get_authenticated_sources(project_name)
         if len(sources) == 0:
             return rest.bad_request('invalid sources')
         for s in sources:

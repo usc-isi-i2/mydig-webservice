@@ -1349,6 +1349,10 @@ definitions:
         type: "array"
         items:
           type: "string"
+      username:
+        type: "string"
+      password:
+        type: "string"
   project:
     type: "object"
     properties:
