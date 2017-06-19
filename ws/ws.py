@@ -14,7 +14,7 @@ import requests
 import urllib, httplib
 import copy
 
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api, reqparse
@@ -150,23 +150,25 @@ def home():
 #     return 'pushed'
 
 
-@api.route('/debug')
+@api.route('/debug/<mode>')
 class Debug(Resource):
     @requires_auth
-    def get(self):
+    def get(self, mode):
         if not config['debug']:
             return abort(404)
-        debug_info = {
-            'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
-            'data': data
-        }
-        return debug_info
 
-
-    def post(self):
-        j = request.get_json(force=True)
-        print j
-        return rest.created()
+        if mode == 'data':
+            debug_info = {
+                'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
+                'data': data
+            }
+            return debug_info
+        elif mode == 'log':
+            with open(config['logging']['file_path'], 'r') as f:
+                content = f.read()
+            return make_response(content)
+        else:
+            return rest.bad_request('Debug mode not found')
 
 
 @api.route('/projects')
