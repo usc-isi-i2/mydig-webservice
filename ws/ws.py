@@ -528,6 +528,8 @@ class ProjectGlossaries(Resource):
         args = parse.parse_args()
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
+        if args['glossary_name'] is None or ['glossary_file'] is None:
+            return rest.bad_request('Invalid glossary_name or glossary_file')
         name = args['glossary_name']
         if name in data[project_name]['master_config']['glossaries']:
             return rest.exists('Glossary {} exists'.format(name))
@@ -601,6 +603,9 @@ class Glossary(Resource):
         args = parse.parse_args()
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
+        if ['glossary_file'] is None:
+            return rest.bad_request('Invalid glossary_file')
+
         name = glossary_name
         file = args['glossary_file']
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
