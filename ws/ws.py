@@ -167,8 +167,14 @@ class Debug(Resource):
             with open(config['logging']['file_path'], 'r') as f:
                 content = f.read()
             return make_response(content)
-        else:
-            return rest.bad_request('Debug mode not found')
+        elif mode == 'nohup':
+            nohup_file_path = '../nohup.out'
+            if os.path.exists(nohup_file_path):
+                with open(nohup_file_path, 'r') as f:
+                    content = f.read()
+                return make_response(content)
+
+        return rest.bad_request()
 
 
 @api.route('/projects')
