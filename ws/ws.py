@@ -168,7 +168,7 @@ class Debug(Resource):
                 content = f.read()
             return make_response(content)
         elif mode == 'nohup':
-            nohup_file_path = '../nohup.out'
+            nohup_file_path = 'nohup.out'
             if os.path.exists(nohup_file_path):
                 with open(nohup_file_path, 'r') as f:
                     content = f.read()
