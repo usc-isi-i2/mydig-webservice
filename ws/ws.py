@@ -1194,7 +1194,7 @@ class Actions(Resource):
         if action_name == 'invoke_inferlink':
             return self._invoke_inferlink(project_name)
         elif action_name == 'extract_and_load_test_data':
-            return self._invoke_etk()
+            return self._extract_and_load_test_data()
         elif action_name == 'update_to_new_index':
             return 0
         elif action_name == 'publish':
@@ -1293,8 +1293,11 @@ class Actions(Resource):
         p.start()
         return rest.accepted()
 
-    def _invoke_etk(self):
-        pass
+    def _extract_and_load_test_data(self):
+        if git_helper.pull_landmark() == 'ERROR':
+            return rest.internal_error('fail of pulling landmark data')
+        return rest.accepted()
+
 
 
 if __name__ == '__main__':

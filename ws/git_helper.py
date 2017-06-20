@@ -20,6 +20,14 @@ if config['repo']['git']['enable_sync']:
     remote_obj.set_url(config['repo']['git']['remote_url'])
 
 
+if config['repo_landmark']['git']['enable_sync']:
+    repo_landmark = git.Repo(config['repo_landmark']['local_path'])
+    repo_landmark.git.custom_environment(
+        GIT_SSH_COMMAND='ssh -i ' + config['repo_landmark']['git']['ssh_key_file_path'])
+    remote_obj_landmark = git.Remote(repo_landmark, 'origin')
+    remote_obj_landmark.set_url(config['repo_landmark']['git']['remote_url'])
+
+
 def pull(refspecs):
     def _pull(refspecs):
         pullinfo = remote_obj.pull(refspecs)
@@ -33,6 +41,22 @@ def pull(refspecs):
     # sync
     ret = _pull(refspecs)
     return ret
+
+
+def pull_landmark():
+    def _pull():
+        pullinfo = remote_obj_landmark.pull()
+        flag = pullinfo[0].flags
+        # return flag
+        return GIT_PULL_MSG.get(flag, 'Unknown: ' + str(flag))
+
+    if not config['repo_landmark']['git']['enable_sync']:
+        return
+
+    # sync
+    ret = _pull()
+    return ret
+
 
 
 def commit(files=['*'], message=str(datetime.now())):
@@ -54,7 +78,7 @@ def commit(files=['*'], message=str(datetime.now())):
 
 def push():
     def _push():
-        remote_obj.pull('--rebase')
+        # remote_obj.pull('--rebase')
 
         pushinfo = remote_obj.push()
         flag = pushinfo[0].flags

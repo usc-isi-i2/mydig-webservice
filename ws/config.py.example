@@ -16,6 +16,14 @@ config = {
             'ssh_key_file_path': '<file path>'
         }
     },
+    'repo_landmark': {
+        'local_path': '../../mydig-projects-landmark',
+        'git': {
+            'enable_sync': True,
+            'remote_url': '<remote url>',
+            'ssh_key_file_path': '<file path>'
+        }
+    },
     'logging': {
         'file_path': 'log.log',
         'format': '%(asctime)s %(levelname)s %(message)s',
