@@ -1,0 +1,235 @@
+<link rel="stylesheet" href="../static/styles/main.css">
+<script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../static/bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../static/bower_components/paper-card/paper-card.html">
+<link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
+<link rel="import" href="../static/elements/elements.html">
+<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
+<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
+ <script src="../static/bower_components/moment/min/locales.js"></script>
+<link rel="import" href="../static/bower_components/polymer/polymer.html">
+ --><style is="custom-style" include="shared-styles"></style>
+<style is="custom-style" include="search-styles"></style>
+<link rel="import" href="theme.css">
+<script>
+
+function addProject(data)  {
+		var xhr = new XMLHttpRequest();
+		var url = "http://52.36.12.77:9879/projects";
+		var name=document.getElementById("saveProjectFormName").value;
+		var root_name=document.getElementById("saveProjectFormType_name").value;
+		var index_name=document.getElementById("saveProjectFormIndex_name").value;
+		var type_name=document.getElementById("saveProjectFormTLD_name").value;
+		var start_date=document.getElementById("saveProjectFormStart_date").innerText;
+		var end_date=document.getElementById("saveProjectFormEnd_date").innerText;
+		xhr.open("POST", url, true);
+		xhr.setRequestHeader("Content-type", "application/json");
+		xhr.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
+		xhr.onreadystatechange = function () {
+		    if (xhr.readyState === 4 && xhr.status === 201) {
+		        console.log("Success");
+		        location.reload();
+		    }
+		};
+		
+		var data = JSON.stringify({"index":{"full":"","sample":""},"project_name":name,"sources": [{
+			"index_name":index_name,
+			"type":type_name,
+			"start_date":start_date,
+			"tlds":[],
+			"url":"",
+			"end_date":end_date}]});
+		
+		xhr.send(data);
+		
+		
+    //document.getElementById('saveProjectForm').submit();
+}
+</script>
+<dom-module id="user-demo"> 
+
+<template>
+		 <iron-ajax id="ajaxCall" method="GET" content-type="application/json" handle-as="json"
+		  on-response="handleResponse" url = "http://52.36.12.77:9879/projects"></iron-ajax>
+		 
+		 <iron-ajax id="projectData" method="GET" content-type="application/json" handle-as="json"
+		  on-response="projectDataResponse"></iron-ajax>
+		 
+		 <iron-ajax id="updateEditDataRequest" method="POST" content-type="application/json" handle-as="json"
+		  on-response="updatedEditData"></iron-ajax>
+		 
+		 
+		  <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
+		  <paper-header-panel>
+		  
+          <section class="adjustProjectSection">
+            <div class="search-results-header">
+              <div class="paper-font-title flex">DIG Projects</div>
+            </div>
+            <div class="h-divider"></div>
+          </section>
+          </paper-header-panel>
+          <h3 style="padding:0em;margin-left:10px">DIG Projects</h3>
+		<template is="dom-repeat" items="{{projectDatas}}">
+		 <br><br>
+	     <paper-material class="paperMaterialStyle">
+              <section id = "projectSection" style="height: 5em;
+    padding: 1.2em;" class="main-search-results">
+              <div style="margin-bottom:0.4em"><span raised><strong>Name : </strong>{{item.name}}</span></div>
+              <div>
+	              <span><strong>Index Name : </strong>{{item.value.sources.0.index_name}}</span>
+	              <a target="_blank" style="color:black" href="projectDetailsUpdate.html?{{item.name}}">
+	              <paper-button style="float:right" raised class="indigo"><strong>Open</strong></paper-button>
+	              </a>
+	              
+	              <paper-button on-tap="editProjectData" style="float:right" raised class="indigo"><strong>Edit</strong></paper-button>
+	              
+              </div>
+              <div style="margin-top:0.5em">
+                  <span><strong>Start Date : </strong>{{item.value.sources.0.start_date}}</span>
+	              <div style="float: right;margin-right: 30em"><strong>End Date : </strong>{{item.value.sources.0.end_date}}</div>
+              </div>
+              </section>
+            </paper-material>
+          
+        </template>
+        <br>
+	    <center><paper-button onclick="projectDialog.toggle()" raised><strong>Add Project</strong></paper-button></center>
+	    
+	    <paper-dialog id="projectDialog" class="projectDialogStyles">
+           		    <paper-input class="projectInputStyle" label="Name:" id=saveProjectFormName></paper-input>
+			        <paper-input class="projectInputStyle" label="Type:" id=saveProjectFormType_name></paper-input>
+			        <paper-input class="projectInputStyle" label="Index Name:" id=saveProjectFormIndex_name></paper-input>
+			        <paper-input class="projectInputStyle" label="TLD:" id=saveProjectFormTLD_name></paper-input>
+			        <paper-date-picker-item class="projectInputStyle"
+					    icon="icons:today" date-format="MM-DD-YYYY"
+					    placeholder="Start Date:"
+					    id=saveProjectFormStart_date>
+					</paper-date-picker-item>
+					<paper-date-picker-item class="projectInputStyle" date-format="MM-DD-YYYY"
+					    icon="icons:today"
+					    placeholder="End Date:"
+					    id=saveProjectFormEnd_date>
+					</paper-date-picker-item>
+			        <paper-button style="float:center;margin-top:20px;margin-left:10px;" onclick="addProject();" raised><strong>Save</strong></paper-button>
+			        <paper-button style="float:center;margin-top:20px" onclick="projectDialog.toggle()" raised><strong>Cancel</strong></paper-button>
+		        
+		</paper-dialog>
+		
+		
+		<paper-dialog id="editprojectDialog" class="projectDialogStyles">
+           		    <paper-input class="projectInputStyle" label="Root Name:" id=editProjectFormRoot_name value="{{editProjectForm.value.root_name}}"></paper-input>
+			        <paper-input class="projectInputStyle" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index_name}}"></paper-input>
+			        <paper-input class="projectInputStyle" label="Type Name:" id=editProjectFormType_name value="{{editProjectForm.value.sources.0.type}}"></paper-input>
+			        <paper-date-picker-item class="projectInputStyle" icon="icons:today" date-format="MM-DD-YYYY"
+    				placeholder="Start Date:" date="{{editProjectForm.value.sources.0.start_date}}"
+    					id=saveProjectFormStart_date>
+					</paper-date-picker-item>
+					<paper-date-picker-item class="projectInputStyle" date-format="MM-DD-YYYY"
+					    icon="icons:today" date="{{editProjectForm.value.sources.0.end_date}}"
+					    placeholder="End Date:"
+					    id=saveProjectFormEnd_date>
+					</paper-date-picker-item>
+								        
+			        
+			        <paper-textarea class="projectInputStyle" label="Query"></paper-textarea>
+			        <paper-button on-tap="updateEditData" style="float:center;margin-top:20px;margin-left:10px;"  raised><strong>Save</strong></paper-button>
+			        <paper-button style="float:center;margin-top:20px" onclick="editprojectDialog.toggle()" raised><strong>Cancel</strong></paper-button>
+		        
+		   </paper-dialog>
+</template> 
+</dom-module>
+<user-demo></user-demo>
+<script>
+Polymer({
+    is: 'user-demo',
+    properties: {
+       
+        projects: {
+	          type: Array,
+	          notify: true,
+	    },
+	    projectData: {
+	          type: String,
+	          notify: true,
+	    },
+	    name: {
+	          type: String,
+	          notify: true,
+	    },
+	    
+      
+    },
+   
+    ready : function() {
+    	var obj = {};
+        obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+    	this.$.ajaxCall.headers = obj;
+    	this.$.ajaxCall.generateRequest();
+    	this.projects=[];
+    	this.arrayData=[];
+    	this.projectDatas=[];
+    	this.dataFinal = [];
+    	this.name = "";
+    	this.i=0;
+    	this.editProjectForm = {};
+    },
+    
+    handleResponse : function(data) {
+    	this.arrayData = (data.detail.response);
+    	for(var i=0;i<this.arrayData.length;i++) {
+    		var obj = {};
+    		obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+        	this.$.projectData.headers = obj;
+        	
+        	this.$.projectData.url="http://52.36.12.77:9879/projects/"+this.arrayData[i];
+    		this.$.projectData.generateRequest();
+    	}
+    	
+    },
+    projectDataResponse : function(data) {
+    	var obj = {"name":this.arrayData[this.i],"value":data.detail.response};
+    	this.push('projectDatas',obj);
+    	this.i++;
+    	
+    },
+    
+    editProjectData: function(e) {
+    	this.editProjectForm.name = e.model.item.name;
+    	this.notifyPath('editProjectForm.name',e.model.item.name);
+    	this.editProjectForm.value = e.model.item.value;
+    	this.notifyPath('editProjectForm.value',e.model.item.value);
+    	editprojectDialog.toggle();
+    },
+    updateEditData:function(e){
+    	
+    	var obj = {};
+		obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+    	this.$.updateEditDataRequest.headers = obj;
+    	
+    	this.$.updateEditDataRequest.url="http://52.36.12.77:9879/projects/"+this.editProjectForm.name;
+    	this.$.updateEditDataRequest.body=JSON.stringify({"index":{"full":"","sample":""},"project_name":this.editProjectForm.name,"sources": [{
+			"index_name":this.editProjectForm.value.sources[0].index_name,
+			"type":this.editProjectForm.value.sources[0].type_name,
+			"start_date":this.editProjectForm.value.sources[0].start_date,
+			"tlds":[this.editProjectForm.value.sources[0].tlds],
+			"url":this.editProjectForm.value.sources[0].url,
+			"end_date":this.editProjectForm.value.sources[0].end_date}]});
+    	this.$.updateEditDataRequest.generateRequest();
+    	
+    },
+    updatedEditData:function(){
+    	location.reload();
+    }
+    
+});
+
+
+
+
+</script>
+

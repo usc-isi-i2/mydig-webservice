@@ -1,0 +1,93 @@
+<!doctype html>
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-time-picker/paper-time-picker.html">
+<link rel="import" href="../paper-time-picker/paper-time-picker-dialog-style.html">
+<link rel="import" href="../neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="../neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../moment-element/moment-import.html">
+
+<dom-module id="paper-time-picker-edit-dialog">
+
+	<template>
+		<style include="paper-time-picker-dialog-style"></style>
+
+		<paper-dialog id="dialog" class="paper-time-picker-dialog" modal on-iron-overlay-closed="_onClosed">
+			<paper-time-picker id="timePicker" time="[[_extractTime(date)]]" locale="[[locale]]"></paper-time-picker>
+			<div class="buttons">
+				<paper-button dialog-dismiss>[[cancelButton]]</paper-button>
+				<paper-button dialog-confirm on-tap="_save">[[okButton]]</paper-button>
+			</div>
+		</paper-dialog>
+	</template>
+
+</dom-module>
+
+<script>
+
+(function() {
+
+	Polymer({
+		is: 'paper-time-picker-edit-dialog',
+		properties: {
+			date: {
+				type: Date,
+				notify: true
+			},
+
+			/**
+			 * Text for the cancel button in the edit dialog. Use this property to localize the element.
+			 */
+			cancelButton: {
+				type: String,
+				value: 'Cancel'
+			},
+
+			/**
+			 * Text for the OK button in the edit dialog. Use this property to localize the element.
+			 */
+			okButton: {
+				type: String,
+				value: 'OK'
+			},
+
+			/**
+			 * Locale used for formatting times
+			 */
+			locale: String,
+		},
+
+		/**
+		 * Open modal dialog containing the time picker
+		 */
+		open: function() {
+			// Append dialog to the body. This ensures that the dialog claims the full screen instead of being positioned next to the <paper-datetime-picker-item>
+			Polymer.dom(document.body).appendChild(this);
+
+			// Wait until dialog is added to the DOM (required for Safari)
+			setTimeout(function() {
+				this.$.dialog.open();
+			}.bind(this), 1);
+		},
+
+		// Private methods
+		_save: function() {
+			this.date.setHours(this.$.timePicker.hour, this.$.timePicker.minute);
+
+			// Inform listeners that the user confirmed the selected date
+			this.fire('paper-date-picker-edit-dialog-save', this.date);
+		},
+		_onClosed: function(e, detail) {
+			// Remove the dialog from the DOM once the exit animation is finished
+			Polymer.dom(this.parentNode).removeChild(this);
+		},
+		_extractTime: function(date) {
+			// no date is defined. Default to today.
+			return moment(date ? date : new Date()).format('LT');
+		}
+	});
+
+})();
+
+</script>

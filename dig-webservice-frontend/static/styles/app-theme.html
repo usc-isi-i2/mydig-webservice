@@ -1,0 +1,237 @@
+
+<style is="custom-style">
+
+  /*
+   Polymer includes a shim for CSS Custom Properties that we can use for application theming.
+   Below, you'll find the default palette for the Polymer Starter Kit layout. Feel free to play
+   with changing the colors used or generate your own palette of colours at MaterialPalette.com.
+
+   See https://www.polymer-project.org/1.0/docs/devguide/styling.html#xscope-styling-details
+   for further information on custom CSS properties.
+   */
+
+  /* Application theme */
+
+  :root {
+    /* Now I'm not sure why this variable exists since polymer looks for --primary-color */
+    --default-primary-color: #455A64;
+    
+    --dark-primary-color: #263238;
+    --primary-color: var(--default-primary-color);
+    --light-primary-color: #CFD8DC;
+    --text-primary-color: #ffffff; /*text/icons*/
+    --accent-color: #FFB300;
+    --primary-background-color: #CFD8DC;
+    --primary-text-color: #212121;
+    --secondary-text-color: #727272;
+    --disabled-text-color: #bdbdbd;
+    --divider-color: #B6B6B6;
+    
+    /* Custom variables */
+    --dark-accent-color: #FF8F00;
+    --link-text-color: #2196F3;
+    --dark-link-text-color: #1565C0;
+    
+    /* Entity type colors */
+    --entity-phone-color: #7B1FA2;
+    --entity-email-color: #3F51B5;
+    --entity-offer-color: #607D8B;
+    --entity-webpage-color: #4CAF50;
+    --entity-seller-color: #E53935;
+    --entity-person-color: #009688;
+    --entity-location-color: #EF6C00;
+    --entity-photo-color: #00ACC1;
+    --light-entity-phone-color: #E1BEE7;
+    --light-entity-email-color: #C5CAE9;
+    --light-entity-offer-color: #CFD8DC;
+    --light-entity-webpage-color: #C8E6C9;
+    --light-entity-seller-color: #FFCDD2;
+    --light-entity-person-color: #B2DFDB;
+    --light-entity-location-color: #FFE0B2;
+    --light-entity-photo-color: #B2EBF2;
+
+    /* Components */
+
+    /* paper-drawer-panel */
+    --drawer-menu-color: #ffffff;
+    --drawer-border-color: 1px solid #ccc;
+    --drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
+
+    /* paper-menu */
+    --paper-menu-background-color: #fff;
+    --menu-link-color: #111111;
+
+    /*paper-input*/
+    --paper-input-container-color: #dddddd;
+    --paper-input-container-input-color: #ffffff;
+    --paper-input-container-focus-color: #ffffff;
+  }
+    
+  paper-button[accent]{
+    --paper-button: {
+      background-color: var(--accent-color);
+    }
+  }
+  
+  a{
+    color: var(--link-text-color);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  a:focus,
+  a:hover{
+    color: var(--dark-link-text-color);
+    text-decoration: none;
+  }
+
+  paper-material {
+    background-color: #FFFFFF;
+  }
+
+  .v-divider {
+    width: 20px;
+  }
+
+  .h-divider {
+    height: 20px;
+  }
+
+  .content {
+    @apply(--layout-horizontal);
+  }
+  
+  /* General styles */
+
+  .container {
+    @apply(--layout-horizontal);
+    @apply(--layout-wrap);
+  }
+
+  .flexchild {
+    @apply(--layout-flex);
+    background-color: #dddddd;
+  }
+  #drawerToolbar {
+    color: var(--secondary-text-color);
+    background-color: var(--drawer-menu-color);
+    border-bottom: var(--drawer-toolbar-border-color);
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  paper-scroll-header-panel {
+    height: 100%;
+  }
+
+  section {
+    padding: 24px;
+  }
+  
+  section > :first-child{
+    margin-top: 0;
+  }
+  
+  section > :last-child{
+    margin-bottom: 0;
+  }
+  
+  hr{
+    background: none;
+    border-width: 1px 0 0;
+    border-style: solid;
+    border-color: rgba(0,0,0,var(--dark-divider-opacity));
+    margin: 20px 0;
+  }
+
+  
+  /*********************************************************
+  /*
+  /*  New stuff for index.html. Maybe it goes in its own page style,
+  /*  because right now this breaks the entity page style.
+  /*
+  /*********************************************************/
+  
+  /* Style icons in a dropdown menu*/
+  paper-menu iron-icon {
+    margin-right: 33px;
+    opacity: 0.54;
+  }
+  
+  /* Style the selected item in a dropdown menu */
+  .paper-menu > .iron-selected {
+    color: var(--accent-color);
+  }
+  
+  /* Sidebar drawer mixin */
+  paper-drawer-panel {
+    --paper-drawer-panel-left-drawer-container: {
+      background-color: #cccccc;
+      border-right: 1px solid rgba(0,0,0,var(--dark-divider-opacity));
+    };
+  }
+  
+  /* Toolbar mixin */
+  paper-toolbar{
+    --paper-toolbar-background: var(--dark-primary-color);
+  }
+
+  /* What is this? */
+  paper-dialog.size {
+    width: 800px;
+    height: 800px;
+    overflow: auto;
+  }
+  
+  /* Spacer to match drawer width */
+  paper-toolbar .drawer-spacer {
+    width: 150px;
+  }
+
+  /*********************************************************/
+  
+
+  /* Material Design Adaptive Breakpoints */
+  /*
+    Below you'll find CSS media queries based on the breakpoint guidance
+    published by the Material Design team. You can choose to use, customise
+    or remove these breakpoints based on your needs.
+
+    http://www.google.com/design/spec/layout/adaptive-ui.html#adaptive-ui-breakpoints
+   */
+
+  /* mobile-small */
+  @media all and (min-width: 0) and (max-width: 360px) and (orientation: portrait) { }
+  /* mobile-large */
+  @media all and (min-width: 361px) and (orientation: portrait) { }
+  /* mobile-small-landscape */
+  @media all and (min-width: 0) and (max-width: 480px) and (orientation: landscape) { }
+  /* mobile-large-landscape */
+  @media all and (min-width: 481px) and (orientation: landscape) { }
+  /* tablet-small-landscape */
+  @media all and (min-width: 600px) and (max-width: 960px) and (orientation: landscape) { }
+  /* tablet-large-landscape */
+  @media all and (min-width: 961px) and (orientation: landscape) { }
+  /* tablet-small */
+  @media all and (min-width: 600px) and (orientation: portrait) { }
+  /* tablet-large */
+  @media all and (min-width: 601px) and (max-width: 840px) and (orientation : portrait) { }
+  /* desktop-x-small-landscape */
+  @media all and (min-width: 0) and (max-width: 480px) and (orientation: landscape) { }
+  /* desktop-x-small */
+  @media all and (min-width: 0) and (max-width: 480px) and (max-aspect-ratio: 4/3) { }
+  /* desktop-small-landscape */
+  @media all and (min-width: 481px) and (max-width: 840px) and (orientation: landscape) { }
+  /* desktop-small */
+  @media all and (min-width: 481px) and (max-width: 840px) and (max-aspect-ratio: 4/3) { }
+  /* desktop-medium-landscape */
+  @media all and (min-width: 841px) and (max-width: 1280px) and (orientation: landscape) { }
+  /* desktop-medium */
+  @media all and (min-width: 841px) and (max-width: 1280px) and (max-aspect-ratio: 4/3) { }
+  /* desktop-large */
+  @media all and (min-width: 1281px) and (max-width: 1600px) { }
+  /* desktop-xlarge */
+  @media all and (min-width: 1601px) and (max-width: 1920px) { }
+</style>
