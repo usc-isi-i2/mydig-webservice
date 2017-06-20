@@ -86,7 +86,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'location',
         'search_importance': 1,
         'use_in_network_search': True,
         'combined_field': 'location'
@@ -102,7 +101,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'normal',
         'search_importance': 1,
         'use_in_network_search': True
     },
@@ -117,7 +115,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'normal',
         'search_importance': 1,
         'use_in_network_search': True
     },
@@ -132,7 +129,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'phone',
         'search_importance': 1,
         'use_in_network_search': True,
     },
@@ -147,7 +143,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'location',
         'search_importance': 1,
         'use_in_network_search': True,
         'combined_field': 'location'
@@ -163,7 +158,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'location',
         'search_importance': 1,
         'use_in_network_search': True,
         'combined_field': 'location'
@@ -179,7 +173,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'location',
         'search_importance': 1,
         'use_in_network_search': True,
         'combined_field': 'location'
@@ -195,7 +188,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'normal',
         'search_importance': 1,
         'use_in_network_search': True
     },
@@ -210,7 +202,6 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'email',
         'search_importance': 1,
         'use_in_network_search': True
     },
@@ -225,14 +216,13 @@ default_fields = {
         'show_in_result': 'header',
         'color': 'grey',
         'icon': 'default',
-        'format': 'normal',
         'search_importance': 1,
         'use_in_network_search': True
     }
 }
 
 master_config = {
-    'root_name': 'Ad',
+    'root_name': 'doc',
     'sources': [],
     'fields': copy.deepcopy(default_fields),
     'tags': copy.deepcopy(default_tags),

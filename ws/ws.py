@@ -256,14 +256,20 @@ class AllProjects(Resource):
 
     @staticmethod
     def extract_credentials_from_sources(sources):
+        # add credential_id to source if there's username & password there
+        # store them to credentials dict
+        # and remove them from source
         idx = 0
         credentials = {}
         for s in sources:
-            s['credential_id'] = str(idx)
-            credentials[idx] = {
-                'username': s.get('username', ''),
-                'password': s.get('password', '')
-            }
+            if 'username' in s:
+                s['credential_id'] = str(idx)
+                credentials[idx] = dict()
+                credentials[idx]['username'] = s['username']
+                credentials[idx]['password'] = s['password']
+                del s['username']
+                del s['password']
+                idx += 1
         return credentials
 
     @staticmethod
@@ -273,8 +279,8 @@ class AllProjects(Resource):
         with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
             j = json.loads(f.read())
             for s in sources:
-                id = s['credential_id']
-                if j[id]['username'] != '':
+                if 'credential_id' in s:
+                    id = s['credential_id']
                     s['http_auth'] = (j[id]['username'], j[id]['password'])
         return sources
 
@@ -324,10 +330,11 @@ class Project(Resource):
         ret = copy.deepcopy(data[project_name]['master_config'])
         ret['sources'] = AllProjects.get_authenticated_sources(project_name)
         for s in ret['sources']:
-            s['username'] = s['http_auth'][0]
-            s['password'] = s['http_auth'][1]
-            del s['http_auth']
-            del s['credential_id']
+            if 'http_auth' in s:
+                s['username'] = s['http_auth'][0]
+                s['password'] = s['http_auth'][1]
+                del s['http_auth']
+                del s['credential_id']
         return ret
 
     @requires_auth
