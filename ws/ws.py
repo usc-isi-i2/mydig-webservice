@@ -1191,10 +1191,12 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        if action_name == 'inferlink':
+        if action_name == 'invoke_inferlink':
             return self._invoke_inferlink(project_name)
-        elif action_name == 'etk':
+        elif action_name == 'extract_and_load_test_data':
             return self._invoke_etk()
+        elif action_name == 'update_to_new_index':
+            return 0
         elif action_name == 'publish':
             git_helper.push()
             return rest.accepted()
@@ -1262,7 +1264,7 @@ class Actions(Resource):
             port = 5000
             url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
             payload = {
-                'tlds': s['tlds'],
+                # 'tlds': s['tlds'],
                 'cdr_ids': cdr_ids
             }
 

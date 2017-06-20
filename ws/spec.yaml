@@ -781,7 +781,7 @@ paths:
       - in: "path"
         name: "action_name"
         required: true
-        enum: ["publish", "inferlink", "etk"]
+        enum: ["publish", "invoke_inferlink", "extract_and_load_test_data", "update_to_new_index"]
         description: ""
       responses:
         202:
