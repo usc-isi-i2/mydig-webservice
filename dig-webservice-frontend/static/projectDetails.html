@@ -1,0 +1,416 @@
+
+<link rel="stylesheet" href="../static/styles/main.css">
+<script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../static/bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../static/bower_components/paper-card/paper-card.html">
+<link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
+<link rel="import" href="../static/elements/elements.html">
+<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
+<!-- <script src="../static/bower_components/moment/min/locales.js"></script>
+<link rel="import" href="../static/bower_components/polymer/polymer.html">
+ --><style is="custom-style" include="shared-styles"></style>
+<style is="custom-style" include="search-styles"></style>
+<link rel="import" href="theme.css">
+<script>
+
+	  var projectName = window.location.href.split('?');
+	 	  
+      function showField() {
+    	  document.getElementById('entity').opened = false;
+    	  document.getElementById('glossary').opened = false;
+    	  document.getElementById('field').opened = true;
+      }
+      
+      function showEntity() {
+    	  document.getElementById('field').opened = false;
+    	  document.getElementById('glossary').opened = false;
+    	  document.getElementById('entity').opened = true;
+      }
+      
+      function showGlossary() {
+    	  document.getElementById('field').opened = false;
+    	  document.getElementById('entity').opened = false;
+    	  document.getElementById('glossary').opened = true;
+      }
+      
+      function addNewTag() {
+    	var xhr = new XMLHttpRequest();
+    	var url = "/projects/"+projectName[1]+"/tags";
+   		var name=document.getElementById("tagNameInput").value;
+   		var description=document.getElementById("tagDescriptionInput").value;
+   		xhr.open("POST", url, true);
+   		xhr.setRequestHeader("Content-type", "application/json");
+   		xhr.onreadystatechange = function () {
+   		    if (xhr.readyState === 4 && xhr.status === 201) {
+   		    	document.getElementById("addTagsDialog").toggle();
+   		   		location.reload(true);
+   		    }
+   		};
+   		
+   		var data = JSON.stringify({
+   		  "tag_name": name+"",
+   		  "tag_object": {
+   		    "description": description+"",
+   		    "include_in_menu": true,
+   		    "name": name+"",
+   		    "negative_class_precision": 0,
+   		    "positive_class_precision": 0
+   		  }
+   		});
+   		
+   		xhr.send(data);
+   		
+      }
+      
+      function addNewField() {
+       	var xhr = new XMLHttpRequest();
+       	var url = "/projects/"+projectName[1]+"/fields";
+      		var name=document.getElementById("fieldNameInput").value;
+      		var description=document.getElementById("fieldDescriptionInput").value;
+      		xhr.open("POST", url, true);
+      		xhr.setRequestHeader("Content-type", "application/json");
+      		xhr.onreadystatechange = function () {
+      		    if (xhr.readyState === 4 && xhr.status === 201) {
+      		    	document.getElementById("addFieldDialog").toggle();
+      		   		location.reload(true);
+      		    }
+      		};
+      		
+      		var data = JSON.stringify({
+         	   "field_name": name,
+        	   "field_object": {
+        	     "description": description,
+        	     "name": name
+        	   }
+        	 });
+      		
+      		xhr.send(data);
+      		
+         } 
+      
+      
+    </script>
+
+
+</head>
+
+<dom-module id="project-details"> 
+
+<template>
+	 <iron-ajax
+		id="projectData" method="GET" content-type="application/json"
+		handle-as="json" on-response="fillFormData" auto> </iron-ajax> 
+		<iron-ajax
+		id="editTagData" method="POST" content-type="application/json"
+		handle-as="json" on-response="updateTagData" auto> </iron-ajax> 
+		
+		<iron-ajax
+		id="deleteTagData" method="DELETE" content-type="application/json"
+		handle-as="json" last-response="deleteTagData" auto> </iron-ajax> 
+		<iron-ajax
+		id="deleteTagEntityData" method="POST" content-type="application/json"
+		handle-as="json" on-response="deleteTagEntityData" auto> </iron-ajax>
+		
+		<iron-ajax
+		id="addTagData" method="POST" content-type="application/json"
+		handle-as="json" last-response="addTagData" auto> </iron-ajax> 
+		
+		<iron-ajax
+		id="editFieldData" method="POST" content-type="application/json"
+		handle-as="json" on-response="updateFieldData" auto> </iron-ajax> 
+		
+		<iron-ajax
+		id="glossaryRequest" method="GET" content-type="application/json"
+		handle-as="json" on-response="glossaryData" auto> </iron-ajax> 
+		
+	<paper-header-panel class="flex" mode="waterfall">
+	<paper-toolbar> <img src="images/dig-logo-original.png"
+		alt=""> </paper-toolbar> <paper-header-panel>
+	<section class="adjustProjectSection">
+		<div class="h-divider"></div>
+		
+		<paper-material id="projectOpenDialog" class="paperMaterialStyle">
+		<paper-tabs selected="0" noink style="width:100%"> <paper-tab
+			class="paperTabs" id="fieldSelector" onclick="showField()">
+		Field</paper-tab> <paper-tab class="paperTabs" onclick="showEntity()">Tags</paper-tab>
+		<paper-tab class="paperTabs" onclick="showGlossary()">Glossary</paper-tab>
+		</paper-tabs> 
+		<iron-collapse id="field" style="margin-left:10px">
+
+		<div style="margin-bottom: 2em;">
+			<br>
+			<paper-button onclick="addFieldDialog.toggle()" raised
+				style="float:right"> <strong>Add Field</strong></paper-button>
+			<br> <br>
+			<template is="dom-repeat" items="[[fieldsResult]]" as="item">
+			<paper-material class="addPaddingToSections">
+			<div style="padding: 8px;">
+				<paper-button on-tap="editFieldFunction" raised
+					style="float:right"> <strong>Edit</strong></paper-button>
+				<strong disabled="disabled">Name:</strong> [[item.0.name]]
+			</div>
+			<div style="padding: 8px;">
+				<strong disabled="disabled">Label:</strong> [[item.0.name]]
+			</div>
+			<div style="padding: 8px;">
+				<strong disabled="disabled">Description:</strong>
+				[[item.0.description]]
+			</div>
+			<div style="padding: 8px;">
+				<paper-checkbox disabled="disabled">Show in Search
+				Form</paper-checkbox>
+				<paper-checkbox disabled="disabled"
+					style="float:center;margin-left:;">Show in Goals</paper-checkbox>
+			</div>
+			<div style="padding: 8px;">
+				<paper-checkbox disabled="disabled">Show in Results</paper-checkbox>
+				<paper-checkbox disabled="disabled"
+					style="float:center;margin-left:53px;">Is Entity</paper-checkbox>
+			</div>
+			</paper-material> </template>
+		</div>
+
+		</iron-collapse> 
+		<iron-collapse id="entity">
+		<div style="margin-bottom: 2em;">
+			<br>
+			<paper-button onclick="addTagsDialog.toggle()" raised
+				style="float:right"> <strong>Add Tag</strong></paper-button>
+			<br> <br>
+			<template is="dom-repeat" items="[[tagsResult]]" as="item">
+			<paper-material class="addPaddingToSections">
+			<div>
+				<strong>Name:</strong> [[item.0.name]]
+				<div style="float: right">
+					<paper-button on-tap="deleteTagsFunction" raised> <strong>Delete</strong></paper-button>
+					<paper-button on-tap="editTagFunction" raised>
+					<strong>Edit</strong></paper-button>
+				</div>
+				<br>
+				<div>
+					<br> <strong style="clear: left">Label:</strong>
+					[[item.0.description]]
+				</div>
+				<br>
+			</div>
+			</paper-material> </template>
+		</div>
+		</iron-collapse> 
+		<iron-collapse id="glossary">
+		<div style="margin-bottom: 2em;">
+			<br>
+			<paper-button onclick="addGlossariesDialog.toggle()" raised
+				style="float:right"> <strong>Add Glossary</strong></paper-button>
+			<br> <br> <br>
+			<template is="dom-repeat" items="[[glossaries]]" as="item">
+			<paper-material class="addPaddingToSections">
+			<div>
+				<paper-button onclick="editGlossariesDialog.toggle()" raised
+					style="float:right"> <strong>Edit</strong></paper-button>
+				<strong>Name:</strong> [[item.glossary_name]]
+			</div>
+			<br>
+			<div>
+				<strong>File:</strong> [[item.glossary_file]]
+			</div>
+			<br>
+			</paper-material>
+			</template>
+		</div>
+		</iron-collapse> 
+		
+		
+		<paper-dialog id="addFieldDialog" class="OtherDialogStyles">
+
+		<paper-input class="projectInputStyle" label="Name:" id="fieldNameInput"></paper-input>
+		<paper-input class="projectInputStyle" label="Description:" id="fieldDescriptionInput"></paper-input> 
+		 <paper-button
+			style="float:center;margin-top:20px;margin-left:10px;"
+			onclick="addNewField()" raised> <strong>Save</strong></paper-button>
+		<paper-button style="float:center;margin-top:20px"
+			onclick="addFieldDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+
+		</paper-dialog>
+		 <paper-dialog id="addTagsDialog" class="OtherDialogStyles">
+
+		<paper-input class="projectInputStyle" label="Name:" id="tagNameInput"></paper-input> 
+		<paper-textarea
+			class="projectInputStyle" label="Label:" id="tagDescriptionInput"></paper-textarea> <paper-button
+			style="float:center;margin-top:20px;margin-left:10px;"
+			onclick="addNewTag()" raised> <strong>Save</strong></paper-button>
+		<paper-button style="float:center;margin-top:20px"
+			onclick="addTagsDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+		</paper-dialog>
+		 <paper-dialog id="addGlossariesDialog" class="OtherDialogStyles">
+		 <form is="iron-form" id="glossaryForm" method="post">
+		<paper-input class="projectInputStyle" label="Name:" name="glossary_name"></paper-input> <paper-textarea
+			class="projectInputStyle" label="FileName:" name="glossary_file"></paper-textarea> <paper-button
+			style="float:center;margin-top:20px;margin-left:10px;"
+			on-tap="addGlossaries" raised> <strong>Save</strong></paper-button>
+		<paper-button style="float:center;margin-top:20px"
+			onclick="addGlossariesDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+			</form>
+		</paper-dialog> 
+		
+		<paper-dialog id="editFieldDialog" class="OtherDialogStyles">
+		<paper-input
+			class="projectInputStyle" label="Label:" id="editFieldName" value=[[editFieldForm.name]]></paper-input> <paper-input
+			class="projectInputStyle" label="Description" id="editFieldDescription" value=[[editFieldForm.description]]></paper-input>
+		<div style="padding: 8px;">
+
+			<paper-checkbox>Show in Search Form</paper-checkbox>
+			<paper-checkbox style="float:center;margin-left:20px;">Show
+			in Goals</paper-checkbox>
+		</div>
+		<div style="padding: 8px;">
+			<paper-checkbox>Show in Results</paper-checkbox>
+			<paper-checkbox style="float:center;margin-left:53px;">Is
+			Entity</paper-checkbox>
+		</div>
+		<paper-button style="float:center;margin-top:20px;margin-left:10px;"
+			on-tap="updateField" raised> <strong>Save</strong>
+		</paper-button> <paper-button style="float:center;margin-top:20px"
+			onclick="editFieldDialog.toggle()" raised> <strong>Cancel</strong>
+		</paper-button> </paper-dialog> 
+		<paper-dialog id="editTagsDialog" class="OtherDialogStyles">
+		
+		<paper-textarea
+			class="projectInputStyle" label="Label" id="editTagDescription" value="[[tagForm.description]]"></paper-textarea> <paper-button
+			style="float:center;margin-top:20px;margin-left:10px;"
+			on-tap="updateTag" raised> <strong>Save</strong></paper-button>
+		<paper-button style="float:center;margin-top:20px"
+			onclick="editTagsDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+		</paper-dialog> 
+		
+		<paper-dialog id="editGlossariesDialog" class="OtherDialogStyles">
+		 <form is="iron-form" id="updateGlossaryForm" method="post">
+		 <paper-textarea
+			class="projectInputStyle" label="FileName:" name=""></paper-textarea> <paper-button
+			style="float:center;margin-top:20px;margin-left:10px;"
+			on-tap="updateGlossaries" raised> <strong>Save</strong></paper-button>
+		<paper-button style="float:center;margin-top:20px"
+			onclick="editGlossariesDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+			</form>
+		</paper-dialog> 
+		</paper-material>
+	</paper-header-panel> </paper-header-panel> </template>
+
+	<script>
+    (function(document) {
+        /* globals _ */
+        var flag = true;
+        
+       
+        var app = document.querySelector('#app');
+       
+        app.fieldsResult = [];
+     	app.tagsResult = [];
+     	app.editTagForm = [];
+     	app.editFieldForm = [];
+        app.tagDataEditing = [];
+        app.glossaries = [];
+        window.addEventListener('WebComponentsReady', function(e) {
+        	document.getElementById("projectData").url = "/projects/"+projectName[1];
+        	projectData.generateRequest();
+        	
+        	document.getElementById("glossaryRequest").url = "/projects/"+projectName[1]+"/glossaries";
+        	glossaryRequest.generateRequest();
+        	
+        	document.getElementById('field').opened = true;
+       	});
+        
+ 		app.glossaryData = function(data) {
+ 			app.glossaries = JSON.parse(JSON.stringify((data.detail.response)));
+        }
+        
+        app.fillFormData = function(data) {
+        	app.fields =  JSON.parse(JSON.stringify((data.detail.response).master_config.fields));
+        	app.tags =  JSON.parse(JSON.stringify((data.detail.response).master_config.tags));
+        	
+        	app.fieldsResult = Object.keys(app.fields).map(function(e) {
+        		  return [app.fields[e]];
+        	});
+        	
+        	app.tagsResult = Object.keys(app.tags).map(function(e) {
+      		  return [app.tags[e]];
+      		});
+        }
+        
+        app.deleteTagsFunction = function(e) {
+        	document.getElementById("deleteTagData").url = "/projects/"+projectName[1]+"/tags/"+e.model.item[0].name;
+        	document.getElementById("deleteTagData").body = JSON.stringify({"project_name ":projectName[1],"tag_name":e.model.item[0].name});
+        	deleteTagData.generateRequest();
+        	location.reload(true);
+        }
+        
+        app.editTagFunction = function(e) {
+        	app.tagForm = {};
+        	app.tagForm.name = e.model.item[0].name;
+        	app.tagForm.description = e.model.item[0].description;
+        	editTagsDialog.toggle();
+        }
+        
+        app.editFieldFunction = function(e) {
+        	app.editFieldForm.name = e.model.item[0].name;
+        	app.editFieldForm.description = e.model.item[0].description;
+        	editFieldDialog.toggle();
+        }
+        
+        app.updateTag = function(e) {
+        	document.getElementById("editTagData").url = "/projects/"+projectName[1]+"/tags/"+app.tagForm.name;
+           	var description = document.getElementById("editTagDescription").value;
+        	document.getElementById("editTagData").body = JSON.stringify({
+           	  "tag_object": {
+           	    "description": description,
+           	    "include_in_menu": true,
+           	    "name": app.tagForm.name,
+           	    "negative_class_precision": 0,
+           	    "positive_class_precision": 0
+           	  }
+           	});
+           	editTagData.generateRequest();
+        }
+        
+        app.updateTagData = function(e) {
+        	location.reload(true);
+        }
+        
+        app.updateField = function(e) {
+        	document.getElementById("editFieldData").url = "/projects/"+projectName[1]+"/fields/"+app.editFieldForm.name;
+           	var description = document.getElementById("editFieldDescription").value;
+        	document.getElementById("editFieldData").body = JSON.stringify({
+        		  "field_object": {
+        			    "description": description,
+        			    "name": app.editFieldForm.name
+        			  }
+        			});
+        	editFieldData.generateRequest();
+        }
+        
+        app.updateFieldData = function(e) {
+        	location.reload(true);
+        }
+        
+        app.addGlossaries = function(e) {
+        	document.getElementById("glossaryForm").action = "/projects/"+projectName[1]+"/glossaries";
+        	document.getElementById("glossaryForm").submit();
+        }
+        
+        app.updateGlossaries = function(e) {
+        	document.getElementById("updateGlossaryForm").action = "/projects/"+projectName[1]+"/glossaries/"+e.model.item;
+        	document.getElementById("updateGlossaryForm").submit();
+        }
+         
+		
+    })(document);
+  </script>
+
+
+</body>
+
+
+</html>

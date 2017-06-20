@@ -1,0 +1,125 @@
+<!doctype html>
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../moment-element/moment-import.html">
+<script>
+var Polymer = Polymer || {};
+/**
+ * Shared functionality for date picker
+ *
+ * @polymerBehavior Polymer.PaperDatePickerItemBehavior
+ */
+Polymer.PaperDatePickerItemBehavior = {
+	properties: {
+		/**
+		 * Date reflected by the component
+		 */
+		date: {
+			type: Date,
+			value: null,
+			notify: true
+		},
+
+		/**
+		 * Default time if none has been specified, in a string format HH:mm
+		 */
+		defaultTime: String,
+
+		/**
+		 * Format to use for the date, adhering to momentjs.com display formats.
+		 */
+		dateFormat: {
+			type: String,
+			value: 'll'
+		},
+
+		/**
+		 * Format to use for time, adhering to momentjs.com display formats.
+		 */
+		timeFormat: {
+			type: String,
+			value: 'LT'
+		},
+
+		/**
+		 * Text shown when no date is set. Use this property to localize the element.
+		 */
+		placeholder: {
+			type: String,
+			value: 'Add a date'
+		},
+
+		/**
+		 * Text for the cancel button in the edit dialog. Use this property to localize the element.
+		 */
+		cancelButton: {
+			type: String,
+			value: 'Cancel'
+		},
+
+		/**
+		 * Text for the OK button in the edit dialog. Use this property to localize the element.
+		 */
+		okButton: {
+			type: String,
+			value: 'OK'
+		},
+
+		/**
+		 * The locale used for date and time formatting.
+		 */
+		locale: {
+			type: String,
+			value: function() {
+				return moment.locale();
+			}
+		}
+	},
+
+	_edit: function(dialogId) {
+		var dialog = document.createElement(dialogId);
+
+		// Wait until dialog is created before the properties can be set
+		// @see http://stackoverflow.com/a/31482376
+		this.async(function() {
+			// Initialize dialog with the current date (default to today to avoid exception)
+			dialog.date = this.date ? moment(this.date).toDate() : new Date();
+
+			// Localize text
+			dialog.cancelButton = this.cancelButton;
+			dialog.okButton = this.okButton;
+
+			dialog.locale = this.locale;
+
+			// Capture date if the user saved the dialog
+			dialog.addEventListener('paper-date-picker-edit-dialog-save', function(e) {
+				this._changeDate(e.detail);
+			}.bind(this));
+
+			dialog.open();
+		}.bind(this));
+
+		// Return dialog for unit testing
+		return dialog;
+	},
+	_changeDate: function(date) {
+		this.date = date;
+		// Inform listener of "change" events when the date was changed
+		this.fire('change', { value: this.date });
+	},
+
+	// Format date
+	_getFormattedDate: function(date, placeholder, locale) {
+		if (!date) {
+			return placeholder;
+		}
+		return moment(date).locale(locale).format(this.dateFormat);
+	},
+	// Format time
+	_getFormattedTime: function(date, locale) {
+		if (!date) {
+			return '';
+		}
+		return moment(date).locale(locale).format(this.timeFormat);
+	}
+};
+</script>
