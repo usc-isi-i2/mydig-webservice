@@ -11,6 +11,12 @@ app = Flask(__name__)
 def home():
     return render_template('updateIndex.html', url=config['backend_url'])
 
+@app.route('/login')
+def login():
+    return render_template('login.html', url=config['server_url'])
+    
+
+
 @app.route('/details')
 def pages():
     return render_template('projectDetailsUpdate.html')
