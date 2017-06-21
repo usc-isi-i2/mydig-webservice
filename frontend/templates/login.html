@@ -150,6 +150,8 @@ function submit() {
 	  xhttp.onreadystatechange = function() {
 	    if (this.readyState == 4 && this.status == 200) {
 	      location.href = "/";
+	      localStorage.setItem("username", name);
+	      localStorage.setItem("password", password);
 	    }
 	  };
 	  xhttp.open("GET", "http://52.36.12.77:9879/authentication", true);
