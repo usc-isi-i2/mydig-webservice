@@ -130,6 +130,7 @@ def spec_file_path():
         c['host'] = request.host
     return Response(yaml.dump(c), mimetype='text/x-yaml')
 
+
 @app.route('/')
 def home():
     return 'MyDIG Web Service'
@@ -552,7 +553,7 @@ class ProjectGlossaries(Resource):
         args = parse.parse_args()
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
-        if args['glossary_name'] is None or ['glossary_file'] is None:
+        if args['glossary_name'] is None or args['glossary_file'] is None:
             return rest.bad_request('Invalid glossary_name or glossary_file')
         name = args['glossary_name']
         if name in data[project_name]['master_config']['glossaries']:
@@ -627,7 +628,7 @@ class Glossary(Resource):
         args = parse.parse_args()
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
-        if ['glossary_file'] is None:
+        if args['glossary_file'] is None:
             return rest.bad_request('Invalid glossary_file')
 
         name = glossary_name
