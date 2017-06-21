@@ -8,7 +8,7 @@ project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
     'field_annotations': {},
-    'glossaries': {}
+    # 'glossaries': {}
 }
 
 # field_annotations = {
@@ -222,6 +222,7 @@ default_fields = {
 }
 
 master_config = {
+    'glossaries': {},
     'root_name': 'doc',
     'sources': [],
     'fields': copy.deepcopy(default_fields),

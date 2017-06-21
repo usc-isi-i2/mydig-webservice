@@ -123,12 +123,6 @@ def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='/spec.yaml')
 
 
-@requires_auth_html
-@app.route('/ui')
-def ui():
-    return render_template('ui_index.html')
-
-
 @app.route('/spec.yaml')
 def spec_file_path():
     with open('spec.yaml', 'r') as f:
@@ -154,6 +148,16 @@ def home():
 # def push():
 #     git_helper.push()
 #     return 'pushed'
+
+
+@api.route('/authentication')
+class authentication(Resource):
+    @requires_auth
+    def get(self):
+        # no need to do anything here
+        # if user can pass the basic auth, it will return ok here
+        # or it will be blocked by auth verification
+        return rest.ok()
 
 
 @api.route('/debug/<mode>')
@@ -549,7 +553,7 @@ class ProjectGlossaries(Resource):
         args = parse.parse_args()
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
-        if args['glossary_name'] is None or ['glossary_file'] is None:
+        if args['glossary_name'] is None or args['glossary_file'] is None:
             return rest.bad_request('Invalid glossary_name or glossary_file')
         name = args['glossary_name']
         if name in data[project_name]['master_config']['glossaries']:
@@ -624,7 +628,7 @@ class Glossary(Resource):
         args = parse.parse_args()
 
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
-        if ['glossary_file'] is None:
+        if args['glossary_file'] is None:
             return rest.bad_request('Invalid glossary_file')
 
         name = glossary_name

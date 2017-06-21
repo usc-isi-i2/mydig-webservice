@@ -97,3 +97,5 @@ ws/*.out
 ws/config.py
 ws/config.py.*
 !ws/config.py.example
+
+frontend/config.py
