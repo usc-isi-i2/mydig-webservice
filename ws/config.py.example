@@ -13,7 +13,7 @@ config = {
             'remote_url': '<remote url>',
             # generate & deploy ssh key
             # https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
-            'ssh_key_file_path': '<file path>'
+            # 'ssh_key_file_path': '<file path>'
         }
     },
     'repo_landmark': {
@@ -21,7 +21,7 @@ config = {
         'git': {
             'enable_sync': True,
             'remote_url': '<remote url>',
-            'ssh_key_file_path': '<file path>'
+            # 'ssh_key_file_path': '<file path>'
         }
     },
     'logging': {
