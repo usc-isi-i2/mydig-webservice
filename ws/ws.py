@@ -1303,7 +1303,7 @@ class Actions(Resource):
 if __name__ == '__main__':
     try:
 
-        if git_helper.pull('--rebase') == 'ERROR':
+        if git_helper.pull() == 'ERROR':
             raise Exception('Git pull error')
 
         # init

@@ -28,9 +28,9 @@ if config['repo_landmark']['git']['enable_sync']:
     remote_obj_landmark.set_url(config['repo_landmark']['git']['remote_url'])
 
 
-def pull(refspecs):
-    def _pull(refspecs):
-        pullinfo = remote_obj.pull(refspecs)
+def pull():
+    def _pull():
+        pullinfo = remote_obj.pull()
         flag = pullinfo[0].flags
         # return flag
         return GIT_PULL_MSG.get(flag, 'Unknown: ' + str(flag))
@@ -39,7 +39,7 @@ def pull(refspecs):
         return
 
     # sync
-    ret = _pull(refspecs)
+    ret = _pull()
     return ret
 
 
@@ -78,8 +78,6 @@ def commit(files=['*'], message=str(datetime.now())):
 
 def push():
     def _push():
-        # remote_obj.pull('--rebase')
-
         pushinfo = remote_obj.push()
         flag = pushinfo[0].flags
         # return flag
