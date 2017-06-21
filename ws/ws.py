@@ -130,7 +130,6 @@ def spec_file_path():
         c['host'] = request.host
     return Response(yaml.dump(c), mimetype='text/x-yaml')
 
-
 @app.route('/')
 def home():
     return 'MyDIG Web Service'
@@ -148,6 +147,16 @@ def home():
 # def push():
 #     git_helper.push()
 #     return 'pushed'
+
+
+@api.route('/authentication')
+class authentication(Resource):
+    @requires_auth
+    def get(self):
+        # no need to do anything here
+        # if user can pass the basic auth, it will return ok here
+        # or it will be blocked by auth verification
+        return rest.ok()
 
 
 @api.route('/debug/<mode>')
