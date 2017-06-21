@@ -553,7 +553,7 @@ Polymer({
     	this.$.getFields.generateRequest();
     	
     	
-    	this.$.getGlossary.headers['Authorization'] = "Basic " + btoa("Memex:USC-ISI-I2");
+    	this.$.getGlossary.headers = obj;
     	this.$.getGlossary.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/glossaries";
     	this.$.getGlossary.generateRequest();
     	
@@ -600,25 +600,33 @@ Polymer({
     	
      },
      fillTags : function(data) {
-    	 this.tags = Object.keys(data.detail.response).map(function(e) {
-     		  return [data.detail.response[e]];
-     		});
-    	
-     	this.push('tags',this.tags.pop());
+    	 if(data.detail.response.length!=0) {
+	    	 this.tags = Object.keys(data.detail.response).map(function(e) {
+	     		  return [data.detail.response[e]];
+	     		});
+	    	
+	     	this.push('tags',this.tags.pop());
+	     	
+    	 }
      },
      fillFields : function(data) {
-    	 this.fields = Object.keys(data.detail.response).map(function(e) {
-     		  return [data.detail.response[e]];
-     		});
-    	
-     	this.push('fields',this.fields.pop());
+    	 if(data.detail.response.length!=0) {
+	    	 this.fields = Object.keys(data.detail.response).map(function(e) {
+	     		  return [data.detail.response[e]];
+	     		});
+	    	
+	     	this.push('fields',this.fields.pop());
+    	 }
      },
      fillGlossary : function(data) {
-    	 this.glossaries = Object.keys(data.detail.response).map(function(e) {
-     		  return [data.detail.response[e]];
-     		});
-    	
-     	this.push('glossaries',this.glossaries.pop());
+    	 
+    	 if(data.detail.response.length!=0) {
+	    	 this.glossaries = Object.keys(data.detail.response).map(function(e) {
+	     		  return [data.detail.response[e]];
+	     		});
+	    	 this.push('glossaries',this.glossaries.pop());
+    	 }
+     	
      },
      deleteTagsFunction:function(e) {
     	 var obj = {};
