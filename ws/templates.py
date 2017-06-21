@@ -228,7 +228,7 @@ master_config = {
     'tags': copy.deepcopy(default_tags),
     'index': {
         'sample': '',
-        'full': 'dig-ht-gt'
+        'full': ''
     }
 }
 
