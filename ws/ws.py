@@ -123,12 +123,6 @@ def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='/spec.yaml')
 
 
-@requires_auth_html
-@app.route('/ui')
-def ui():
-    return render_template('ui_index.html')
-
-
 @app.route('/spec.yaml')
 def spec_file_path():
     with open('spec.yaml', 'r') as f:
