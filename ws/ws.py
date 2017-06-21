@@ -123,6 +123,12 @@ def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='/spec.yaml')
 
 
+@requires_auth_html
+@app.route('/ui')
+def ui():
+    return render_template('ui_index.html')
+
+
 @app.route('/spec.yaml')
 def spec_file_path():
     with open('spec.yaml', 'r') as f:
@@ -1288,14 +1294,30 @@ class Actions(Resource):
             if 'tlds' not in s or len(s['tlds']) == 0:
                 return rest.bad_request('invalid tlds in sources')
 
+        # async
         p = multiprocessing.Process(target=self._inferlink_worker,
             args=(project_name, sources, os.path.join(_get_project_dir_path(project_name), 'pages')))
         p.start()
         return rest.accepted()
 
-    def _extract_and_load_test_data(self):
+    @staticmethod
+    def _extractor_worker(project_name):
+        # pull down rules
         if git_helper.pull_landmark() == 'ERROR':
             return rest.internal_error('fail of pulling landmark data')
+
+        # generate etk config
+
+        # run etk
+
+        # upload to sandpaper
+
+    def _extract_and_load_test_data(self):
+        # async
+        p = multiprocessing.Process(
+            target=self._extractor_worker,
+            args=(project_name,))
+        p.start()
         return rest.accepted()
 
 

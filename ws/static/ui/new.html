@@ -1,17 +1,17 @@
-<link rel="stylesheet" href="../static/styles/main.css">
-<script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
-<link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../static/bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
-<link rel="import" href="../static/bower_components/paper-card/paper-card.html">
-<link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="stylesheet" href="styles/main.css">
+<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="bower_components/paper-card/paper-card.html">
+<link rel="import" href="bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
-<link rel="import" href="../static/elements/elements.html">
-<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
-<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
- <script src="../static/bower_components/moment/min/locales.js"></script>
-<link rel="import" href="../static/bower_components/polymer/polymer.html">
+<link rel="import" href="elements/elements.html">
+<link rel="import" href="bower_components/paper-date-picker-item/paper-date-picker-item.html">
+<link rel="import" href="bower_components/paper-date-picker-item/paper-date-picker-item.html">
+ <script src="bower_components/moment/min/locales.js"></script>
+<link rel="import" href="bower_components/polymer/polymer.html">
  --><style is="custom-style" include="shared-styles"></style>
 <style is="custom-style" include="search-styles"></style>
 <link rel="import" href="theme.css">
@@ -19,7 +19,7 @@
 
 function addProject(data)  {
 		var xhr = new XMLHttpRequest();
-		var url = "http://52.36.12.77:9879/projects";
+		var url = "/projects";
 		var name=document.getElementById("saveProjectFormName").value;
 		var root_name=document.getElementById("saveProjectFormType_name").value;
 		var index_name=document.getElementById("saveProjectFormIndex_name").value;
@@ -28,7 +28,7 @@ function addProject(data)  {
 		var end_date=document.getElementById("saveProjectFormEnd_date").innerText;
 		xhr.open("POST", url, true);
 		xhr.setRequestHeader("Content-type", "application/json");
-		xhr.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
+//		xhr.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
 		xhr.onreadystatechange = function () {
 		    if (xhr.readyState === 4 && xhr.status === 201) {
 		        console.log("Success");
@@ -63,7 +63,7 @@ function addProject(data)  {
 		  on-response="updatedEditData"></iron-ajax>
 		 
 		 
-		  <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
+		  <paper-toolbar> <img src="images/dig-logo-original.png" alt=""></paper-toolbar>
 		  <paper-header-panel>
 		  
           <section class="adjustProjectSection">
@@ -82,7 +82,7 @@ function addProject(data)  {
               <div style="margin-bottom:0.4em"><span raised><strong>Name : </strong>{{item.name}}</span></div>
               <div>
 	              <span><strong>Index Name : </strong>{{item.value.sources.0.index_name}}</span>
-	              <a target="_blank" style="color:black" href="projectDetailsUpdate.html?{{item.name}}">
+	              <a target="_blank" style="color:black" href="static/ui/projectDetailsUpdate.html?{{item.name}}">
 	              <paper-button style="float:right" raised class="indigo"><strong>Open</strong></paper-button>
 	              </a>
 	              

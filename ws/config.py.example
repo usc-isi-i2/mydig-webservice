@@ -6,6 +6,8 @@ config = {
         'host': '127.0.0.1',
         'port': 5000,
     },
+    # add a mydig-admin user to the below to repos,
+    # and set up user.name and user.email in git config
     'repo': {
         'local_path': '../../mydig-projects-test',
         'git': {

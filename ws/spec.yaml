@@ -1412,10 +1412,10 @@ definitions:
         description: "enum(header | detail | no | title | description)"
       color:
         type: "string"
-        description: "enum(...)"
+        description: "enum, please refer to the color list"
       icon:
         type: "string"
-        description: "enum(...)"
+        description: "enum, please refer to the icon list"
       search_importance:
         type: "integer"
         description: "range in [1, 10]"
