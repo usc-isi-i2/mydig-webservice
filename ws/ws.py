@@ -1382,8 +1382,11 @@ class Actions(Resource):
     def _update_status(project_name, content, done=False):
         write_to_file(content, os.path.join(_get_project_dir_path(project_name), 'working_dir/status'))
         # if not done, create a lock
-        if not done and not os.path.exists(_get_project_dir_path(project_name), 'working_dir/lock'):
-            write_to_file('', os.path.join(_get_project_dir_path(project_name), 'working_dir/lock'))
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        if not done and not os.path.exists(lock_path):
+            write_to_file('', lock_path)
+        elif done:
+            os.remove(lock_path)
 
     @staticmethod
     def _extractor_worker(project_name):
@@ -1405,14 +1408,15 @@ class Actions(Resource):
         Actions._update_status(project_name, 'etk running')
         subprocess.call('cat {}/* > {}/consolidated_data.jl'.format(
             os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages')),
-            os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages'))
+            os.path.join(os.path.join(_get_project_dir_path(project_name), 'working_dir'))
         ), shell=True)
-        etk_cmd = 'source {} etk_env; python {} -i {} -o {} -c {}'.format(
+        etk_cmd = 'source {} etk_env; python {} -i {} -o {} -c {} > {}'.format(
             os.path.join(config['etk']['conda_path'], 'activate'),
             os.path.join(config['etk']['path'], 'etk/run_core.py'),
-            os.path.join(_get_project_dir_path(project_name), 'pages/consolidated_data.jl'),
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/consolidated_data.jl'),
             os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_out.jl'),
-            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json')
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'),
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_stdout.txt')
         )
         print etk_cmd
         ret = subprocess.call(etk_cmd, shell=True)
@@ -1428,6 +1432,11 @@ class Actions(Resource):
 
 
     def _extract_and_load_test_data(self, project_name):
+
+
+        if os.path.exists(os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')):
+            return rest.exists('still running')
+
         # async
         p = multiprocessing.Process(
             target=self._extractor_worker,
