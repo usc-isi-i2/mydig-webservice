@@ -16,6 +16,9 @@
 <style is="custom-style" include="search-styles"></style>
 <link rel="import" href="theme.css">
 <script>
+var username = localStorage.getItem("username");
+var password = localStorage.getItem("password");
+
 
 function addProject(data)  {
 		var xhr = new XMLHttpRequest();
@@ -28,7 +31,7 @@ function addProject(data)  {
 		var end_date=document.getElementById("saveProjectFormEnd_date").innerText;
 		xhr.open("POST", url, true);
 		xhr.setRequestHeader("Content-type", "application/json");
-		xhr.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
+		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
 		xhr.onreadystatechange = function () {
 		    if (xhr.readyState === 4 && xhr.status === 201) {
 		        console.log("Success");
@@ -167,7 +170,7 @@ Polymer({
    
     ready : function() {
     	var obj = {};
-        obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+        obj.Authorization = "Basic " + btoa(username+":"+password);
     	this.$.ajaxCall.headers = obj;
     	this.$.ajaxCall.generateRequest();
     	this.projects=[];
@@ -183,7 +186,7 @@ Polymer({
     	this.arrayData = (data.detail.response);
     	for(var i=0;i<this.arrayData.length;i++) {
     		var obj = {};
-    		obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+    		obj.Authorization = "Basic " + btoa(username+":"+password);
         	this.$.projectData.headers = obj;
         	
         	this.$.projectData.url="http://52.36.12.77:9879/projects/"+this.arrayData[i];
@@ -208,7 +211,7 @@ Polymer({
     updateEditData:function(e){
     	
     	var obj = {};
-		obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+		obj.Authorization = "Basic " + btoa(username+":"+password);
     	this.$.updateEditDataRequest.headers = obj;
     	
     	this.$.updateEditDataRequest.url="http://52.36.12.77:9879/projects/"+this.editProjectForm.name;

@@ -21,6 +21,9 @@
 <style is="custom-style" include="search-styles"></style>
 <link rel="import" href="theme.css">
 <script>
+
+var username = localStorage.getItem("username");
+var password = localStorage.getItem("password");
 	var projectName = window.location.href.split('?');
 	var dataText;
 	
@@ -64,7 +67,7 @@
    	 var request = new XMLHttpRequest();
    	 request.open("POST", url);
    //	request.setRequestHeader("Content-type", "application/json");
-   	request.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
+   	request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
 	
    	request.onreadystatechange = function () {
 		    if (request.readyState === 4 && request.status === 201) {
@@ -100,7 +103,7 @@
    		
    		xhr.open("POST", url, true);
    		xhr.setRequestHeader("Content-type", "application/json");
-   		xhr.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
+   		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
 		
    		xhr.onreadystatechange = function () {
    		    if (xhr.readyState === 4 && xhr.status === 201) {
@@ -148,7 +151,7 @@
    		
    		xhr.open("POST", url, true);
    		xhr.setRequestHeader("Content-type", "application/json");
-   		xhr.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
+   		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
 		
    		xhr.onreadystatechange = function () {
    		    if (xhr.readyState === 4 && xhr.status === 201) {
@@ -239,10 +242,10 @@
          
          <paper-material id="projectOpenDialog" class="paperMaterialStyle">
 		<paper-tabs selected="0" noink style="width:100%"> 
-		<paper-tab class="paperTabs" id="menuSelector" onclick="showMenu()">Menu</paper-tab>
-		<paper-tab class="paperTabs" id="fieldSelector" onclick="showField()">Field</paper-tab> 
+		<paper-tab class="paperTabs" id="menuSelector" onclick="showMenu()">Actions</paper-tab>
+		<paper-tab class="paperTabs" id="fieldSelector" onclick="showField()">Fields</paper-tab> 
 		<paper-tab class="paperTabs" onclick="showEntity()">Tags</paper-tab>
-		<paper-tab class="paperTabs" onclick="showGlossary()">Glossary</paper-tab>
+		<paper-tab class="paperTabs" onclick="showGlossary()">Glossaries</paper-tab>
 		</paper-tabs>
 		
 		
@@ -463,7 +466,7 @@
 				<br><br>
 				<div>
 					<br>
-					<paper-checkbox style="margin:0px;" class="projectInputStyle" id="fieldglossaryinput" value="{{item.0}}"></paper-checkbox> 
+					<paper-checkbox style="margin:0px;" class="projectInputStyle" id="fieldglossaryinput">{{item.0}}</paper-checkbox> 
 				</div>
 				<br><br>
 				</paper-material> 
@@ -475,14 +478,23 @@
 		
 			<template is="dom-repeat" items="{{glossaries}}">
 				<paper-material class="addPaddingToSections">
-				<br><br>
 				<div>
-					<br>
-					<paper-checkbox style="margin:0px;" class="projectInputStyle" id="fieldglossaryinput" value="{{item.0}}"></paper-checkbox> 
+					
+					<strong>Name:</strong> {{item.0}}
+					<div style="float: right">
+						<paper-checkbox id="{{item.0}}" raised> <strong>Use</strong></paper-button>
+						<!-- <paper-button on-tap="editGlossaryFunction" raised>
+						<strong>Edit</strong></paper-button> -->
+					</div>
+					
 				</div>
-				<br><br>
 				</paper-material> 
 				</template>
+				<paper-button
+				style="float:center;margin-top:20px;margin-left:10px;"
+				on-tap="saveFieldGlossaries" raised> <strong>Save</strong></paper-button>
+			<paper-button style="float:center;margin-top:20px"
+				onclick="EditFieldGlossaries.toggle()" raised> <strong>Cancel</strong></paper-button>
 		</paper-dialog>
 		
 		
@@ -540,10 +552,11 @@ Polymer({
     	this.fields=[];
     	this.tags = [];
     	this.glossaries = [];
+    	this.fieldFormGlossaries=[];
     	this.tagsData = [];
     	this.fieldsData = [];
     	var obj = {};
-        obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+        obj.Authorization = "Basic " + btoa(username+":"+password);
         this.$.getTags.headers = obj;
         this.$.getTags.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/tags";
     	this.$.getTags.generateRequest();
@@ -558,9 +571,6 @@ Polymer({
     	this.$.getGlossary.generateRequest();
     	
      },
-     showFile:function() {
-    	 
-     },
      convertFileInputToFormData: function(){
     	 var file = this.$.input.inputElement.files[0];
     	 this.text="";
@@ -572,33 +582,20 @@ Polymer({
     	},
     
      onPresubmit:function(e){
-    	/*  var obj = {"Authorization":"Basic " + btoa("Memex:USC-ISI-I2")};
-    	 
-         e.target.request.headers = (obj); */
     	 var form = this.$.form;
          this.convertFileInputToFormData();
     	 form.request.body = this.text;
      },
-     
-     submitForm:function() {
-/*     	 var dataForm  = 'formD';
-    	 var form = document.getElementById(dataForm);
-    	 var formData = new FormData(form);
-    	for (var [key, value] of formData.entries()) { 
-    	  console.log(key, value);
-    	}
- */    	 
-    	/*  $.ajax({
-    	        url         :url,
-    	        data        : this.$.formD.serialize(),
-    	        type        : 'POST',
-    	        processData: false,
-    	        success     : function(data, textStatus, jqXHR){
-    	            console.log("submitted");
-    	        }
-    	    }); */
-    	
+     saveFieldGlossaries:function(e) {
+    	 for(var i=0;i<this.glossaries.length;i++) {
+    		 var gloss = this.glossaries[i];
+    		 if(this.$$('#'+gloss).checked == true) {
+    			 this.fieldFormGlossaries.push(this.glossaries[i]);
+    		 }
+    	 }
+    	 EditFieldGlossaries.toggle();
      },
+    
      fillTags : function(data) {
     	 if(data.detail.response.length!=0) {
 	    	 this.tags = Object.keys(data.detail.response).map(function(e) {
@@ -630,7 +627,7 @@ Polymer({
      },
      deleteTagsFunction:function(e) {
     	 var obj = {};
-         obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+         obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.deleteTags.headers = obj;
          this.$.deleteTags.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/tags/"+(e.model.item[0].name).split(":")[0];
      	this.$.deleteTags.generateRequest();
@@ -643,7 +640,7 @@ Polymer({
      },
      updateTag:function(e) {
     	 var obj = {};
-         obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+         obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.updateSavedTags.headers = obj;
          this.$.updateSavedTags.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/tags/"+this.tagForm.name;
          this.$.updateSavedTags.body = JSON.stringify({
@@ -665,7 +662,7 @@ Polymer({
      
      deleteFieldFunction:function(e) {
     	 var obj = {};
-         obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+         obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.deleteFields.headers = obj;
          this.$.deleteFields.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/fields/"+(e.model.item[0].name).split(":")[0];
      	this.$.deleteFields.generateRequest();
@@ -673,14 +670,16 @@ Polymer({
      },
      deleteGlossaryFunction:function(e){
     	 var obj = {};
-         obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+         obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.deleteGlossaries.headers = obj;
          this.$.deleteGlossaries.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/glossaries/"+(e.model.item[0]).split(":")[0];
      	this.$.deleteGlossaries.generateRequest();
      },
      editFieldFunction:function(e){
     	 this.fieldForm = {};
+    	 this.fieldForm.glossaries = [];
     	 this.fieldForm = e.model.item[0];
+    	 
     	 editFieldsDialog.toggle();
      },
      editGlossaryFunction:function(e){
@@ -690,7 +689,7 @@ Polymer({
      },
      updateField:function(e) {
     	 var obj = {};
-         obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+         obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.updateSavedFields.headers = obj;
          this.$.updateSavedFields.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
          this.$.updateSavedFields.body = JSON.stringify({
