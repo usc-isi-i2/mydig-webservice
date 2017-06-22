@@ -1169,10 +1169,14 @@ class TagAnnotationsForEntity(Resource):
         ret = data[project_name]['entities'][entity_name][kg_id][tag_name]
         # return knowledge graph
         parser = reqparse.RequestParser()
-        parser.add_argument('kg', required=False, type=bool, help='knowledge graph')
+        parser.add_argument('kg', required=False, type=str, help='knowledge graph')
         args = parser.parse_args()
 
-        if args['kg']:
+
+        return_kg = True if args['kg'] is not None and \
+            args['kg'].lower() == 'true' else False
+
+        if return_kg:
             ret['knowledge_graph'] = self.get_kg(project_name, kg_id, tag_name)
 
         return ret
@@ -1431,10 +1435,10 @@ class Actions(Resource):
 
     def _extract_and_load_test_data(self, project_name):
         parser = reqparse.RequestParser()
-        parser.add_argument('force_start_new_extraction', required=False, type=bool)
+        parser.add_argument('force_start_new_extraction', required=False, type=str)
         args = parser.parse_args()
-        force_extraction = False if not args['force_start_new_extraction'] else True
-        print force_extraction
+        force_extraction = True if args['force_start_new_extraction'] is not None and \
+            args['force_start_new_extraction'].lower() == 'true' else False
 
         lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
         if force_extraction:

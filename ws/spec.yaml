@@ -1330,6 +1330,7 @@ paths:
       - in: "query"
         name: "kg"
         required: false
+        type: "boolean"
         description: ""
       responses:
         200:
