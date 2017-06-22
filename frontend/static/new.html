@@ -57,7 +57,7 @@ function addProject(data)  {
 
 <template>
 		 <iron-ajax id="ajaxCall" method="GET" content-type="application/json" handle-as="json"
-		  on-response="handleResponse" url = "http://52.36.12.77:9879/projects"></iron-ajax>
+		  on-response="handleResponse"></iron-ajax>
 		 
 		 <iron-ajax id="projectData" method="GET" content-type="application/json" handle-as="json"
 		  on-response="projectDataResponse"></iron-ajax>
@@ -172,6 +172,7 @@ Polymer({
     	var obj = {};
         obj.Authorization = "Basic " + btoa(username+":"+password);
     	this.$.ajaxCall.headers = obj;
+    	this.$.ajaxCall.url=backend_url +"projects";
     	this.$.ajaxCall.generateRequest();
     	this.projects=[];
     	this.arrayData=[];
