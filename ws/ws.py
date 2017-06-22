@@ -25,6 +25,7 @@ import templates
 import rest
 from basic_auth import requires_auth, requires_auth_html
 import git_helper
+import etk_helper
 
 # logger
 logger = logging.getLogger('mydig-webservice.log')
@@ -235,6 +236,8 @@ class AllProjects(Resource):
             write_to_file('', os.path.join(project_dir_path, 'glossaries/.gitignore'))
             os.makedirs(os.path.join(project_dir_path, 'pages'))
             write_to_file('*\n', os.path.join(project_dir_path, 'pages/.gitignore'))
+            os.makedirs(os.path.join(project_dir_path, 'working_dir'))
+            write_to_file('*\n', os.path.join(project_dir_path, 'working_dir/.gitignore'))
 
             git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
             logger.info('project %s created.' % project_name)
@@ -1204,7 +1207,7 @@ class Actions(Resource):
         if action_name == 'get_sample_pages':
             return self._get_sample_pages(project_name)
         elif action_name == 'extract_and_load_test_data':
-            return self._extract_and_load_test_data()
+            return self._extract_and_load_test_data(project_name)
         elif action_name == 'update_to_new_index':
             return 0
         elif action_name == 'publish':
@@ -1359,16 +1362,20 @@ class Actions(Resource):
     @staticmethod
     def _extractor_worker(project_name):
         # pull down rules
-        if git_helper.pull_landmark() == 'ERROR':
-            return rest.internal_error('fail of pulling landmark data')
+        # if git_helper.pull_landmark() == 'ERROR':
+        #     return rest.internal_error('fail of pulling landmark data')
 
         # generate etk config
+        etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
+        write_to_file(json.dumps(etk_config, indent=2),
+                      os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
         # run etk
 
         # upload to sandpaper
 
-    def _extract_and_load_test_data(self):
+
+    def _extract_and_load_test_data(self, project_name):
         # async
         p = multiprocessing.Process(
             target=self._extractor_worker,

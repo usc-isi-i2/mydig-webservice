@@ -35,6 +35,9 @@ config = {
         # do not add / at the end
         'url': 'http://localhost:9200'
     },
+    'etk': {
+        'path': '...'
+    },
     'users': {
         'admin': '123' # basic YWRtaW46MTIz
     }
