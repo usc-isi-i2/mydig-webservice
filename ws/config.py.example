@@ -36,7 +36,8 @@ config = {
         'url': 'http://localhost:9200'
     },
     'etk': {
-        'path': '...'
+        'path': '...',
+        'conda_path': '...'
     },
     'users': {
         'admin': '123' # basic YWRtaW46MTIz

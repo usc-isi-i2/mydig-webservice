@@ -10,6 +10,7 @@ import werkzeug
 import codecs
 import csv
 import multiprocessing
+import subprocess
 import requests
 import urllib, httplib
 import copy
@@ -1371,8 +1372,24 @@ class Actions(Resource):
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
         # run etk
+        subprocess.call('cat {}/* > {}/consolidated_data.jl'.format(
+            os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages')),
+            os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages'))
+        ), shell=True)
+        etk_cmd = 'source {} etk_env; python {} -i {} -o {} -c {}'.format(
+            os.path.join(config['etk']['conda_path'], 'activate'),
+            os.path.join(config['etk']['path'], 'etk/run_core.py'),
+            os.path.join(_get_project_dir_path(project_name), 'pages/consolidated_data.jl'),
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_out.jl'),
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json')
+        )
+        print etk_cmd
+        ret = subprocess.call(etk_cmd, shell=True)
+        if ret != 0:
+            pass
 
         # upload to sandpaper
+
 
 
     def _extract_and_load_test_data(self, project_name):
