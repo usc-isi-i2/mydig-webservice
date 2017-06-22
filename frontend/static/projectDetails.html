@@ -324,8 +324,9 @@ var password = localStorage.getItem("password");
 			</div>
 			<div style="padding: 8px;">
 				<strong disabled="disabled">Glossaries:</strong>
-				<paper-input disabled="disabled" value="{{item.0.glossaries}}"></paper-input>
-				
+				<template is="dom-repeat" items="{{item.0.glossaries}}">
+					{{item.0}} &nbsp
+				</template>
 			</div>
 			</paper-material> </template>
 		</div>
@@ -482,7 +483,7 @@ var password = localStorage.getItem("password");
 					
 					<strong>Name:</strong> {{item.0}}
 					<div style="float: right">
-						<paper-checkbox id="{{item.0}}" raised> <strong>Use</strong></paper-button>
+						<paper-checkbox id="{{item.0}}" checked raised> <strong>Use</strong></paper-button>
 						<!-- <paper-button on-tap="editGlossaryFunction" raised>
 						<strong>Edit</strong></paper-button> -->
 					</div>
@@ -587,6 +588,7 @@ Polymer({
     	 form.request.body = this.text;
      },
      saveFieldGlossaries:function(e) {
+    	 this.fieldFormGlossaries=[];
     	 for(var i=0;i<this.glossaries.length;i++) {
     		 var gloss = this.glossaries[i];
     		 if(this.$$('#'+gloss).checked == true) {
@@ -677,9 +679,7 @@ Polymer({
      },
      editFieldFunction:function(e){
     	 this.fieldForm = {};
-    	 this.fieldForm.glossaries = [];
     	 this.fieldForm = e.model.item[0];
-    	 
     	 editFieldsDialog.toggle();
      },
      editGlossaryFunction:function(e){
@@ -698,9 +698,7 @@ Polymer({
        		    "color": this.fieldForm.color,
        		    "combine_fields": this.fieldForm.combine_fields,
        		    "description": this.fieldForm.description,
-       		    "glossaries": [
-					this.fieldForm.glossaries
-       		    ],
+       		    "glossaries": this.fieldFormGlossaries,
        		    "group_name": this.fieldForm.group_name,
        		    "icon": this.fieldForm.icon,
        		    "name": this.fieldForm.name,
