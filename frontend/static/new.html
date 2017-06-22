@@ -1,3 +1,4 @@
+<link rel="import" href="/constants">
 <link rel="stylesheet" href="../static/styles/main.css">
 <script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 <link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
@@ -9,17 +10,19 @@
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
 <link rel="import" href="../static/elements/elements.html">
 <link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
-<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
  <script src="../static/bower_components/moment/min/locales.js"></script>
 <link rel="import" href="../static/bower_components/polymer/polymer.html">
  --><style is="custom-style" include="shared-styles"></style>
 <style is="custom-style" include="search-styles"></style>
 <link rel="import" href="theme.css">
 <script>
+var username = localStorage.getItem("username");
+var password = localStorage.getItem("password");
+
 
 function addProject(data)  {
 		var xhr = new XMLHttpRequest();
-		var url = "http://52.36.12.77:9879/projects";
+		var url = backend_url +"projects";
 		var name=document.getElementById("saveProjectFormName").value;
 		var root_name=document.getElementById("saveProjectFormType_name").value;
 		var index_name=document.getElementById("saveProjectFormIndex_name").value;
@@ -28,7 +31,7 @@ function addProject(data)  {
 		var end_date=document.getElementById("saveProjectFormEnd_date").innerText;
 		xhr.open("POST", url, true);
 		xhr.setRequestHeader("Content-type", "application/json");
-		xhr.setRequestHeader("Authorization", "Basic " + btoa("Memex:USC-ISI-I2"));
+		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
 		xhr.onreadystatechange = function () {
 		    if (xhr.readyState === 4 && xhr.status === 201) {
 		        console.log("Success");
@@ -54,7 +57,7 @@ function addProject(data)  {
 
 <template>
 		 <iron-ajax id="ajaxCall" method="GET" content-type="application/json" handle-as="json"
-		  on-response="handleResponse" url = "http://52.36.12.77:9879/projects"></iron-ajax>
+		  on-response="handleResponse"></iron-ajax>
 		 
 		 <iron-ajax id="projectData" method="GET" content-type="application/json" handle-as="json"
 		  on-response="projectDataResponse"></iron-ajax>
@@ -106,12 +109,12 @@ function addProject(data)  {
 			        <paper-input class="projectInputStyle" label="Index Name:" id=saveProjectFormIndex_name></paper-input>
 			        <paper-input class="projectInputStyle" label="TLD:" id=saveProjectFormTLD_name></paper-input>
 			        <paper-date-picker-item class="projectInputStyle"
-					    icon="icons:today" date-format="MM-DD-YYYY"
+					     date-format="MM-DD-YYYY"
 					    placeholder="Start Date:"
 					    id=saveProjectFormStart_date>
 					</paper-date-picker-item>
 					<paper-date-picker-item class="projectInputStyle" date-format="MM-DD-YYYY"
-					    icon="icons:today"
+					    
 					    placeholder="End Date:"
 					    id=saveProjectFormEnd_date>
 					</paper-date-picker-item>
@@ -125,14 +128,14 @@ function addProject(data)  {
            		    <paper-input class="projectInputStyle" label="Root Name:" id=editProjectFormRoot_name value="{{editProjectForm.value.root_name}}"></paper-input>
 			        <paper-input class="projectInputStyle" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index_name}}"></paper-input>
 			        <paper-input class="projectInputStyle" label="Type Name:" id=editProjectFormType_name value="{{editProjectForm.value.sources.0.type}}"></paper-input>
-			        <paper-date-picker-item class="projectInputStyle" icon="icons:today" date-format="MM-DD-YYYY"
+			        <paper-date-picker-item class="projectInputStyle"   date-format="MM-DD-YYYY"
     				placeholder="Start Date:" date="{{editProjectForm.value.sources.0.start_date}}"
-    					id=saveProjectFormStart_date>
+    					id=editProjectFormStart_date>
 					</paper-date-picker-item>
 					<paper-date-picker-item class="projectInputStyle" date-format="MM-DD-YYYY"
-					    icon="icons:today" date="{{editProjectForm.value.sources.0.end_date}}"
+					   date="{{editProjectForm.value.sources.0.end_date}}"
 					    placeholder="End Date:"
-					    id=saveProjectFormEnd_date>
+					    id=editProjectFormEnd_date>
 					</paper-date-picker-item>
 								        
 			        
@@ -167,8 +170,9 @@ Polymer({
    
     ready : function() {
     	var obj = {};
-        obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+        obj.Authorization = "Basic " + btoa(username+":"+password);
     	this.$.ajaxCall.headers = obj;
+    	this.$.ajaxCall.url=backend_url +"projects";
     	this.$.ajaxCall.generateRequest();
     	this.projects=[];
     	this.arrayData=[];
@@ -183,10 +187,10 @@ Polymer({
     	this.arrayData = (data.detail.response);
     	for(var i=0;i<this.arrayData.length;i++) {
     		var obj = {};
-    		obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+    		obj.Authorization = "Basic " + btoa(username+":"+password);
         	this.$.projectData.headers = obj;
         	
-        	this.$.projectData.url="http://52.36.12.77:9879/projects/"+this.arrayData[i];
+        	this.$.projectData.url=backend_url +"projects/"+this.arrayData[i];
     		this.$.projectData.generateRequest();
     	}
     	
@@ -208,17 +212,17 @@ Polymer({
     updateEditData:function(e){
     	
     	var obj = {};
-		obj.Authorization = "Basic " + btoa("Memex:USC-ISI-I2");
+		obj.Authorization = "Basic " + btoa(username+":"+password);
     	this.$.updateEditDataRequest.headers = obj;
     	
-    	this.$.updateEditDataRequest.url="http://52.36.12.77:9879/projects/"+this.editProjectForm.name;
+    	this.$.updateEditDataRequest.url=backend_url +"projects/"+this.editProjectForm.name;
     	this.$.updateEditDataRequest.body=JSON.stringify({"index":{"full":"","sample":""},"project_name":this.editProjectForm.name,"sources": [{
 			"index_name":this.editProjectForm.value.sources[0].index_name,
 			"type":this.editProjectForm.value.sources[0].type_name,
-			"start_date":this.editProjectForm.value.sources[0].start_date,
+			"start_date":this.$$("#editProjectFormStart_date").innerText,
 			"tlds":[this.editProjectForm.value.sources[0].tlds],
 			"url":this.editProjectForm.value.sources[0].url,
-			"end_date":this.editProjectForm.value.sources[0].end_date}]});
+			"end_date":this.$$("#editProjectFormEnd_date").innerText}]});
     	this.$.updateEditDataRequest.generateRequest();
     	
     },

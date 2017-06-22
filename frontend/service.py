@@ -9,12 +9,17 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('updateIndex.html', url=config['backend_url'])
+    return render_template('updateIndex.html')
+
+
+@app.route('/constants')
+def constant():
+    return render_template('constants.html', backend_url=config['backend_url'])
+
 
 @app.route('/login')
 def login():
-    return render_template('login.html', url=config['server_url'])
-    
+    return render_template('login.html')
 
 
 @app.route('/details')
