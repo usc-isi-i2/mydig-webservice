@@ -113,7 +113,11 @@ def generate_etk_config(project_master_config, webservice_config, project_name):
     if 'data_extraction' not in default_etk_config:
         default_etk_config['data_extraction'] = list()
     data_e_object = dict()
-    inferlink_field_name = default_etk_config['content_extraction']['extractors']['landmark']['field_name']
+    inferlink_field_name = 'inferlink_extractions'
+    try:
+        inferlink_field_name = default_etk_config['content_extraction']['extractors']['landmark']['field_name']
+    except:
+        pass
     data_e_object['input_path'] = ["*.{}.*.text.`parent`".format(inferlink_field_name)]
     data_e_object['fields'] = dict()
     for field_name in mapping.keys():
