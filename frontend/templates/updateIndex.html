@@ -11,6 +11,7 @@
 
   <!-- Chrome for Android theme color -->	
   <meta name="theme-color" content="#2E3AA1">
+  <link rel="import" href="constants">
   <link rel="import" href="static/new.html">
   <link rel="stylesheet" href="static/styles/main.css">
 	<script src="static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
@@ -30,6 +31,8 @@
 	
 	if(null == localStorage.getItem("username") || null == localStorage.getItem("password"))
 		location.href="/login";
+
+	console.log(backend_url);
 	
 	</script>
 </head>
