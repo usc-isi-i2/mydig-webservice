@@ -3,8 +3,7 @@ import json
 import codecs
 from config import config
 
-default_etk_config = {
-    "document_id": "_id",
+default_etk_config_str = """{
     "extraction_policy": "replace",
     "error_handling": "raise_error",
     "resources": {
@@ -36,7 +35,7 @@ default_etk_config = {
             }
         }
     }
-}
+}"""
 
 
 def consolidate_landmark_rules(landmark_rules_path):
@@ -94,11 +93,12 @@ def create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
     return mapping
 
 
-def generate_etk_config(project_master_config, webservice_config, project_name):
+def generate_etk_config(project_master_config, webservice_config, project_name, document_id='doc_id'):
     defined_fields = project_master_config['fields']
     if 'repo_landmark' not in webservice_config:
         raise KeyError('landmark repository path not defined in the master config')
-
+    default_etk_config = json.loads(default_etk_config_str)
+    default_etk_config['document_id'] = document_id
     landmark_repo_path = os.path.join(os.path.dirname(__file__), webservice_config['repo_landmark']['local_path'])
     landmark_rules_path = os.path.join(landmark_repo_path, project_name + "/landmark")
     consolidated_rules = consolidate_landmark_rules(landmark_rules_path)
@@ -142,5 +142,5 @@ if __name__ == '__main__':
     webservice_config = config
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
     project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
-    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02'), indent=2)
+    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf'), indent=2)
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
