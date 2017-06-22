@@ -3,7 +3,7 @@ import json
 import codecs
 from config import config
 
-default_etk_config = {
+default_etk_config_str = """{
     "document_id": "_id",
     "extraction_policy": "replace",
     "error_handling": "raise_error",
@@ -36,7 +36,7 @@ default_etk_config = {
             }
         }
     }
-}
+}"""
 
 
 def consolidate_landmark_rules(landmark_rules_path):
@@ -98,7 +98,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name):
     defined_fields = project_master_config['fields']
     if 'repo_landmark' not in webservice_config:
         raise KeyError('landmark repository path not defined in the master config')
-
+    default_etk_config = json.loads(default_etk_config_str)
     landmark_repo_path = os.path.join(os.path.dirname(__file__), webservice_config['repo_landmark']['local_path'])
     landmark_rules_path = os.path.join(landmark_repo_path, project_name + "/landmark")
     consolidated_rules = consolidate_landmark_rules(landmark_rules_path)
