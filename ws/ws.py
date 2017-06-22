@@ -1217,6 +1217,24 @@ class Actions(Resource):
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
+    def get(self, project_name, action_name):
+        last_message = ''
+        is_running = False
+        if action_name == 'extract_and_load_test_data':
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status')
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    last_message = f.read()
+
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+            if os.path.exists(path):
+                is_running = True
+
+            return {'last_message': last_message, 'is_running': is_running}
+
+        return rest.ok()
+
+
     @staticmethod
     def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra):
 
@@ -1361,17 +1379,30 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
+    def _update_status(project_name, content, done=False):
+        write_to_file(content, os.path.join(_get_project_dir_path(project_name), 'working_dir/status'))
+        # if not done, create a lock
+        if not done and not os.path.exists(_get_project_dir_path(project_name), 'working_dir/lock'):
+            write_to_file('', os.path.join(_get_project_dir_path(project_name), 'working_dir/lock'))
+
+    @staticmethod
     def _extractor_worker(project_name):
+        # create status file
+        Actions._update_status(project_name, '')
+
         # pull down rules
+        Actions._update_status(project_name, 'pulling rules from github')
         # if git_helper.pull_landmark() == 'ERROR':
         #     return rest.internal_error('fail of pulling landmark data')
 
         # generate etk config
+        Actions._update_status(project_name, 'generating etk config')
         etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
         write_to_file(json.dumps(etk_config, indent=2),
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
         # run etk
+        Actions._update_status(project_name, 'etk running')
         subprocess.call('cat {}/* > {}/consolidated_data.jl'.format(
             os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages')),
             os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages'))
@@ -1386,9 +1417,13 @@ class Actions(Resource):
         print etk_cmd
         ret = subprocess.call(etk_cmd, shell=True)
         if ret != 0:
-            pass
+            Actions._update_status(project_name, 'etk failed', done=True)
+            return
 
         # upload to sandpaper
+        # Actions._update_status(project_name, 'pulling rules from github')
+        Actions._update_status(project_name, 'done', done=True)
+
 
 
 
