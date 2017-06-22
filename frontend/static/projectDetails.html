@@ -1,4 +1,3 @@
-<link rel="import" href="/constants">
 <link rel="stylesheet" href="../static/styles/main.css">
 <script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 <link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
@@ -15,16 +14,14 @@
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
 <link rel="import" href="../static/elements/elements.html">
-<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
 <!-- <script src="../static/bower_components/moment/min/locales.js"></script>
 <link rel="import" href="../static/bower_components/polymer/polymer.html">
  --><style is="custom-style" include="shared-styles"></style>
 <style is="custom-style" include="search-styles"></style>
 <link rel="import" href="theme.css">
+
 <script>
 
-var username = localStorage.getItem("username");
-var password = localStorage.getItem("password");
 	var projectName = window.location.href.split('?');
 	var dataText;
 	
@@ -52,12 +49,41 @@ var password = localStorage.getItem("password");
 	    reader.readAsText(input.files[0]);
 	};
 	
-	function submitFormData() {
+	function updateFormData() {
 		var glossName = document.getElementById('glossary_name').value;
+	   	 var file =  $('input[type=file]')[0].files[0];
+	       	 
+	   	 
+	   	 var url=backend_url +"projects/"+projectName[1]+"/glossaries/"+glossName;
+	   	//------------ 
+	   	 var formData = new FormData();
+
+	   	 formData.append("glossary_name", glossName);
+	   	 formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
+			console.log(formData);
+	   	 
+	   	 var request = new XMLHttpRequest();
+	   	 request.open("POST", url);
+	   //	request.setRequestHeader("Content-type", "application/json");
+	   	request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+		
+	   	request.onreadystatechange = function () {
+			    if (request.readyState === 4 && request.status === 201) {
+			    	location.reload(true);
+			    }
+			};
+		
+		 request.send(formData);
+		
+	}
+	
+	function submitFormData() {
+	 
+	 var glossName = document.getElementById('glossary_name').value;
    	 var file =  $('input[type=file]')[0].files[0];
        	 
    	 
-   	 var url="http://52.36.12.77:9879/projects/"+projectName[1]+"/glossaries";
+   	 var url=backend_url + "projects/"+projectName[1]+"/glossaries";
    	//------------ 
    	 var formData = new FormData();
 
@@ -94,7 +120,7 @@ var password = localStorage.getItem("password");
     
     function addNewTag() {
     	var xhr = new XMLHttpRequest();
-    	var url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/tags";
+    	var url = backend_url +"projects/"+projectName[1]+"/tags";
    		var name=document.getElementById("tagNameInput").value;
    		var description=document.getElementById("tagDescriptionInput").value;
    		var screenlabel=document.getElementById("tagSceenLabelInput").value;
@@ -131,7 +157,7 @@ var password = localStorage.getItem("password");
     
     function addNewField() {
     	var xhr = new XMLHttpRequest();
-    	var url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/fields";
+    	var url = backend_url + "projects/"+projectName[1]+"/fields";
    		var name=document.getElementById("fieldnameinput").value;
    		var description=document.getElementById("fielddescriptioninput").value;
    		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
@@ -393,8 +419,8 @@ var password = localStorage.getItem("password");
 					<strong>Name:</strong> {{item.0}}
 					<div style="float: right">
 						<paper-button on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
-						<!-- <paper-button on-tap="editGlossaryFunction" raised>
-						<strong>Edit</strong></paper-button> -->
+						<paper-button on-tap="editGlossaryFunction" raised>
+						<strong>Edit</strong></paper-button>
 					</div>
 					
 				</div>
@@ -461,18 +487,13 @@ var password = localStorage.getItem("password");
 				
 			</paper-dialog>
 		
-		<paper-dialog id="showFieldGlossaries" class="FieldDialogStyles">
-		
-			<template is="dom-repeat" items="{{glossaries}}">
-				<paper-material class="addPaddingToSections">
-				<br><br>
-				<div>
-					<br>
-					<paper-checkbox style="margin:0px;" class="projectInputStyle" id="fieldglossaryinput">{{item.0}}</paper-checkbox> 
-				</div>
-				<br><br>
-				</paper-material> 
-				</template>
+		<paper-dialog id="editGlossariesDialog" class="FieldDialogStyles">
+		<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
+				
+				<paper-input disabled style="margin:0px;" id="glossary_name" value="{{glossaryForm}}" name="glossary_name" class="projectInputStyle" label="Glossary Name:" id="glossaryName"></paper-input> 
+			    <paper-input type="file" name="glossary_file" id="input" onchange='openFile(event)'></paper-input>
+      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
+			</form>
 		</paper-dialog>
 		
 		
@@ -546,6 +567,9 @@ var password = localStorage.getItem("password");
 </dom-module>
 <project-details></project-details>
 <script>
+var username = localStorage.getItem("username");
+var password = localStorage.getItem("password");
+
 
 Polymer({
     is: 'project-details',
@@ -560,16 +584,16 @@ Polymer({
     	var obj = {};
         obj.Authorization = "Basic " + btoa(username+":"+password);
         this.$.getTags.headers = obj;
-        this.$.getTags.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/tags";
+        this.$.getTags.url = backend_url + "projects/"+projectName[1]+"/tags";
     	this.$.getTags.generateRequest();
     	
     	this.$.getFields.headers = obj;
-        this.$.getFields.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/fields";
+        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
     	this.$.getFields.generateRequest();
     	
     	
     	this.$.getGlossary.headers = obj;
-    	this.$.getGlossary.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/glossaries";
+    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
     	this.$.getGlossary.generateRequest();
     	
      },
@@ -632,7 +656,7 @@ Polymer({
     	 var obj = {};
          obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.deleteTags.headers = obj;
-         this.$.deleteTags.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/tags/"+(e.model.item[0].name).split(":")[0];
+         this.$.deleteTags.url = backend_url +"projects/"+projectName[1]+"/tags/"+(e.model.item[0].name).split(":")[0];
      	this.$.deleteTags.generateRequest();
     	 
      },
@@ -645,7 +669,7 @@ Polymer({
     	 var obj = {};
          obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.updateSavedTags.headers = obj;
-         this.$.updateSavedTags.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/tags/"+this.tagForm.name;
+         this.$.updateSavedTags.url = backend_url + "projects/"+projectName[1]+"/tags/"+this.tagForm.name;
          this.$.updateSavedTags.body = JSON.stringify({
       		  "tag_name": this.tagForm.name+"",
        		  "tag_object": {
@@ -667,7 +691,7 @@ Polymer({
     	 var obj = {};
          obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.deleteFields.headers = obj;
-         this.$.deleteFields.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/fields/"+(e.model.item[0].name).split(":")[0];
+         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+(e.model.item[0].name).split(":")[0];
      	this.$.deleteFields.generateRequest();
     	 
      },
@@ -675,7 +699,7 @@ Polymer({
     	 var obj = {};
          obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.deleteGlossaries.headers = obj;
-         this.$.deleteGlossaries.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/glossaries/"+(e.model.item[0]).split(":")[0];
+         this.$.deleteGlossaries.url = backend_url + "projects/"+projectName[1]+"/glossaries/"+(e.model.item[0]).split(":")[0];
      	this.$.deleteGlossaries.generateRequest();
      },
      editFieldFunction:function(e){
@@ -685,14 +709,14 @@ Polymer({
      },
      editGlossaryFunction:function(e){
     	 this.glossaryForm = {};
-    	 this.fieldForm = e.model.item[0];
+    	 this.glossaryForm = e.model.item[0];
     	 editGlossariesDialog.toggle();
      },
      updateField:function(e) {
     	 var obj = {};
          obj.Authorization = "Basic " + btoa(username+":"+password);
          this.$.updateSavedFields.headers = obj;
-         this.$.updateSavedFields.url = "http://52.36.12.77:9879/projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
+         this.$.updateSavedFields.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
          this.$.updateSavedFields.body = JSON.stringify({
       		  "field_name": this.fieldForm.name,
        		  "field_object": {
