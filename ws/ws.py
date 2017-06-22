@@ -1201,7 +1201,7 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        if action_name == 'invoke_inferlink':
+        if action_name == 'get_sample_pages':
             return self._invoke_inferlink(project_name)
         elif action_name == 'extract_and_load_test_data':
             return self._extract_and_load_test_data()
