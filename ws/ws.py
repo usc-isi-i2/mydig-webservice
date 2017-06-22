@@ -1429,12 +1429,17 @@ class Actions(Resource):
         Actions._update_status(project_name, 'done', done=True)
 
 
-
-
     def _extract_and_load_test_data(self, project_name):
+        parser = reqparse.RequestParser()
+        parser.add_argument('force_start_new_extraction', required=False, type=bool)
+        args = parser.parse_args()
+        force_extraction = False if not args['force_start_new_extraction'] else True
+        print force_extraction
 
-
-        if os.path.exists(os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')):
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        if force_extraction:
+            os.remove(lock_path)
+        if os.path.exists(lock_path):
             return rest.exists('still running')
 
         # async

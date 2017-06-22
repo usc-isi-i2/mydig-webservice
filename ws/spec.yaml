@@ -793,6 +793,11 @@ paths:
         required: false
         description: "number of pages for extra TLDs"
         type: "integer"
+      - in: "query"
+        name: "force_start_new_extraction"
+        required: false
+        description: "force start a new process for etk extraction"
+        type: "boolean"
       responses:
         202:
           description: "accepted (action started)"
