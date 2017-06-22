@@ -155,7 +155,7 @@ function submit() {
 	      localStorage.setItem("password", password);
 	    }
 	  };
-	  xhttp.open("GET", "http://52.36.12.77:9879/authentication", true);
+	  xhttp.open("GET", backend_url+"authentication", true);
 	  xhttp.setRequestHeader("Authorization", "Basic " + btoa(name+":"+password));
 		
 	 

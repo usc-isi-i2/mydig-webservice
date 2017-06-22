@@ -25,6 +25,10 @@
 	var projectName = window.location.href.split('?');
 	var dataText;
 	
+	$( document ).ready(function() {
+		showMenu();
+		});
+	
 	function showMenu() {
 	  	  document.getElementById('entity').opened = false;
 	  	  document.getElementById('menu').opened = true;
@@ -167,7 +171,6 @@
    		var icon=document.getElementById("fieldiconinput").value;
    		var type="";
    		var searchimp = document.getElementById("fieldsearchinput").value;
-   		var gloassry=document.getElementById("fieldglossaryinput").value;
    		
    		var combinefields=document.getElementById("fieldcombinedfieldsinput").checked;
    		var facet=document.getElementById("fieldfacetinput").checked;
@@ -193,7 +196,7 @@
    		    "combine_fields": combinefields,
    		    "description": description,
    		    "glossaries": [
-				gloassry
+				
    		    ],
    		    "group_name": groupname,
    		    "icon": icon,
@@ -216,6 +219,19 @@
 </script>
 <dom-module id="project-details"> 
 <template>
+
+		<iron-ajax
+		id="inferlink" method="POST" content-type="application/json"
+		handle-as="json" on-response="done" auto> </iron-ajax> 
+		
+		<iron-ajax
+		id="etk" method="POST" content-type="application/json"
+		handle-as="json" on-response="done" auto> </iron-ajax> 
+		
+		<iron-ajax
+		id="publish" method="POST" content-type="application/json"
+		handle-as="json" on-response="done" auto> </iron-ajax> 
+		
 	  <iron-ajax
 		id="getTags" method="GET" content-type="application/json"
 		handle-as="json" on-response="fillTags" auto> </iron-ajax> 
@@ -278,15 +294,80 @@
 		
 		
 		<iron-collapse id="menu" style="margin-left:20px;">
+			<paper-material class="addPaddingToSections">
+				<br><br>
+				<div>
+					
+					<h3><strong>Get Sample Pages</strong></h3>
+					<br>
+					<span><i>Lorem Ipsum is simply dummy text of the printing and 
+					typesetting industry. Lorem Ipsum has been the industry's standard dummy 
+					text ever since the 1500s, when an unknown printer took a galley of type 
+					and scrambled it to make a type specimen book. It has survived not only 
+					five centuries, but also the leap into electronic typesetting, remaining 
+					essentially unchanged</i></span>
+					<br><br>
+					<div>
+					<strong>No of Pages per TLD</strong>
+					<input class="projectInputStyle" id="perPage"></input> 
+					<strong style="padding-left:80px">No of Pages for Extra TLD</strong>
+					<input class="projectInputStyle" id="extraPage"></input> 
+					</div>
+					<div style="float: right">
+						<paper-button raised id="get_sample_pages" on-tap="inferlink"
+					style="clear:left"> <strong>Go</strong></paper-button>
+					</div>
+					
+				</div>
+				<br><br>
+				</paper-material>
+				<paper-material class="addPaddingToSections">
+				<br><br>
+				<div>
+					
+					<h3><strong>Publish</strong></h3>
+					<br>
+					<span><i>This will publish To GitHub</i></span>
+					<div>
+					
+					</div>
+					<div style="float: right">
+						<paper-button raised id="publish" on-tap="publish"
+					style="clear:left"> <strong>Go</strong></paper-button>
+					</div>
+					
+				</div>
+				<br><br>
+				</paper-material>
 			
-			<paper-button raised
-					style="clear:left"> <strong>InferLink</strong></paper-button>
-				
-				 <paper-button raised
-					style="clear:left"> <strong>ETK</strong></paper-button>
-				 <paper-button raised
-					style="clear:left"> <strong>Publish</strong></paper-button>
 			
+				<paper-material class="addPaddingToSections">
+				<br><br>
+				<div>
+					
+					<h3><strong>Extract Load/Test Data </strong></h3>
+					<br>
+					<span><i>Lorem Ipsum is simply dummy text of the printing and 
+					typesetting industry. Lorem Ipsum has been the industry's standard dummy 
+					text ever since the 1500s, when an unknown printer took a galley of type 
+					and scrambled it to make a type specimen book. It has survived not only 
+					five centuries, but also the leap into electronic typesetting, remaining 
+					essentially unchanged</i></span>
+					<br><br>
+					<div>
+					<strong>Input1</strong>
+					<input class="projectInputStyle" id="etk1"></input> 
+					
+					</div>
+					<div style="float: right">
+						<paper-button raised on-tap="etk"
+					style="clear:left"> <strong>Go</strong></paper-button>
+					</div>
+					
+				</div>
+				<br><br>
+				</paper-material>
+					
 		</iron-collapse>
 		<iron-collapse id="field">
 		
@@ -464,9 +545,9 @@
 			<paper-input style="margin:0px;" required class="" label="Name:" id="fieldnameinput"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
-			<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
+			<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput" value="default"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
-			<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput"></paper-input> 
+			<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Search Importance:" id="fieldsearchinput"></paper-input> 
 			<paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields</paper-checkbox> 
 			<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
@@ -520,7 +601,6 @@
 				onclick="EditFieldGlossaries.toggle()" raised> <strong>Cancel</strong></paper-button>
 		</paper-dialog>
 		
-		
 		<paper-dialog id="editFieldsDialog" class="FieldDialogStyles">
 		
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
@@ -559,7 +639,9 @@
 			</form>
 		</paper-dialog>
 		
-		
+		<paper-dialog id="modalDialog" modal>
+		 <paper-button dialog-confirm autofocus> Done</paper-button>
+  		</paper-dialog>
 		
 		
 		</paper-material>
@@ -567,6 +649,7 @@
 </dom-module>
 <project-details></project-details>
 <script>
+
 var username = localStorage.getItem("username");
 var password = localStorage.getItem("password");
 
@@ -738,7 +821,46 @@ Polymer({
        		  }
        		});
          this.$.updateSavedFields.generateRequest();
+     },
+     inferlink:function() {
+    	 var obj = {};
+         obj.Authorization = "Basic " + btoa(username+":"+password);
+         this.$.inferlink.headers = obj;
+         var perPage = 0;
+         var extraPage=0;
+         
+         perPage = this.$$('#perPage').value;
+         extraPage = this.$$('#extraPage').value;
+         this.$.inferlink.url = backend_url +"projects/"+projectName[1]+"/actions/get_sample_pages?pages_per_tld="+perPage+"&pages_extra="+extraPage;
+     	 
+         this.$.inferlink.generateRequest();
+     },
+     etk:function() {
+    	 var obj = {};
+         obj.Authorization = "Basic " + btoa(username+":"+password);
+         this.$.etk.headers = obj;
+         var perPage = 0;
+         var extraPage=0;
+         
+         perPage = this.$$('#etk1').value;
+         extraPage = this.$$('#etk2').value;
+         this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+     	 
+         this.$.etk.generateRequest();
+     },
+     publish:function() {
+    	 var obj = {};
+         obj.Authorization = "Basic " + btoa(username+":"+password);
+         this.$.publish.headers = obj;
+         
+         this.$.publish.url = backend_url +"projects/"+projectName[1]+"/actions/publish";
+     	 
+         this.$.publish.generateRequest();
+     },
+     done:function() {
+    	 modalDialog.open();
      }
+     
      
     
     });
