@@ -1,6 +1,6 @@
 # http://flask.pocoo.org/snippets/8/
 from functools import wraps
-from flask import request, Response
+from flask import request, Response, make_response
 
 from config import config
 import rest
@@ -14,7 +14,9 @@ def check_auth(username, password):
 def authenticate(restful=True):
     """Sends a 401 response that enables basic auth"""
     if not restful:
-        return Response('Invalid credentials', 401)
+        resp = Response('Invalid credentials', 401)
+        resp.headers['WWW-Authenticate'] = 'Basic realm="Restricted"'
+        return resp
     return rest.unauthorized('Invalid credentials')
 
 def requires_auth(f):
