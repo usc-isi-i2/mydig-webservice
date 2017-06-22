@@ -138,6 +138,67 @@ def create_landmark_data_extractor_for_field(mapped_fields):
     }
 
 
+def add_table_extractor_config(etk_config=json.loads(default_etk_config_str), table_classifier="some_path",
+                                   sem_labels="some_path", sem_labels_mapping="some_path"):
+    # add table extractor to the content_extraction
+    etk_config['content_extraction']['extractors']['table'] = {
+                                                                "field_name": "table",
+                                                                "extraction_policy": "keep_existing"
+                                                              }
+
+    # add pickle to resources
+    pickle = dict()
+    pickle['table_classifier'] = table_classifier
+    pickle['sem_labels'] = sem_labels
+    pickle['sem_labels_mapping'] = sem_labels_mapping
+    etk_config['resources']['pickle'] = pickle
+
+    # add data_extraction
+    de = [
+        {
+            "input_path": [
+                "*.table[*]"
+            ],
+            "fields": {
+                "table_type": {
+                    "extractors": {
+                        "classify_table": {
+                            "config": {
+                                "model": "table_classifier",
+                                "sem_types": "sem_labels"
+                            },
+                            "extraction_policy": "replace"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "input_path": [
+                "*.table[*].data_extraction.table_type.classify_table.results[*]"
+            ],
+            "fields": {
+                "*": {
+                    "extractors": {
+                        "table_data_extractor": {
+                            "config": {
+                                "method": "rule_based",
+                                "model": "sem_labels_mapping",
+                                "sem_types": "sem_labels"
+                            },
+                            "extraction_policy": "replace"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+    if 'data_extraction' not in etk_config:
+        etk_config['data_extraction'] = list()
+    etk_config['data_extraction'].extend(de)
+    return etk_config
+
+
 if __name__ == '__main__':
     webservice_config = config
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
