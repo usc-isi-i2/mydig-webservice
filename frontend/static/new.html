@@ -129,12 +129,12 @@ function addProject(data)  {
            		    <paper-input class="projectInputStyle" label="Root Name:" id=editProjectFormRoot_name value="{{editProjectForm.value.root_name}}"></paper-input>
 			        <paper-input class="projectInputStyle" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index_name}}"></paper-input>
 			        <paper-input class="projectInputStyle" label="Type Name:" id=editProjectFormType_name value="{{editProjectForm.value.sources.0.type}}"></paper-input>
-			        <paper-date-picker-item class="projectInputStyle" icon="icons:today" date-format="MM-DD-YYYY"
+			        <paper-date-picker-item class="projectInputStyle"  date-format="MM-DD-YYYY"
     				placeholder="Start Date:" date="{{editProjectForm.value.sources.0.start_date}}"
     					id=saveProjectFormStart_date>
 					</paper-date-picker-item>
 					<paper-date-picker-item class="projectInputStyle" date-format="MM-DD-YYYY"
-					    icon="icons:today" date="{{editProjectForm.value.sources.0.end_date}}"
+					   date="{{editProjectForm.value.sources.0.end_date}}"
 					    placeholder="End Date:"
 					    id=saveProjectFormEnd_date>
 					</paper-date-picker-item>

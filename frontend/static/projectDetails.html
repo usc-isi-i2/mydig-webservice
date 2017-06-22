@@ -52,8 +52,37 @@ var password = localStorage.getItem("password");
 	    reader.readAsText(input.files[0]);
 	};
 	
-	function submitFormData() {
+	function updateFormData() {
 		var glossName = document.getElementById('glossary_name').value;
+	   	 var file =  $('input[type=file]')[0].files[0];
+	       	 
+	   	 
+	   	 var url="http://52.36.12.77:9879/projects/"+projectName[1]+"/glossaries/"+glossName;
+	   	//------------ 
+	   	 var formData = new FormData();
+
+	   	 formData.append("glossary_name", glossName);
+	   	 formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
+			console.log(formData);
+	   	 
+	   	 var request = new XMLHttpRequest();
+	   	 request.open("POST", url);
+	   //	request.setRequestHeader("Content-type", "application/json");
+	   	request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+		
+	   	request.onreadystatechange = function () {
+			    if (request.readyState === 4 && request.status === 201) {
+			    	location.reload(true);
+			    }
+			};
+		
+		 request.send(formData);
+		
+	}
+	
+	function submitFormData() {
+	 
+	 var glossName = document.getElementById('glossary_name').value;
    	 var file =  $('input[type=file]')[0].files[0];
        	 
    	 
@@ -393,8 +422,8 @@ var password = localStorage.getItem("password");
 					<strong>Name:</strong> {{item.0}}
 					<div style="float: right">
 						<paper-button on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
-						<!-- <paper-button on-tap="editGlossaryFunction" raised>
-						<strong>Edit</strong></paper-button> -->
+						<paper-button on-tap="editGlossaryFunction" raised>
+						<strong>Edit</strong></paper-button>
 					</div>
 					
 				</div>
@@ -461,18 +490,13 @@ var password = localStorage.getItem("password");
 				
 			</paper-dialog>
 		
-		<paper-dialog id="showFieldGlossaries" class="FieldDialogStyles">
-		
-			<template is="dom-repeat" items="{{glossaries}}">
-				<paper-material class="addPaddingToSections">
-				<br><br>
-				<div>
-					<br>
-					<paper-checkbox style="margin:0px;" class="projectInputStyle" id="fieldglossaryinput">{{item.0}}</paper-checkbox> 
-				</div>
-				<br><br>
-				</paper-material> 
-				</template>
+		<paper-dialog id="editGlossariesDialog" class="FieldDialogStyles">
+		<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
+				
+				<paper-input disabled style="margin:0px;" id="glossary_name" value="{{glossaryForm}}" name="glossary_name" class="projectInputStyle" label="Glossary Name:" id="glossaryName"></paper-input> 
+			    <paper-input type="file" name="glossary_file" id="input" onchange='openFile(event)'></paper-input>
+      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
+			</form>
 		</paper-dialog>
 		
 		
@@ -685,7 +709,7 @@ Polymer({
      },
      editGlossaryFunction:function(e){
     	 this.glossaryForm = {};
-    	 this.fieldForm = e.model.item[0];
+    	 this.glossaryForm = e.model.item[0];
     	 editGlossariesDialog.toggle();
      },
      updateField:function(e) {
