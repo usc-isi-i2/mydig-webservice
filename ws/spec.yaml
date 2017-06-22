@@ -783,6 +783,16 @@ paths:
         required: true
         enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index"]
         description: ""
+      - in: "query"
+        name: "pages_per_tld"
+        required: false
+        description: "number of pages for per TLD"
+        type: "integer"
+      - in: "query"
+        name: "pages_extra"
+        required: false
+        description: "number of pages for extra TLDs"
+        type: "integer"
       responses:
         202:
           description: "accepted (action started)"

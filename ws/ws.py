@@ -1202,7 +1202,7 @@ class Actions(Resource):
             return rest.not_found('project {} not found'.format(project_name))
 
         if action_name == 'get_sample_pages':
-            return self._invoke_inferlink(project_name)
+            return self._get_sample_pages(project_name)
         elif action_name == 'extract_and_load_test_data':
             return self._extract_and_load_test_data()
         elif action_name == 'update_to_new_index':
@@ -1214,7 +1214,7 @@ class Actions(Resource):
             return rest.not_found('action {} not found'.format(action_name))
 
     @staticmethod
-    def _inferlink_worker(project_name, sources, dir_path):
+    def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra):
 
         for s in sources:
 
@@ -1222,62 +1222,105 @@ class Actions(Resource):
 
             # retrieve from es
             for tld in s['tlds']:
-                query = '''
-                {
-                    "size": 200,
-                    "query": {
-                        "filtered":{
-                            "query": {
-                                "function_score": {
-                                    "query": {
-                                        "range": {
-                                            "timestamp": {
-                                                "gte": "''' + s['start_date'] + '''",
-                                                "lt": "''' + s['end_date'] + '''",
-                                                "format": "yyyy-MM-dd"
+                # tlds
+                if pages_per_tld > 0:
+                    query = '''
+                    {
+                        "size": ''' + pages_per_tld + ''',
+                        "query": {
+                            "filtered":{
+                                "query": {
+                                    "function_score": {
+                                        "query": {
+                                            "range": {
+                                                "timestamp": {
+                                                    "gte": "''' + s['start_date'] + '''",
+                                                    "lt": "''' + s['end_date'] + '''",
+                                                    "format": "yyyy-MM-dd"
+                                                }
                                             }
-                                        }
-                                    },
-                                    "functions": [{"random_score":{}}]
-                                }
-                            },
-                            "filter": {
-                                "and": {
-                                    "filters": [
-                                        {"exists" : {"field": "url"}},
-                                        {"exists" : {"field": "doc_id"}},
-                                        {"term": {"url.domain": "''' + tld + '''"}}
-                                    ]
+                                        },
+                                        "functions": [{"random_score":{}}]
+                                    }
+                                },
+                                "filter": {
+                                    "and": {
+                                        "filters": [
+                                            {"exists" : {"field": "url"}},
+                                            {"exists" : {"field": "doc_id"}},
+                                            {"term": {"url.domain": "''' + tld + '''"}}
+                                        ]
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                '''
-                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-                hits = es.search(s['index'], s['type'], query)
-                if hits:
-                    docs = hits['hits']['hits']
-                    cdr_ids[tld] = list()
-                    file_path = os.path.join(dir_path, tld + '.jl')
-                    with open(file_path, 'w') as f:
-                        for d in docs:
-                            # if 'raw_content' not in d['_source']:
-                            #     print 'no raw_content'
-                            # print len(d['_source']['raw_content'])
-                            cdr_ids[tld].append(d['_source']['doc_id'])
-                            f.write(json.dumps(d['_source']))
-                            f.write('\n')
+                    '''
+                    es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                    hits = es.search(s['index'], s['type'], query)
+                    if hits:
+                        docs = hits['hits']['hits']
+                        cdr_ids[tld] = list()
+                        file_path = os.path.join(dir_path, tld + '.jl')
+                        with open(file_path, 'w') as f:
+                            for d in docs:
+                                # if 'raw_content' not in d['_source']:
+                                #     print 'no raw_content'
+                                # print len(d['_source']['raw_content'])
+                                cdr_ids[tld].append(d['_source']['doc_id'])
+                                f.write(json.dumps(d['_source']))
+                                f.write('\n')
+                # extra
+                if pages_extra > 0:
+                    query = '''
+                    {
+                        "size": ''' + pages_extra + ''',
+                        "query": {
+                            "filtered":{
+                                "query": {
+                                    "function_score": {
+                                        "query": {
+                                            "range": {
+                                                "timestamp": {
+                                                    "gte": "''' + s['start_date'] + '''",
+                                                    "lt": "''' + s['end_date'] + '''",
+                                                    "format": "yyyy-MM-dd"
+                                                }
+                                            }
+                                        },
+                                        "functions": [{"random_score":{}}]
+                                    }
+                                },
+                                "filter": {
+                                    "and": {
+                                        "filters": [
+                                            {"exists" : {"field": "url"}},
+                                            {"exists" : {"field": "doc_id"}},
+                                            {"not":{"term": {"url.domain": "''' + tld + '''"}}}
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    '''
+                    es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                    hits = es.search(s['index'], s['type'], query)
+                    if hits:
+                        docs = hits['hits']['hits']
+                        file_path = os.path.join(dir_path, tld + '.jl')
+                        with open(file_path, 'w') as f:
+                            for d in docs:
+                                f.write(json.dumps(d['_source']))
+                                f.write('\n')
 
             # invoke inferlink
             host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
             port = 5000
             url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
             payload = {
-                # 'tlds': s['tlds'],
                 'cdr_ids': cdr_ids
             }
-
             # print host, url, payload
             # requests dosen't work well here on mac in multiprocessing mode, using httplib instead
             params = json.dumps(payload)
@@ -1288,9 +1331,9 @@ class Actions(Resource):
             if resp.status // 100 != 2:
                 logger.error('invoke inferlink server {}: {}'.format(host + url, resp.reason))
 
-            print 'action inferlink is done'
+        print 'action get_sample_pages is done'
 
-    def _invoke_inferlink(self, project_name):
+    def _get_sample_pages(self, project_name):
         sources = AllProjects.get_authenticated_sources(project_name)
         if len(sources) == 0:
             return rest.bad_request('invalid sources')
@@ -1298,9 +1341,18 @@ class Actions(Resource):
             if 'tlds' not in s or len(s['tlds']) == 0:
                 return rest.bad_request('invalid tlds in sources')
 
+        parser = reqparse.RequestParser()
+        parser.add_argument('pages_per_tld', required=False, type=int)
+        parser.add_argument('pages_extra', required=False, type=int)
+        args = parser.parse_args()
+        pages_per_tld = 200 if args['pages_per_tld'] is None else args['pages_per_tld']
+        pages_extra = 0 if args['pages_extra'] is None else args['pages_extra']
+
         # async
-        p = multiprocessing.Process(target=self._inferlink_worker,
-            args=(project_name, sources, os.path.join(_get_project_dir_path(project_name), 'pages')))
+        p = multiprocessing.Process(target=self._get_sample_pages_worker,
+            args=(project_name, sources,
+                  os.path.join(_get_project_dir_path(project_name), 'pages'),
+                  pages_per_tld, pages_extra))
         p.start()
         return rest.accepted()
 
