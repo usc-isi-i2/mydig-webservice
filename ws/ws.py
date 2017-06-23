@@ -1169,10 +1169,14 @@ class TagAnnotationsForEntity(Resource):
         ret = data[project_name]['entities'][entity_name][kg_id][tag_name]
         # return knowledge graph
         parser = reqparse.RequestParser()
-        parser.add_argument('kg', required=False, type=bool, help='knowledge graph')
+        parser.add_argument('kg', required=False, type=str, help='knowledge graph')
         args = parser.parse_args()
 
-        if args['kg']:
+
+        return_kg = True if args['kg'] is not None and \
+            args['kg'].lower() == 'true' else False
+
+        if return_kg:
             ret['knowledge_graph'] = self.get_kg(project_name, kg_id, tag_name)
 
         return ret
@@ -1216,6 +1220,24 @@ class Actions(Resource):
             return rest.accepted()
         else:
             return rest.not_found('action {} not found'.format(action_name))
+
+    def get(self, project_name, action_name):
+        last_message = ''
+        is_running = False
+        if action_name == 'extract_and_load_test_data':
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status')
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    last_message = f.read()
+
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+            if os.path.exists(path):
+                is_running = True
+
+            return {'last_message': last_message, 'is_running': is_running}
+
+        return rest.ok()
+
 
     @staticmethod
     def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra):
@@ -1361,38 +1383,69 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
+    def _update_status(project_name, content, done=False):
+        write_to_file(content, os.path.join(_get_project_dir_path(project_name), 'working_dir/status'))
+        # if not done, create a lock
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        if not done and not os.path.exists(lock_path):
+            write_to_file('', lock_path)
+        elif done:
+            os.remove(lock_path)
+
+    @staticmethod
     def _extractor_worker(project_name):
+        # create status file
+        Actions._update_status(project_name, '')
+
         # pull down rules
-        # if git_helper.pull_landmark() == 'ERROR':
-        #     return rest.internal_error('fail of pulling landmark data')
+        Actions._update_status(project_name, 'pulling rules from github')
+        if git_helper.pull_landmark() == 'ERROR':
+            return rest.internal_error('fail of pulling landmark data')
 
         # generate etk config
+        Actions._update_status(project_name, 'generating etk config')
         etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
         write_to_file(json.dumps(etk_config, indent=2),
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
         # run etk
+        Actions._update_status(project_name, 'etk running')
         subprocess.call('cat {}/* > {}/consolidated_data.jl'.format(
             os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages')),
-            os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages'))
+            os.path.join(os.path.join(_get_project_dir_path(project_name), 'working_dir'))
         ), shell=True)
-        etk_cmd = 'source {} etk_env; python {} -i {} -o {} -c {}'.format(
+        etk_cmd = 'source {} etk_env; python {} -i {} -o {} -c {} > {}'.format(
             os.path.join(config['etk']['conda_path'], 'activate'),
             os.path.join(config['etk']['path'], 'etk/run_core.py'),
-            os.path.join(_get_project_dir_path(project_name), 'pages/consolidated_data.jl'),
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/consolidated_data.jl'),
             os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_out.jl'),
-            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json')
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'),
+            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_stdout.txt')
         )
         print etk_cmd
         ret = subprocess.call(etk_cmd, shell=True)
         if ret != 0:
-            pass
+            Actions._update_status(project_name, 'etk failed', done=True)
+            return
 
         # upload to sandpaper
-
+        # Actions._update_status(project_name, 'pulling rules from github')
+        Actions._update_status(project_name, 'done', done=True)
 
 
     def _extract_and_load_test_data(self, project_name):
+        parser = reqparse.RequestParser()
+        parser.add_argument('force_start_new_extraction', required=False, type=str)
+        args = parser.parse_args()
+        force_extraction = True if args['force_start_new_extraction'] is not None and \
+            args['force_start_new_extraction'].lower() == 'true' else False
+
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        if force_extraction:
+            os.remove(lock_path)
+        if os.path.exists(lock_path):
+            return rest.exists('still running')
+
         # async
         p = multiprocessing.Process(
             target=self._extractor_worker,

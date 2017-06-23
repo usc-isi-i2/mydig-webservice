@@ -793,9 +793,41 @@ paths:
         required: false
         description: "number of pages for extra TLDs"
         type: "integer"
+      - in: "query"
+        name: "force_start_new_extraction"
+        required: false
+        description: "force start a new process for etk extraction"
+        type: "boolean"
       responses:
         202:
           description: "accepted (action started)"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "actions"
+      summary: "Get status of actions"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "action_name"
+        required: true
+        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index"]
+        description: ""
+      responses:
+        200:
+          description: "ok"
         400:
           description: "bad request"
         404:
@@ -1298,6 +1330,7 @@ paths:
       - in: "query"
         name: "kg"
         required: false
+        type: "boolean"
         description: ""
       responses:
         200:
