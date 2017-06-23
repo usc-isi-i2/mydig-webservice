@@ -100,3 +100,5 @@ ws/config.py.*
 !ws/config.py.example
 
 frontend/config.py
+
+ws/default_source_credentials.json

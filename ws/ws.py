@@ -206,6 +206,19 @@ class AllProjects(Resource):
         if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
             return rest.bad_request('Invalid index.')
 
+        # add default credentials to source if it's not there
+        with open(config['default_source_credentials_path'], 'r') as f:
+            default_source_credentials = json.loads(f.read())
+        for s in project_sources:
+            if 'url' not in s or len(s['url']) == 0:
+                s['url'] = default_source_credentials['url']
+                s['username'] = default_source_credentials['username']
+                s['password'] = default_source_credentials['password']
+            if 'index' not in s or len(s['index']) == 0:
+                s['index'] = default_source_credentials['index']
+            if 'type' not in s or len(s['type']) == 0:
+                s['type'] = default_source_credentials['type']
+
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
         try:
