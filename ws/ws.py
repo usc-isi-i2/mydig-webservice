@@ -1399,8 +1399,8 @@ class Actions(Resource):
 
         # pull down rules
         Actions._update_status(project_name, 'pulling rules from github')
-        # if git_helper.pull_landmark() == 'ERROR':
-        #     return rest.internal_error('fail of pulling landmark data')
+        if git_helper.pull_landmark() == 'ERROR':
+            return rest.internal_error('fail of pulling landmark data')
 
         # generate etk config
         Actions._update_status(project_name, 'generating etk config')
