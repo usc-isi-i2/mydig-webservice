@@ -9,6 +9,9 @@
 <link rel="import" href="../static/bower_components/iron-form/iron-form.html">
 <link rel="import" href="../static/bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../static/bower_components/paper-checkbox/paper-checkbox.html">
+
+<link rel="import" href="../static/bower_components/paper-styles/color.html">
+<link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
 <link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../static/bower_components/paper-card/paper-card.html">
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
@@ -30,13 +33,23 @@
 		});
 	
 	function showMenu() {
-	  	  document.getElementById('entity').opened = false;
+		  document.getElementById('menuSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+		  document.getElementById('fieldSelector').style.backgroundColor =null;
+		  document.getElementById('tagSelector').style.backgroundColor =null;
+		  document.getElementById('glossarySelector').style.backgroundColor =null;
+		  
+		  document.getElementById('entity').opened = false;
 	  	  document.getElementById('menu').opened = true;
 	  	  document.getElementById('glossary').opened = false;
 	  	  document.getElementById('field').opened = false;
 	}
 	
 	function showField() {
+	  document.getElementById('menuSelector').style.backgroundColor =null;
+	  document.getElementById('fieldSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+	  document.getElementById('tagSelector').style.backgroundColor =null;
+	  document.getElementById('glossarySelector').style.backgroundColor =null;
+		  
   	  document.getElementById('entity').opened = false;
   	  document.getElementById('glossary').opened = false;
   	  document.getElementById('field').opened = true;
@@ -109,17 +122,29 @@
 	 request.send(formData);
 	}
     function showEntity() {
+    	
+     document.getElementById('menuSelector').style.backgroundColor =null;
+     document.getElementById('fieldSelector').style.backgroundColor =null;
+     document.getElementById('tagSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+	 document.getElementById('glossarySelector').style.backgroundColor =null;
+		
   	  document.getElementById('field').opened = false;
   	  document.getElementById('glossary').opened = false;
   	  document.getElementById('entity').opened = true;
-  	document.getElementById('menu').opened = false;
+  	  document.getElementById('menu').opened = false;
     }
     
     function showGlossary() {
+    	
+      document.getElementById('menuSelector').style.backgroundColor =null;
+	  document.getElementById('fieldSelector').style.backgroundColor =null;
+	  document.getElementById('tagSelector').style.backgroundColor =null;
+	  document.getElementById('glossarySelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+			
   	  document.getElementById('field').opened = false;
   	  document.getElementById('entity').opened = false;
   	  document.getElementById('glossary').opened = true;
-  	document.getElementById('menu').opened = false;
+  	  document.getElementById('menu').opened = false;
     }
     
     function addNewTag() {
@@ -165,7 +190,6 @@
    		var name=document.getElementById("fieldnameinput").value;
    		var description=document.getElementById("fielddescriptioninput").value;
    		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
-   		var color = document.getElementById("fieldcolorinput").value;
    		
    		var groupname = document.getElementById("fieldgroupnameinput").value;
    		var icon=document.getElementById("fieldiconinput").value;
@@ -222,15 +246,15 @@
 
 		<iron-ajax
 		id="inferlink" method="POST" content-type="application/json"
-		handle-as="json" on-response="done" auto> </iron-ajax> 
+		handle-as="json" on-error="done" auto> </iron-ajax> 
 		
 		<iron-ajax
 		id="etk" method="POST" content-type="application/json"
-		handle-as="json" on-response="done" auto> </iron-ajax> 
+		handle-as="json" on-error="done" auto> </iron-ajax> 
 		
 		<iron-ajax
 		id="publish" method="POST" content-type="application/json"
-		handle-as="json" on-response="done" auto> </iron-ajax> 
+		handle-as="json" on-error="done" auto> </iron-ajax> 
 		
 	  <iron-ajax
 		id="getTags" method="GET" content-type="application/json"
@@ -287,8 +311,8 @@
 		<paper-tabs selected="0" noink style="width:100%"> 
 		<paper-tab class="paperTabs" id="menuSelector" onclick="showMenu()">Actions</paper-tab>
 		<paper-tab class="paperTabs" id="fieldSelector" onclick="showField()">Fields</paper-tab> 
-		<paper-tab class="paperTabs" onclick="showEntity()">Tags</paper-tab>
-		<paper-tab class="paperTabs" onclick="showGlossary()">Glossaries</paper-tab>
+		<paper-tab class="paperTabs" id="tagSelector" onclick="showEntity()">Tags</paper-tab>
+		<paper-tab class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
 		</paper-tabs>
 		
 		
@@ -309,9 +333,9 @@
 					<br><br>
 					<div>
 					<strong>No of Pages per TLD</strong>
-					<input class="projectInputStyle" id="perPage"></input> 
+					<input type="number" class="projectInputStyle" id="perPage"></input> 
 					<strong style="padding-left:80px">No of Pages for Extra TLD</strong>
-					<input class="projectInputStyle" id="extraPage"></input> 
+					<input type="number" class="projectInputStyle" id="extraPage"></input> 
 					</div>
 					<div style="float: right">
 						<paper-button raised id="get_sample_pages" on-tap="inferlink"
@@ -460,7 +484,7 @@
 					<br>
 					<div>
 						<br> <strong style="clear: left">Label:</strong>
-						{{item.0.screen_label}}
+						{{item.0.scree_label}}
 					</div>
 					<div>
 					
@@ -529,7 +553,7 @@
 		<paper-dialog id="editTagsDialog" class="OtherDialogStyles">
 		
 			<paper-input class="projectInputStyle" label="Name:" value="{{tagForm.name}}"></paper-input> 
-			<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.screen_label}}"></paper-input> 
+			<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.scree_label}}"></paper-input> 
 			<paper-input class="projectInputStyle" label="Description" value="{{tagForm.description}}"></paper-input> 
 			<paper-input class="projectInputStyle" label="Negative class precision" value="{{tagForm.negative_class_precision}}"></paper-input> 
 			<paper-input class="projectInputStyle" label="Positive class precision" value="{{tagForm.postitive_class_precision}}"></paper-input> 
@@ -545,7 +569,7 @@
 			<paper-input style="margin:0px;" required class="" label="Name:" id="fieldnameinput"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
-			<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput" value="default"></paper-input> 
+			<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Search Importance:" id="fieldsearchinput"></paper-input> 
@@ -606,6 +630,7 @@
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+			
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
 			<paper-input style="margin:0px;" class="projectInputStyle" label="Search Importance:" value="{{fieldForm.search_importance}}"></paper-input> 
@@ -640,7 +665,7 @@
 		</paper-dialog>
 		
 		<paper-dialog id="modalDialog" modal>
-		 <paper-button dialog-confirm autofocus> Done</paper-button>
+		 <paper-button dialog-confirm autofocus> Error. Try Again!!</paper-button>
   		</paper-dialog>
 		
 		
@@ -679,13 +704,14 @@ Polymer({
     	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
     	this.$.getGlossary.generateRequest();
     	
+	
      },
      convertFileInputToFormData: function(){
     	 var file = this.$.input.inputElement.files[0];
     	 this.text="";
     	 var reader = new FileReader();
     	    reader.onload = function () {
-    	        this.text = reader.result;
+    	        this.text = reader.result;	
     	    };
     	    reader.readAsText(file);
     	},
@@ -761,13 +787,28 @@ Polymer({
        		    "name": this.tagForm.name+"",
        		    "negative_class_precision": this.tagForm.negative_class_precision,
        		    "positive_class_precision": this.tagForm.positive_class_precision,
-       		    "sceen_label":this.tagForm.screen_label
+       		    "scree_label":this.tagForm.scree_label
        		  }
        		});
          this.$.updateSavedTags.generateRequest();
+         editTagsDialog.toggle();
      },
      updateDone:function() {
-    	 location.reload();
+    	 var obj = {};
+         obj.Authorization = "Basic " + btoa(username+":"+password);
+         this.$.getTags.headers = obj;
+         this.$.getTags.url = backend_url + "projects/"+projectName[1]+"/tags";
+     	this.$.getTags.generateRequest();
+     	
+     	this.$.getFields.headers = obj;
+        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
+    	this.$.getFields.generateRequest();
+    	
+    	this.$.getGlossary.headers = obj;
+    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
+    	this.$.getGlossary.generateRequest();
+    	
+     	
      },
      
      deleteFieldFunction:function(e) {
@@ -803,7 +844,7 @@ Polymer({
          this.$.updateSavedFields.body = JSON.stringify({
       		  "field_name": this.fieldForm.name,
        		  "field_object": {
-       		    "color": this.fieldForm.color,
+       		    "color":this.fieldForm.color ,
        		    "combine_fields": this.fieldForm.combine_fields,
        		    "description": this.fieldForm.description,
        		    "glossaries": this.fieldFormGlossaries,
@@ -821,6 +862,8 @@ Polymer({
        		  }
        		});
          this.$.updateSavedFields.generateRequest();
+         editFieldsDialog.toggle();
+         
      },
      inferlink:function() {
     	 var obj = {};
