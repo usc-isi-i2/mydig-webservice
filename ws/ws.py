@@ -105,7 +105,7 @@ class ProjectLock(object):
             pass
 
 
-project_lock = ProjectLock()
+# project_lock = ProjectLock()
 
 
 def _get_project_dir_path(project_name):
@@ -171,7 +171,7 @@ class Debug(Resource):
 
         if mode == 'data':
             debug_info = {
-                'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
+                # 'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
                 'data': data
             }
             return debug_info
@@ -222,7 +222,7 @@ class AllProjects(Resource):
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
         try:
-            project_lock.acquire(project_name)
+            # project_lock.acquire(project_name)
             if not os.path.exists(project_dir_path):
                 os.makedirs(project_dir_path)
 
@@ -258,8 +258,8 @@ class AllProjects(Resource):
             return rest.created()
         except Exception as e:
             logger.error('creating project %s: %s' % (project_name, e.message))
-        finally:
-            project_lock.release(project_name)
+        # finally:
+        #     project_lock.release(project_name)
 
     @requires_auth
     def get(self):
@@ -269,14 +269,14 @@ class AllProjects(Resource):
     def delete(self):
         for project_name in data.keys():  # not iterkeys(), need to do del in iteration
             try:
-                project_lock.acquire(project_name)
+                # project_lock.acquire(project_name)
                 del data[project_name]
                 shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
             except Exception as e:
                 logger.error('deleting project %s: %s' % (project_name, e.message))
                 return rest.internal_error('deleting project %s error, halted.' % project_name)
-            finally:
-                project_lock.remove(project_name)
+            # finally:
+            #     project_lock.remove(project_name)
 
         git_helper.commit(message='delete all projects')
         return rest.deleted()
@@ -326,7 +326,7 @@ class Project(Resource):
         if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
             return rest.bad_request('Invalid index.')
         try:
-            project_lock.acquire(project_name)
+            # project_lock.acquire(project_name)
 
             # extract credentials to a separated file
             credentials = AllProjects.extract_credentials_from_sources(project_sources)
@@ -342,8 +342,8 @@ class Project(Resource):
         except Exception as e:
             logger.error('Updating project %s: %s' % (project_name, e.message))
             return rest.internal_error('Updating project %s error, halted.' % project_name)
-        finally:
-            project_lock.release(project_name)
+        # finally:
+        #     project_lock.release(project_name)
 
     @requires_auth
     def put(self, project_name):
@@ -369,7 +369,7 @@ class Project(Resource):
         if project_name not in data:
             return rest.not_found()
         try:
-            project_lock.acquire(project_name)
+            # project_lock.acquire(project_name)
             del data[project_name]
             shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
             git_helper.commit(files=[project_name + '/*'],
@@ -378,8 +378,8 @@ class Project(Resource):
         except Exception as e:
             logger.error('deleting project %s: %s' % (project_name, e.message))
             return rest.internal_error('deleting project %s error, halted.' % project_name)
-        finally:
-            project_lock.remove(project_name)
+        # finally:
+        #     project_lock.remove(project_name)
 
 
 @api.route('/projects/<project_name>/tags')
