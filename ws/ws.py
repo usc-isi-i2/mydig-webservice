@@ -1394,8 +1394,6 @@ class Actions(Resource):
 
     @staticmethod
     def _extractor_worker(project_name):
-        # create status file
-        Actions._update_status(project_name, '')
 
         # pull down rules
         Actions._update_status(project_name, 'pulling rules from github')
@@ -1410,17 +1408,12 @@ class Actions(Resource):
 
         # run etk
         Actions._update_status(project_name, 'etk running')
-        subprocess.call('cat {}/* > {}/consolidated_data.jl'.format(
-            os.path.join(os.path.join(_get_project_dir_path(project_name), 'pages')),
-            os.path.join(os.path.join(_get_project_dir_path(project_name), 'working_dir'))
-        ), shell=True)
-        etk_cmd = 'source {} etk_env; python {} -i {} -o {} -c {} > {}'.format(
-            os.path.join(config['etk']['conda_path'], 'activate'),
-            os.path.join(config['etk']['path'], 'etk/run_core.py'),
-            os.path.join(_get_project_dir_path(project_name), 'working_dir/consolidated_data.jl'),
-            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_out.jl'),
-            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'),
-            os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_stdout.txt')
+        # run_etk.sh page_path working_dir conda_bin_path etk_path
+        etk_cmd = 'run_etk.sh {} {} {} {}'.format(
+            os.path.join(_get_project_dir_path(project_name), 'pages'),
+            os.path.join(_get_project_dir_path(project_name), 'working_dir'),
+            config['etk']['conda_path'],
+            config['etk']['path']
         )
         print etk_cmd
         ret = subprocess.call(etk_cmd, shell=True)
@@ -1441,7 +1434,7 @@ class Actions(Resource):
             args['force_start_new_extraction'].lower() == 'true' else False
 
         lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
-        if force_extraction:
+        if force_extraction and os.path.exists(lock_path):
             os.remove(lock_path)
         if os.path.exists(lock_path):
             return rest.exists('still running')
