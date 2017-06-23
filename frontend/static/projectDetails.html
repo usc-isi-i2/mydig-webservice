@@ -68,8 +68,8 @@
 	
 	function updateFormData() {
 		var glossName = document.getElementById('glossary_name').value;
-	   	 var file =  $('input[type=file]')[0].files[0];
-	       	 
+		var file =  document.getElementById("glossary_file").getElementsByTagName("input")[0].files[0];  	 
+	   	   	 
 	   	 
 	   	 var url=backend_url +"projects/"+projectName[1]+"/glossaries/"+glossName;
 	   	//------------ 
@@ -86,8 +86,9 @@
 		
 	   	request.onreadystatechange = function () {
 			    if (request.readyState === 4 && request.status === 201) {
-			    	location.reload(true);
-			    }
+			    	 document.getElementById("editGlossariesDialog").toggle();
+			    	 document.getElementById("getGlossary").generateRequest();
+			   }
 			};
 		
 		 request.send(formData);
@@ -96,9 +97,8 @@
 	
 	function submitFormData() {
 	 
-	 var glossName = document.getElementById('glossary_name').value;
-   	 var file =  $('input[type=file]')[0].files[0];
-       	 
+	 var glossName = document.getElementById('glossary_nameInput').value;
+	 var file =  document.getElementById("glossary_fileInput").getElementsByTagName("input")[0].files[0];  	 
    	 
    	 var url=backend_url + "projects/"+projectName[1]+"/glossaries";
    	//------------ 
@@ -115,8 +115,12 @@
 	
    	request.onreadystatechange = function () {
 		    if (request.readyState === 4 && request.status === 201) {
-		    	location.reload(true);
+		    	addGlossaryDialog.toggle();
+		    	document.getElementById("getGlossary").generateRequest();
+		    	document.getElementById('glossary_nameInput').value="";
+		    	document.getElementById("glossary_fileInput").value="";
 		    }
+		    
 		};
 	
 	 request.send(formData);
@@ -164,7 +168,15 @@
    		xhr.onreadystatechange = function () {
    		    if (xhr.readyState === 4 && xhr.status === 201) {
    		    	document.getElementById("addTagsDialog").toggle();
-   		   		location.reload(true);
+   		    	document.getElementById("getTags").generateRequest();
+   		    	document.getElementById("tagNameInput").value = "";
+   		   		document.getElementById("tagDescriptionInput").value="";
+   		   		document.getElementById("tagSceenLabelInput").value="";
+   		   		document.getElementById("tagPositiveInput").value="";
+   		   		document.getElementById("tagNegativeInput").value=""
+   		   		document.getElementById("tagCheckBoxInput").checked=false;
+   		   		
+   		   		
    		    }
    		};
    		
@@ -176,7 +188,7 @@
    		    "name": name+"",
    		    "negative_class_precision": negativeprecision,
    		    "positive_class_precision": positiveprecision,
-   		    "sceen_label":screenlabel
+   		    "screen_label":screenlabel
    		  }
    		});
    		
@@ -246,53 +258,53 @@
 
 		<iron-ajax
 		id="inferlink" method="POST" content-type="application/json"
-		handle-as="json" on-error="done" auto> </iron-ajax> 
+		handle-as="json" on-error="done"> </iron-ajax> 
 		
 		<iron-ajax
 		id="etk" method="POST" content-type="application/json"
-		handle-as="json" on-error="done" auto> </iron-ajax> 
+		handle-as="json" on-error="done"> </iron-ajax> 
 		
 		<iron-ajax
 		id="publish" method="POST" content-type="application/json"
-		handle-as="json" on-error="done" auto> </iron-ajax> 
+		handle-as="json" on-error="done"> </iron-ajax> 
 		
 	  <iron-ajax
 		id="getTags" method="GET" content-type="application/json"
-		handle-as="json" on-response="fillTags" auto> </iron-ajax> 
+		handle-as="json" on-response="fillTags"> </iron-ajax> 
 		
 		 <iron-ajax
 		id="deleteTags" method="DELETE" content-type="application/json"
-		handle-as="json" last-response="deleteTags" auto> </iron-ajax>
+		handle-as="json" on-response="updateDone"> </iron-ajax>
 		
 		<iron-ajax
 		id="updateSavedTags" method="POST" content-type="application/json"
-		handle-as="json" on-response="updateDone" auto> </iron-ajax>
+		handle-as="json" on-response="updateDone"> </iron-ajax>
 		
 	
 		<iron-ajax
 		id="getFields" method="GET" content-type="application/json"
-		handle-as="json" on-response="fillFields" auto> </iron-ajax> 
+		handle-as="json" on-response="fillFields"> </iron-ajax> 
 		
 		
 		<iron-ajax
 		id="deleteFields" method="DELETE" content-type="application/json"
-		handle-as="json" last-response="deleteTags" auto> </iron-ajax>
+		handle-as="json" last-response="deleteTag"> </iron-ajax>
 		
 		<iron-ajax
 		id="updateSavedFields" method="POST" content-type="application/json"
-		handle-as="json" on-response="updateDone" auto> </iron-ajax>
+		handle-as="json" on-response="updateDone"> </iron-ajax>
 		
 		<iron-ajax
 		id="getGlossary" method="GET" content-type="application/json"
-		handle-as="json" on-response="fillGlossary" auto> </iron-ajax> 
+		handle-as="json" on-response="fillGlossary"> </iron-ajax> 
 		
 		<iron-ajax
 		id="deleteGlossaries" method="DELETE" content-type="application/json"
-		handle-as="json" on-response="updateDone" auto> </iron-ajax>
+		handle-as="json" last-response="{{glossaries}}"> </iron-ajax>
 		
 		<iron-ajax
 		id="updateSavedGlossary" method="POST" content-type="application/json"
-		handle-as="json" on-response="updateDone" auto> </iron-ajax>
+		handle-as="json" on-response="updateDone"> </iron-ajax>
 		
 	 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 		  <paper-header-panel>
@@ -333,9 +345,9 @@
 					<br><br>
 					<div>
 					<strong>No of Pages per TLD</strong>
-					<input type="number" class="projectInputStyle" id="perPage"></input> 
+					<input type="number" value="200" class="projectInputStyle" id="perPage"></input> 
 					<strong style="padding-left:80px">No of Pages for Extra TLD</strong>
-					<input type="number" class="projectInputStyle" id="extraPage"></input> 
+					<input value="0" type="number" class="projectInputStyle" id="extraPage"></input> 
 					</div>
 					<div style="float: right">
 						<paper-button raised id="get_sample_pages" on-tap="inferlink"
@@ -484,7 +496,7 @@
 					<br>
 					<div>
 						<br> <strong style="clear: left">Label:</strong>
-						{{item.0.scree_label}}
+						{{item.0.screen_label}}
 					</div>
 					<div>
 					
@@ -553,10 +565,10 @@
 		<paper-dialog id="editTagsDialog" class="OtherDialogStyles">
 		
 			<paper-input class="projectInputStyle" label="Name:" value="{{tagForm.name}}"></paper-input> 
-			<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.scree_label}}"></paper-input> 
+			<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.screen_label}}"></paper-input> 
 			<paper-input class="projectInputStyle" label="Description" value="{{tagForm.description}}"></paper-input> 
 			<paper-input class="projectInputStyle" label="Negative class precision" value="{{tagForm.negative_class_precision}}"></paper-input> 
-			<paper-input class="projectInputStyle" label="Positive class precision" value="{{tagForm.postitive_class_precision}}"></paper-input> 
+			<paper-input class="projectInputStyle" label="Positive class precision" value="{{tagForm.positive_class_precision}}"></paper-input> 
 			<paper-checkbox class="projectInputStyle" checked="{{tagForm.include_in_menu}}">Include in Menu</paper-checkbox> 
 				<br>
 				<paper-button
@@ -595,8 +607,8 @@
 		<paper-dialog id="editGlossariesDialog" class="FieldDialogStyles">
 		<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
 				
-				<paper-input disabled style="margin:0px;" id="glossary_name" value="{{glossaryForm}}" name="glossary_name" class="projectInputStyle" label="Glossary Name:" id="glossaryName"></paper-input> 
-			    <paper-input type="file" name="glossary_file" id="input" onchange='openFile(event)'></paper-input>
+				<paper-input disabled style="margin:0px;" id="glossary_name" value="{{glossaryForm}}" class="projectInputStyle" label="Glossary Name:"></paper-input> 
+			    <paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
       		<paper-button raised onclick="updateFormData()">Submit</paper-button>
 			</form>
 		</paper-dialog>
@@ -656,12 +668,10 @@
 		
 		
 		<paper-dialog id="addGlossaryDialog" class="GlossaryDialogStyles">
-			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
-				
-				<paper-input style="margin:0px;" id="glossary_name" name="glossary_name" class="projectInputStyle" label="Glossary Name:" id="glossaryName"></paper-input> 
-			    <paper-input type="file" name="glossary_file" id="input" onchange='openFile(event)'></paper-input>
+				<paper-input style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:"></paper-input> 
+			    <paper-input type="file" id="glossary_fileInput"></paper-input>
       		<paper-button raised onclick="submitFormData()">Submit</paper-button>
-			</form>
+			
 		</paper-dialog>
 		
 		<paper-dialog id="modalDialog" modal>
@@ -787,7 +797,7 @@ Polymer({
        		    "name": this.tagForm.name+"",
        		    "negative_class_precision": this.tagForm.negative_class_precision,
        		    "positive_class_precision": this.tagForm.positive_class_precision,
-       		    "scree_label":this.tagForm.scree_label
+       		    "screen_label":this.tagForm.screen_label
        		  }
        		});
          this.$.updateSavedTags.generateRequest();
@@ -902,8 +912,10 @@ Polymer({
      },
      done:function() {
     	 modalDialog.open();
+     },
+     updateDoneGlossary:function() {
+    	 location.reload(true);
      }
-     
      
     
     });
