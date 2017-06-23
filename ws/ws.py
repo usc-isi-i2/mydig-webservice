@@ -1354,21 +1354,23 @@ class Actions(Resource):
                                 f.write('\n')
 
             # invoke inferlink
-            host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
-            port = 5000
-            url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
-            payload = {
-                'cdr_ids': cdr_ids
-            }
-            # print host, url, payload
-            # requests dosen't work well here on mac in multiprocessing mode, using httplib instead
-            params = json.dumps(payload)
-            headers = {'Content-type': 'application/json'}
-            conn = httplib.HTTPConnection(host, port, timeout=5)
-            conn.request('POST', url, params, headers)
-            resp = conn.getresponse()
-            if resp.status // 100 != 2:
-                logger.error('invoke inferlink server {}: {}'.format(host + url, resp.reason))
+            if len(cdr_ids) != 0:
+                host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
+                port = 5000
+                url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
+                payload = {
+                    'tlds': s['tlds'],
+                    'cdr_ids': cdr_ids
+                }
+                # print host, url, payload
+                # requests dosen't work well here on mac in multiprocessing mode, using httplib instead
+                params = json.dumps(payload)
+                headers = {'Content-type': 'application/json'}
+                conn = httplib.HTTPConnection(host, port, timeout=5)
+                conn.request('POST', url, params, headers)
+                resp = conn.getresponse()
+                if resp.status // 100 != 2:
+                    logger.error('invoke inferlink server {}: {}'.format(host + url, resp.reason))
 
         print 'action get_sample_pages is done'
 
