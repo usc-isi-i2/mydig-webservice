@@ -1409,13 +1409,15 @@ class Actions(Resource):
         # run etk
         Actions._update_status(project_name, 'etk running')
         # run_etk.sh page_path working_dir conda_bin_path etk_path
-        etk_cmd = 'run_etk.sh {} {} {} {}'.format(
-            os.path.join(_get_project_dir_path(project_name), 'pages'),
-            os.path.join(_get_project_dir_path(project_name), 'working_dir'),
-            config['etk']['conda_path'],
-            config['etk']['path']
+        etk_cmd = '{} {} {} {} {}'.format(
+            os.path.abspath('run_etk.py'),
+            os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'pages')),
+            os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir')),
+            os.path.abspath(config['etk']['conda_path']),
+            os.path.abspath(config['etk']['path'])
         )
         print etk_cmd
+        return
         ret = subprocess.call(etk_cmd, shell=True)
         if ret != 0:
             Actions._update_status(project_name, 'etk failed', done=True)
