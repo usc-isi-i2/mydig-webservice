@@ -1252,7 +1252,7 @@ class Actions(Resource):
                 if pages_per_tld > 0:
                     query = '''
                     {
-                        "size": ''' + pages_per_tld + ''',
+                        "size": ''' + str(pages_per_tld) + ''',
                         "query": {
                             "filtered":{
                                 "query": {
@@ -1300,7 +1300,7 @@ class Actions(Resource):
                 if pages_extra > 0:
                     query = '''
                     {
-                        "size": ''' + pages_extra + ''',
+                        "size": ''' + str(pages_extra) + ''',
                         "query": {
                             "filtered":{
                                 "query": {
