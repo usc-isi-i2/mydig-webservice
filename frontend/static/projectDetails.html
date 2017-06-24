@@ -27,6 +27,8 @@
 	
 		var projectName = window.location.href.split('?');
 		var dataText;
+		var glossariesNewField=[];
+		
 		
 		$( document ).ready(function() {
 			showMenu();
@@ -202,10 +204,12 @@
 	   		var name=document.getElementById("fieldnameinput").value;
 	   		var description=document.getElementById("fielddescriptioninput").value;
 	   		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
+	   		var color=document.getElementById("fieldcolorinput").value;
+	   		var type=document.getElementById("fieldtypeinput").value;
+	   		
 	   		
 	   		var groupname = document.getElementById("fieldgroupnameinput").value;
 	   		var icon=document.getElementById("fieldiconinput").value;
-	   		var type="";
 	   		var searchimp = document.getElementById("fieldsearchinput").value;
 	   		
 	   		var combinefields=document.getElementById("fieldcombinedfieldsinput").checked;
@@ -221,7 +225,27 @@
 			
 	   		xhr.onreadystatechange = function () {
 	   		    if (xhr.readyState === 4 && xhr.status === 201) {
-	   		    	location.reload(true);
+	   		    	addFieldDialog.toggle();
+	   		    	document.getElementById("getFields").generateRequest();
+	   		    	glossariesNewField=[];
+	   		    	document.getElementById("fieldnameinput").value="";
+	   		   		document.getElementById("fielddescriptioninput").value="";
+	   		   		document.getElementById("fieldscreenlabelinput").value="";
+	   		   		document.getElementById("fieldcolorinput").value="";
+	   		   		
+	   		   		
+	   		   		document.getElementById("fieldgroupnameinput").value="";
+	   		   		document.getElementById("fieldiconinput").value="";
+	   		   		document.getElementById("fieldsearchinput").value="";
+	   		    	document.getElementById("fieldtypeinput").value = "";
+	   		   		
+	   		   		document.getElementById("fieldcombinedfieldsinput").checked=false;
+	   		   		document.getElementById("fieldfacetinput").checked=false;
+	   		   		document.getElementById("fieldlinkinput").checked=false;
+	   		   		document.getElementById("fieldresultinput").checked=false;
+	   		   		document.getElementById("fieldsearchinput").checked=false;
+	   		   		document.getElementById("fieldnetworkinput").checked=false;
+	   		   		
 	   		    }
 	   		};
 	   		
@@ -231,9 +255,7 @@
 	   		    "color": color,
 	   		    "combine_fields": combinefields,
 	   		    "description": description,
-	   		    "glossaries": [
-					
-	   		    ],
+	   		    "glossaries":glossariesNewField,
 	   		    "group_name": groupname,
 	   		    "icon": icon,
 	   		    "name": name,
@@ -582,6 +604,7 @@
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
+				<paper-input style="margin:0px;" class="projectInputStyle" label="Type:" id="fieldtypeinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Search Importance:" id="fieldsearchinput"></paper-input> 
@@ -594,7 +617,7 @@
 				
 				<br>
 								<paper-button style="float:center;margin-top:20px"
-					onclick="showFieldGlossaries.toggle()" raised> <strong>Glossaries</strong></paper-button>
+					onclick="EditFieldGlossaries.toggle()" raised> <strong>Glossaries</strong></paper-button>
 		
 					<paper-button
 					style="float:center;margin-top:20px;margin-left:10px;"
@@ -642,6 +665,7 @@
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+				<paper-input style="margin:0px;" class="projectInputStyle" label="Type:" value="{{fieldForm.type}}"></paper-input> 
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
@@ -687,7 +711,6 @@
 	
 	var username = localStorage.getItem("username");
 	var password = localStorage.getItem("password");
-	
 	
 	Polymer({
 	    is: 'project-details',
@@ -739,6 +762,7 @@
 	    			 this.fieldFormGlossaries.push(this.glossaries[i]);
 	    		 }
 	    	 }
+	    	 glossariesNewField = this.fieldFormGlossaries;
 	    	 EditFieldGlossaries.toggle();
 	     },
 	    
