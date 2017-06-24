@@ -377,7 +377,8 @@
 						</div>
 						<br><br>
 						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
-						style="clear:left"> <strong>GET TLDs Data</strong></paper-button>
+						style="clear:left"> <span> <strong>Show TLDs Data</strong> </span></paper-button>
+						<a target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
 						<div style="float: right">
 							<paper-button raised id="get_sample_pages" on-tap="inferlink"
 						style="clear:left"> <strong>Go</strong></paper-button>
@@ -667,17 +668,26 @@
 					onclick="EditFieldGlossaries.toggle()" raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
 			
-			<paper-dialog id="showTLDsDialog">
+			<paper-dialog id="showTLDsDialog" style="width:22em">
  
 				  <paper-dialog-scrollable>
+				  	
+  					 <div>
+  					 <table style="width:100%"> 
+  					 <tr>
+					    <th>URL</th>
+					    <th>Pages</th>
+					  </tr>
 				   	<template is="dom-repeat" items="{{tldResponse}}">
-						<br>{{item.0}} = {{item.1}}
+						<tr>
+						    <td>{{item.0}}</td>
+						    <td>{{item.1}}</td>
+						</tr>
 					</template>
-				   	
+				   	 </table>
+				   	 </div>
 				  </paper-dialog-scrollable>
-				  <div class="buttons">
-    				<paper-button dialog-dismiss>X</paper-button>
-  				  </div>
+				  
 				  </paper-dialog>
 			
 			<paper-dialog id="editFieldsDialog" class="FieldDialogStyles">
