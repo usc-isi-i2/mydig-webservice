@@ -35,7 +35,7 @@ project = {
 default_tags = {
     'movement': {
         'name': 'movement',
-        'scree_label': 'movement',
+        'screen_label': 'movement',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -43,7 +43,7 @@ default_tags = {
     },
     'risky service': {
         'name': 'risky service',
-        'scree_label': 'risky service',
+        'screen_label': 'risky service',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -51,7 +51,7 @@ default_tags = {
     },
     'France': {
         'name': 'France',
-        'scree_label': 'France',
+        'screen_label': 'France',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -59,7 +59,7 @@ default_tags = {
     },
     'Australia': {
         'name': 'Australia',
-        'scree_label': 'Australia',
+        'screen_label': 'Australia',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
@@ -67,13 +67,14 @@ default_tags = {
     },
     'United States': {
         'name': 'United States',
-        'scree_label': 'United States',
+        'screen_label': 'United States',
         'description': '',
         'include_in_menu': False,
         'positive_class_precision': 0.0,
         'negative_class_precision': 0.0
     },
 }
+
 default_fields = {
     'city': {
         'name': 'city',
@@ -84,7 +85,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
@@ -99,7 +100,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True
@@ -113,7 +114,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True
@@ -127,7 +128,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
@@ -141,7 +142,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
@@ -156,7 +157,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
@@ -171,7 +172,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
@@ -186,7 +187,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True
@@ -200,7 +201,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True
@@ -214,7 +215,7 @@ default_fields = {
         'show_in_facets': True,
         'show_as_link': 'text',
         'show_in_result': 'header',
-        'color': 'grey',
+        'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True

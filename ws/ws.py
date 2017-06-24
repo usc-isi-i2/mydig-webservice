@@ -1303,9 +1303,6 @@ class Actions(Resource):
                         file_path = os.path.join(dir_path, tld + '.jl')
                         with open(file_path, 'w') as f:
                             for d in docs:
-                                # if 'raw_content' not in d['_source']:
-                                #     print 'no raw_content'
-                                # print len(d['_source']['raw_content'])
                                 cdr_ids[tld].append(d['_source']['doc_id'])
                                 f.write(json.dumps(d['_source']))
                                 f.write('\n')
