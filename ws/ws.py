@@ -1325,6 +1325,7 @@ class Actions(Resource):
                             "filter": {
                                 "and": {
                                     "filters": [
+                                        {"exists" : {"field": "raw_content"}},
                                         {"exists" : {"field": "url"}},
                                         {"exists" : {"field": "doc_id"}},
                                         {"term": {"url.domain": "''' + tld + '''"}}
@@ -1372,6 +1373,7 @@ class Actions(Resource):
                             "filter": {
                                 "and": {
                                     "filters": [
+                                        {"exists" : {"field": "raw_content"}},
                                         {"exists" : {"field": "url"}},
                                         {"exists" : {"field": "doc_id"}},
                                         {"not":{"term": {"url.domain": "''' + tld + '''"}}}
