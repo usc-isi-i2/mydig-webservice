@@ -1255,6 +1255,9 @@ class Actions(Resource):
 
     @requires_auth
     def get(self, project_name, action_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
         last_message = ''
         is_running = False
         if action_name == 'extract_and_load_test_data':
@@ -1271,8 +1274,9 @@ class Actions(Resource):
 
         elif action_name == 'get_sample_pages':
             return self._get_tlds_status(project_name)
-
-        return rest.ok()
+        else:
+            # return rest.not_found('action {} not found'.format(action_name))
+            return rest.ok()
 
     @staticmethod
     def _get_tlds_status(project_name):
