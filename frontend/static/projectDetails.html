@@ -310,7 +310,7 @@
 			
 			<iron-ajax
 			id="deleteFields" method="DELETE" content-type="application/json"
-			handle-as="json" last-response="deleteTag"> </iron-ajax>
+			handle-as="json" on-response="updateDone"> </iron-ajax>
 			
 			<iron-ajax
 			id="updateSavedFields" method="POST" content-type="application/json"
@@ -448,8 +448,8 @@
 				<div style="padding: 8px;">
 					<paper-button on-tap="editFieldFunction" raised
 						style="float:right"> <strong>Edit</strong></paper-button>
-					<!-- <paper-button on-tap="deleteFieldFunction" raised
-						style="float:right"> <strong>Delete</strong></paper-button> -->
+					<paper-button on-tap="deleteFieldFunction" raised
+						style="float:right"> <strong>Delete</strong></paper-button>
 					<strong disabled="disabled">Name:</strong> {{item.0.name}}
 				</div>
 				<div style="padding: 8px;">
