@@ -556,6 +556,26 @@ class Field(Resource):
         return rest.deleted()
 
 
+
+@api.route('/projects/<project_name>/fields/<field_name>/spacy_rules')
+class SpacyRulesOfAField(Resource):
+    @required_auth
+    def post(project_name, field_name):
+        pass
+
+    @required_auth
+    def put(project_name, field_name):
+        return self.post(project_name, field_name)
+
+    @required_auth
+    def get(project_name, field_name):
+        pass
+
+    @required_auth
+    def delete(project_name, field_name):
+        pass
+
+
 @api.route('/projects/<project_name>/glossaries')
 class ProjectGlossaries(Resource):
     @requires_auth
@@ -1213,7 +1233,6 @@ class TagAnnotationsForEntity(Resource):
             logger.warning('Fail to update annotation to: project {}, kg_id {}, tag {}'.format(
                 project_name, kg_id, tag_name
             ))
-
 
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
