@@ -328,6 +328,10 @@
 			id="updateSavedGlossary" method="POST" content-type="application/json"
 			handle-as="json" on-response="updateDone"> </iron-ajax>
 			
+			<iron-ajax
+			id="getAction1" method="GET" content-type="application/json"
+			handle-as="json" on-response="getTLDInferlink"> </iron-ajax>
+			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
 			  
@@ -371,6 +375,9 @@
 						<strong style="padding-left:80px">No of Pages for Extra TLD</strong>
 						<input value="0" type="number" class="projectInputStyle" id="extraPage"></input> 
 						</div>
+						<br><br>
+						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
+						style="clear:left"> <strong>GET TLDs Data</strong></paper-button>
 						<div style="float: right">
 							<paper-button raised id="get_sample_pages" on-tap="inferlink"
 						style="clear:left"> <strong>Go</strong></paper-button>
@@ -660,6 +667,19 @@
 					onclick="EditFieldGlossaries.toggle()" raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
 			
+			<paper-dialog id="showTLDsDialog">
+ 
+				  <paper-dialog-scrollable>
+				   	<template is="dom-repeat" items="{{tldResponse}}">
+						<br>{{item.0}} = {{item.1}}
+					</template>
+				   	
+				  </paper-dialog-scrollable>
+				  <div class="buttons">
+    				<paper-button dialog-dismiss>X</paper-button>
+  				  </div>
+				  </paper-dialog>
+			
 			<paper-dialog id="editFieldsDialog" class="FieldDialogStyles">
 			
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
@@ -939,11 +959,29 @@
 	     },
 	     deletedGlossary:function() {
 	    	 this.glossaries = [];
-	     	var obj = {};
+	     	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	        this.$.getGlossary.headers = obj;
 	     	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	     	this.$.getGlossary.generateRequest();
+	     },
+	     inferlinkGet:function() {
+	    	 	
+	    	 this.glossaries = [];
+	     	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.getAction1.headers = obj;
+	         this.$.getAction1.url = backend_url +"projects/"+projectName[1]+"/actions/get_sample_pages";
+		     this.$.getAction1.generateRequest();
+	         
+	     },
+	     getTLDInferlink:function(data) {
+	    	 this.tldResponse = [];
+	    	 this.tldResponse = Object.keys(data.detail.response).map(function(e) {
+	     		  return [e,data.detail.response[e]];
+	     		});
+	    	 if(this.tldResponse) showTLDsDialog.toggle();
 	     }
 	     
 	    
