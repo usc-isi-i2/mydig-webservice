@@ -420,11 +420,6 @@
 						five centuries, but also the leap into electronic typesetting, remaining 
 						essentially unchanged</i></span>
 						<br><br>
-						<div>
-						<strong>Input1</strong>
-						<input class="projectInputStyle" id="etk1"></input> 
-						
-						</div>
 						<div style="float: right">
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
@@ -946,12 +941,7 @@
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.etk.headers = obj;
-	         var perPage = 0;
-	         var extraPage=0;
-	         
-	         perPage = this.$$('#etk1').value;
-	         extraPage = this.$$('#etk2').value;
-	         this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+	          this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
 	     	 
 	         this.$.etk.generateRequest();
 	     },
