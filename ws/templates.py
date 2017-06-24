@@ -94,30 +94,31 @@ default_fields = {
     'title': {
         'name': 'title',
         'screen_label': 'Title',
-        'description': 'title',
+        'description': 'The title of a page',
         'type': 'string',
+        'group_name': 'page',
         'show_in_search': True,
         'show_in_facets': True,
-        'show_as_link': 'text',
+        'show_as_link': 'no',
         'show_in_result': 'header',
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': False
     },
     'description': {
         'name': 'description',
         'screen_label': 'Description',
-        'description': 'description',
+        'description': 'The main content of a page',
         'type': 'string',
         'show_in_search': True,
         'show_in_facets': True,
-        'show_as_link': 'text',
+        'show_as_link': 'no',
         'show_in_result': 'header',
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': False
     },
     'phone': {
         'name': 'phone',
