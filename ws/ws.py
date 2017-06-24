@@ -1280,7 +1280,7 @@ class Actions(Resource):
         path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
         if os.path.exists(path):
             with open(path, 'r') as f:
-                content = f.read()
+                content = json.loads(f.read())
         return content
 
     @staticmethod
