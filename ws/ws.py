@@ -1288,7 +1288,7 @@ class Actions(Resource):
         # assume there's only one source
         s = sources[0]
         cdr_ids = {}
-        tlds_status = self._get_tlds_status(project_name)
+        tlds_status = Actions._get_tlds_status(project_name)
 
         # retrieve from es
         for tld in s['tlds']:
