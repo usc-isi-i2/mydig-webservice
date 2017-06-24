@@ -559,20 +559,20 @@ class Field(Resource):
 
 @api.route('/projects/<project_name>/fields/<field_name>/spacy_rules')
 class SpacyRulesOfAField(Resource):
-    @required_auth
-    def post(project_name, field_name):
+    @requires_auth
+    def post(self, project_name, field_name):
         pass
 
-    @required_auth
-    def put(project_name, field_name):
+    @requires_auth
+    def put(self, project_name, field_name):
         return self.post(project_name, field_name)
 
-    @required_auth
-    def get(project_name, field_name):
+    @requires_auth
+    def get(self, project_name, field_name):
         pass
 
-    @required_auth
-    def delete(project_name, field_name):
+    @requires_auth
+    def delete(self, project_name, field_name):
         pass
 
 
@@ -1253,6 +1253,7 @@ class Actions(Resource):
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
+    @requires_auth
     def get(self, project_name, action_name):
         last_message = ''
         is_running = False
@@ -1268,125 +1269,147 @@ class Actions(Resource):
 
             return {'last_message': last_message, 'is_running': is_running}
 
+        elif action_name == 'get_sample_pages':
+            return self._get_tlds_status(project_name)
+
         return rest.ok()
 
+    @staticmethod
+    def _get_tlds_status(project_name):
+        content = dict()
+        path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                content = f.read()
+        return content
 
     @staticmethod
     def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra):
+        # assume there's only one source
+        s = sources[0]
+        cdr_ids = {}
+        tlds_status = self._get_tlds_status(project_name)
 
-        for s in sources:
+        # retrieve from es
+        for tld in s['tlds']:
 
-            cdr_ids = {}
+            # if retrieved, skip
+            if tld in tlds_status and tlds_status[tld] != 0:
+                continue
 
-            # retrieve from es
-            for tld in s['tlds']:
-                # tlds
-                if pages_per_tld > 0:
-                    query = '''
-                    {
-                        "size": ''' + str(pages_per_tld) + ''',
-                        "query": {
-                            "filtered":{
-                                "query": {
-                                    "function_score": {
-                                        "query": {
-                                            "range": {
-                                                "timestamp": {
-                                                    "gte": "''' + s['start_date'] + '''",
-                                                    "lt": "''' + s['end_date'] + '''",
-                                                    "format": "yyyy-MM-dd"
-                                                }
+            # tlds
+            if pages_per_tld > 0:
+                query = '''
+                {
+                    "size": ''' + str(pages_per_tld) + ''',
+                    "query": {
+                        "filtered":{
+                            "query": {
+                                "function_score": {
+                                    "query": {
+                                        "range": {
+                                            "timestamp": {
+                                                "gte": "''' + s['start_date'] + '''",
+                                                "lt": "''' + s['end_date'] + '''",
+                                                "format": "yyyy-MM-dd"
                                             }
-                                        },
-                                        "functions": [{"random_score":{}}]
-                                    }
-                                },
-                                "filter": {
-                                    "and": {
-                                        "filters": [
-                                            {"exists" : {"field": "url"}},
-                                            {"exists" : {"field": "doc_id"}},
-                                            {"term": {"url.domain": "''' + tld + '''"}}
-                                        ]
-                                    }
+                                        }
+                                    },
+                                    "functions": [{"random_score":{}}]
+                                }
+                            },
+                            "filter": {
+                                "and": {
+                                    "filters": [
+                                        {"exists" : {"field": "url"}},
+                                        {"exists" : {"field": "doc_id"}},
+                                        {"term": {"url.domain": "''' + tld + '''"}}
+                                    ]
                                 }
                             }
                         }
                     }
-                    '''
-                    es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-                    hits = es.search(s['index'], s['type'], query)
-                    if hits:
-                        docs = hits['hits']['hits']
-                        cdr_ids[tld] = list()
-                        file_path = os.path.join(dir_path, tld + '.jl')
-                        with open(file_path, 'w') as f:
-                            for d in docs:
-                                cdr_ids[tld].append(d['_source']['doc_id'])
-                                f.write(json.dumps(d['_source']))
-                                f.write('\n')
-                # extra
-                if pages_extra > 0:
-                    query = '''
-                    {
-                        "size": ''' + str(pages_extra) + ''',
-                        "query": {
-                            "filtered":{
-                                "query": {
-                                    "function_score": {
-                                        "query": {
-                                            "range": {
-                                                "timestamp": {
-                                                    "gte": "''' + s['start_date'] + '''",
-                                                    "lt": "''' + s['end_date'] + '''",
-                                                    "format": "yyyy-MM-dd"
-                                                }
-                                            }
-                                        },
-                                        "functions": [{"random_score":{}}]
-                                    }
-                                },
-                                "filter": {
-                                    "and": {
-                                        "filters": [
-                                            {"exists" : {"field": "url"}},
-                                            {"exists" : {"field": "doc_id"}},
-                                            {"not":{"term": {"url.domain": "''' + tld + '''"}}}
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    '''
-                    es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-                    hits = es.search(s['index'], s['type'], query)
-                    if hits:
-                        docs = hits['hits']['hits']
-                        file_path = os.path.join(dir_path, tld + '.jl')
-                        with open(file_path, 'w') as f:
-                            for d in docs:
-                                f.write(json.dumps(d['_source']))
-                                f.write('\n')
-
-            # invoke inferlink
-            if len(cdr_ids) != 0:
-                host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
-                port = 5000
-                url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
-                payload = {
-                    'tlds': s['tlds'],
-                    'cdr_ids': cdr_ids
                 }
-                # print host, url, payload
-                # requests dosen't work well here on mac in multiprocessing mode, using httplib instead
-                params = json.dumps(payload)
-                headers = {'Content-type': 'application/json'}
-                conn = httplib.HTTPConnection(host, port, timeout=5)
-                conn.request('POST', url, params, headers)
-                resp = conn.getresponse()
-                if resp.status // 100 != 2:
-                    logger.error('invoke inferlink server {}: {}'.format(host + url, resp.reason))
+                '''
+                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                hits = es.search(s['index'], s['type'], query)
+                if hits:
+                    docs = hits['hits']['hits']
+                    tlds_status[tld] = len(docs)
+                    cdr_ids[tld] = list()
+                    file_path = os.path.join(dir_path, tld + '.jl')
+                    with open(file_path, 'w') as f:
+                        for d in docs:
+                            cdr_ids[tld].append(d['_source']['doc_id'])
+                            f.write(json.dumps(d['_source']))
+                            f.write('\n')
+
+            # extra
+            if pages_extra > 0:
+                query = '''
+                {
+                    "size": ''' + str(pages_extra) + ''',
+                    "query": {
+                        "filtered":{
+                            "query": {
+                                "function_score": {
+                                    "query": {
+                                        "range": {
+                                            "timestamp": {
+                                                "gte": "''' + s['start_date'] + '''",
+                                                "lt": "''' + s['end_date'] + '''",
+                                                "format": "yyyy-MM-dd"
+                                            }
+                                        }
+                                    },
+                                    "functions": [{"random_score":{}}]
+                                }
+                            },
+                            "filter": {
+                                "and": {
+                                    "filters": [
+                                        {"exists" : {"field": "url"}},
+                                        {"exists" : {"field": "doc_id"}},
+                                        {"not":{"term": {"url.domain": "''' + tld + '''"}}}
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+                '''
+                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                hits = es.search(s['index'], s['type'], query)
+                if hits:
+                    docs = hits['hits']['hits']
+                    file_path = os.path.join(dir_path, tld + '.jl')
+                    with open(file_path, 'w') as f:
+                        for d in docs:
+                            f.write(json.dumps(d['_source']))
+                            f.write('\n')
+
+        # update tlds status to file
+        tlds_status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
+        write_to_file(json.dumps(tlds_status, indent=2), tlds_status_path)
+
+        # invoke inferlink
+        if len(cdr_ids) != 0:
+            host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
+            port = 5000
+            url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
+            payload = {
+                'tlds': s['tlds'],
+                'cdr_ids': cdr_ids
+            }
+            # print host, url, payload
+            # requests dosen't work well here on mac in multiprocessing mode, using httplib instead
+            params = json.dumps(payload)
+            headers = {'Content-type': 'application/json'}
+            conn = httplib.HTTPConnection(host, port, timeout=5)
+            conn.request('POST', url, params, headers)
+            resp = conn.getresponse()
+            if resp.status // 100 != 2:
+                logger.error('invoke inferlink server {}: {}'.format(host + url, resp.reason))
 
         print 'action get_sample_pages is done'
 
