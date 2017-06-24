@@ -92,6 +92,7 @@ ENV/
 
 # nohup file
 ws/*.out
+frontend/*.out
 
 # config file
 ws/config.py
@@ -99,3 +100,5 @@ ws/config.py.*
 !ws/config.py.example
 
 frontend/config.py
+
+ws/default_source_credentials.json
