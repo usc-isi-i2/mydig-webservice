@@ -115,10 +115,7 @@
 	
    	request.onreadystatechange = function () {
 		    if (request.readyState === 4 && request.status === 201) {
-		    	addGlossaryDialog.toggle();
-		    	document.getElementById("getGlossary").generateRequest();
-		    	document.getElementById('glossary_nameInput').value="";
-		    	document.getElementById("glossary_fileInput").value="";
+				location.reload(true);
 		    }
 		    
 		};
@@ -300,7 +297,7 @@
 		
 		<iron-ajax
 		id="deleteGlossaries" method="DELETE" content-type="application/json"
-		handle-as="json" last-response="{{glossaries}}"> </iron-ajax>
+		handle-as="json" on-response="deletedGlossary"> </iron-ajax>
 		
 		<iron-ajax
 		id="updateSavedGlossary" method="POST" content-type="application/json"
@@ -913,8 +910,13 @@ Polymer({
      done:function() {
     	 modalDialog.open();
      },
-     updateDoneGlossary:function() {
-    	 location.reload(true);
+     deletedGlossary:function() {
+    	 this.glossaries = [];
+     	var obj = {};
+         obj.Authorization = "Basic " + btoa(username+":"+password);
+        this.$.getGlossary.headers = obj;
+     	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
+     	this.$.getGlossary.generateRequest();
      }
      
     
