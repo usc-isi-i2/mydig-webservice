@@ -259,7 +259,7 @@ def add_glossary_extraction(etk_config, project_master_config):
         if 'glossaries' in field_definition and len(field_definition['glossaries']) > 0:
             field_glossaries = field_definition['glossaries']
             for glossary in field_glossaries:
-                if glossary in glossaries:
+                if glossary in glossaries.keys():
                     g_path = glossaries[glossary]['path']
                     ngram = choose_ngram(glossaries[glossary]['ngram_distribution'])
 
