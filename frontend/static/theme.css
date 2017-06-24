@@ -79,7 +79,7 @@
 		    width: 60em;
 		    z-index: 103;
 		    position: fixed;
-		    top: 50px;
+		    top: 10px;
 		    box-sizing: border-box;
 		    background-color: #cccccc;
       }
@@ -102,7 +102,11 @@
 	    border: 1px solid;
 	    margin-right: 9.5em;
       }
-      
+      .addProjClass{
+	      margin: 0px;
+   		 height: 3.1em;
+		}
+      }
       .glossaryProperties{
       	
       	font-size: 20px;
