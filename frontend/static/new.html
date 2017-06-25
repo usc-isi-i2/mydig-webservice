@@ -44,7 +44,7 @@ function addProject(data)  {
 		    }
 		};
 		
-		var data = JSON.stringify({"index":{"full":"","sample":""},"project_name":name,"sources": [{
+		var data = JSON.stringify({"project_name":name,"sources": [{
 			
 			"start_date":start_date,
 			"tlds":tlds,
@@ -214,6 +214,7 @@ Polymer({
     	this.name = "";
     	this.i=0;
     	this.editProjectForm = {};
+    	
     },
     
     handleResponse : function(data) {
@@ -255,7 +256,7 @@ Polymer({
     	
     	this.$.updateEditDataRequest.url=backend_url +"projects/"+this.editProjectForm.name;
     	tlds=this.$$("#editProjectFormTLD_name").value.split("\n");
-    	this.$.updateEditDataRequest.body=JSON.stringify({"index":{"full":"","sample":""},"project_name":this.editProjectForm.name,"sources": [{
+    	this.$.updateEditDataRequest.body=JSON.stringify({"project_name":this.editProjectForm.name,"sources": [{
 			"index":this.editProjectForm.value.sources[0].index,
 			"type":this.editProjectForm.value.sources[0].type,
 			"start_date":this.$$("#editProjectFormStart_date").innerText,
