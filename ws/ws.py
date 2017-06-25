@@ -1467,7 +1467,7 @@ class Actions(Resource):
             os.remove(lock_path)
 
     @staticmethod
-    def _extractor_worker(data, project_name):
+    def _extractor_worker(project_name):
 
         # pull down rules
         Actions._update_status(project_name, 'pulling rules from github')
