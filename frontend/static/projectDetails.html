@@ -288,50 +288,54 @@
 			handle-as="json" on-error="done"> </iron-ajax> 
 			
 			<iron-ajax
+			id="etkGet" method="GET" content-type="application/json"
+			handle-as="json" on-response="etkdetails" on-error="done"> </iron-ajax> 
+			
+			<iron-ajax
 			id="publish" method="POST" content-type="application/json"
 			handle-as="json" on-error="done"> </iron-ajax> 
 			
 		  <iron-ajax
 			id="getTags" method="GET" content-type="application/json"
-			handle-as="json" on-response="fillTags"> </iron-ajax> 
+			handle-as="json" on-response="fillTags" on-error="done"> </iron-ajax> 
 			
 			 <iron-ajax
 			id="deleteTags" method="DELETE" content-type="application/json"
-			handle-as="json" on-response="updateDone"> </iron-ajax>
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
 			
 			<iron-ajax
 			id="updateSavedTags" method="POST" content-type="application/json"
-			handle-as="json" on-response="updateDone"> </iron-ajax>
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
 			
 		
 			<iron-ajax
 			id="getFields" method="GET" content-type="application/json"
-			handle-as="json" on-response="fillFields"> </iron-ajax> 
+			handle-as="json" on-response="fillFields" on-error="done"> </iron-ajax> 
 			
 			
 			<iron-ajax
 			id="deleteFields" method="DELETE" content-type="application/json"
-			handle-as="json" on-response="updateDone"> </iron-ajax>
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
 			
 			<iron-ajax
 			id="updateSavedFields" method="POST" content-type="application/json"
-			handle-as="json" on-response="updateDone"> </iron-ajax>
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
 			
 			<iron-ajax
 			id="getGlossary" method="GET" content-type="application/json"
-			handle-as="json" on-response="fillGlossary"> </iron-ajax> 
+			handle-as="json" on-response="fillGlossary" on-error="done"> </iron-ajax> 
 			
 			<iron-ajax
 			id="deleteGlossaries" method="DELETE" content-type="application/json"
-			handle-as="json" on-response="deletedGlossary"> </iron-ajax>
+			handle-as="json" on-response="deletedGlossary" on-error="done"> </iron-ajax>
 			
 			<iron-ajax
 			id="updateSavedGlossary" method="POST" content-type="application/json"
-			handle-as="json" on-response="updateDone"> </iron-ajax>
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
 			
 			<iron-ajax
 			id="getAction1" method="GET" content-type="application/json"
-			handle-as="json" on-response="getTLDInferlink"> </iron-ajax>
+			handle-as="json" on-response="getTLDInferlink" on-error="done"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
@@ -421,6 +425,12 @@
 						five centuries, but also the leap into electronic typesetting, remaining 
 						essentially unchanged</i></span>
 						<br><br>
+						<div>
+							<paper-button raised on-tap="etkStatus"
+						style="clear:left"> <strong> Get ETK Status</strong></paper-button>
+							<strong>Running: </strong>{{etkFields.is_running}}
+							<strong style="margin-left:20px">Last Message: </strong>{{etkFields.last_message}}
+						</div> 
 						<div style="float: right">
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
@@ -1066,6 +1076,25 @@
 	     		  return [e,data.detail.response[e]];
 	     		});
 	    	 if(this.tldResponse) showTLDsDialog.toggle();
+	     },
+	     etkStatus:function() {
+	    	 this.glossaries = [];
+	     	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+
+	         this.$.etkGet.headers = obj;
+	         this.$.etkGet.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+	         this.async(function() {
+	        	 this.$.etkGet.generateRequest();
+	           }, 2000);
+	         
+	         
+	     },
+	     etkdetails:function(data) {
+	    	 this.etkFields=[];
+	    	 this.etkFields = data.detail.response;
+	    	 if(this.etkFields.is_running != false) etkStatus();
 	     }
 	     
 	    
