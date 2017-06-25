@@ -231,7 +231,8 @@ master_config = {
     'tags': copy.deepcopy(default_tags),
     'index': {
         'sample': '',
-        'full': ''
+        'full': '',
+        'version': 1
     }
 }
 

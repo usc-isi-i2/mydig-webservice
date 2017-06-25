@@ -202,9 +202,9 @@ class AllProjects(Resource):
         project_sources = input.get('sources', [])
         if len(project_sources) == 0:
             return rest.bad_request('Invalid sources.')
-        es_index = input.get('index', {})
-        if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
-            return rest.bad_request('Invalid index.')
+        # es_index = input.get('index', {})
+        # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
+        #     return rest.bad_request('Invalid index.')
 
         # add default credentials to source if it's not there
         with open(config['default_source_credentials_path'], 'r') as f:
@@ -237,7 +237,11 @@ class AllProjects(Resource):
             data[project_name] = templates.get('project')
             data[project_name]['master_config'] = templates.get('master_config')
             data[project_name]['master_config']['sources'] = project_sources
-            data[project_name]['master_config']['index'] = es_index
+            data[project_name]['master_config']['index'] = {
+                'sample': project_name,
+                'full': project_name + '_deployed',
+                'version': 0
+            }
             update_master_config_file(project_name)
 
             # create other dirs and files
@@ -322,9 +326,9 @@ class Project(Resource):
         project_sources = input.get('sources', [])
         if len(project_sources) == 0:
             return rest.bad_request('Invalid sources.')
-        es_index = input.get('index', {})
-        if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
-            return rest.bad_request('Invalid index.')
+        # es_index = input.get('index', {})
+        # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
+        #     return rest.bad_request('Invalid index.')
         try:
             # project_lock.acquire(project_name)
 
@@ -333,7 +337,7 @@ class Project(Resource):
             write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
 
             data[project_name]['master_config']['sources'] = project_sources
-            data[project_name]['master_config']['index'] = es_index
+            # data[project_name]['master_config']['index'] = es_index
             # write to file
             update_master_config_file(project_name)
             git_helper.commit(files=[project_name + '/master_config.json'],
@@ -556,20 +560,23 @@ class Field(Resource):
         return rest.deleted()
 
 
-
 @api.route('/projects/<project_name>/fields/<field_name>/spacy_rules')
 class SpacyRulesOfAField(Resource):
     @requires_auth
     def post(self, project_name, field_name):
-        pass
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found('Field {} not found'.format(field_name))
+
+        input = request.get_json(force=True)
+        field_rules = input.get('field_rules', '')
+        text = input.get('text', '')
+        
 
     @requires_auth
     def put(self, project_name, field_name):
         return self.post(project_name, field_name)
-
-    @requires_auth
-    def get(self, project_name, field_name):
-        pass
 
     @requires_auth
     def delete(self, project_name, field_name):
@@ -1482,8 +1489,30 @@ class Actions(Resource):
             Actions._update_status(project_name, 'etk failed', done=True)
             return
 
+
         # upload to sandpaper
-        # Actions._update_status(project_name, 'pulling rules from github')
+        Actions._update_status(project_name, 'uploading to sandpaper')
+        if 'version' not in data[project_name]['master_config']['index']:
+            data[project_name]['master_config']['index']['version'] = 0
+        data[project_name]['master_config']['index']['version'] += 1
+        index_version = data[project_name]['master_config']['index']['version']
+        # upload_to_sandpaper.sh sandpaper_url ws_url project_name index type working_dir
+        sandpaper_cmd = '{} {} {} {} {} {}'.format(
+            os.path.abspath('upload_to_sandpaper.sh'),
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'] + str(index_version),
+            data[project_name]['master_config']['root_name'],
+            os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir'))
+        )
+        print sandpaper_cmd
+        ret = subprocess.call(sandpaper_cmd, shell=True)
+        if ret != 0:
+            Actions._update_status(project_name, 'sandpaper failed', done=True)
+            return
+
+
         Actions._update_status(project_name, 'done', done=True)
 
 
