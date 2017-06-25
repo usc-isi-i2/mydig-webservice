@@ -67,6 +67,8 @@ def consolidate_landmark_rules(landmark_rules_path):
             rules_file = json.load(codecs.open(os.path.join(landmark_rules_path, rules_file_name)))
             tld = rules_file['metadata']['tld']
             rules = rules_file['rules']
+            for rule in rules:
+                rule['removehtml'] = True
             if tld not in consolidated_rules:
                 consolidated_rules[tld] = list()
             o = dict()
