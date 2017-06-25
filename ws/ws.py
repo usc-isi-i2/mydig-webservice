@@ -1495,16 +1495,17 @@ class Actions(Resource):
         if 'version' not in data[project_name]['master_config']['index']:
             data[project_name]['master_config']['index']['version'] = 0
         data[project_name]['master_config']['index']['version'] += 1
+        index_version = data[project_name]['master_config']['index']['version']
+        data[project_name]['master_config']['index']['sample'] = project_name + '_' + str(index_version)
         update_master_config_file(project_name)
 
-        index_version = data[project_name]['master_config']['index']['version']
         # upload_to_sandpaper.sh sandpaper_url ws_url project_name index type working_dir
         sandpaper_cmd = '{} {} {} {} {} {} {}'.format(
             os.path.abspath('upload_to_sandpaper.sh'),
             config['sandpaper']['url'],
             config['sandpaper']['ws_url'],
             project_name,
-            data[project_name]['master_config']['index']['sample'] + str(index_version),
+            data[project_name]['master_config']['index']['sample'],
             data[project_name]['master_config']['root_name'],
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir'))
         )

@@ -17,9 +17,7 @@ curl -H "Content-Type: application/json" -XPOST \
     --data-binary "@${working_dir}/etk_out.jl" \
     "{$sandpaper_url}/indexing?index=${index}"
 last_exit_code=$?
-if [ ${last_exit_code} -ne 0 ]; then
-    exit ${last_exit_code}
-fi
+exit ${last_exit_code}
 
-curl -XPOST "{$sandpaper_url}/config?url=${ws_url}&project=${project_name}&index=${index}&type=${type}"
-exit $?
+#curl -XPOST "{$sandpaper_url}/config?url=${ws_url}&project=${project_name}&index=${index}&type=${type}"
+#exit $?
