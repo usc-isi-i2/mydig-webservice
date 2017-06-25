@@ -219,6 +219,7 @@
 	   		var result=document.getElementById("fieldresultinput").selected;
 	   		var search=document.getElementById("fieldsearchinput2").checked;
 	   		var networksearch=document.getElementById("fieldnetworkinput").checked;
+	   		var screen_label_plural = document.getElementById("fieldscreenlabelPluralinput").value;
 	   		
 	   		xhr.open("POST", url, true);
 	   		xhr.setRequestHeader("Content-type", "application/json");
@@ -232,6 +233,7 @@
 	   		    	document.getElementById("fieldnameinput").value="";
 	   		   		document.getElementById("fielddescriptioninput").value="";
 	   		   		document.getElementById("fieldscreenlabelinput").value="";
+	   		   	    document.getElementById("fieldscreenlabelPluralinput").value="";
 	   		   		document.getElementById("fieldcolorinput").value="";
 	   		   		
 	   		   		
@@ -261,7 +263,8 @@
 	   		    "icon": icon,
 	   		    "name": name,
 	   		    "screen_label": screenlabel,
-	   		    "search_importance": searchimp,
+	   		    "screen_label_plural": screen_label_plural,
+     		     "search_importance": searchimp,
 	   		    "show_as_link": link,
 	   		    "show_in_facets": facet,
 	   		    "show_in_result": result,
@@ -460,6 +463,8 @@
 				</div>
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Label:</strong> {{item.0.screen_label}}
+					<strong style="margin-left:20px" disabled="disabled">Label Plural:</strong> {{item.0.screen_label_plural}}
+		
 				</div>
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Description:</strong>
@@ -468,16 +473,15 @@
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Color:</strong>
 					{{item.0.color}}
+					<strong style="margin-left:20px" disabled="disabled">Icon:</strong>
+					{{item.0.icon}}
 				</div>
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Group Name:</strong>
 					{{item.0.group_name}}
 				</div>
 				
-				<div style="padding: 8px;">
-					<strong disabled="disabled">Icon:</strong>
-					{{item.0.icon}}
-				</div>
+				
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Type:</strong>
 					{{_getType(item.0.type)}}
@@ -622,7 +626,9 @@
 				<paper-dialog id="addFieldDialog" class="FieldDialogStyles">
 				<paper-input style="margin:0px;" required class="" label="Name:" id="fieldnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
+				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
+				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
+				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
@@ -734,6 +740,8 @@
 			
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
+				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
+				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
@@ -840,7 +848,7 @@
 	    	this.$.getGlossary.generateRequest();
 	    	
 	    	this.searchImportance=["1","2","3","4","5","6","7","8","9","10"];
-	    	this.show_as_linkArray = ["text","entity"];
+	    	this.show_as_linkArray = ["text","entity","no"];
 	    	this.show_in_resultArray=["header","detail","no","title","description"];
 	    	this.type=["string","location", "username","date","email","hyphenated","phone","image"];
 	    	
@@ -1005,6 +1013,7 @@
 	       		    "icon": this.fieldForm.icon,
 	       		    "name": this.fieldForm.name,
 	       		    "screen_label": this.fieldForm.screen_label,
+	       		    "screen_label_plural": this.fieldForm.screen_label_plural,
 	       		    "search_importance": this.$$('#editSearchImpValue').selected,
 	       		    "show_as_link": this.$$('#editlinkValue').selected,
 	       		    "show_in_facets": this.fieldForm.show_in_facets,

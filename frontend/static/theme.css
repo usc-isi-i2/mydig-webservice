@@ -159,11 +159,11 @@
       
       .FieldDialogStyles{
       	outline: none;
-		    height: 48em;
+		    height:60em;
 		    width: 60em;
 		    z-index: 103;
 		    position: fixed;
-		    top: 3px;
+		    top: 0px;
 		    box-sizing: border-box;
 		    background-color: #cccccc;
       }
