@@ -1253,7 +1253,7 @@ class Actions(Resource):
         elif action_name == 'extract_and_load_test_data':
             return self._extract_and_load_test_data(project_name)
         elif action_name == 'update_to_new_index':
-            return 0
+            return self._update_to_new_index(project_name)
         elif action_name == 'publish':
             git_helper.push()
             return rest.accepted()
@@ -1495,16 +1495,17 @@ class Actions(Resource):
         if 'version' not in data[project_name]['master_config']['index']:
             data[project_name]['master_config']['index']['version'] = 0
         data[project_name]['master_config']['index']['version'] += 1
+        index_version = data[project_name]['master_config']['index']['version']
+        data[project_name]['master_config']['index']['sample'] = project_name + '_' + str(index_version)
         update_master_config_file(project_name)
 
-        index_version = data[project_name]['master_config']['index']['version']
         # upload_to_sandpaper.sh sandpaper_url ws_url project_name index type working_dir
         sandpaper_cmd = '{} {} {} {} {} {} {}'.format(
             os.path.abspath('upload_to_sandpaper.sh'),
             config['sandpaper']['url'],
             config['sandpaper']['ws_url'],
             project_name,
-            data[project_name]['master_config']['index']['sample'] + str(index_version),
+            data[project_name]['master_config']['index']['sample'],
             data[project_name]['master_config']['root_name'],
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir'))
         )
@@ -1514,9 +1515,7 @@ class Actions(Resource):
             Actions._update_status(project_name, 'sandpaper failed', done=True)
             return
 
-
         Actions._update_status(project_name, 'done', done=True)
-
 
     def _extract_and_load_test_data(self, project_name):
         parser = reqparse.RequestParser()
@@ -1538,6 +1537,19 @@ class Actions(Resource):
         p.start()
         return rest.accepted()
 
+    def _update_to_new_index(self, project_name):
+        sandpaper_cmd = 'curl -XPOST "{}/config?url={}&project={}&index={}&type={}"'.format(
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'],
+            data[project_name]['master_config']['root_name']
+        )
+        print sandpaper_cmd
+        ret = subprocess.call(sandpaper_cmd, shell=True)
+        if ret != 0:
+            return rest.internal_error('failed to switch index in sandpaper')
+        return rest.ok()
 
 
 if __name__ == '__main__':
