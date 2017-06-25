@@ -45,5 +45,6 @@ config = {
     },
     'users': {
         'admin': '123' # basic YWRtaW46MTIz
-    }
+    },
+    'default_source_credentials_path': './default_source_credentials.json'
 }
