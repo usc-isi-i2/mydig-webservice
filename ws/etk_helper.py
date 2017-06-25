@@ -301,9 +301,8 @@ def add_default_field_extractors(fields, etk_config):
         de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
         if extractor == 'extract_using_dictionary':
             de_obj['fields'][field_name]['extractors'][extractor]['config']['dictionary'] = field_name
-
-        etk_config['resources']['dictionaries'][field_name] = "some_predefined_path"
-
+            etk_config['resources']['dictionaries'][field_name] = "some_predefined_path"
+        
     etk_config['data_extraction'].append(de_obj)
     return etk_config
 
