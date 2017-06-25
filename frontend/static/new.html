@@ -9,6 +9,7 @@
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
 <link rel="import" href="../static/elements/elements.html">
+<link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
  <script src="../static/bower_components/moment/min/locales.js"></script>
 <link rel="import" href="../static/bower_components/polymer/polymer.html">
@@ -70,6 +71,8 @@ function addProject(data)  {
 		 <iron-ajax id="updateEditDataRequest" method="POST" content-type="application/json" handle-as="json"
 		  on-response="updatedEditData"></iron-ajax>
 		 
+		 <iron-ajax id="getSamplePages" method="GET" content-type="application/json" handle-as="json"
+		  on-response="dropDownData"></iron-ajax>
 		 
 		  <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 		  <paper-header-panel>

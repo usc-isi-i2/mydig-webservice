@@ -107,6 +107,10 @@
    		 height: 3.1em;
 		}
       }
+      
+      paper-button {
+ 		 text-transform: none;
+		}
       .glossaryProperties{
       	
       	font-size: 20px;
@@ -118,6 +122,10 @@
       	padding-left:20px;
       	margin-left: 20px;
       }
+      
+      table, th, td {
+    		border: 1px solid black;
+		}	
     
        .glossaryButtonProperties{
           border: 1px solid;
@@ -174,7 +182,7 @@
       	    height: 2em;
 		    font-size: 20px;
 		    color: black;
-		    width: 21%;
+		    width: 20%;
 		    border: 2px solid black;
 		    padding-left: 30px;
       }
