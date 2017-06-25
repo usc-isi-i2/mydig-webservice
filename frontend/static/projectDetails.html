@@ -310,7 +310,7 @@
 			
 			<iron-ajax
 			id="deleteFields" method="DELETE" content-type="application/json"
-			handle-as="json" last-response="deleteTag"> </iron-ajax>
+			handle-as="json" on-response="updateDone"> </iron-ajax>
 			
 			<iron-ajax
 			id="updateSavedFields" method="POST" content-type="application/json"
@@ -327,6 +327,10 @@
 			<iron-ajax
 			id="updateSavedGlossary" method="POST" content-type="application/json"
 			handle-as="json" on-response="updateDone"> </iron-ajax>
+			
+			<iron-ajax
+			id="getAction1" method="GET" content-type="application/json"
+			handle-as="json" on-response="getTLDInferlink"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
@@ -371,6 +375,10 @@
 						<strong style="padding-left:80px">No of Pages for Extra TLD</strong>
 						<input value="0" type="number" class="projectInputStyle" id="extraPage"></input> 
 						</div>
+						<br><br>
+						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
+						style="clear:left"> <span> <strong>Show TLDs Data</strong> </span></paper-button>
+						<a target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
 						<div style="float: right">
 							<paper-button raised id="get_sample_pages" on-tap="inferlink"
 						style="clear:left"> <strong>Go</strong></paper-button>
@@ -412,11 +420,6 @@
 						five centuries, but also the leap into electronic typesetting, remaining 
 						essentially unchanged</i></span>
 						<br><br>
-						<div>
-						<strong>Input1</strong>
-						<input class="projectInputStyle" id="etk1"></input> 
-						
-						</div>
 						<div style="float: right">
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
@@ -440,8 +443,8 @@
 				<div style="padding: 8px;">
 					<paper-button on-tap="editFieldFunction" raised
 						style="float:right"> <strong>Edit</strong></paper-button>
-					<!-- <paper-button on-tap="deleteFieldFunction" raised
-						style="float:right"> <strong>Delete</strong></paper-button> -->
+					<paper-button on-tap="deleteFieldFunction" raised
+						style="float:right"> <strong>Delete</strong></paper-button>
 					<strong disabled="disabled">Name:</strong> {{item.0.name}}
 				</div>
 				<div style="padding: 8px;">
@@ -659,6 +662,28 @@
 				<paper-button style="float:center;margin-top:20px"
 					onclick="EditFieldGlossaries.toggle()" raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
+			
+			<paper-dialog id="showTLDsDialog" style="width:22em">
+ 
+				  <paper-dialog-scrollable>
+				  	
+  					 <div>
+  					 <table style="width:100%"> 
+  					 <tr>
+					    <th>URL</th>
+					    <th>Pages</th>
+					  </tr>
+				   	<template is="dom-repeat" items="{{tldResponse}}">
+						<tr>
+						    <td>{{item.0}}</td>
+						    <td>{{item.1}}</td>
+						</tr>
+					</template>
+				   	 </table>
+				   	 </div>
+				  </paper-dialog-scrollable>
+				  
+				  </paper-dialog>
 			
 			<paper-dialog id="editFieldsDialog" class="FieldDialogStyles">
 			
@@ -916,12 +941,7 @@
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.etk.headers = obj;
-	         var perPage = 0;
-	         var extraPage=0;
-	         
-	         perPage = this.$$('#etk1').value;
-	         extraPage = this.$$('#etk2').value;
-	         this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+	          this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
 	     	 
 	         this.$.etk.generateRequest();
 	     },
@@ -939,11 +959,29 @@
 	     },
 	     deletedGlossary:function() {
 	    	 this.glossaries = [];
-	     	var obj = {};
+	     	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	        this.$.getGlossary.headers = obj;
 	     	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	     	this.$.getGlossary.generateRequest();
+	     },
+	     inferlinkGet:function() {
+	    	 	
+	    	 this.glossaries = [];
+	     	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.getAction1.headers = obj;
+	         this.$.getAction1.url = backend_url +"projects/"+projectName[1]+"/actions/get_sample_pages";
+		     this.$.getAction1.generateRequest();
+	         
+	     },
+	     getTLDInferlink:function(data) {
+	    	 this.tldResponse = [];
+	    	 this.tldResponse = Object.keys(data.detail.response).map(function(e) {
+	     		  return [e,data.detail.response[e]];
+	     		});
+	    	 if(this.tldResponse) showTLDsDialog.toggle();
 	     }
 	     
 	    

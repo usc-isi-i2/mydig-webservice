@@ -38,6 +38,17 @@ default_etk_config_str = """{
 }"""
 
 
+out_of_the_box_fields_and_extractors = {
+    "social_media": "extract_using_spacy",
+    "review_id" : "extract_review_id",
+    "city" : "extract_using_dictionary",
+    "posting_date": "extract_using_spacy",
+    "phone": "extract_phone",
+    "email": "extract_email",
+    "address": "extract_using_spacy",
+    "country": "extract_using_dictionary"
+}
+
 def consolidate_landmark_rules(landmark_rules_path):
     consolidated_rules = dict()
 
@@ -248,7 +259,7 @@ def add_glossary_extraction(etk_config, project_master_config):
         if 'glossaries' in field_definition and len(field_definition['glossaries']) > 0:
             field_glossaries = field_definition['glossaries']
             for glossary in field_glossaries:
-                if glossary in glossaries:
+                if glossary in glossaries.keys():
                     g_path = glossaries[glossary]['path']
                     ngram = choose_ngram(glossaries[glossary]['ngram_distribution'])
 
@@ -267,17 +278,47 @@ def add_glossary_extraction(etk_config, project_master_config):
     return etk_config
 
 
+def add_default_field_extractors(fields, etk_config):
+    de_obj = dict()
+    # even if we have multiple data extraction blocks with same input paths, the etk will do the right thing in running
+    # the extraction efficiently
+    de_obj['input_path'] = [
+        "*.content_strict.text.`parent`",
+        "*.content_relaxed.text.`parent`",
+        "*.title.text.`parent`",
+        "*.inferlink_extractions.*.text.`parent`"
+      ]
+    de_obj['fields'] = dict()
+
+    for field_name in fields:
+        de_obj['fields'][field_name] = dict()
+        de_obj['fields'][field_name]['extractors'] = dict()
+        de_obj['fields'][field_name]['extractors'][out_of_the_box_fields_and_extractors[field_name]] = dict()
+        extractor = out_of_the_box_fields_and_extractors[field_name]
+        de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
+        if extractor == 'extract_using_dictionary':
+            de_obj['fields'][field_name]['extractors'][extractor]['config']['dictionary'] = field_name
+            etk_config['resources']['dictionaries'][field_name] = "some_predefined_path"
+
+    if de_obj['fields'].keys() > 0:
+        if 'data_extraction' not in etk_config:
+            etk_config['data_extraction'] = list()
+        etk_config['data_extraction'].append(de_obj)
+    return etk_config
+
+
 if __name__ == '__main__':
-    # webservice_config = config
+    webservice_config = config
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
-    # print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf'), indent=2)
+    project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
+    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf'), indent=2)
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
-    ngram_dist = {
-        "1" : 4,
-        "2" : 2,
-        "5" : 45,
-        "23" : 3
-    }
-
-    print choose_ngram(ngram_dist)
+    # ngram_dist = {
+    #     "1" : 4,
+    #     "2" : 2,
+    #     "5" : 45,
+    #     "23" : 3
+    # }
+    #
+    # print choose_ngram(ngram_dist)
