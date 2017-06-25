@@ -278,6 +278,36 @@ def add_glossary_extraction(etk_config, project_master_config):
     return etk_config
 
 
+def add_default_field_extractors(fields, etk_config):
+    if 'data_extraction' not in etk_config:
+        etk_config['data_extraction'] = list()
+
+    de_obj = dict()
+    # even if we have multiple data extraction blocks with same input paths, the etk will do the right thing in running
+    # the extraction efficiently
+    de_obj['input_path'] = [
+        "*.content_strict.text.`parent`",
+        "*.content_relaxed.text.`parent`",
+        "*.title.text.`parent`",
+        "*.inferlink_extractions.*.text.`parent`"
+      ]
+    de_obj['fields'] = dict()
+
+    for field_name in fields:
+        de_obj['fields'][field_name] = dict()
+        de_obj['fields'][field_name]['extractors'] = dict()
+        de_obj['fields'][field_name]['extractors'][out_of_the_box_fields_and_extractors[field_name]] = dict()
+        extractor = out_of_the_box_fields_and_extractors[field_name]
+        de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
+        if extractor == 'extract_using_dictionary':
+            de_obj['fields'][field_name]['extractors'][extractor]['config']['dictionary'] = field_name
+
+        etk_config['resources']['dictionaries'][field_name] = "some_predefined_path"
+
+    etk_config['data_extraction'].append(de_obj)
+    return etk_config
+
+
 if __name__ == '__main__':
     webservice_config = config
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
