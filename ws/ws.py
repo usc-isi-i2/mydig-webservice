@@ -1277,7 +1277,14 @@ class Actions(Resource):
             if os.path.exists(path):
                 is_running = True
 
-            return {'last_message': last_message, 'is_running': is_running}
+            ret = {'last_message': last_message, 'is_running': is_running}
+
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_stdout_tailed.txt')
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    ret['etk_progress'] = f.read()
+
+            return ret
 
         elif action_name == 'get_sample_pages':
             return self._get_tlds_status(project_name)
@@ -1489,16 +1496,8 @@ class Actions(Resource):
             Actions._update_status(project_name, 'etk failed', done=True)
             return
 
-
         # upload to sandpaper
         Actions._update_status(project_name, 'uploading to sandpaper')
-        if 'version' not in data[project_name]['master_config']['index']:
-            data[project_name]['master_config']['index']['version'] = 0
-        data[project_name]['master_config']['index']['version'] += 1
-        index_version = data[project_name]['master_config']['index']['version']
-        data[project_name]['master_config']['index']['sample'] = project_name + '_' + str(index_version)
-        update_master_config_file(project_name)
-
         # upload_to_sandpaper.sh sandpaper_url ws_url project_name index type working_dir
         sandpaper_cmd = '{} {} {} {} {} {} {}'.format(
             os.path.abspath('upload_to_sandpaper.sh'),
@@ -1529,6 +1528,14 @@ class Actions(Resource):
             os.remove(lock_path)
         if os.path.exists(lock_path):
             return rest.exists('still running')
+
+        # update version
+        if 'version' not in data[project_name]['master_config']['index']:
+            data[project_name]['master_config']['index']['version'] = 0
+        data[project_name]['master_config']['index']['version'] += 1
+        idx_version = data[project_name]['master_config']['index']['version']
+        data[project_name]['master_config']['index']['sample'] = project_name + '_' + str(idx_version)
+        update_master_config_file(project_name)
 
         # async
         p = multiprocessing.Process(
