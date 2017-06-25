@@ -501,7 +501,7 @@
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Glossaries:</strong>
 					<template is="dom-repeat" items="{{item.0.glossaries}}">
-						{{item.0}} &nbsp
+						{{item}} &nbsp
 					</template>
 				</div>
 				</paper-material> </template>
@@ -868,7 +868,7 @@
 	    	 for(var i=0;i<this.glossaries.length;i++) {
 	    		 var gloss = this.glossaries[i];
 	    		 if(this.$$('#'+gloss).checked == true) {
-	    			 this.fieldFormGlossaries.push(this.glossaries[i]);
+	    			 this.fieldFormGlossaries.push(gloss[0]);
 	    		 }
 	    	 }
 	    	 glossariesNewField = this.fieldFormGlossaries;
