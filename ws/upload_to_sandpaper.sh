@@ -18,6 +18,3 @@ curl -H "Content-Type: application/json" -XPOST \
     "{$sandpaper_url}/indexing?index=${index}"
 last_exit_code=$?
 exit ${last_exit_code}
-
-#curl -XPOST "{$sandpaper_url}/config?url=${ws_url}&project=${project_name}&index=${index}&type=${type}"
-#exit $?
