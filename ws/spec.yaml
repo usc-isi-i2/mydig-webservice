@@ -1405,13 +1405,6 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/source"
-      index:
-        type: "object"
-        properties:
-          full:
-            type: "string"
-          sample:
-            type: "string"
   tag:
     type: "object"
     properties:
@@ -1449,7 +1442,7 @@ definitions:
         type: "boolean"
       show_as_link:
         type: "string"
-        description: "enum(text | entity)"
+        description: "enum(text | entity | no)"
       show_in_result:
         type: "string"
         description: "enum(header | detail | no | title | description)"

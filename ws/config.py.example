@@ -39,7 +39,12 @@ config = {
         'path': '...',
         'conda_path': '...'
     },
+    'sandpaper': {
+        'url': 'http://localhost:9878',
+        'ws_url': 'http://admin:123@localhost:9879'
+    },
     'users': {
         'admin': '123' # basic YWRtaW46MTIz
-    }
+    },
+    'default_source_credentials_path': './default_source_credentials.json'
 }
