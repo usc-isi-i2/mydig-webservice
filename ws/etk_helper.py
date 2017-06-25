@@ -279,9 +279,6 @@ def add_glossary_extraction(etk_config, project_master_config):
 
 
 def add_default_field_extractors(fields, etk_config):
-    if 'data_extraction' not in etk_config:
-        etk_config['data_extraction'] = list()
-
     de_obj = dict()
     # even if we have multiple data extraction blocks with same input paths, the etk will do the right thing in running
     # the extraction efficiently
@@ -302,8 +299,11 @@ def add_default_field_extractors(fields, etk_config):
         if extractor == 'extract_using_dictionary':
             de_obj['fields'][field_name]['extractors'][extractor]['config']['dictionary'] = field_name
             etk_config['resources']['dictionaries'][field_name] = "some_predefined_path"
-        
-    etk_config['data_extraction'].append(de_obj)
+
+    if de_obj['fields'].keys() > 0:
+        if 'data_extraction' not in etk_config:
+            etk_config['data_extraction'] = list()
+        etk_config['data_extraction'].append(de_obj)
     return etk_config
 
 
