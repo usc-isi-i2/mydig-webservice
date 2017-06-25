@@ -49,6 +49,12 @@ out_of_the_box_fields_and_extractors = {
     "country": "extract_using_dictionary"
 }
 
+inferlink_fields_post_filter = {
+    'phone': 'extract_phone',
+    'email': 'extract_email',
+    'posting_date': 'parse_date'
+}
+
 def consolidate_landmark_rules(landmark_rules_path):
     consolidated_rules = dict()
 
@@ -132,13 +138,13 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     data_e_object['input_path'] = ["*.{}.*.text.`parent`".format(inferlink_field_name)]
     data_e_object['fields'] = dict()
     for field_name in mapping.keys():
-        data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name])
+        data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name], field_name)
     default_etk_config['data_extraction'].append(data_e_object)
     return add_glossary_extraction(default_etk_config, project_master_config)
 
 
-def create_landmark_data_extractor_for_field(mapped_fields):
-    return {
+def create_landmark_data_extractor_for_field(mapped_fields, field_name):
+    de = {
         "extractors": {
             "extract_from_landmark": {
                 "config": {
@@ -147,6 +153,11 @@ def create_landmark_data_extractor_for_field(mapped_fields):
             }
         }
     }
+
+    if field_name == 'phone' or field_name == 'email' or field_name == 'posting_date':
+        de['extractors']['extract_from_landmark']['config']['post_filter'] = [inferlink_fields_post_filter[field_name]]
+
+    return de
 
 
 def add_table_extractor_config(etk_config=json.loads(default_etk_config_str), table_classifier="some_path",
