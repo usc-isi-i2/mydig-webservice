@@ -10,6 +10,7 @@ source ${conda_bin_path}/activate etk_env
 python ${etk_path}/etk/run_core.py \
     -i ${working_dir}/consolidated_data.jl \
     -o ${working_dir}/etk_out.jl \
-    -c ${working_dir}/etk_config.json > ${working_dir}/etk_stdout.txt
+    -c ${working_dir}/etk_config.json > ${working_dir}/etk_stdout.txt \
+    | tail -n 1 ${working_dir}/etk_stdout.txt > ${working_dir}/etk_stdout_tailed.txt
 
 exit $?
