@@ -307,6 +307,35 @@ def add_default_field_extractors(fields, etk_config):
     return etk_config
 
 
+def add_custom_spacy_extractors(etk_config, field_name, field_rule_file):
+    if 'data_extraction' not in etk_config:
+        etk_config['data_extraction'] = list()
+
+    de_obj = dict()
+    # even if we have multiple data extraction blocks with same input paths, the etk will do the right thing in running
+    # the extraction efficiently
+    de_obj['input_path'] = [
+        "*.content_strict.text.`parent`",
+        "*.content_relaxed.text.`parent`",
+        "*.title.text.`parent`",
+        "*.inferlink_extractions.*.text.`parent`"
+    ]
+    de_obj['fields'] = dict()
+    de_obj['fields'][field_name] = dict()
+    de_obj['fields'][field_name]['extractors'] = dict()
+    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy'] = dict()
+    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config'] = dict()
+    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config']['spacy_field_rules'] = field_name
+
+    if 'spacy_field_rules' not in etk_config['resources']:
+        etk_config['resources']['spacy_field_rules'] = dict()
+
+    etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file
+
+    etk_config['data_extraction'].append(de_obj)
+    return etk_config
+
+
 if __name__ == '__main__':
     webservice_config = config
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
