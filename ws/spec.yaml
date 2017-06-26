@@ -1433,6 +1433,8 @@ definitions:
         type: "string"
       screen_label:
         type: "string"
+      screen_label_plural:
+        type: "string"
       type:
         type: "string"
         description: "enum(string | location | username | date | email | hyphenated | phone | image)"

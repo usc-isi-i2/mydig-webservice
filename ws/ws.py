@@ -1637,7 +1637,7 @@ if __name__ == '__main__':
 
         # print json.dumps(data, indent=4)
         # run app
-        app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
+        app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
     except Exception as e:
         print 'Exception:', e
