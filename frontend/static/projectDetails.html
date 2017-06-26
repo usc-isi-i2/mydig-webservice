@@ -340,6 +340,17 @@
 			id="getAction1" method="GET" content-type="application/json"
 			handle-as="json" on-response="getTLDInferlink" on-error="done"> </iron-ajax>
 			
+			
+			<iron-ajax
+			id="editTag" method="GET" content-type="application/json"
+			handle-as="json" last-response="{{tagForm}}" on-error="done"> </iron-ajax>
+			
+			
+			<iron-ajax
+			id="editField" method="GET" content-type="application/json"
+			handle-as="json" last-response="{{fieldForm}}" on-error="done"> </iron-ajax>
+		
+			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
 			  
@@ -934,7 +945,13 @@
 	     },
 	     editTagFunction:function(e){
 	    	 this.tagForm = {};
-	    	 this.tagForm = e.model.item[0];
+	    	 var tagName = e.model.item[0].name;
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.editTag.headers = obj;
+	         this.$.editTag.url = backend_url + "projects/"+projectName[1]+"/tags/"+tagName;
+	         
+	         this.$.editTag.generateRequest();
 	    	 editTagsDialog.toggle();
 	     },
 	     updateTag:function(e) {
@@ -990,11 +1007,15 @@
 	     	this.$.deleteGlossaries.generateRequest();
 	     },
 	     editFieldFunction:function(e){
-	    	 this.glossaryFormField=[];
-	    	 this.fieldForm = {};
-	    	 this.fieldForm = e.model.item[0];
-	    	 this.glossaryFormField=e.model.item[0].glossaries;
-	    	 this.setGlossaries();
+	    	 var fieldFormName = e.model.item[0].name;
+	    	 
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.editField.headers = obj;
+	         this.$.editField.url = backend_url + "projects/"+projectName[1]+"/fields/"+fieldFormName;
+	         
+	         this.$.editField.generateRequest();
+	    	
 	    	 editFieldsDialog.toggle();
 	     },
 	     editGlossaryFunction:function(e){
