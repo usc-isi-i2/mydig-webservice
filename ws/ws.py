@@ -667,7 +667,7 @@ class ProjectGlossaries(Resource):
         glossary = list()
         for line in lines:
             glossary.append(line)
-        return glossary
+        return json.dumps(glossary)
 
 @api.route('/projects/<project_name>/glossaries/<glossary_name>')
 class Glossary(Resource):
