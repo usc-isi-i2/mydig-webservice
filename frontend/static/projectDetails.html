@@ -198,7 +198,7 @@
 	   		xhr.send(data);
 	   		
 	      }
-	    
+	     
 	    function addNewField() {
 	    	var xhr = new XMLHttpRequest();
 	    	var url = backend_url + "projects/"+projectName[1]+"/fields";
@@ -593,7 +593,7 @@
 				</div>
 			
 			</iron-collapse>
-			 <paper-dialog id="addTagsDialog" class="OtherDialogStyles">
+			 <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
 	
 				<paper-input class="projectInputStyle" label="Name:" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
@@ -606,11 +606,10 @@
 					style="float:center;margin-top:20px;margin-left:10px;"
 					onclick="addNewTag()" raised> <strong>Save</strong></paper-button>
 				<paper-button style="float:center;margin-top:20px"
-					onclick="addTagsDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
-			<paper-dialog id="editTagsDialog" class="OtherDialogStyles">
-			
-				<paper-input class="projectInputStyle" label="Name:" value="{{tagForm.name}}"></paper-input> 
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editTagsDialog" class="OtherDialogStyles">
+				<h2>Tag : {{tagForm.name}}</h2>
 				<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.screen_label}}"></paper-input> 
 				<paper-input class="projectInputStyle" label="Description" value="{{tagForm.description}}"></paper-input> 
 				<paper-input class="projectInputStyle" label="Negative class precision" value="{{tagForm.negative_class_precision}}"></paper-input> 
@@ -621,9 +620,9 @@
 					style="float:center;margin-top:20px;margin-left:10px;"
 					on-tap="updateTag" raised> <strong>Save</strong></paper-button>
 				<paper-button style="float:center;margin-top:20px"
-					onclick="editTagsDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
-				<paper-dialog id="addFieldDialog" class="FieldDialogStyles">
+				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
 				<paper-input style="margin:0px;" required class="" label="Name:" id="fieldnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
 				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
@@ -677,21 +676,20 @@
 					style="float:center;margin-top:20px;margin-left:10px;"
 					onclick="addNewField()" raised> <strong>Save</strong></paper-button>
 				<paper-button style="float:center;margin-top:20px"
-					onclick="addFieldDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 					
 				</paper-dialog>
 			
-			<paper-dialog id="editGlossariesDialog" class="FieldDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editGlossariesDialog" class="FieldDialogStyles">
 			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
-					
-					<paper-input disabled style="margin:0px;" id="glossary_name" value="{{glossaryForm}}" class="projectInputStyle" label="Glossary Name:"></paper-input> 
-				    <paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
+					<h2>Glossary : {{glossaryForm}}</h2>
+					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
 				</form>
 			</paper-dialog>
 			
 			
-			<paper-dialog id="EditFieldGlossaries" class="FieldDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" class="FieldDialogStyles">
 			
 				<template is="dom-repeat" items="{{glossaries}}">
 					<paper-material class="addPaddingToSections">
@@ -699,7 +697,7 @@
 						
 						<strong>Name:</strong> {{item.0}}
 						<div style="float: right">
-							<paper-checkbox id="{{item.0}}" checked raised> <strong>Use</strong></paper-button>
+							<paper-checkbox id="{{item.0}}" raised> <strong>Use</strong></paper-button>
 							<!-- <paper-button on-tap="editGlossaryFunction" raised>
 							<strong>Edit</strong></paper-button> -->
 						</div>
@@ -711,10 +709,13 @@
 					style="float:center;margin-top:20px;margin-left:10px;"
 					on-tap="saveFieldGlossaries" raised> <strong>Save</strong></paper-button>
 				<paper-button style="float:center;margin-top:20px"
-					onclick="EditFieldGlossaries.toggle()" raised> <strong>Cancel</strong></paper-button>
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
 			
-			<paper-dialog id="showTLDsDialog" style="width:22em">
+			
+			
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:22em">
  
 				  <paper-dialog-scrollable>
 				  	
@@ -736,8 +737,8 @@
 				  
 				  </paper-dialog>
 			
-			<paper-dialog id="editFieldsDialog" class="FieldDialogStyles">
-			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editFieldsDialog" class="FieldDialogStyles">
+				<h2>Field : {{fieldForm.name}}</h2>
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
@@ -795,20 +796,20 @@
 					style="float:center;margin-top:20px;margin-left:10px;"
 					on-tap="updateField" raised> <strong>Save</strong></paper-button>
 				<paper-button style="float:center;margin-top:20px"
-					onclick="editFieldsDialog.toggle()" raised> <strong>Cancel</strong></paper-button>
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			
 			</paper-dialog>
 			
 			
 			
-			<paper-dialog id="addGlossaryDialog" class="GlossaryDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" class="GlossaryDialogStyles">
 					<paper-input style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:"></paper-input> 
 				    <paper-input type="file" id="glossary_fileInput"></paper-input>
 	      		<paper-button raised onclick="submitFormData()">Submit</paper-button>
 				
 			</paper-dialog>
 			
-			<paper-dialog id="modalDialog" modal>
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialog" modal>
 			 <paper-button dialog-confirm autofocus> Error. Try Again!!</paper-button>
 	  		</paper-dialog>
 			
@@ -828,6 +829,7 @@
 	    ready : function() {
 	    	this.fields=[];
 	    	this.tags = [];
+	    	this.glossaryFormField=[];
 	    	this.glossaries = [];
 	    	this.fieldFormGlossaries=[];
 	    	this.tagsData = [];
@@ -885,7 +887,7 @@
 	    	 this.fieldFormGlossaries=[];
 	    	 for(var i=0;i<this.glossaries.length;i++) {
 	    		 var gloss = this.glossaries[i];
-	    		 if(this.$$('#'+gloss).checked == true) {
+	    		 if(this.$$('#'+gloss).checked) {
 	    			 this.fieldFormGlossaries.push(gloss[0]);
 	    		 }
 	    	 }
@@ -988,8 +990,11 @@
 	     	this.$.deleteGlossaries.generateRequest();
 	     },
 	     editFieldFunction:function(e){
+	    	 this.glossaryFormField=[];
 	    	 this.fieldForm = {};
 	    	 this.fieldForm = e.model.item[0];
+	    	 this.glossaryFormField=e.model.item[0].glossaries;
+	    	 this.setGlossaries();
 	    	 editFieldsDialog.toggle();
 	     },
 	     editGlossaryFunction:function(e){
@@ -1104,7 +1109,35 @@
 	    	 this.etkFields=[];
 	    	 this.etkFields = data.detail.response;
 	    	 if(this.etkFields.is_running != false) etkStatus();
-	     }
+	     },
+	     setGlossaries:function() {
+	    	 if(this.glossaryFormField) {
+		    	 for(var i=0;i<this.glossaryFormField.length;i++){
+		    		 for(var j=0;j<this.glossaries.length;j++){
+		    			 if(this.glossaryFormField[i] == this.glossaries[j][0]) {
+		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+		    				 break;
+		    			 } else {
+		    				 this.$$('#'+this.glossaries[j][0]).checked ="";
+		    				 break;
+		    			 }
+		    		 }
+		    		 
+		    	 }
+	    	 } else {
+	    		 for(var j=0;j<this.glossaries.length;j++){
+	    				 this.$$('#'+this.glossaries[j][0]).checked ="";
+	    			 
+	    		 }
+	    	 }
+	    	 
+	     },
+	     _disableDocumentScrolling: function() {
+	    	  document.body.style.overflow = 'hidden';
+	    	},
+	    	_restoreDocumentScrolling: function() {
+	    		  document.body.style.overflow = '';
+	    		}
 	     
 	    
 	    });
