@@ -665,6 +665,7 @@ class ProjectGlossaries(Resource):
     @staticmethod
     def convert_glossary_to_json(lines):
         glossary = list()
+        lines = lines.split('\n')
         for line in lines:
             glossary.append(line)
         return json.dumps(glossary)
