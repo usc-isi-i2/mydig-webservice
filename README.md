@@ -21,6 +21,7 @@
 | type | `date`, `email`, `hyphenated`, `image`, `location`, `phone`, `string`, `username` | Affects the appearance as well as search behavior: `date` value must be in ISO format, `email`, `hyphenated`, `image`, `location` must have a DIG key with lat and long, `phone`, `string` the default, `username` |
 | use_in_network_search | false, true | support network creation using the values from a field |
 | predefined_extractors | one of `social_media`, `review_id`, `city`, `posting_date`, `phone`, `email`, `address`, `country`, `website` | specifies a default extractor to use for a field |
+| rule_extractor_enabled | false, true | When true, use the custom rule extractor for this field, if one is defined |
 
 ### Icons
 
