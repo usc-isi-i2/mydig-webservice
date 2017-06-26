@@ -206,17 +206,17 @@
 	   		var description=document.getElementById("fielddescriptioninput").value;
 	   		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
 	   		var color=document.getElementById("fieldcolorinput").value;
-	   		var type=document.getElementById("fieldtypeinput").selected;
+	   		var type=document.getElementById("fieldtypeinput").selectedItem.value;
 	   		
 	   		
 	   		var groupname = document.getElementById("fieldgroupnameinput").value;
 	   		var icon=document.getElementById("fieldiconinput").value;
-	   		var searchimp = document.getElementById("fieldsearchinput").selected;
+	   		var searchimp = document.getElementById("fieldsearchinput").selectedItem.value;
 	   		
 	   		var combinefields=document.getElementById("fieldcombinedfieldsinput").checked;
 	   		var facet=document.getElementById("fieldfacetinput").checked;
-	   		var link=document.getElementById("fieldlinkinput").selected;
-	   		var result=document.getElementById("fieldresultinput").selected;
+	   		var link=document.getElementById("fieldlinkinput").selectedItem.value;
+	   		var result=document.getElementById("fieldresultinput").selectedItem.value;
 	   		var search=document.getElementById("fieldsearchinput2").checked;
 	   		var networksearch=document.getElementById("fieldnetworkinput").checked;
 	   		var screen_label_plural = document.getElementById("fieldscreenlabelPluralinput").value;
@@ -239,13 +239,13 @@
 	   		   		
 	   		   		document.getElementById("fieldgroupnameinput").value="";
 	   		   		document.getElementById("fieldiconinput").value="";
-	   		   		document.getElementById("fieldsearchinput").selected="";
-	   		    	document.getElementById("fieldtypeinput").selected = "";
+	   		   		document.getElementById("fieldsearchinput").selectedItem.value="";
+	   		    	document.getElementById("fieldtypeinput").selectedItem.value = "";
 	   		   		
 	   		   		document.getElementById("fieldcombinedfieldsinput").checked=false;
 	   		   		document.getElementById("fieldfacetinput").checked=false;
-	   		   		document.getElementById("fieldlinkinput").selected="";
-	   		   		document.getElementById("fieldresultinput").selected="";
+	   		   		document.getElementById("fieldlinkinput").selectedItem.value="";
+	   		   		document.getElementById("fieldresultinput").selectedItem.value="";
 	   		   		document.getElementById("fieldsearchinput2").checked=false;
 	   		   		document.getElementById("fieldnetworkinput").checked=false;
 	   		   		
@@ -495,21 +495,21 @@
 				
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Type:</strong>
-					{{_getType(item.0.type)}}
+					{{item.0.type}}
 				</div>
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Search Importance:</strong>
-					{{_getSearchImportance(item.0.search_importance)}}
+					{{item.0.search_importance}}
 				</div>
 				
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Show as Link:</strong>
-					{{_getLink(item.0.show_as_link)}}
+					{{item.0.show_as_link}}
 				</div>
 				
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Show in Result:</strong>
-					{{_getResult(item.0.show_in_result)}}
+					{{item.0.show_in_result}}
 				</div>
 				
 				<div style="padding: 8px;">
@@ -658,7 +658,7 @@
 		        </paper-menu>
 		       </paper-dropdown-menu>
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Links:">
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links:">
 		        <paper-menu id="fieldlinkinput"  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -760,7 +760,7 @@
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance:">
-		        <paper-menu id="editSearchImpValue" selected="{{fieldForm.search_importance}}" class="dropdown-content" >
+		        <paper-menu id="editSearchImpValue" selected="{{_getSearchImportance(fieldForm.search_importance)}}" class="dropdown-content" >
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -768,15 +768,15 @@
 		       </paper-dropdown-menu>
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type:">
-		        <paper-menu id="editTypeValue" selected="{{fieldForm.type}}" class="dropdown-content" >
+		        <paper-menu id="editTypeValue" selected="{{_getType(fieldForm.type)}}" class="dropdown-content" >
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Links:">
-		        <paper-menu id="editlinkValue" selected={{fieldForm.show_as_link}} class="dropdown-content" >
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links:">
+		        <paper-menu id="editlinkValue" selected={{_getLink(fieldForm.show_as_link)}} class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -785,7 +785,7 @@
 				
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results:">
-		        <paper-menu id="editResultValue" selected={{fieldForm.show_in_result}}  class="dropdown-content" >
+		        <paper-menu id="editResultValue" selected={{_getResult(fieldForm.show_in_result)}}  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -867,17 +867,17 @@
 	    	
 		
 	     },
-	     _getType:function(index) {
-	    	 return this.type[index];
+	     _getType:function(name) {
+	    	 return this.type.indexOf(name);
 	     },
-	     _getSearchImportance:function(index){
-	    	 return this.searchImportance[index];
+	     _getSearchImportance:function(name){
+	    	 return this.searchImportance.indexOf(name);
 	     },
-	     _getResult:function(index) {
-	    	 return this.show_in_resultArray[index];
+	     _getResult:function(name) {
+	    	 return this.show_in_resultArray.indexOf(name);
 	     },
-	     _getLink:function(index) {
-	    	 return this.show_as_linkArray[index];
+	     _getLink:function(name) {
+	    	 return this.show_as_linkArray.indexOf(name);
 	     },
 	     convertFileInputToFormData: function(){
 	    	 var file = this.$.input.inputElement.files[0];
@@ -1040,12 +1040,12 @@
 	       		    "name": this.fieldForm.name,
 	       		    "screen_label": this.fieldForm.screen_label,
 	       		    "screen_label_plural": this.fieldForm.screen_label_plural,
-	       		    "search_importance": this.$$('#editSearchImpValue').selected,
-	       		    "show_as_link": this.$$('#editlinkValue').selected,
+	       		    "search_importance": this.$$('#editSearchImpValue').selectedItem.value,
+	       		    "show_as_link": this.$$('#editlinkValue').selectedItem.value,
 	       		    "show_in_facets": this.fieldForm.show_in_facets,
-	       		    "show_in_result": this.$$('#editResultValue').selected,
+	       		    "show_in_result": this.$$('#editResultValue').selectedItem.value,
 	       		    "show_in_search": this.fieldForm.show_in_search,
-	       		    "type": this.$$('#editTypeValue').selected,
+	       		    "type": this.$$('#editTypeValue').selectedItem.value,
 	       		    "use_in_network_search": this.fieldForm.use_in_network_search
 	       		  }
 	       		});
