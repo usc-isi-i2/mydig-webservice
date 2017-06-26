@@ -5,7 +5,7 @@
 ### Fields
 
 | Attribute     | Possible Values | Explanation  |
-| ------------- |:---------------:| -----:|
+| ------------- |---------------| -----|
 | name          | alphanumeric and underscore | the name of a field, cannot be changed |
 | description   | text          |   A description of the field |
 | screen_label  | text        | The text to display the field in DIG |
