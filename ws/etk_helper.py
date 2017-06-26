@@ -320,7 +320,7 @@ def add_default_field_extractors(fields, etk_config):
     return etk_config
 
 
-def add_custom_spacy_extractors(etk_config, field_name, field_rule_file):
+def add_custom_spacy_extractors(etk_config, field_name, field_rule_file_path):
     if 'data_extraction' not in etk_config:
         etk_config['data_extraction'] = list()
 
@@ -330,8 +330,7 @@ def add_custom_spacy_extractors(etk_config, field_name, field_rule_file):
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
         "*.content_relaxed.text.`parent`",
-        "*.title.text.`parent`",
-        "*.inferlink_extractions.*.text.`parent`"
+        "*.title.text.`parent`"
     ]
     de_obj['fields'] = dict()
     de_obj['fields'][field_name] = dict()
@@ -343,7 +342,7 @@ def add_custom_spacy_extractors(etk_config, field_name, field_rule_file):
     if 'spacy_field_rules' not in etk_config['resources']:
         etk_config['resources']['spacy_field_rules'] = dict()
 
-    etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file
+    etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file_path
 
     etk_config['data_extraction'].append(de_obj)
     return etk_config
