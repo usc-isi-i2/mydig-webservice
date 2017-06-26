@@ -1569,14 +1569,6 @@ class Actions(Resource):
         return rest.accepted()
 
     def _update_to_new_index(self, project_name):
-        p = multiprocessing.Process(
-            target=self._update_to_new_index_worker,
-            args=(project_name,))
-        p.start()
-        return rest.accepted()
-
-    @staticmethod
-    def _update_to_new_index_worker(project_name):
         # sandpaper_cmd = 'curl -XPOST "{}/config?url={}&project={}&index={}&type={}"'.format(
         #     config['sandpaper']['url'],
         #     config['sandpaper']['ws_url'],
