@@ -270,7 +270,15 @@ Polymer({
     },
     updatedEditData:function(){
     	location.reload();
-    }
+    },
+    _disableDocumentScrolling: function() {
+  	  document.body.style.overflow = 'hidden';
+  	},
+  	_restoreDocumentScrolling: function() {
+  		  document.body.style.overflow = '';
+  		}
+   
+  
     
 });
 
