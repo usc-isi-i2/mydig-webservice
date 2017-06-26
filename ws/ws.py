@@ -14,6 +14,7 @@ import subprocess
 import requests
 import urllib, httplib
 import copy
+import gzip
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -603,11 +604,16 @@ class ProjectGlossaries(Resource):
         if name in data[project_name]['master_config']['glossaries']:
             return rest.exists('Glossary {} exists'.format(name))
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
-        file = args['glossary_file']
-        # write_to_file(content, file_path)
-        file.save(file_path)
+        json_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.json.gz')
 
-        self.compute_statistics(project_name, name, file_path)
+        # maybe this works, maybe doesn't
+        content = args['glossary_file'].stream.read()
+        with gzip.open(json_file_path, 'w') as f:
+            f.write(ProjectGlossaries.convert_glossary_to_json(content))
+        write_to_file(content, file_path)
+        # file.save(file_path)
+
+        self.compute_statistics(project_name, name, file_path, json_file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='create a glossary: project {}, glossary {}'.format(project_name, name))
 
@@ -635,7 +641,7 @@ class ProjectGlossaries(Resource):
         return rest.deleted()
 
     @staticmethod
-    def compute_statistics(project_name, glossary_name, file_path):
+    def compute_statistics(project_name, glossary_name, file_path, json_file_path):
         THRESHOLD = 5
         ngram = {}
         with open(file_path, 'r') as f:
@@ -652,9 +658,16 @@ class ProjectGlossaries(Resource):
             data[project_name]['master_config']['glossaries'][glossary_name] = {
                 'ngram_distribution': ngram,
                 'entry_count': line_count
+                'path': json_file_path
             }
             update_master_config_file(project_name)
 
+    @staticmethod
+    def convert_glossary_to_json(lines):
+        glossary = list()
+        for line in lines:
+            glossary.append(line)
+        return glossary
 
 @api.route('/projects/<project_name>/glossaries/<glossary_name>')
 class Glossary(Resource):
@@ -676,10 +689,20 @@ class Glossary(Resource):
             return rest.bad_request('Invalid glossary_file')
 
         name = glossary_name
-        file = args['glossary_file']
+
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
-        file.save(file_path)
-        ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path)
+        json_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.json.gz')
+
+        # file = args['glossary_file']
+        # file.save(file_path)
+
+        # maybe this works, maybe doesn't
+        content = args['glossary_file'].stream.read()
+        with gzip.open(json_file_path, 'w') as f:
+            f.write(ProjectGlossaries.convert_glossary_to_json(content))
+        write_to_file(content, file_path)
+
+        ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path, json_file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='update a glossary: project {}, glossary {}'.format(project_name, name))
         return rest.created()
