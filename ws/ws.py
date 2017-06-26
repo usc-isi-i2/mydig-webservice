@@ -1545,16 +1545,37 @@ class Actions(Resource):
         return rest.accepted()
 
     def _update_to_new_index(self, project_name):
-        sandpaper_cmd = 'curl -XPOST "{}/config?url={}&project={}&index={}&type={}"'.format(
+        # sandpaper_cmd = 'curl -XPOST "{}/config?url={}&project={}&index={}&type={}"'.format(
+        #     config['sandpaper']['url'],
+        #     config['sandpaper']['ws_url'],
+        #     project_name,
+        #     data[project_name]['master_config']['index']['sample'],
+        #     data[project_name]['master_config']['root_name']
+        # )
+        # print sandpaper_cmd
+        # ret = subprocess.call(sandpaper_cmd, shell=True)
+        # if ret != 0:
+        #     return rest.internal_error('failed to switch index in sandpaper')
+        # return rest.ok()
+
+        # url = '{}/config?url={}&project={}&index={}&type={}'.format(
+        #     config['sandpaper']['url'],
+        #     config['sandpaper']['ws_url'],
+        #     project_name,
+        #     data[project_name]['master_config']['index']['sample'],
+        #     data[project_name]['master_config']['root_name']
+        # )
+        # url needs to be encoded for sandpaper
+        url = '{}/config?url=http%3A%2F%2Fmemex%3Adigdig%4052.36.12.77%3A9879&project=pedro_test_01&index' \
+              '=pedro_test_01_21&type=ads'.format(
             config['sandpaper']['url'],
             config['sandpaper']['ws_url'],
             project_name,
             data[project_name]['master_config']['index']['sample'],
             data[project_name]['master_config']['root_name']
         )
-        print sandpaper_cmd
-        ret = subprocess.call(sandpaper_cmd, shell=True)
-        if ret != 0:
+        resp = requests.post(url, timeout=5)
+        if resp.status_code // 100 != 2:
             return rest.internal_error('failed to switch index in sandpaper')
         return rest.ok()
 
