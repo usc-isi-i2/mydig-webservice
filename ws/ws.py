@@ -657,7 +657,7 @@ class ProjectGlossaries(Resource):
                 ngram[t] = ngram.get(t, 0) + 1
             data[project_name]['master_config']['glossaries'][glossary_name] = {
                 'ngram_distribution': ngram,
-                'entry_count': line_count
+                'entry_count': line_count,
                 'path': json_file_path
             }
             update_master_config_file(project_name)
@@ -665,9 +665,10 @@ class ProjectGlossaries(Resource):
     @staticmethod
     def convert_glossary_to_json(lines):
         glossary = list()
+        lines = lines.split('\n')
         for line in lines:
             glossary.append(line)
-        return glossary
+        return json.dumps(glossary)
 
 @api.route('/projects/<project_name>/glossaries/<glossary_name>')
 class Glossary(Resource):
