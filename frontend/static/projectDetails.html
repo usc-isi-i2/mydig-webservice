@@ -212,7 +212,7 @@
 	   		var groupname = document.getElementById("fieldgroupnameinput").value;
 	   		var icon=document.getElementById("fieldiconinput").value;
 	   		var searchimp = document.getElementById("fieldsearchinput").selectedItem.value;
-	   		
+	   		var ruleExtractor = document.getElementById("fieldRuleExtractor").checked;
 	   		var combinefields=document.getElementById("fieldcombinedfieldsinput").checked;
 	   		var facet=document.getElementById("fieldfacetinput").checked;
 	   		var link=document.getElementById("fieldlinkinput").selectedItem.value;
@@ -241,6 +241,7 @@
 	   		   		document.getElementById("fieldiconinput").value="";
 	   		   		document.getElementById("fieldsearchinput").selectedItem.value="";
 	   		    	document.getElementById("fieldtypeinput").selectedItem.value = "";
+	   		    	document.getElementById("fieldRuleExtractor").checked=false;
 	   		   		
 	   		   		document.getElementById("fieldcombinedfieldsinput").checked=false;
 	   		   		document.getElementById("fieldfacetinput").checked=false;
@@ -270,7 +271,8 @@
 	   		    "show_in_result": result,
 	   		    "show_in_search": search,
 	   		    "type": type,
-	   		    "use_in_network_search": networksearch
+	   		    "use_in_network_search": networksearch,
+	   		    "rule_extractor_enabled":ruleExtractor
 	   		  }
 	   		});
 	   		
@@ -492,6 +494,10 @@
 					{{item.0.group_name}}
 				</div>
 				
+				<div style="padding: 8px;">
+					<strong disabled="disabled">Number of Rules:</strong>
+					{{item.0.no_of_rules}}
+				</div>
 				
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Type:</strong>
@@ -516,6 +522,8 @@
 					<paper-checkbox disabled="disabled" checked="{{item.0.combine_fields}}">Combine Fields</paper-checkbox>
 					<paper-checkbox disabled="disabled" checked="{{item.0.show_in_facets}}"
 						style="float:center;margin-left:53px;">Show in Facets</paper-checkbox>
+					<paper-checkbox disabled="disabled" style="float:center;margin-left:53px;" checked="{{item.0.rule_extractor_enabled}}"> Rule Extractor Enabled</paper-checkbox>
+					
 				</div>
 				<div style="padding: 8px;">
 					<paper-checkbox disabled="disabled" checked="{{item.0.show_in_search}}">Show in Search</paper-checkbox>
@@ -642,7 +650,7 @@
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance:">
+				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
 		        <paper-menu id="fieldsearchinput"  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -650,7 +658,7 @@
 		        </paper-menu>
 		       </paper-dropdown-menu>
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type:">
+				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
 		        <paper-menu id="fieldtypeinput"  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -658,7 +666,7 @@
 		        </paper-menu>
 		       </paper-dropdown-menu>
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links:">
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
 		        <paper-menu id="fieldlinkinput"  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -667,7 +675,7 @@
 		       </paper-dropdown-menu>
 				
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results:">
+				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
 		        <paper-menu id="fieldresultinput"  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -678,6 +686,8 @@
 				<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
 				<paper-checkbox class="projectInputStyle" id="fieldnetworkinput">Show in Network Search</paper-checkbox> 
 				<paper-checkbox class="projectInputStyle" id="fieldsearchinput2">Show in Search</paper-checkbox> 
+				<paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled</paper-checkbox> 
+				
 				</div>
 				<br>
 								<paper-button style="float:center;margin-top:20px"
@@ -759,7 +769,7 @@
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance:">
+				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
 		        <paper-menu id="editSearchImpValue" selected="{{_getSearchImportance(fieldForm.search_importance)}}" class="dropdown-content" >
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -767,7 +777,7 @@
 		        </paper-menu>
 		       </paper-dropdown-menu>
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type:">
+				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
 		        <paper-menu id="editTypeValue" selected="{{_getType(fieldForm.type)}}" class="dropdown-content" >
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -775,7 +785,7 @@
 		        </paper-menu>
 		       </paper-dropdown-menu>
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links:">
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
 		        <paper-menu id="editlinkValue" selected={{_getLink(fieldForm.show_as_link)}} class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -784,7 +794,7 @@
 		       </paper-dropdown-menu>
 				
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results:">
+				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
 		        <paper-menu id="editResultValue" selected={{_getResult(fieldForm.show_in_result)}}  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
@@ -798,6 +808,8 @@
 				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.show_in_facets}}">Show in Facets</paper-checkbox> 
 				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.use_in_network_search}}">Show in Network Search</paper-checkbox> 
 				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.show_in_search}}">Show in Search</paper-checkbox> 
+				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.rule_extractor_enabled}}">Rule Extractor Enabled</paper-checkbox> 
+				
 				</div>
 				<br>
 								<paper-button style="float:center;margin-top:20px"
@@ -1045,6 +1057,8 @@
 	       		    "show_in_facets": this.fieldForm.show_in_facets,
 	       		    "show_in_result": this.$$('#editResultValue').selectedItem.value,
 	       		    "show_in_search": this.fieldForm.show_in_search,
+	       			"rule_extractor_enabled":this.fieldForm.rule_extractor_enabled,
+	       			"no_of_rules":this.fieldForm.no_of_rules,
 	       		    "type": this.$$('#editTypeValue').selectedItem.value,
 	       		    "use_in_network_search": this.fieldForm.use_in_network_search
 	       		  }
