@@ -12,7 +12,7 @@
 | screen_label_plural | text | Label when a field contains multiple values |
 | icon | see below | The icon to decorate the field in DIG |
 | color | see below | The color used to display the field in DIG |
-| show_as_link | entity, text, no | Specifies the appearance of the field |
+| show_as_link | `entity`, `text`, `no` | Specifies the appearance of the field. `entity` shows a link that opens an entity page, `text` shows the value as a text string (no link), `no` what does it mean? |
 | show_in_facets | false, true | When true, the field appears in the facets section |
 | show_in_result | title, description, detail, header, no | Where the field appears in the results page |
 | show_in_search | false, true | When true, the field appears in the query form |
