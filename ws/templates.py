@@ -225,14 +225,14 @@ default_fields = {
 
 master_config = {
     'glossaries': {},
-    'root_name': 'doc',
+    'root_name': 'ads',
     'sources': [],
     'fields': copy.deepcopy(default_fields),
     'tags': copy.deepcopy(default_tags),
     'index': {
         'sample': '',
         'full': '',
-        'version': 1
+        'version': 0
     }
 }
 
