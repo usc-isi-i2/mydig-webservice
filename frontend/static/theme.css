@@ -78,7 +78,6 @@
 		    height: 45em;
 		    width: 60em;
 		    z-index: 103;
-		    position: fixed;
 		    top: 10px;
 		    box-sizing: border-box;
 		    background-color: #cccccc;
@@ -149,7 +148,6 @@
 		    height: 45em;
 		    width: 60em;
 		    z-index: 103;
-		    position: fixed;
 		    top: 76px;
 		    box-sizing: border-box;
 		    background-color: #cccccc;
@@ -162,7 +160,6 @@
 		    height:60em;
 		    width: 60em;
 		    z-index: 103;
-		    position: fixed;
 		    top: 0px;
 		    box-sizing: border-box;
 		    background-color: #cccccc;
@@ -173,7 +170,6 @@
 		    height: 15em;
 		    width: 60em;
 		    z-index: 103;
-		    position: fixed;
 		    top: 3px;
 		    box-sizing: border-box;
 		    background-color: #cccccc;

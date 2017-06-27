@@ -691,7 +691,7 @@
 				</div>
 				<br>
 								<paper-button style="float:center;margin-top:20px"
-					onclick="EditFieldGlossaries.toggle()" raised> <strong>Glossaries</strong></paper-button>
+					on-tap="getFieldGlossariesForAdd"  raised> <strong>Glossaries</strong></paper-button>
 		
 					<paper-button
 					style="float:center;margin-top:20px;margin-left:10px;"
@@ -718,7 +718,7 @@
 						
 						<strong>Name:</strong> {{item.0}}
 						<div style="float: right">
-							<paper-checkbox id="{{item.0}}" raised> <strong>Use</strong></paper-button>
+							<paper-checkbox id="{{item.0}}" raised value=""> <strong>Use</strong></paper-button>
 							<!-- <paper-button on-tap="editGlossaryFunction" raised>
 							<strong>Edit</strong></paper-button> -->
 						</div>
@@ -813,7 +813,7 @@
 				</div>
 				<br>
 								<paper-button style="float:center;margin-top:20px"
-					onclick="EditFieldGlossaries.toggle()" raised> <strong>Glossaries</strong></paper-button>
+					on-tap="getFieldGlossary" raised> <strong>Glossaries</strong></paper-button>
 		
 					<paper-button
 					style="float:center;margin-top:20px;margin-left:10px;"
@@ -1027,8 +1027,9 @@
 	         this.$.editField.url = backend_url + "projects/"+projectName[1]+"/fields/"+fieldFormName;
 	         
 	         this.$.editField.generateRequest();
-	    	
+	         
 	    	 editFieldsDialog.toggle();
+	    	 
 	     },
 	     editGlossaryFunction:function(e){
 	    	 this.glossaryForm = {};
@@ -1145,34 +1146,41 @@
 	    	 this.etkFields = data.detail.response;
 	    	 if(this.etkFields.is_running != false) etkStatus();
 	     },
-	     setGlossaries:function() {
-	    	 if(this.glossaryFormField) {
-		    	 for(var i=0;i<this.glossaryFormField.length;i++){
-		    		 for(var j=0;j<this.glossaries.length;j++){
-		    			 if(this.glossaryFormField[i] == this.glossaries[j][0]) {
-		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
-		    				 break;
-		    			 } else {
-		    				 this.$$('#'+this.glossaries[j][0]).checked ="";
-		    				 break;
-		    			 }
-		    		 }
-		    		 
-		    	 }
-	    	 } else {
-	    		 for(var j=0;j<this.glossaries.length;j++){
-	    				 this.$$('#'+this.glossaries[j][0]).checked ="";
-	    			 
-	    		 }
-	    	 }
-	    	 
-	     },
 	     _disableDocumentScrolling: function() {
 	    	  document.body.style.overflow = 'hidden';
 	    	},
-	    	_restoreDocumentScrolling: function() {
-	    		  document.body.style.overflow = '';
-	    		}
+   	_restoreDocumentScrolling: function() {
+   		  document.body.style.overflow = '';
+   		},
+		getFieldGlossary:function() {
+			EditFieldGlossaries.toggle();
+			 for(var j=0;j<this.glossaries.length;j++){
+  				 this.$$('#'+this.glossaries[j][0]).checked ="";
+  			 
+	  		 }
+	  			 if(this.fieldForm) {
+	  				 if(this.fieldForm.glossaries) {
+	  		    	 	for(var i=0;i<this.fieldForm.glossaries.length;i++){
+	  		    		 for(var j=0;j<this.glossaries.length;j++){
+	  		    			 if(this.fieldForm.glossaries[i] == this.glossaries[j][0]) {
+	  		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+	  		    				 break;
+	  		    			 } 
+	  		    		 }
+	  		    		 
+	  		    	 	}
+	  				 }
+  	    	      } 
+  			 
+  		},
+   		
+   		getFieldGlossariesForAdd:function() {
+   			EditFieldGlossaries.toggle();
+			 for(var j=0;j<this.glossaries.length;j++){
+ 				 this.$$('#'+this.glossaries[j][0]).checked ="";
+ 			 
+	  		 }
+   		}
 	     
 	    
 	    });
