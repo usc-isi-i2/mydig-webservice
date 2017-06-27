@@ -793,6 +793,10 @@ class ProjectGlossaries(Resource):
         shutil.rmtree(dir_path)
         os.mkdir(dir_path) # recreate folder
         data[project_name]['master_config']['glossaries'] = dict()
+        # remove all glossary names from all fields
+        for k, v in data[project_name]['master_config']['fields'].items():
+            if 'glossaries' in v and v['glossaries']:
+                v['glossaries'] = []
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='delete all glossaries: project {}'.format(project_name))
@@ -896,6 +900,10 @@ class Glossary(Resource):
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
         os.remove(file_path)
         del data[project_name]['master_config']['glossaries'][glossary_name]
+        # remove glossary_name from field which contains it
+        for k, v in data[project_name]['master_config']['fields'].items():
+            if 'glossaries' in v and glossary_name in v['glossaries']:
+                v.remove(glossary_name)
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='delete a glossary: project {}, glossary {}'.format(project_name, glossary_name))
