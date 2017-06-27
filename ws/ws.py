@@ -12,7 +12,6 @@ import csv
 import multiprocessing
 import subprocess
 import requests
-import urllib, httplib
 import copy
 import gzip
 
@@ -829,6 +828,7 @@ class ProjectGlossaries(Resource):
             glossary.append(line)
         return json.dumps(glossary)
 
+
 @api.route('/projects/<project_name>/glossaries/<glossary_name>')
 class Glossary(Resource):
     @requires_auth
@@ -1008,7 +1008,6 @@ class FieldAnnotations(Resource):
     @requires_auth
     def put(self, project_name, kg_id, field_name):
         return rest.post(project_name, kg_id, field_name)
-
 
     @staticmethod
     def es_update_field_annotation(index_version, project_name, kg_id, field_name, key, human_annotation):
@@ -1424,6 +1423,7 @@ class TagAnnotationsForEntity(Resource):
                 project_name, kg_id, tag_name
             ))
 
+
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
     @requires_auth
@@ -1599,20 +1599,16 @@ class Actions(Resource):
         if len(cdr_ids) != 0:
             host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
             port = 5000
-            url = '/project/create_from_es/domain/{}/name/{}'.format(s['type'], project_name)
+            url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'\
+                .format(host, port, s['type'], project_name)
             payload = {
                 'tlds': s['tlds'],
                 'cdr_ids': cdr_ids
             }
-            # print host, url, payload
-            # requests dosen't work well here on mac in multiprocessing mode, using httplib instead
-            params = json.dumps(payload)
-            headers = {'Content-type': 'application/json'}
-            conn = httplib.HTTPConnection(host, port, timeout=5)
-            conn.request('POST', url, params, headers)
-            resp = conn.getresponse()
-            if resp.status // 100 != 2:
-                logger.error('invoke inferlink server {}: {}'.format(host + url, resp.reason))
+            print url
+            resp = requests.post(url, json.dumps(payload))
+            if resp.status_code // 100 != 2:
+                logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
 
         print 'action get_sample_pages is done'
 
