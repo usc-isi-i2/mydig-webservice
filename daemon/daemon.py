@@ -41,11 +41,11 @@ def test_spacy_rules():
         obj['test_tokens'] = d['simple_tokens_original_case']
         obj['results'] = results
 
-        return json.dumps(obj)
+        return json.dumps(obj), 201
 
     except Exception as e:
         print e
-        return e.message, 500
+        return json.dumps({'message': 'exception: {}'.format(e.message)}), 400
 
 if __name__ == '__main__':
     app.run(host=config['etk']['daemon']['host'], port=config['etk']['daemon']['port'],

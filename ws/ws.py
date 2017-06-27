@@ -676,7 +676,10 @@ class SpacyRulesOfAField(Resource):
             config['etk']['daemon']['host'], config['etk']['daemon']['port'])
         resp = requests.post(url, data=json.dumps(obj), timeout=5)
         if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to call daemon process: {}'.format())
+            if resp.status_code // 100 == 4:
+                j = json.loads(resp.content)
+                return rest.bad_request('Format exception: {}'.format(j['message']))
+            return rest.internal_error('failed to call daemon process')
 
         obj = json.loads(resp.content)
 
