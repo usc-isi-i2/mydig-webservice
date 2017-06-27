@@ -28,3 +28,9 @@
 
 
 ### Colors
+
+
+## Actions
+
+### Get Sample Pages
+Downloads pages from the CDR corresponding to the TLDs entered in the `Edit Project` page. These pages will used to test all your extractors and will appear in the DIG GUI. In addition, these pages will be sent to the Inferlink tool to learn extractos. 
