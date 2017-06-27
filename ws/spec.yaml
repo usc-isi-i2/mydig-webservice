@@ -610,7 +610,7 @@ paths:
         name: "type"
         description: ""
         required: true
-        enum: ["all", "rules", "tokens"]
+        enum: ["all", "rules", "tokens", "results"]
       responses:
         200:
           description: "ok"
@@ -1561,6 +1561,12 @@ definitions:
         items:
           type: "string"
           description: "uploaded glossary's name"
+      rule_extractor_enabled:
+        type: "boolean"
+      number_of_rules:
+        type: "integer"
+      predefined_extractor:
+        type: "string"
   create_tag:
     type: "object"
     properties:

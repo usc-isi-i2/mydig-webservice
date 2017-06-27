@@ -622,8 +622,10 @@ class SpacyRulesOfAField(Resource):
         type = request.args.get('type', '')
         if type == 'rules':
             return {'rules': obj['rules']}
-        elif type == 'tokens': # tokens
+        elif type == 'tokens':
             return {'test_tokens': obj['test_tokens']}
+        elif type == 'results':
+            return {'results': obj['results']}
         else:
             return obj
 
