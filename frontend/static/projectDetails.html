@@ -365,6 +365,10 @@
 			<iron-ajax
 			id="updateIndex" method="POST" content-type="application/json"
 			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax>
+			
+			<iron-ajax
+			id="downloadGlossary" method="GET" content-type="text/plain"
+			 on-error="done" on-response="downloadGlossaryCall"> </iron-ajax>
 		
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
@@ -637,9 +641,11 @@
 						
 						<strong>Name:</strong> {{item.0}}
 						<div style="float: right">
-							<paper-button on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
 							<paper-button on-tap="editGlossaryFunction" raised>
 							<strong>Edit</strong></paper-button>
+							<paper-button on-tap="downloadGlossaryFunction" raised> <strong>Download</strong></paper-button>
+							<paper-button on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
+							
 						</div>
 						
 					</div>
@@ -887,7 +893,7 @@
 			</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialog" modal>
-			 <paper-button dialog-confirm autofocus> Error. Try Again!!</paper-button>
+			 <paper-button dialog-confirm autofocus> Error.</paper-button>
 			 <div class="buttons">
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
@@ -1174,7 +1180,7 @@
 	     	 
 	         this.$.publish.generateRequest();
 	     },
-	     done:function() {
+	     done:function(data) {
 	    	 modalDialog.open();
 	     },
 	     successDone:function() {
@@ -1234,7 +1240,7 @@
 		getFieldGlossary:function() {
 			EditFieldGlossaries.toggle();
 			 for(var j=0;j<this.glossaries.length;j++){
-  				 this.$$('#'+this.glossaries[j][0]).checked ="";
+  				 this.$$('#'+this.glossaries[j][0]).checked ="false";
   			 
 	  		 }
 	  			 if(this.fieldForm) {
@@ -1267,6 +1273,38 @@
 	         this.$.updateIndex.headers = obj;
 	         this.$.updateIndex.url = backend_url +"projects/"+projectName[1]+"/actions/update_to_new_index";
 		     this.$.updateIndex.generateRequest();
+   		},
+   		
+   		downloadData:function(filename, text) {
+   		 
+   		},
+   		downloadGlossaryFunction:function(e) {
+   			 
+	         var request = new XMLHttpRequest();
+		     var url = backend_url  +"projects/"+projectName[1]+"/glossaries/"+e.model.item[0];
+		   	
+		     request.open("GET", url);
+		     request.setRequestHeader("Content-type", "text/plain");
+			  
+			 request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+				
+			   	request.onreadystatechange = function () {
+					    if (request.readyState === 4 && request.status === 200) {
+					    	 var element = document.createElement('a');
+					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + request.responseText);
+					   		  element.setAttribute('download', request.getResponseHeader("filename"));
+
+					   		  element.style.display = 'none';
+					   		  document.body.appendChild(element);
+
+					   		  element.click();
+
+					   		  document.body.removeChild(element);
+					   }
+					};
+				
+				 request.send();
+	         
    		}
 	     
 	    
