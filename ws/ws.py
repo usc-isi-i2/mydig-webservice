@@ -614,7 +614,6 @@ class SpacyRulesOfAField(Resource):
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
         if not os.path.exists(path):
             return rest.not_found('no spacy rules')
-        print path
 
         obj = dict()
         with open(path, 'r') as f:
@@ -635,7 +634,7 @@ class SpacyRulesOfAField(Resource):
         if field_name not in data[project_name]['master_config']['fields']:
             return rest.not_found('Field {} not found'.format(field_name))
 
-        path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name)
+        path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
         if not os.path.exists(path):
             return rest.not_found('no spacy rules')
         os.remove(path)
