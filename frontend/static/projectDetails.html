@@ -205,6 +205,11 @@
 	   		var name=document.getElementById("fieldnameinput").value;
 	   		var description=document.getElementById("fielddescriptioninput").value;
 	   		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
+	   		var screen_label_plural = document.getElementById("fieldscreenlabelPluralinput").value;
+	   		if(screenlabel == "")screenlabel=name;
+	   		if(screen_label_plural =="")screen_label_plural=screenlabel;
+	   		
+	   		
 	   		var color=document.getElementById("fieldcolorinput").value;
 	   		var type=document.getElementById("fieldtypeinput").selectedItem.value;
 	   		var predefinedExtractor="";
@@ -223,7 +228,6 @@
 	   		var result=document.getElementById("fieldresultinput").selectedItem.value;
 	   		var search=document.getElementById("fieldsearchinput2").checked;
 	   		var networksearch=document.getElementById("fieldnetworkinput").checked;
-	   		var screen_label_plural = document.getElementById("fieldscreenlabelPluralinput").value;
 	   		
 	   		xhr.open("POST", url, true);
 	   		xhr.setRequestHeader("Content-type", "application/json");
@@ -675,7 +679,7 @@
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
 				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
-				<paper-input style="margin:0px;" required class="" label="Name:" id="fieldnameinput"></paper-input> 
+				<paper-input style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
 				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
@@ -884,10 +888,16 @@
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialog" modal>
 			 <paper-button dialog-confirm autofocus> Error. Try Again!!</paper-button>
+			 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
 	  		</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccess" modal>
-			 <paper-button dialog-confirm autofocus> Request SuccessFull</paper-button>
+			 <paper-button dialog-confirm autofocus> Request Submitted  with Success</paper-button>
+	  		 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
 	  		</paper-dialog>
 			
 			</paper-material>
@@ -1103,6 +1113,9 @@
 	         }
 	         this.$.updateSavedFields.headers = obj;
 	         this.$.updateSavedFields.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
+	         if(this.fieldForm.screen_label == "")this.fieldForm.screen_label = this.fieldForm.name;
+	         if(this.fieldForm.screen_label_plural == "")this.fieldForm.screen_label_plural = this.fieldForm.screen_label;
+	         
 	         this.$.updateSavedFields.body = JSON.stringify({
 	      		  "field_name": this.fieldForm.name,
 	       		  "field_object": {
@@ -1113,8 +1126,8 @@
 	       		    "group_name": this.fieldForm.group_name,
 	       		    "icon": this.fieldForm.icon,
 	       		    "name": this.fieldForm.name,
-	       		    "screen_label": this.fieldForm.screen_label,
-	       		    "screen_label_plural": this.fieldForm.screen_label_plural,
+	       		    "screen_label": this.fieldForm.screen_label ,
+	       		    "screen_label_plural": this.fieldForm.screen_label_plural ,
 	       		    "search_importance": this.$$('#editSearchImpValue').selectedItem.value,
 	       		    "show_as_link": this.$$('#editlinkValue').selectedItem.value,
 	       		    "show_in_facets": this.fieldForm.show_in_facets,
