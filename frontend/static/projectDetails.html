@@ -15,6 +15,8 @@
 	<link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
 	<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
 	<link rel="import" href="../static/bower_components/paper-card/paper-card.html">
+	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
+	
 	<link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
 	<link rel="import" href="../static/elements/elements.html">
@@ -220,7 +222,7 @@
 	   		
 	   		var groupname = document.getElementById("fieldgroupnameinput").value;
 	   		var icon=document.getElementById("fieldiconinput").value;
-	   		var searchimp = document.getElementById("fieldsearchinput").selectedItem.value;
+	   		var searchimp = parseInt(document.getElementById("fieldsearchinput").selectedItem.value);
 	   		var ruleExtractor = document.getElementById("fieldRuleExtractor").checked;
 	   		var combinefields=document.getElementById("fieldcombinedfieldsinput").checked;
 	   		var facet=document.getElementById("fieldfacetinput").checked;
@@ -694,7 +696,7 @@
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
-		        <paper-menu id="fieldsearchinput"  class="dropdown-content" >
+		        <paper-menu id="fieldsearchinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -702,7 +704,7 @@
 		       </paper-dropdown-menu>
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
-		        <paper-menu id="fieldtypeinput"  class="dropdown-content" >
+		        <paper-menu id="fieldtypeinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -710,7 +712,7 @@
 		       </paper-dropdown-menu>
 		       
 		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
-		        <paper-menu id="fieldlinkinput"  class="dropdown-content" >
+		        <paper-menu id="fieldlinkinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -719,7 +721,7 @@
 				
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
-		        <paper-menu id="fieldresultinput"  class="dropdown-content" >
+		        <paper-menu id="fieldresultinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -942,7 +944,7 @@
 	    	this.$.getGlossary.generateRequest();
 	    	
 	    	this.searchImportance=["1","2","3","4","5","6","7","8","9","10"];
-	    	this.show_as_linkArray = ["text","entity","no"];
+	    	this.show_as_linkArray = ["text","entity"];
 	    	this.show_in_resultArray=["header","detail","no","title","description"];
 	    	this.type=["string","location", "username","date","email","hyphenated","phone","image"];
 	    	this.predefined_extractor_Array=["none","social_media","review_id","city","posting_date","phone","email","address","country","website"];
@@ -950,19 +952,25 @@
 		
 	     },
 	     _getPredefinedExtractor:function(name) {
-	    	 return this.predefined_extractor_Array.indexOf(name);
+	    	 if(name) return this.predefined_extractor_Array.indexOf(name);
+	    	 else return this.predefined_extractor_Array[0];
+	    	 
 	     },
 	     _getType:function(name) {
-	    	 return this.type.indexOf(name);
+	    	 if(name && name!="") return this.type.indexOf(name);
+	    	 else this.type[0];
 	     },
 	     _getSearchImportance:function(name){
-	    	 return this.searchImportance.indexOf(name);
+	    	 if(name && name!="") return name-1;
+	    	 return 0;
 	     },
 	     _getResult:function(name) {
-	    	 return this.show_in_resultArray.indexOf(name);
+	    	 if(name && name!="") return this.show_in_resultArray.indexOf(name);
+	    	 else this.show_in_resultArray[0];
 	     },
 	     _getLink:function(name) {
-	    	 return this.show_as_linkArray.indexOf(name);
+	    	 if(name && name!="" && name!="none") return this.show_as_linkArray.indexOf(name);
+	    	 else this.show_as_linkArray[0];
 	     },
 	     convertFileInputToFormData: function(){
 	    	 var file = this.$.input.inputElement.files[0];
@@ -1121,7 +1129,7 @@
 	         this.$.updateSavedFields.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
 	         if(this.fieldForm.screen_label == "")this.fieldForm.screen_label = this.fieldForm.name;
 	         if(this.fieldForm.screen_label_plural == "")this.fieldForm.screen_label_plural = this.fieldForm.screen_label;
-	         
+	         if(!this.fieldForm.group_name)this.fieldForm.group_name="";
 	         this.$.updateSavedFields.body = JSON.stringify({
 	      		  "field_name": this.fieldForm.name,
 	       		  "field_object": {
@@ -1134,7 +1142,7 @@
 	       		    "name": this.fieldForm.name,
 	       		    "screen_label": this.fieldForm.screen_label ,
 	       		    "screen_label_plural": this.fieldForm.screen_label_plural ,
-	       		    "search_importance": this.$$('#editSearchImpValue').selectedItem.value,
+	       		    "search_importance":parseInt(this.$$('#editSearchImpValue').selectedItem.value),
 	       		    "show_as_link": this.$$('#editlinkValue').selectedItem.value,
 	       		    "show_in_facets": this.fieldForm.show_in_facets,
 	       		    "show_in_result": this.$$('#editResultValue').selectedItem.value,
@@ -1190,6 +1198,11 @@
 	    	 this.glossaries = [];
 	     	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.getFields.headers = obj;
+		        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
+		    	this.$.getFields.generateRequest();
+		    	
 	        this.$.getGlossary.headers = obj;
 	     	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	     	this.$.getGlossary.generateRequest();
@@ -1240,7 +1253,7 @@
 		getFieldGlossary:function() {
 			EditFieldGlossaries.toggle();
 			 for(var j=0;j<this.glossaries.length;j++){
-  				 this.$$('#'+this.glossaries[j][0]).checked ="false";
+  				 this.$$('#'+this.glossaries[j][0]).checked ="";
   			 
 	  		 }
 	  			 if(this.fieldForm) {
