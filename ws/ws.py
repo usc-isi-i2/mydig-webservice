@@ -577,23 +577,22 @@ class SpacyRulesOfAField(Resource):
         test_text = input.get('test_text', '')
         obj = {
             'rules': rules,
-            'test_text': test_text
+            'test_text': test_text,
+            'field_name': field_name
         }
 
+        url = 'http://{}:{}/test_spacy_rules'.format(
+            config['etk']['daemon']['host'], config['etk']['daemon']['port'])
+        resp = requests.post(url, data=json.dumps(obj), timeout=5)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to call daemon process')
+
+        obj = json.loads(resp.content)
+
+        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(rules)
+        update_master_config_file(project_name)
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
-        write_to_file(json.dumps(obj), path)
-
-        # run_spacy_rules will write rules into file
-        cmd = 'run_spacy_rules.sh {} {}'.format(
-            config['etk']['conda_path'], path, field_name
-        )
-        ret = subprocess.call(cmd, shell=True)
-        if ret != 0:
-            rest.internal_error('failed to run spacy rules')
-
-        return
-
-        data[project_name]['master_config']['fields'][field_name]['has_spacy_rules'] = True
+        write_to_file(json.dumps(obj, indent=2), path)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
             message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
 
@@ -612,18 +611,16 @@ class SpacyRulesOfAField(Resource):
         if field_name not in data[project_name]['master_config']['fields']:
             return rest.not_found('Field {} not found'.format(field_name))
 
-        if not data[project_name]['master_config']['fields'][field_name].get('has_spacy_rules', False):
-            return rest.ok('no spacy rules')
-
-        parser = reqparse.RequestParser()
-        parser.add_argument('type', required=False, type=str)
-        args = parser.parse_args()
-        type = args.get('type', '')
-
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
+        if not os.path.exists(path):
+            return rest.not_found('no spacy rules')
+        print path
+
+        obj = dict()
         with open(path, 'r') as f:
             obj = json.loads(f.read())
 
+        type = request.args.get('type', '')
         if type == 'rules':
             return {'rules': obj['rules']}
         elif type == 'tokens': # tokens
@@ -639,8 +636,11 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('Field {} not found'.format(field_name))
 
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name)
+        if not os.path.exists(path):
+            return rest.not_found('no spacy rules')
         os.remove(path)
-        data[project_name]['master_config']['fields'][field_name]['has_spacy_rules'] = False
+        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = 0
+        update_master_config_file(project_name)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
             message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
         return rest.deleted()

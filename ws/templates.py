@@ -89,7 +89,9 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'title': {
         'name': 'title',
@@ -104,7 +106,9 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': False
+        'use_in_network_search': False,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'description': {
         'name': 'description',
@@ -118,7 +122,9 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': False
+        'use_in_network_search': False,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'phone': {
         'name': 'phone',
@@ -133,6 +139,8 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'state': {
         'name': 'state',
@@ -147,7 +155,9 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'country': {
         'name': 'country',
@@ -162,7 +172,9 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'address': {
         'name': 'address',
@@ -177,7 +189,9 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'posting_date': {
         'name': 'posting_date',
@@ -191,7 +205,9 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'email': {
         'name': 'email',
@@ -205,7 +221,9 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     },
     'name': {
         'name': 'name',
@@ -219,7 +237,9 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0
     }
 }
 
@@ -264,7 +284,9 @@ master_config = {
 #     'use_in_network_search': True
 #     'group_name': string optional,
 #     'combine_fields': boolean, optional
-#     'glossaries': [], optional
+#     'glossaries': [], optional,
+#     'rule_extractor_enabled': boolean,
+#     'number_of_rules': integer
 # }
 
 # fields = {
