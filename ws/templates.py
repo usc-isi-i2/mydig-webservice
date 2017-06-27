@@ -75,24 +75,6 @@ default_tags = {
 }
 
 default_fields = {
-    'city': {
-        'name': 'city',
-        'screen_label': 'City',
-        'description': 'city',
-        'type': 'location',
-        'show_in_search': True,
-        'show_in_facets': True,
-        'show_as_link': 'text',
-        'show_in_result': 'header',
-        'color': '--paper-amber-500',
-        'icon': 'default',
-        'search_importance': 1,
-        'use_in_network_search': True,
-        'combined_field': 'location',
-        'rule_extractor_enabled': False,
-        'number_of_rules': 0,
-        'predefined_extractor': ''
-    },
     'title': {
         'name': 'title',
         'screen_label': 'Title',
@@ -109,7 +91,7 @@ default_fields = {
         'use_in_network_search': False,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     },
     'description': {
         'name': 'description',
@@ -126,7 +108,7 @@ default_fields = {
         'use_in_network_search': False,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     },
     'phone': {
         'name': 'phone',
@@ -143,7 +125,7 @@ default_fields = {
         'use_in_network_search': True,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     },
     'state': {
         'name': 'state',
@@ -161,25 +143,7 @@ default_fields = {
         'combined_field': 'location',
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
-    },
-    'country': {
-        'name': 'country',
-        'screen_label': 'Country',
-        'description': 'country',
-        'type': 'location',
-        'show_in_search': True,
-        'show_in_facets': True,
-        'show_as_link': 'text',
-        'show_in_result': 'header',
-        'color': '--paper-amber-500',
-        'icon': 'default',
-        'search_importance': 1,
-        'use_in_network_search': True,
-        'combined_field': 'location',
-        'rule_extractor_enabled': False,
-        'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     },
     'address': {
         'name': 'address',
@@ -197,7 +161,7 @@ default_fields = {
         'combined_field': 'location',
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     },
     'posting_date': {
         'name': 'posting_date',
@@ -214,7 +178,7 @@ default_fields = {
         'use_in_network_search': True,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     },
     'email': {
         'name': 'email',
@@ -231,7 +195,7 @@ default_fields = {
         'use_in_network_search': True,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     },
     'name': {
         'name': 'name',
@@ -248,7 +212,7 @@ default_fields = {
         'use_in_network_search': True,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': ''
+        'predefined_extractor': 'none'
     }
 }
 
