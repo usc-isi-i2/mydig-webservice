@@ -357,6 +357,10 @@
 			<iron-ajax
 			id="editField" method="GET" content-type="application/json"
 			handle-as="json" last-response="{{fieldForm}}" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="updateIndex" method="GET" content-type="application/json"
+			handle-as="json" on-error="done"> </iron-ajax>
 		
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
@@ -461,7 +465,25 @@
 					</div>
 					<br><br>
 					</paper-material>
+					<paper-material class="addPaddingToSections">
+					<br><br>
+					<div>
 						
+						<h3><strong>Update to new Index</strong></h3>
+						<br>
+						<span><i>This will update to new Index</i></span>
+						<div>
+						
+						</div>
+						<div style="float: right">
+							<paper-button raised  on-tap="updateToNewIndex"
+						style="clear:left"> <strong>Go</strong></paper-button>
+						</div>
+						
+					</div>
+					<br><br>
+					</paper-material>
+					
 			</iron-collapse>
 			<iron-collapse id="field">
 			
@@ -871,7 +893,7 @@
 	<project-details></project-details>
 	<script>
 	
-	var username = localStorage.getItem("username");
+	var username =localStorage.getItem("username");
 	var password =localStorage.getItem("password");
 	
 	Polymer({
@@ -1218,6 +1240,14 @@
  				 this.$$('#'+this.glossaries[j][0]).checked ="";
  			 
 	  		 }
+   		},
+   		updateToNewIndex:function() {
+   			 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateIndex.headers = obj;
+	         this.$.updateIndex.url = backend_url +"projects/"+projectName[1]+"/actions/update_to_new_index";
+		     this.$.updateIndex.generateRequest();
    		}
 	     
 	    
