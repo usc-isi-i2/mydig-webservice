@@ -93,6 +93,7 @@ ENV/
 # nohup file
 ws/*.out
 frontend/*.out
+daemon/*.out
 
 # config file
 ws/config.py

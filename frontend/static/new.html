@@ -17,8 +17,8 @@
 <style is="custom-style" include="search-styles"></style>
 <link rel="import" href="theme.css">
 <script>
-var username = localStorage.getItem("username");
-var password = localStorage.getItem("password");
+var username =localStorage.getItem("username");
+var password =localStorage.getItem("password");
 
 
 function addProject(data)  {
@@ -111,7 +111,7 @@ function addProject(data)  {
         <br>
 	    <center><paper-button onclick="projectDialog.toggle()" raised><strong>Add Project</strong></paper-button></center>
 	    
-	    <paper-dialog id="projectDialog" class="projectDialogStyles">
+	    <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="projectDialog" class="projectDialogStyles">
 	    			<paper-input  class="addProjClass" label="Name:" id=saveProjectFormName></paper-input>
 			        <paper-input  class="addProjClass"label="Type:" id=saveProjectFormType_name></paper-input>
 			        <paper-input class="addProjClass" label="Index Name:" id=saveProjectFormIndex_name></paper-input>
@@ -139,12 +139,12 @@ function addProject(data)  {
 			        <paper-input  class="addProjClass" label="URL:" id=saveProjectURL></paper-input>
 			        
 			        <paper-button style="float:center;margin-top:20px;margin-left:10px;" onclick="addProject();" raised><strong>Save</strong></paper-button>
-			        <paper-button style="float:center;margin-top:20px" onclick="projectDialog.toggle()" raised><strong>Cancel</strong></paper-button>
+			        <paper-button style="float:center;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
 		        
 		</paper-dialog>
 		
 		
-		<paper-dialog id="editprojectDialog" class="projectDialogStyles">
+		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editprojectDialog" class="projectDialogStyles">
            		    <paper-input class="addProjClass" label="Root Name:" id=editProjectFormRoot_name value="{{editProjectForm.value.root_name}}"></paper-input>
 			        <paper-input class="addProjClass" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index}}"></paper-input>
 			        <paper-input class="addProjClass" label="Type Name:" id=editProjectFormType_name value="{{editProjectForm.value.sources.0.type}}"></paper-input>
@@ -174,7 +174,7 @@ function addProject(data)  {
 			        	        
 			        
 			        <paper-button on-tap="updateEditData" style="float:center;margin-top:20px;margin-left:10px;"  raised><strong>Save</strong></paper-button>
-			        <paper-button style="float:center;margin-top:20px" onclick="editprojectDialog.toggle()" raised><strong>Cancel</strong></paper-button>
+			        <paper-button style="float:center;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
 		        
 		   </paper-dialog>
 </template> 
@@ -270,7 +270,15 @@ Polymer({
     },
     updatedEditData:function(){
     	location.reload();
-    }
+    },
+    _disableDocumentScrolling: function() {
+  	  document.body.style.overflow = 'hidden';
+  	},
+  	_restoreDocumentScrolling: function() {
+  		  document.body.style.overflow = '';
+  		}
+   
+  
     
 });
 

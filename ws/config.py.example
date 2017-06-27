@@ -37,7 +37,11 @@ config = {
     },
     'etk': {
         'path': '...',
-        'conda_path': '...'
+        'conda_path': '...',
+        'daemon': {
+            'host': 'localhost',
+            'port': 12121
+        }
     },
     'sandpaper': {
         'url': 'http://localhost:9878',

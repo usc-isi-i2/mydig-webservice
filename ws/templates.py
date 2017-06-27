@@ -89,7 +89,10 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'title': {
         'name': 'title',
@@ -104,7 +107,10 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': False
+        'use_in_network_search': False,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'description': {
         'name': 'description',
@@ -118,7 +124,10 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': False
+        'use_in_network_search': False,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'phone': {
         'name': 'phone',
@@ -133,6 +142,9 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'state': {
         'name': 'state',
@@ -147,7 +159,10 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'country': {
         'name': 'country',
@@ -162,7 +177,10 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'address': {
         'name': 'address',
@@ -177,7 +195,10 @@ default_fields = {
         'icon': 'default',
         'search_importance': 1,
         'use_in_network_search': True,
-        'combined_field': 'location'
+        'combined_field': 'location',
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'posting_date': {
         'name': 'posting_date',
@@ -191,7 +212,10 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'email': {
         'name': 'email',
@@ -205,7 +229,10 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     },
     'name': {
         'name': 'name',
@@ -219,20 +246,24 @@ default_fields = {
         'color': '--paper-amber-500',
         'icon': 'default',
         'search_importance': 1,
-        'use_in_network_search': True
+        'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': ''
     }
 }
 
 master_config = {
+    'spacy_field_rules': {},
     'glossaries': {},
-    'root_name': 'doc',
+    'root_name': 'ads',
     'sources': [],
     'fields': copy.deepcopy(default_fields),
     'tags': copy.deepcopy(default_tags),
     'index': {
         'sample': '',
         'full': '',
-        'version': 1
+        'version': 0
     }
 }
 
@@ -264,7 +295,10 @@ master_config = {
 #     'use_in_network_search': True
 #     'group_name': string optional,
 #     'combine_fields': boolean, optional
-#     'glossaries': [], optional
+#     'glossaries': [], optional,
+#     'rule_extractor_enabled': boolean,
+#     'number_of_rules': integer
+#     'predefined_extractor': ''
 # }
 
 # fields = {

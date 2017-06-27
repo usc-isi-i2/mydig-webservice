@@ -253,6 +253,8 @@ class AllProjects(Resource):
             write_to_file('', os.path.join(project_dir_path, 'entity_annotations/.gitignore'))
             os.makedirs(os.path.join(project_dir_path, 'glossaries'))
             write_to_file('', os.path.join(project_dir_path, 'glossaries/.gitignore'))
+            os.makedirs(os.path.join(project_dir_path, 'spacy_rules'))
+            write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
             os.makedirs(os.path.join(project_dir_path, 'pages'))
             write_to_file('*\n', os.path.join(project_dir_path, 'pages/.gitignore'))
             os.makedirs(os.path.join(project_dir_path, 'working_dir'))
@@ -571,17 +573,80 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('Field {} not found'.format(field_name))
 
         input = request.get_json(force=True)
-        field_rules = input.get('field_rules', '')
-        text = input.get('text', '')
-        
+        rules = input.get('rules', [])
+        test_text = input.get('test_text', '')
+        obj = {
+            'rules': rules,
+            'test_text': test_text,
+            'field_name': field_name
+        }
+
+        url = 'http://{}:{}/test_spacy_rules'.format(
+            config['etk']['daemon']['host'], config['etk']['daemon']['port'])
+        resp = requests.post(url, data=json.dumps(obj), timeout=5)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to call daemon process')
+
+        obj = json.loads(resp.content)
+
+        path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
+        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(rules)
+        data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
+        update_master_config_file(project_name)
+        write_to_file(json.dumps(obj, indent=2), path)
+        git_helper.commit(files=[path, project_name + '/master_config.json'],
+            message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
+
+        with open(path, 'r') as f:
+            obj = json.loads(f.read())
+        return rest.created(obj)
 
     @requires_auth
     def put(self, project_name, field_name):
         return self.post(project_name, field_name)
 
     @requires_auth
+    def get(self, project_name, field_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found('Field {} not found'.format(field_name))
+
+        path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
+        if not os.path.exists(path):
+            return rest.not_found('no spacy rules')
+
+        obj = dict()
+        with open(path, 'r') as f:
+            obj = json.loads(f.read())
+
+        type = request.args.get('type', '')
+        if type == 'rules':
+            return {'rules': obj['rules']}
+        elif type == 'tokens':
+            return {'test_tokens': obj['test_tokens']}
+        elif type == 'results':
+            return {'results': obj['results']}
+        else:
+            return obj
+
+    @requires_auth
     def delete(self, project_name, field_name):
-        pass
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if field_name not in data[project_name]['master_config']['fields']:
+            return rest.not_found('Field {} not found'.format(field_name))
+
+        path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
+        if not os.path.exists(path):
+            return rest.not_found('no spacy rules')
+        os.remove(path)
+        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = 0
+        del data[project_name]['master_config']['spacy_field_rules'][field_name]
+        update_master_config_file(project_name)
+        git_helper.commit(files=[path, project_name + '/master_config.json'],
+            message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
+        return rest.deleted()
 
 
 @api.route('/projects/<project_name>/glossaries')
@@ -1569,14 +1634,6 @@ class Actions(Resource):
         return rest.accepted()
 
     def _update_to_new_index(self, project_name):
-        p = multiprocessing.Process(
-            target=self._update_to_new_index_worker,
-            args=(project_name,))
-        p.start()
-        return rest.accepted()
-
-    @staticmethod
-    def _update_to_new_index_worker(project_name):
         # sandpaper_cmd = 'curl -XPOST "{}/config?url={}&project={}&index={}&type={}"'.format(
         #     config['sandpaper']['url'],
         #     config['sandpaper']['ws_url'],
@@ -1637,7 +1694,7 @@ if __name__ == '__main__':
 
         # print json.dumps(data, indent=4)
         # run app
-        app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'])
+        app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
     except Exception as e:
         print 'Exception:', e

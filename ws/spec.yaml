@@ -553,6 +553,97 @@ paths:
           description: "bad request"
         404:
           description: "not found"
+  /projects/{project_name}/fields/{field_name}/spacy_rules:
+    post:
+      tags:
+      - "fields"
+      summary: "Create / update spacy rules of a field"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "field_name"
+        required: true
+        description: ""
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        description: ""
+        schema:
+          $ref: "#/definitions/spacy_rules"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "fields"
+      summary: "get spacy rules of a field"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "field_name"
+        required: true
+        description: ""
+      - in: "query"
+        name: "type"
+        description: ""
+        required: true
+        enum: ["all", "rules", "tokens", "results"]
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "fields"
+      summary: "delete spacy rules of a field"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "field_name"
+        required: true
+        description: ""
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
   # glossaries
   /projects/{project_name}/glossaries:
     post:
@@ -1433,6 +1524,8 @@ definitions:
         type: "string"
       screen_label:
         type: "string"
+      screen_label_plural:
+        type: "string"
       type:
         type: "string"
         description: "enum(string | location | username | date | email | hyphenated | phone | image)"
@@ -1468,6 +1561,12 @@ definitions:
         items:
           type: "string"
           description: "uploaded glossary's name"
+      rule_extractor_enabled:
+        type: "boolean"
+      number_of_rules:
+        type: "integer"
+      predefined_extractor:
+        type: "string"
   create_tag:
     type: "object"
     properties:
@@ -1516,6 +1615,13 @@ definitions:
         type: "string"
       human_annotation:
         type: "integer"
+  spacy_rules:
+    type: "object"
+    properties:
+      rules:
+        type: "array"
+      test_text:
+        type: "string"
 
 securityDefinitions:
   basicAuth:
