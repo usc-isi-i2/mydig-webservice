@@ -651,7 +651,7 @@
 			</iron-collapse>
 			 <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
 	
-				<paper-input class="projectInputStyle" label="Name:" id="tagNameInput"></paper-input> 
+				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20"  class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Description" id="tagDescriptionInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Negative class precision" id="tagNegativeInput"></paper-input> 
@@ -679,7 +679,7 @@
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
 				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
-				<paper-input style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
+				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
 				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
@@ -880,7 +880,7 @@
 			
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" class="GlossaryDialogStyles">
-					<paper-input style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:"></paper-input> 
+					<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20" style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:*"></paper-input> 
 				    <paper-input type="file" id="glossary_fileInput"></paper-input>
 	      		<paper-button raised onclick="submitFormData()">Submit</paper-button>
 				
