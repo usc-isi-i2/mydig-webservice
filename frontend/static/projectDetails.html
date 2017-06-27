@@ -292,11 +292,11 @@
 	
 			<iron-ajax
 			id="inferlink" method="POST" content-type="application/json"
-			handle-as="json" on-error="done"> </iron-ajax> 
+			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax> 
 			
 			<iron-ajax
 			id="etk" method="POST" content-type="application/json"
-			handle-as="json" on-error="done"> </iron-ajax> 
+			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax> 
 			
 			<iron-ajax
 			id="etkGet" method="GET" content-type="application/json"
@@ -360,7 +360,7 @@
 			
 			<iron-ajax
 			id="updateIndex" method="POST" content-type="application/json"
-			handle-as="json" on-error="done"> </iron-ajax>
+			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax>
 		
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
@@ -886,6 +886,9 @@
 			 <paper-button dialog-confirm autofocus> Error. Try Again!!</paper-button>
 	  		</paper-dialog>
 			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccess" modal>
+			 <paper-button dialog-confirm autofocus> Request SuccessFull</paper-button>
+	  		</paper-dialog>
 			
 			</paper-material>
 	</template>
@@ -1160,6 +1163,9 @@
 	     },
 	     done:function() {
 	    	 modalDialog.open();
+	     },
+	     successDone:function() {
+	    	 modalDialogSuccess.open();
 	     },
 	     deletedGlossary:function() {
 	    	 this.glossaries = [];
