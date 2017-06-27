@@ -207,7 +207,11 @@
 	   		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
 	   		var color=document.getElementById("fieldcolorinput").value;
 	   		var type=document.getElementById("fieldtypeinput").selectedItem.value;
-	   		
+	   		var predefinedExtractor="";
+	   		if(document.getElementById("fieldpredefinedExtractor").selectedItem) {
+	   			predefinedExtractor = document.getElementById("fieldpredefinedExtractor").selectedItem.value;
+	   			if(predefinedExtractor == "none")predefinedExtractor="";
+	   		}
 	   		
 	   		var groupname = document.getElementById("fieldgroupnameinput").value;
 	   		var icon=document.getElementById("fieldiconinput").value;
@@ -242,6 +246,7 @@
 	   		   		document.getElementById("fieldsearchinput").selectedItem.value="";
 	   		    	document.getElementById("fieldtypeinput").selectedItem.value = "";
 	   		    	document.getElementById("fieldRuleExtractor").checked=false;
+	   		    	document.getElementById("fieldpredefinedExtractor").selectedItem.value="";
 	   		   		
 	   		   		document.getElementById("fieldcombinedfieldsinput").checked=false;
 	   		   		document.getElementById("fieldfacetinput").checked=false;
@@ -272,7 +277,8 @@
 	   		    "show_in_search": search,
 	   		    "type": type,
 	   		    "use_in_network_search": networksearch,
-	   		    "rule_extractor_enabled":ruleExtractor
+	   		    "rule_extractor_enabled":ruleExtractor,
+	   		    "predefined_extractor":predefinedExtractor
 	   		  }
 	   		});
 	   		
@@ -514,6 +520,11 @@
 				</div>
 				
 				<div style="padding: 8px;">
+					<strong disabled="disabled">Predefined Extractor:</strong>
+					{{item.0.predefined_extractor}}
+				</div>
+				
+				<div style="padding: 8px;">
 					<strong disabled="disabled">Show in Result:</strong>
 					{{item.0.show_in_result}}
 				</div>
@@ -681,7 +692,15 @@
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
-		       </paper-dropdown-menu><div>
+		       </paper-dropdown-menu>
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
+		        <paper-menu id="fieldpredefinedExtractor"  class="dropdown-content" >
+		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <div>
 				<paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields</paper-checkbox> 
 				<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
 				<paper-checkbox class="projectInputStyle" id="fieldnetworkinput">Show in Network Search</paper-checkbox> 
@@ -800,7 +819,16 @@
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
-		       </paper-dropdown-menu><div>
+		       </paper-dropdown-menu>
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
+		        <paper-menu id="editfieldpredefinedExtractor"  selected={{_getPredefinedExtractor(fieldForm.predefined_extractor)}} class="dropdown-content" >
+		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       
+		       <div>
 				
 				
 				
@@ -843,8 +871,8 @@
 	<project-details></project-details>
 	<script>
 	
-	var username = localStorage.getItem("username");
-	var password =localStorage.getItem("password");
+	var username = "memex";//localStorage.getItem("username");
+	var password ="digdig";//localStorage.getItem("password");
 	
 	Polymer({
 	    is: 'project-details',
@@ -876,8 +904,12 @@
 	    	this.show_as_linkArray = ["text","entity","no"];
 	    	this.show_in_resultArray=["header","detail","no","title","description"];
 	    	this.type=["string","location", "username","date","email","hyphenated","phone","image"];
+	    	this.predefined_extractor_Array=["none","social_media","review_id","city","posting_date","phone","email","address","country","website"];
 	    	
 		
+	     },
+	     _getPredefinedExtractor:function(name) {
+	    	 return this.predefined_extractor_Array.indexOf(name);
 	     },
 	     _getType:function(name) {
 	    	 return this.type.indexOf(name);
@@ -1039,6 +1071,11 @@
 	     updateField:function(e) {
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         var predefinedExtr = "";
+	         if(this.$$('#editfieldpredefinedExtractor').selectedItem) {
+	        	 predefinedExtr = this.$$('#editfieldpredefinedExtractor').selectedItem.value;
+	        	 if(predefinedExtr == "none")predefinedExtr="";
+	         }
 	         this.$.updateSavedFields.headers = obj;
 	         this.$.updateSavedFields.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
 	         this.$.updateSavedFields.body = JSON.stringify({
@@ -1061,7 +1098,8 @@
 	       			"rule_extractor_enabled":this.fieldForm.rule_extractor_enabled,
 	       			"no_of_rules":this.fieldForm.no_of_rules,
 	       		    "type": this.$$('#editTypeValue').selectedItem.value,
-	       		    "use_in_network_search": this.fieldForm.use_in_network_search
+	       		    "use_in_network_search": this.fieldForm.use_in_network_search,
+	       		    "predefined_extractor":predefinedExtr
 	       		  }
 	       		});
 	         this.$.updateSavedFields.generateRequest();
