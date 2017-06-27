@@ -40,12 +40,10 @@ default_etk_config_str = """{
 out_of_the_box_fields_and_extractors = {
     "social_media": "extract_using_spacy",
     "review_id": "extract_review_id",
-    "city": "extract_using_dictionary",
     "posting_date": "extract_using_spacy",
     "phone": "extract_phone",
     "email": "extract_email",
     "address": "extract_using_spacy",
-    "country": "extract_using_dictionary",
     "website": "extract_website_domain"
 }
 
@@ -144,8 +142,9 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     for field_name in mapping.keys():
         data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name], field_name)
     default_etk_config['data_extraction'].append(data_e_object)
-
-    return add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config), project_master_config)
+    etk_config = add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config), project_master_config)
+    etk_config = add_default_field_extractors(project_master_config, etk_config)
+    return etk_config
 
 
 def create_landmark_data_extractor_for_field(mapped_fields, field_name):
@@ -295,7 +294,7 @@ def add_glossary_extraction(etk_config, project_master_config):
     return etk_config
 
 
-def add_default_field_extractors(fields, etk_config):
+def add_default_field_extractors(project_master_config, etk_config):
     de_obj = dict()
     # even if we have multiple data extraction blocks with same input paths, the etk will do the right thing in running
     # the extraction efficiently
@@ -307,15 +306,19 @@ def add_default_field_extractors(fields, etk_config):
     ]
     de_obj['fields'] = dict()
 
-    for field_name in fields:
-        de_obj['fields'][field_name] = dict()
-        de_obj['fields'][field_name]['extractors'] = dict()
-        de_obj['fields'][field_name]['extractors'][out_of_the_box_fields_and_extractors[field_name]] = dict()
-        extractor = out_of_the_box_fields_and_extractors[field_name]
-        de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
-        if extractor == 'extract_using_dictionary':
-            de_obj['fields'][field_name]['extractors'][extractor]['config']['dictionary'] = field_name
-            etk_config['resources']['dictionaries'][field_name] = "some_predefined_path"
+    fields = project_master_config['fields']
+
+    for field in fields.keys():
+        field_definition = fields[field]
+        field_name = field_definition['name']
+        if 'predefined_extractor' in field_definition and field_definition['predefined_extractor'].strip() != '':
+            default_field = field_definition['predefined_extractor']
+            if default_field in out_of_the_box_fields_and_extractors:
+                extractor = out_of_the_box_fields_and_extractors[default_field]
+                de_obj['fields'][field_name] = dict()
+                de_obj['fields'][field_name]['extractors'] = dict()
+                de_obj['fields'][field_name]['extractors'][extractor] = dict()
+                de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
 
     if de_obj['fields'].keys() > 0:
         if 'data_extraction' not in etk_config:
