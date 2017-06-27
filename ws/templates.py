@@ -254,6 +254,7 @@ default_fields = {
 }
 
 master_config = {
+    'spacy_field_rules': {},
     'glossaries': {},
     'root_name': 'ads',
     'sources': [],

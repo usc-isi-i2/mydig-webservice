@@ -589,9 +589,10 @@ class SpacyRulesOfAField(Resource):
 
         obj = json.loads(resp.content)
 
-        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(rules)
-        update_master_config_file(project_name)
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
+        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(rules)
+        data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
+        update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
             message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
@@ -641,6 +642,7 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('no spacy rules')
         os.remove(path)
         data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = 0
+        del data[project_name]['master_config']['spacy_field_rules'][field_name]
         update_master_config_file(project_name)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
             message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
