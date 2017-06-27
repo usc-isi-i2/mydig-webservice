@@ -37,16 +37,16 @@ default_etk_config_str = """{
     }
 }"""
 
-
 out_of_the_box_fields_and_extractors = {
     "social_media": "extract_using_spacy",
-    "review_id" : "extract_review_id",
-    "city" : "extract_using_dictionary",
+    "review_id": "extract_review_id",
+    "city": "extract_using_dictionary",
     "posting_date": "extract_using_spacy",
     "phone": "extract_phone",
     "email": "extract_email",
     "address": "extract_using_spacy",
-    "country": "extract_using_dictionary"
+    "country": "extract_using_dictionary",
+    "website": "extract_website_domain"
 }
 
 inferlink_fields_post_filter = {
@@ -54,6 +54,7 @@ inferlink_fields_post_filter = {
     'email': 'extract_email',
     'posting_date': 'parse_date'
 }
+
 
 def consolidate_landmark_rules(landmark_rules_path):
     consolidated_rules = dict()
@@ -125,6 +126,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     o_file = codecs.open(output_landmark_file_path, 'w')
     o_file.write(json.dumps(consolidated_rules))
     o_file.close()
+
     # Add this file location to default etk config for landmark
     default_etk_config['resources']['landmark'].append(output_landmark_file_path)
     mapping = create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
@@ -142,7 +144,8 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     for field_name in mapping.keys():
         data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name], field_name)
     default_etk_config['data_extraction'].append(data_e_object)
-    return add_glossary_extraction(default_etk_config, project_master_config)
+
+    return add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config), project_master_config)
 
 
 def create_landmark_data_extractor_for_field(mapped_fields, field_name):
@@ -163,12 +166,12 @@ def create_landmark_data_extractor_for_field(mapped_fields, field_name):
 
 
 def add_table_extractor_config(etk_config=json.loads(default_etk_config_str), table_classifier="some_path",
-                                   sem_labels="some_path", sem_labels_mapping="some_path"):
+                               sem_labels="some_path", sem_labels_mapping="some_path"):
     # add table extractor to the content_extraction
     etk_config['content_extraction']['extractors']['table'] = {
-                                                                "field_name": "table",
-                                                                "extraction_policy": "keep_existing"
-                                                              }
+        "field_name": "table",
+        "extraction_policy": "keep_existing"
+    }
 
     # add pickle to resources
     pickle = dict()
@@ -239,13 +242,13 @@ def choose_ngram(ngram_distribution):
 
 def create_dictionary_data_extractor_for_field(ngram, dictionary_name):
     return {
-            "extract_using_dictionary": {
-                "config": {
-                    "dictionary": dictionary_name,
-                    "ngrams": ngram
-                }
+        "extract_using_dictionary": {
+            "config": {
+                "dictionary": dictionary_name,
+                "ngrams": ngram
             }
         }
+    }
 
 
 def add_glossary_extraction(etk_config, project_master_config):
@@ -263,7 +266,7 @@ def add_glossary_extraction(etk_config, project_master_config):
         "*.content_relaxed.text.`parent`",
         "*.title.text.`parent`",
         "*.inferlink_extractions.*.text.`parent`"
-      ]
+    ]
     de_obj['fields'] = dict()
 
     for field in defined_fields.keys():
@@ -286,7 +289,8 @@ def add_glossary_extraction(etk_config, project_master_config):
                     if 'extractors' not in de_obj['fields'][field_name]:
                         de_obj['fields'][field_name]['extractors'] = dict()
 
-                    de_obj['fields'][field_name]['extractors'].update(create_dictionary_data_extractor_for_field(ngram, glossary))
+                    de_obj['fields'][field_name]['extractors'].update(
+                        create_dictionary_data_extractor_for_field(ngram, glossary))
     etk_config['data_extraction'].append(de_obj)
     return etk_config
 
@@ -300,7 +304,7 @@ def add_default_field_extractors(fields, etk_config):
         "*.content_relaxed.text.`parent`",
         "*.title.text.`parent`",
         "*.inferlink_extractions.*.text.`parent`"
-      ]
+    ]
     de_obj['fields'] = dict()
 
     for field_name in fields:
@@ -320,7 +324,7 @@ def add_default_field_extractors(fields, etk_config):
     return etk_config
 
 
-def add_custom_spacy_extractors(etk_config, field_name, field_rule_file_path):
+def add_custom_spacy_extractors(etk_config, project_master_config):
     if 'data_extraction' not in etk_config:
         etk_config['data_extraction'] = list()
 
@@ -333,16 +337,25 @@ def add_custom_spacy_extractors(etk_config, field_name, field_rule_file_path):
         "*.title.text.`parent`"
     ]
     de_obj['fields'] = dict()
-    de_obj['fields'][field_name] = dict()
-    de_obj['fields'][field_name]['extractors'] = dict()
-    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy'] = dict()
-    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config'] = dict()
-    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config']['spacy_field_rules'] = field_name
 
-    if 'spacy_field_rules' not in etk_config['resources']:
-        etk_config['resources']['spacy_field_rules'] = dict()
+    fields = project_master_config['fields']
+    for field in fields.keys():
+        if 'rule_extractor_enabled' in fields[field] and fields[field]['rule_extractor_enabled']:
+            if 'spacy_field_rules' in project_master_config:
+                field_name = fields[field]['name']
+                if fields[field]['name'] in project_master_config['spacy_field_rules']:
+                    field_rule_file_path = project_master_config['spacy_field_rules'][field_name]
 
-    etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file_path
+                    de_obj['fields'][field_name] = dict()
+                    de_obj['fields'][field_name]['extractors'] = dict()
+                    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy'] = dict()
+                    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config'] = dict()
+                    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config']['spacy_field_rules'] = field_name
+
+                    if 'spacy_field_rules' not in etk_config['resources']:
+                        etk_config['resources']['spacy_field_rules'] = dict()
+
+                    etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file_path
 
     etk_config['data_extraction'].append(de_obj)
     return etk_config
@@ -353,7 +366,8 @@ if __name__ == '__main__':
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
     project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
-    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf'), indent=2)
+    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf'),
+                     indent=2)
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
     # ngram_dist = {
     #     "1" : 4,

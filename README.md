@@ -12,7 +12,7 @@
 | screen_label_plural | text | Label when a field contains multiple values |
 | icon | see below | The icon to decorate the field in DIG |
 | color | see below | The color used to display the field in DIG |
-| show_as_link | `entity`, `text`, `no` | Specifies the appearance of the field: `entity` shows a link that opens an entity page, `text` shows the value as a text string (no link), `no` what does it mean? |
+| show_as_link | `entity`, `text`| Specifies the appearance of the field: `entity` shows a link that opens an entity page, `text` (default) shows the value as a text string (no link) |
 | show_in_facets | false, true | When true, the field appears in the facets section |
 | show_in_result | `title`, `description`, `detail`, `header`, `no` | Location where the field appears in the results page: `title` what does this do?, `description` what does this do?, `detail` in the accordion, `header` in the search tile, `no` not present in the results page|
 | show_in_search | false, true | When true, the field appears in the query form |
@@ -28,3 +28,9 @@
 
 
 ### Colors
+
+
+## Actions
+
+### Get Sample Pages
+Downloads pages from the CDR corresponding to the TLDs entered in the `Edit Project` page. These pages will used to test all your extractors and will appear in the DIG GUI. In addition, these pages will be sent to the Inferlink tool to learn extractos. 
