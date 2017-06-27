@@ -1292,7 +1292,7 @@
 					    if (request.readyState === 4 && request.status === 200) {
 					    	 var element = document.createElement('a');
 					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + request.responseText);
-					   		  element.setAttribute('download', request.getResponseHeader("filename"));
+					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
 
 					   		  element.style.display = 'none';
 					   		  document.body.appendChild(element);
