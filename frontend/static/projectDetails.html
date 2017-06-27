@@ -696,7 +696,7 @@
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
-		        <paper-menu id="fieldsearchinput"  class="dropdown-content" >
+		        <paper-menu id="fieldsearchinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -704,7 +704,7 @@
 		       </paper-dropdown-menu>
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
-		        <paper-menu id="fieldtypeinput"  class="dropdown-content" >
+		        <paper-menu id="fieldtypeinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -712,7 +712,7 @@
 		       </paper-dropdown-menu>
 		       
 		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
-		        <paper-menu id="fieldlinkinput"  class="dropdown-content" >
+		        <paper-menu id="fieldlinkinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -721,7 +721,7 @@
 				
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
-		        <paper-menu id="fieldresultinput"  class="dropdown-content" >
+		        <paper-menu id="fieldresultinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -944,7 +944,7 @@
 	    	this.$.getGlossary.generateRequest();
 	    	
 	    	this.searchImportance=["1","2","3","4","5","6","7","8","9","10"];
-	    	this.show_as_linkArray = ["text","entity","no"];
+	    	this.show_as_linkArray = ["text","entity"];
 	    	this.show_in_resultArray=["header","detail","no","title","description"];
 	    	this.type=["string","location", "username","date","email","hyphenated","phone","image"];
 	    	this.predefined_extractor_Array=["none","social_media","review_id","city","posting_date","phone","email","address","country","website"];
@@ -952,19 +952,25 @@
 		
 	     },
 	     _getPredefinedExtractor:function(name) {
-	    	 return this.predefined_extractor_Array.indexOf(name);
+	    	 if(name) return this.predefined_extractor_Array.indexOf(name);
+	    	 else return this.predefined_extractor_Array[0];
+	    	 
 	     },
 	     _getType:function(name) {
-	    	 return this.type.indexOf(name);
+	    	 if(name && name!="") return this.type.indexOf(name);
+	    	 else this.type[0];
 	     },
 	     _getSearchImportance:function(name){
-	    	 return name-1;
+	    	 if(name && name!="") return name-1;
+	    	 return 0;
 	     },
 	     _getResult:function(name) {
-	    	 return this.show_in_resultArray.indexOf(name);
+	    	 if(name && name!="") return this.show_in_resultArray.indexOf(name);
+	    	 else this.show_in_resultArray[0];
 	     },
 	     _getLink:function(name) {
-	    	 return this.show_as_linkArray.indexOf(name);
+	    	 if(name && name!="" && name!="none") return this.show_as_linkArray.indexOf(name);
+	    	 else this.show_as_linkArray[0];
 	     },
 	     convertFileInputToFormData: function(){
 	    	 var file = this.$.input.inputElement.files[0];
@@ -1247,7 +1253,7 @@
 		getFieldGlossary:function() {
 			EditFieldGlossaries.toggle();
 			 for(var j=0;j<this.glossaries.length;j++){
-  				 this.$$('#'+this.glossaries[j][0]).checked ="false";
+  				 this.$$('#'+this.glossaries[j][0]).checked ="";
   			 
 	  		 }
 	  			 if(this.fieldForm) {
