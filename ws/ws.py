@@ -422,6 +422,9 @@ class ProjectTags(Resource):
         if tag_name in data[project_name]['master_config']['tags']:
             return rest.exists('Tag name already exists')
         tag_object = input.get('tag_object', {})
+        is_valid, message = self.validate(tag_object)
+        if not is_valid:
+            return rest.bad_request(message)
         if 'name' not in tag_object or tag_object['name'] != tag_name:
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['tags'][tag_name] = tag_object
@@ -430,6 +433,29 @@ class ProjectTags(Resource):
         git_helper.commit(files=[project_name + '/master_config.json'],
                           message='create a tag: project {}, tag {}'.format(project_name, tag_name))
         return rest.created()
+
+    @staticmethod
+    def validate(tag_obj):
+        """
+        :return: bool, message
+        """
+        if 'name' not in tag_obj or len(tag_obj['name'].strip()) == 0:
+            return False, 'Invalid tag attribute: name'
+        if 'description' not in tag_obj:
+            tag_obj['description'] = ''
+        if 'screen_label' not in tag_obj or \
+                        len(tag_obj['screen_label'].strip()) == 0:
+            tag_obj['screen_label'] = tag_obj['name']
+        if 'include_in_menu' not in tag_obj or \
+                not isinstance(tag_obj['include_in_menu'], bool):
+            return False, 'Invalid tag attribute: include_in_menu'
+        if 'positive_class_precision' not in tag_obj or \
+                tag_obj['positive_class_precision'] > 1 or tag_obj['positive_class_precision'] < 0:
+            return False, 'Invalid tag attribute: positive_class_precision'
+        if 'negative_class_precision' not in tag_obj or \
+                tag_obj['negative_class_precision'] > 1 or tag_obj['negative_class_precision'] < 0:
+            return False, 'Invalid tag attribute: negative_class_precision'
+        return True, None
 
 
 @api.route('/projects/<project_name>/tags/<tag_name>')
@@ -451,6 +477,9 @@ class Tag(Resource):
             return rest.not_found("Tag {} not found".format(tag_name))
         input = request.get_json(force=True)
         tag_object = input.get('tag_object', {})
+        is_valid, message = ProjectTags.validate(tag_object)
+        if not is_valid:
+            return rest.bad_request(message)
         if 'name' not in tag_object or tag_object['name'] != tag_name:
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['tags'][tag_name] = tag_object
@@ -491,6 +520,9 @@ class ProjectFields(Resource):
         if field_name in data[project_name]['master_config']['fields']:
             return rest.exists('Field name already exists')
         field_object = input.get('field_object', {})
+        is_valid, message = self.validate(field_object)
+        if not is_valid:
+            return rest.bad_request(message)
 
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
@@ -517,6 +549,62 @@ class ProjectFields(Resource):
                           message='delete all fields: project {}'.format(project_name))
         return rest.deleted()
 
+    @staticmethod
+    def validate(field_obj):
+        """
+        :return: bool, message (str)
+        """
+        if 'name' not in field_obj or \
+                        len(field_obj['name'].strip()) == 0:
+            return False, 'Invalid field attribute: name'
+        if 'screen_label' not in field_obj or \
+                        len(field_obj['screen_label'].strip()) == 0:
+            field_obj['screen_label'] = field_obj['name']
+        if 'screen_label_plural' not in field_obj or \
+                        len(field_obj['screen_label_plural'].strip()) == 0:
+            field_obj['screen_label_plural'] = field_obj['screen_label']
+        if 'description' not in field_obj:
+            field_obj['description'] = ''
+        if 'type' not in field_obj or field_obj['type'] not in \
+                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image'):
+            return False, 'Invalid field attribute: type'
+        if 'show_in_search' not in field_obj or \
+                not isinstance(field_obj['show_in_search'], bool):
+            return False, 'Invalid field attribute: show_in_search'
+        if 'show_in_facets' not in field_obj or \
+                not isinstance(field_obj['show_in_facets'], bool):
+            return False, 'Invalid field attribute: show_in_facets'
+        if 'show_as_link' not in field_obj or \
+                        field_obj['show_as_link'] not in ('text', 'entity', 'no'):
+            return False, 'Invalid field attribute: show_as_link'
+        if 'show_in_result' not in field_obj or \
+                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description'):
+            return False, 'Invalid field attribute: show_in_result'
+        if 'color' not in field_obj:
+            return False, 'Invalid field attribute: color'
+        if 'icon' not in field_obj:
+            return False, 'Invalid field attribute: icon'
+        if 'search_importance' not in field_obj or \
+                        field_obj['search_importance'] not in range(1, 11):
+            return False, 'Invalid field attribute: search_importance'
+        if 'use_in_network_search' not in field_obj or \
+                not isinstance(field_obj['use_in_network_search'], bool):
+            return False, 'Invalid field attribute: use_in_network_search'
+        if 'group_name' not in field_obj:
+            return False, 'Invalid field attribute: group_name'
+        if 'combine_fields' not in field_obj:
+            field_obj['combine_fields'] = False
+        if 'glossaries' not in field_obj or \
+                not isinstance(field_obj['glossaries'], list):
+            return False, 'Invalid field attribute: glossaries'
+        if 'rule_extractor_enabled' not in field_obj:
+            field_obj['rule_extractor_enabled'] = False
+        if 'number_of_rules' not in field_obj:
+            field_obj['number_of_rules'] = 0
+        if 'predefined_extractor' not in field_obj:
+            field_obj['predefined_extractor'] = ''
+        return True, None
+
 
 @api.route('/projects/<project_name>/fields/<field_name>')
 class Field(Resource):
@@ -536,6 +624,9 @@ class Field(Resource):
             return rest.not_found()
         input = request.get_json(force=True)
         field_object = input.get('field_object', {})
+        is_valid, message = ProjectFields.validate(field_object)
+        if not is_valid:
+            return rest.bad_request(message)
         if 'name' not in field_object or field_object['name'] != field_name:
             return rest.bad_request('Name of tag is not correct')
         data[project_name]['master_config']['fields'][field_name] = field_object
