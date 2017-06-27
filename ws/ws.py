@@ -575,7 +575,7 @@ class ProjectFields(Resource):
                 not isinstance(field_obj['show_in_facets'], bool):
             return False, 'Invalid field attribute: show_in_facets'
         if 'show_as_link' not in field_obj or \
-                        field_obj['show_as_link'] not in ('text', 'entity', 'no'):
+                        field_obj['show_as_link'] not in ('text', 'entity'):
             return False, 'Invalid field attribute: show_as_link'
         if 'show_in_result' not in field_obj or \
                         field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description'):
@@ -676,7 +676,7 @@ class SpacyRulesOfAField(Resource):
             config['etk']['daemon']['host'], config['etk']['daemon']['port'])
         resp = requests.post(url, data=json.dumps(obj), timeout=5)
         if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to call daemon process')
+            return rest.internal_error('failed to call daemon process: {}'.format())
 
         obj = json.loads(resp.content)
 

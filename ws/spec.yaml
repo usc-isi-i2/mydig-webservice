@@ -1535,7 +1535,7 @@ definitions:
         type: "boolean"
       show_as_link:
         type: "string"
-        description: "enum(text | entity | no)"
+        description: "enum(text | entity)"
       show_in_result:
         type: "string"
         description: "enum(header | detail | no | title | description)"
@@ -1567,6 +1567,7 @@ definitions:
         type: "integer"
       predefined_extractor:
         type: "string"
+        description: "enum (social_media | review_id | city | posting_date | phone | email | address | country | website | none)"
   create_tag:
     type: "object"
     properties:
