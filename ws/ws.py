@@ -903,7 +903,7 @@ class Glossary(Resource):
         # remove glossary_name from field which contains it
         for k, v in data[project_name]['master_config']['fields'].items():
             if 'glossaries' in v and glossary_name in v['glossaries']:
-                v.remove(glossary_name)
+                v['glossaries'].remove(glossary_name)
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='delete a glossary: project {}, glossary {}'.format(project_name, glossary_name))
