@@ -898,7 +898,9 @@ class Glossary(Resource):
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
+        json_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.json.gz')
         os.remove(file_path)
+        os.remove(json_file_path)
         del data[project_name]['master_config']['glossaries'][glossary_name]
         # remove glossary_name from field which contains it
         for k, v in data[project_name]['master_config']['fields'].items():
