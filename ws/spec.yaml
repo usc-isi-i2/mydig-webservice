@@ -1567,7 +1567,10 @@ definitions:
         type: "integer"
       predefined_extractor:
         type: "string"
-        description: "enum (social_media | review_id | city | posting_date | phone | email | address | country | website | none)"
+        description: "enum (social_media | review_id | posting_date | phone | email | address | website | TLD | none)"
+      rule_extraction_target:
+        type: "string"
+        description: "enum(title_only | description_only | title_and_description)"
   create_tag:
     type: "object"
     properties:

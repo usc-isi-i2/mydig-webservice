@@ -600,8 +600,12 @@ class ProjectFields(Resource):
             field_obj['rule_extractor_enabled'] = False
         if 'number_of_rules' not in field_obj:
             field_obj['number_of_rules'] = 0
-        if 'predefined_extractor' not in field_obj:
-            field_obj['predefined_extractor'] = ''
+        if 'predefined_extractor' not in field_obj or field_obj['predefined_extractor'] not in \
+                ('social_media', 'review_id', 'posting_date', 'phone', 'email', 'address', 'website', 'TLD', 'none'):
+            field_obj['predefined_extractor'] = 'none'
+        if 'rule_extraction_target' not in field_obj or \
+                field_obj['rule_extraction_target'] not in ('title_only', 'description_only', 'title_and_description'):
+            field_obj['predefined_extractor'] = 'title_and_description'
         return True, None
 
 

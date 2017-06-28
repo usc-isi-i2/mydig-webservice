@@ -10,6 +10,7 @@ if [ ! -f ${data_path} ]; then
     data_path="${working_dir}/consolidated_data.jl"
     cat ${page_path}/* > ${data_path}
 fi
+
 source ${conda_bin_path}/activate etk_env
 python ${etk_path}/etk/run_core.py \
     -i ${data_path} \
