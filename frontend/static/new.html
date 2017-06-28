@@ -112,7 +112,7 @@ function addProject(data)  {
 	    <center><paper-button onclick="projectDialog.toggle()" raised><strong>Add Project</strong></paper-button></center>
 	    
 	    <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="projectDialog" class="projectDialogStyles">
-	    			<paper-input  auto-validate pattern="[A-Za-z0-9_]*" maxlength="20" class="addProjClass" label="Name:" id=saveProjectFormName></paper-input>
+	    			<paper-input  auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Name:" id=saveProjectFormName></paper-input>
 			        <paper-input  class="addProjClass"label="Type:" id=saveProjectFormType_name></paper-input>
 			        <paper-input class="addProjClass" label="Index Name:" id=saveProjectFormIndex_name></paper-input>
 			        <div>

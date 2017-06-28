@@ -11,6 +11,7 @@
 	<link rel="import" href="../static/bower_components/paper-checkbox/paper-checkbox.html">
 	<link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 	
+	
 	<link rel="import" href="../static/bower_components/paper-styles/color.html">
 	<link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
 	<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
@@ -43,11 +44,14 @@
 			  document.getElementById('fieldSelector').style.backgroundColor =null;
 			  document.getElementById('tagSelector').style.backgroundColor =null;
 			  document.getElementById('glossarySelector').style.backgroundColor =null;
+			  document.getElementById('tableSelector').style.backgroundColor =null;
+				 
 			  
 			  document.getElementById('entity').opened = false;
 		  	  document.getElementById('menu').opened = true;
 		  	  document.getElementById('glossary').opened = false;
 		  	  document.getElementById('field').opened = false;
+		  	  document.getElementById('tables').opened = false;
 		}
 		
 		function showField() {
@@ -55,12 +59,30 @@
 		  document.getElementById('fieldSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
 		  document.getElementById('tagSelector').style.backgroundColor =null;
 		  document.getElementById('glossarySelector').style.backgroundColor =null;
+		  document.getElementById('tableSelector').style.backgroundColor =null;
+			
 			  
 	  	  document.getElementById('entity').opened = false;
 	  	  document.getElementById('glossary').opened = false;
 	  	  document.getElementById('field').opened = true;
 	  	  document.getElementById('menu').opened = false;
+	  	  document.getElementById('tables').opened = false;
 	    }
+		
+		function showTable() {
+			  document.getElementById('menuSelector').style.backgroundColor =null;
+			  document.getElementById('fieldSelector').style.backgroundColor =null;
+			  document.getElementById('tagSelector').style.backgroundColor =null;
+			  document.getElementById('glossarySelector').style.backgroundColor =null;
+			  document.getElementById('tableSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+				
+				  
+		  	  document.getElementById('entity').opened = false;
+		  	  document.getElementById('glossary').opened = false;
+		  	  document.getElementById('field').opened = false;
+		  	  document.getElementById('menu').opened = false;
+		  	  document.getElementById('tables').opened = true;
+		}
 		
 		var openFile = function (event) {
 		    var input = event.target;
@@ -137,11 +159,14 @@
 	     document.getElementById('fieldSelector').style.backgroundColor =null;
 	     document.getElementById('tagSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
 		 document.getElementById('glossarySelector').style.backgroundColor =null;
+		 document.getElementById('tableSelector').style.backgroundColor =null;
 			
+		
 	  	  document.getElementById('field').opened = false;
 	  	  document.getElementById('glossary').opened = false;
 	  	  document.getElementById('entity').opened = true;
 	  	  document.getElementById('menu').opened = false;
+	  	  document.getElementById('tables').opened = false;
 	    }
 	    
 	    function showGlossary() {
@@ -150,11 +175,14 @@
 		  document.getElementById('fieldSelector').style.backgroundColor =null;
 		  document.getElementById('tagSelector').style.backgroundColor =null;
 		  document.getElementById('glossarySelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
-				
+		  document.getElementById('tableSelector').style.backgroundColor =null;
+		  
+		  
 	  	  document.getElementById('field').opened = false;
 	  	  document.getElementById('entity').opened = false;
 	  	  document.getElementById('glossary').opened = true;
 	  	  document.getElementById('menu').opened = false;
+	  	  document.getElementById('tables').opened = false;
 	    }
 	    
 	    function addNewTag() {
@@ -218,7 +246,6 @@
 	   		var predefinedExtractor="";
 	   		if(document.getElementById("fieldpredefinedExtractor").selectedItem) {
 	   			predefinedExtractor = document.getElementById("fieldpredefinedExtractor").selectedItem.value;
-	   			if(predefinedExtractor == "none")predefinedExtractor="";
 	   		}
 	   		
 	   		var groupname = document.getElementById("fieldgroupnameinput").value;
@@ -254,7 +281,7 @@
 	   		   		document.getElementById("fieldsearchinput").selected="0";
 	   		    	document.getElementById("fieldtypeinput").selected="0";
 	   		    	document.getElementById("fieldRuleExtractor").checked=false;
-	   		    	document.getElementById("fieldpredefinedExtractor").selectedItem.value="";
+	   		    	document.getElementById("fieldpredefinedExtractor").selected="0";
 	   		   		
 	   		   		document.getElementById("fieldcombinedfieldsinput").checked=false;
 	   		   		document.getElementById("fieldfacetinput").checked=false;
@@ -393,6 +420,7 @@
 	         <paper-material id="projectOpenDialog" class="paperMaterialStyle">
 			<paper-tabs selected="0" noink style="width:100%"> 
 			<paper-tab class="paperTabs" id="menuSelector" onclick="showMenu()">Actions</paper-tab>
+			<paper-tab class="paperTabs" id="tableSelector" onclick="showTable()">Tables</paper-tab>
 			<paper-tab class="paperTabs" id="fieldSelector" onclick="showField()">Fields</paper-tab> 
 			<paper-tab class="paperTabs" id="tagSelector" onclick="showEntity()">Tags</paper-tab>
 			<paper-tab class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
@@ -663,9 +691,31 @@
 				</div>
 			
 			</iron-collapse>
+			<iron-collapse id="tables">
+			
+			<table class="paperDatableClass">
+				<tr>
+					<th style="width:20%">Attribute</th>
+					<th style="">Field</th>
+					<th stlye="">Values</th>
+				</tr>
+				<template is="dom-repeat" items="{{searchImportance}}" as="item">
+		   		<tr>
+			        <td><paper-item  value={{item}}>{{item}}</paper-item></td>
+			        <td>2</td>
+			        <td>3</td>
+		     		
+				</tr>
+				</template>
+			  	
+			</table>
+			</iron-collapse>
+		
+		
+		
 			 <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
 	
-				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
+				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Description" id="tagDescriptionInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Negative class precision" id="tagNegativeInput"></paper-input> 
@@ -693,14 +743,27 @@
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
 				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
-				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
+				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
+				<paper-tooltip for="fieldnameinput" offset="0">The name of a field, cannot be changed</paper-tooltip>
+				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
+				<paper-tooltip for="fielddescriptioninput" offset="0">A description of the field</paper-tooltip>
+				
 				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
+				<paper-tooltip for="fieldscreenlabelinput" offset="0">The text to display the field in DIG</paper-tooltip>
+				
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
+				<paper-tooltip for="fieldscreenlabelPluralinput" offset="0">Label when a field contains multiple values</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
+				<paper-tooltip for="fieldcolorinput" offset="0">The color used to display the field in DIG</paper-tooltip>
+				
+				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
+				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
+				<paper-tooltip for="fieldiconinput" offset="0">The icon to decorate the field in DIG</paper-tooltip>
+				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
 		        <paper-menu id="fieldsearchinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
@@ -708,6 +771,8 @@
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+				<paper-tooltip for="fieldsearchinput" offset="0">High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
+				
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
 		        <paper-menu id="fieldtypeinput"  class="dropdown-content" selected="0">
@@ -716,6 +781,8 @@
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip for="fieldtypeinput" offset="0">Affects the appearance as well as search behavior</paper-tooltip>
+				
 		       
 		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
 		        <paper-menu id="fieldlinkinput"  class="dropdown-content" selected="0">
@@ -724,6 +791,7 @@
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+				<paper-tooltip for="fieldlinkinput" offset="0">Specifies the appearance of the field</paper-tooltip>
 				
 				
 				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
@@ -733,6 +801,8 @@
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip for="fieldresultinput" offset="0">Location where the field appears in the results page</paper-tooltip>
+				
 		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
 		        <paper-menu id="fieldpredefinedExtractor"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
@@ -740,6 +810,8 @@
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip for="fieldpredefinedExtractor" offset="0">Specifies a default extractor to use for a field</paper-tooltip>
+				
 		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
 		        <paper-menu id="fieldRuleExtractorTarget"  class="dropdown-content" selected="2">
 		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
@@ -747,12 +819,24 @@
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip for="fieldRuleExtractorTarget" offset="0">When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				
 		       <div>
 				<paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields</paper-checkbox> 
+				
 				<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
+				<paper-tooltip for="fieldfacetinput" offset="0">When true, the field appears in the facets section</paper-tooltip>
+				
 				<paper-checkbox class="projectInputStyle" id="fieldnetworkinput">Show in Network Search</paper-checkbox> 
+				<paper-tooltip for="fieldnetworkinput" offset="0">Support network creation using the values from a field</paper-tooltip>
+				
+				
 				<paper-checkbox class="projectInputStyle" id="fieldsearchinput2">Show in Search</paper-checkbox> 
+				<paper-tooltip for="fieldsearchinput2" offset="0">When true, the field appears in the query form</paper-tooltip>
+				
+				
 				<paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled</paper-checkbox> 
+				<paper-tooltip for="fieldRuleExtractor" offset="0">When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 				</div>
 				<br>
@@ -910,7 +994,7 @@
 			
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" class="GlossaryDialogStyles">
-					<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20" style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:*"></paper-input> 
+					<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:*"></paper-input> 
 				    <paper-input type="file" id="glossary_fileInput"></paper-input>
 	      		<paper-button raised onclick="submitFormData()">Submit</paper-button>
 				
@@ -977,7 +1061,8 @@
 	    	this.show_in_resultArray=["header","detail","description","no","title"];
 	    	this.type=["string","date","email","hyphenated","location","image","phone", "username"];
 	    	this.predefined_extractor_Array=["none","address","country","email","posting_date","phone","review_id","social_media","website","TLD"];
-	    	this.extractionTargetArray=["title only","description only","title_description"];
+	    	this.extractionTargetArray=["title_only","description_only","title_and_description"];
+	    	this.dataValues=["hi","hello"];
 	    	
 		
 	     },
@@ -1157,7 +1242,6 @@
 	         var predefinedExtr = "";
 	         if(this.$$('#editfieldpredefinedExtractor').selectedItem) {
 	        	 predefinedExtr = this.$$('#editfieldpredefinedExtractor').selectedItem.value;
-	        	 if(predefinedExtr == "none")predefinedExtr="";
 	         }
 	         this.$.updateSavedFields.headers = obj;
 	         this.$.updateSavedFields.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
