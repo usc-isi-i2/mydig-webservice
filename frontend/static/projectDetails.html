@@ -16,6 +16,7 @@
 	<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
 	<link rel="import" href="../static/bower_components/paper-card/paper-card.html">
 	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
+	<link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
 	
 	<link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
@@ -230,6 +231,7 @@
 	   		var result=document.getElementById("fieldresultinput").selectedItem.value;
 	   		var search=document.getElementById("fieldsearchinput2").checked;
 	   		var networksearch=document.getElementById("fieldnetworkinput").checked;
+	   		var ruleextractTarget = document.getElementById("fieldRuleExtractorTarget").selectedItem.value;
 	   		
 	   		xhr.open("POST", url, true);
 	   		xhr.setRequestHeader("Content-type", "application/json");
@@ -249,17 +251,18 @@
 	   		   		
 	   		   		document.getElementById("fieldgroupnameinput").value="";
 	   		   		document.getElementById("fieldiconinput").value="";
-	   		   		document.getElementById("fieldsearchinput").selectedItem.value="";
-	   		    	document.getElementById("fieldtypeinput").selectedItem.value = "";
+	   		   		document.getElementById("fieldsearchinput").selected="0";
+	   		    	document.getElementById("fieldtypeinput").selected="0";
 	   		    	document.getElementById("fieldRuleExtractor").checked=false;
 	   		    	document.getElementById("fieldpredefinedExtractor").selectedItem.value="";
 	   		   		
 	   		   		document.getElementById("fieldcombinedfieldsinput").checked=false;
 	   		   		document.getElementById("fieldfacetinput").checked=false;
-	   		   		document.getElementById("fieldlinkinput").selectedItem.value="";
-	   		   		document.getElementById("fieldresultinput").selectedItem.value="";
+	   		   		document.getElementById("fieldlinkinput").selected="0";
+	   		   		document.getElementById("fieldresultinput").selected="0";
 	   		   		document.getElementById("fieldsearchinput2").checked=false;
 	   		   		document.getElementById("fieldnetworkinput").checked=false;
+	   		   	    document.getElementById("fieldRuleExtractorTarget").selected="2";
 	   		   		
 	   		    }
 	   		};
@@ -284,7 +287,8 @@
 	   		    "type": type,
 	   		    "use_in_network_search": networksearch,
 	   		    "rule_extractor_enabled":ruleExtractor,
-	   		    "predefined_extractor":predefinedExtractor
+	   		    "predefined_extractor":predefinedExtractor,
+	   		    "rule_extraction_target":ruleextractTarget
 	   		  }
 	   		});
 	   		
@@ -366,7 +370,7 @@
 			
 			<iron-ajax
 			id="updateIndex" method="POST" content-type="application/json"
-			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax>
+			handle-as="json" on-error="done" on-response="successDoneIndex"> </iron-ajax>
 			
 			<iron-ajax
 			id="downloadGlossary" method="GET" content-type="text/plain"
@@ -411,9 +415,9 @@
 						essentially unchanged</i></span>
 						<br><br>
 						<div>
-						<strong>No of Pages per TLD</strong>
+						<strong>Number of Pages per TLD</strong>
 						<input type="number" value="200" class="projectInputStyle" id="perPage"></input> 
-						<strong style="padding-left:80px">No of Pages for Extra TLD</strong>
+						<strong style="padding-left:80px">Number of Pages for Extra TLD</strong>
 						<input value="0" type="number" class="projectInputStyle" id="extraPage"></input> 
 						</div>
 						<br><br>
@@ -533,8 +537,10 @@
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Number of Rules:</strong>
+					<strong disabled="disabled">Number of Extraction Rules:</strong>
 					{{item.0.number_of_rules}}
+					<strong style="margin-left:53px" disabled="disabled">Rule Extraction Target:</strong>
+					{{item.0.rule_extraction_target}}
 				</div>
 				
 				<div style="padding: 8px;">
@@ -734,6 +740,13 @@
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
+		        <paper-menu id="fieldRuleExtractorTarget"  class="dropdown-content" selected="2">
+		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
 		       <div>
 				<paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields</paper-checkbox> 
 				<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
@@ -862,6 +875,15 @@
 		        </paper-menu>
 		       </paper-dropdown-menu>
 		       
+		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
+		        <paper-menu id="editRuleExtractionTargetValue"  selected={{_getExtractorTarget(fieldForm.rule_extractor_target)}} class="dropdown-content" >
+		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       
+		       
 		       <div>
 				
 				
@@ -907,6 +929,13 @@
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccessIndex" modal>
+			 <paper-button dialog-confirm autofocus> Search Index switched to Newest Index</paper-button>
+	  		 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
 			
 			</paper-material>
 	</template>
@@ -948,28 +977,33 @@
 	    	this.show_in_resultArray=["header","detail","description","no","title"];
 	    	this.type=["string","date","email","hyphenated","location","image","phone", "username"];
 	    	this.predefined_extractor_Array=["none","address","country","email","posting_date","phone","review_id","social_media","website","TLD"];
+	    	this.extractionTargetArray=["title only","description only","title_description"];
 	    	
 		
 	     },
 	     _getPredefinedExtractor:function(name) {
-	    	 if(name && name!="") return this.predefined_extractor_Array.indexOf(name);
+	    	 if(name!=undefined && name!="") return this.predefined_extractor_Array.indexOf(name);
 	    	 else return 0;
 	    	 
 	     },
 	     _getType:function(name) {
-	    	 if(name && name!="") return this.type.indexOf(name);
+	    	 if(name!=undefined && name!="") return this.type.indexOf(name);
 	    	 else 0;
 	     },
+	     _getExtractorTarget:function(name) {
+	    	 if(name!=undefined && name!="") return this.extractionTargetArray.indexOf(name);
+	    	 return 2;
+	     },
 	     _getSearchImportance:function(name){
-	    	 if(name && name!="") return name-1;
+	    	 if(name!=undefined && name!="") return name-1;
 	    	 return 0;
 	     },
 	     _getResult:function(name) {
-	    	 if(name && name!="") return this.show_in_resultArray.indexOf(name);
+	    	 if(name!=undefined && name!="") return this.show_in_resultArray.indexOf(name);
 	    	 else 0;
 	     },
 	     _getLink:function(name) {
-	    	 if(name && name!="" && name!="none") return this.show_as_linkArray.indexOf(name);
+	    	 if(name!=undefined && name!="" && name!="none") return this.show_as_linkArray.indexOf(name);
 	    	 else 0;
 	     },
 	     convertFileInputToFormData: function(){
@@ -1146,6 +1180,7 @@
 	       		    "show_as_link": this.$$('#editlinkValue').selectedItem.value,
 	       		    "show_in_facets": this.fieldForm.show_in_facets,
 	       		    "show_in_result": this.$$('#editResultValue').selectedItem.value,
+	       		    "rule_extraction_target":this.$$('#editRuleExtractionTargetValue').selectedItem.value,
 	       		    "show_in_search": this.fieldForm.show_in_search,
 	       			"rule_extractor_enabled":this.fieldForm.rule_extractor_enabled,
 	       			"number_of_rules":this.fieldForm.number_of_rules,
@@ -1193,6 +1228,9 @@
 	     },
 	     successDone:function() {
 	    	 modalDialogSuccess.open();
+	     },
+	     successDoneIndex:function() {
+	    	 modalDialogSuccessIndex.open();
 	     },
 	     deletedGlossary:function() {
 	    	 this.glossaries = [];
