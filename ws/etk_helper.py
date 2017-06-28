@@ -120,6 +120,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     default_etk_config = json.loads(default_etk_config_str)
     default_etk_config['document_id'] = document_id
     landmark_repo_path = os.path.join(os.path.dirname(__file__), webservice_config['repo_landmark']['local_path'])
+    project_local_path = os.path.join(os.path.dirname(__file__), webservice_config['repo']['local_path'])
     landmark_rules_path = os.path.join(landmark_repo_path, project_name + "/landmark")
     consolidated_rules = consolidate_landmark_rules(landmark_rules_path)
     output_landmark_file_path = landmark_rules_path + "/consolidated_rules.json"
@@ -149,7 +150,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     if content_extraction_only:
         return default_etk_config
 
-    etk_config = add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config), project_master_config)
+    etk_config = add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config), project_master_config, project_name, project_local_path)
     etk_config = add_default_field_extractors(project_master_config, etk_config)
     return etk_config
 
@@ -334,7 +335,7 @@ def add_default_field_extractors(project_master_config, etk_config):
     return etk_config
 
 
-def add_custom_spacy_extractors(etk_config, project_master_config):
+def add_custom_spacy_extractors(etk_config, project_master_config, project_name, project_local_path):
     if 'data_extraction' not in etk_config:
         etk_config['data_extraction'] = list()
 
@@ -351,21 +352,18 @@ def add_custom_spacy_extractors(etk_config, project_master_config):
     fields = project_master_config['fields']
     for field in fields.keys():
         if 'rule_extractor_enabled' in fields[field] and fields[field]['rule_extractor_enabled']:
-            if 'spacy_field_rules' in project_master_config:
-                field_name = fields[field]['name']
-                if fields[field]['name'] in project_master_config['spacy_field_rules']:
-                    field_rule_file_path = project_master_config['spacy_field_rules'][field_name]
+            field_name = fields[field]['name']
+            field_rule_file_path = os.path.join(project_local_path, project_name, 'spacy_rules/' + field_name + '.json')
+            de_obj['fields'][field_name] = dict()
+            de_obj['fields'][field_name]['extractors'] = dict()
+            de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy'] = dict()
+            de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config'] = dict()
+            de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config']['spacy_field_rules'] = field_name
 
-                    de_obj['fields'][field_name] = dict()
-                    de_obj['fields'][field_name]['extractors'] = dict()
-                    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy'] = dict()
-                    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config'] = dict()
-                    de_obj['fields'][field_name]['extractors']['extract_using_custom_spacy']['config']['spacy_field_rules'] = field_name
+            if 'spacy_field_rules' not in etk_config['resources']:
+                etk_config['resources']['spacy_field_rules'] = dict()
 
-                    if 'spacy_field_rules' not in etk_config['resources']:
-                        etk_config['resources']['spacy_field_rules'] = dict()
-
-                    etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file_path
+            etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file_path
 
     etk_config['data_extraction'].append(de_obj)
     return etk_config
