@@ -218,6 +218,7 @@ default_fields = {
 
 master_config = {
     'spacy_field_rules': {},
+    'table_attributes': {},
     'glossaries': {},
     'root_name': 'ads',
     'sources': [],
@@ -228,6 +229,13 @@ master_config = {
         'full': '',
         'version': 0
     }
+}
+
+table_attribute = {
+    'name': 'attribute_name_1',
+    'field_name': '',
+    'value': [],
+    'info': {}
 }
 
 # entity = {
