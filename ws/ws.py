@@ -600,8 +600,12 @@ class ProjectFields(Resource):
             field_obj['rule_extractor_enabled'] = False
         if 'number_of_rules' not in field_obj:
             field_obj['number_of_rules'] = 0
-        if 'predefined_extractor' not in field_obj:
-            field_obj['predefined_extractor'] = ''
+        if 'predefined_extractor' not in field_obj or field_obj['predefined_extractor'] not in \
+                ('social_media', 'review_id', 'posting_date', 'phone', 'email', 'address', 'website', 'TLD', 'none'):
+            field_obj['predefined_extractor'] = 'none'
+        if 'rule_extraction_target' not in field_obj or \
+                field_obj['rule_extraction_target'] not in ('title_only', 'description_only', 'title_and_description'):
+            field_obj['rule_extraction_target'] = 'title_and_description'
         return True, None
 
 
@@ -910,6 +914,59 @@ class Glossary(Resource):
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='delete a glossary: project {}, glossary {}'.format(project_name, glossary_name))
         return rest.deleted()
+
+
+@api.route('/projects/<project_name>/table_attributes')
+class ProjectTableAttributes(Resource):
+    @requires_auth
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+
+        input = request.get_json(force=True)
+        if len(input) == 0 or not isinstance(input, dict):
+            return rest.bad_request('Invalid input')
+        for k, v in input.iteritems():
+            is_valid, message = self.validator(v)
+            if not is_valid:
+                return rest.bad_request(message)
+            if k != v['name']:
+                return rest.bad_request('Invalid table attribute name')
+            if v['field_name'] not in data[project_name]['master_config']['fields']:
+                return rest.bad_request('No such field')
+        data[project_name]['master_config']['table_attributes'] = input
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='create / update table attributes: project {}'.format(project_name))
+        return rest.created()
+
+    @requires_auth
+    def put(self, project_name):
+        return self.post(project_name)
+
+    @requires_auth
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if 'table_attributes' not in data[project_name]['master_config']:
+            return rest.ok()
+        return data[project_name]['master_config']['table_attributes']
+
+    @requires_auth
+    def delete(self, project_name):
+        pass
+
+    @staticmethod
+    def validator(obj):
+        if 'name' not in obj or len(obj['name'].strip()) == 0:
+            return False, 'Invalid attribute: name'
+        if 'field_name' not in obj:
+            obj['field_name'] = ''
+        if 'value' not in obj or not isinstance(obj['value'], list):
+            return False, 'Invalid attribute: value'
+        if 'info' not in obj:
+            return False, 'Invalid attribute: info'
+        return True, None
 
 
 # @api.route('/projects/<project_name>/entities/<kg_id>/tags')

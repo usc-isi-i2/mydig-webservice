@@ -142,6 +142,11 @@
        		border: 1px solid;
       		height:10px;
        }
+       paper-tooltip {
+       	top:0px !important;
+       	left:0px !important;
+       	bottom:40px !important;
+       }
        
        .OtherDialogStyles{
       	    outline: none;
@@ -178,7 +183,7 @@
       	    height: 2em;
 		    font-size: 20px;
 		    color: black;
-		    width: 20%;
+		    width: 15.8%;
 		    border: 2px solid black;
 		    padding-left: 30px;
       }
@@ -196,7 +201,26 @@
       .paper-input-container.input-content.paper-input-container label {
 			 color:black;
       }
+    
+     .paperDatableClass {
+   
+     	padding-top:10px;
+     	height: 3em;
+    	width: 100%;
+    	border:1px solid black;
+     }
+     .paperDatableClass tr {
+     	    width: 100%;
+    		height: 3em;
+     }
+     .paperDatableClass th {
+     	height:3em;
+     }
      
+     .paperDatableClass td {
+     	height:2em;
+     	
+     }
       
       
     </style>
