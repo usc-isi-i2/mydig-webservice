@@ -923,8 +923,15 @@
 				  </paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editFieldsDialog" class="FieldDialogStyles">
+				<div>
+				<paper-button style="float:right;"
+					on-tap="editRules" raised> <strong>Edit Rules</strong></paper-button>
 				<h2>Field : {{fieldForm.name}}</h2>
+				
+				</div>
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
+				
+				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
 				
@@ -1464,6 +1471,9 @@
 				
 				 request.send();
 	         
+   		},
+   		editRules:function() {
+   			
    		}
 	     
 	    
