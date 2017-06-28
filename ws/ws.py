@@ -688,7 +688,7 @@ class SpacyRulesOfAField(Resource):
 
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
         data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(rules)
-        data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
+        # data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
         update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
@@ -739,7 +739,7 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('no spacy rules')
         os.remove(path)
         data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = 0
-        del data[project_name]['master_config']['spacy_field_rules'][field_name]
+        # del data[project_name]['master_config']['spacy_field_rules'][field_name]
         update_master_config_file(project_name)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
             message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
@@ -954,7 +954,15 @@ class ProjectTableAttributes(Resource):
 
     @requires_auth
     def delete(self, project_name):
-        pass
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if 'table_attributes' not in data[project_name]['master_config']:
+            return rest.deleted()
+        data[project_name]['master_config']['table_attributes'] = input
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete table attributes: project {}'.format(project_name))
+        return
 
     @staticmethod
     def validator(obj):
@@ -967,6 +975,51 @@ class ProjectTableAttributes(Resource):
         if 'info' not in obj:
             return False, 'Invalid attribute: info'
         return True, None
+
+
+@api.route('/projects/<project_name>/table_attributes/<attribute_name>')
+class TableAttribute(Resource):
+    @requires_auth
+    def post(self, project_name, attribute_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if attribute_name not in data[project_name]['master_config']['table_attributes']:
+            return rest.not_found('attribute name not found')
+
+        input = request.get_json(force=True)
+        is_valid, message = ProjectTableAttributes.validator(input)
+        if not is_valid:
+            return rest.bad_request(message)
+        if attribute_name != input['name']:
+            return rest.bad_request('Invalid table attribute name')
+        if input['field_name'] not in data[project_name]['master_config']['fields']:
+            return rest.bad_request('No such field')
+        data[project_name]['master_config']['table_attributes'][attribute_name] = input
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='create / update table attributes: project {}, attribute {}'
+                          .format(project_name, attribute_name))
+        return rest.created()
+
+    @requires_auth
+    def put(self, project_name, attribute_name):
+        return self.post(project_name, attribute_name)
+
+    @requires_auth
+    def get(self, project_name, attribute_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if attribute_name not in data[project_name]['master_config']['table_attributes']:
+            return rest.not_found('attribute name not found')
+
+        return data[project_name]['master_config']['table_attributes'][attribute_name]
+
+    @requires_auth
+    def delete(self, project_name, attribute_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if attribute_name not in data[project_name]['master_config']['table_attributes']:
+            return rest.not_found('attribute name not found')
 
 
 # @api.route('/projects/<project_name>/entities/<kg_id>/tags')
@@ -1629,6 +1682,7 @@ class Actions(Resource):
                                             "timestamp": {
                                                 "gte": "''' + s['start_date'] + '''",
                                                 "lt": "''' + s['end_date'] + '''",
+                                                "format": "yyyy-MM-dd"
                                                 "format": "yyyy-MM-dd"
                                             }
                                         }
