@@ -110,9 +110,8 @@ def create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
                 mapping[field_name].append(unique_field)
     return mapping
 
-
-def generate_etk_config(project_master_config, webservice_config, project_name, document_id='doc_id'):
-    defined_fields = project_master_config['fields']
+def generate_etk_config(project_master_config, webservice_config, project_name, document_id='doc_id',
+                            content_extraction_only=False):
     if 'repo_landmark' not in webservice_config:
         raise KeyError('landmark repository path not defined in the master config')
     default_etk_config = json.loads(default_etk_config_str)
@@ -127,6 +126,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
 
     # Add this file location to default etk config for landmark
     default_etk_config['resources']['landmark'].append(output_landmark_file_path)
+    defined_fields = project_master_config['fields']
     mapping = create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
 
     if 'data_extraction' not in default_etk_config:
@@ -142,6 +142,10 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     for field_name in mapping.keys():
         data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name], field_name)
     default_etk_config['data_extraction'].append(data_e_object)
+
+    if content_extraction_only:
+        return default_etk_config
+
     etk_config = add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config), project_master_config)
     etk_config = add_default_field_extractors(project_master_config, etk_config)
     return etk_config
@@ -369,7 +373,7 @@ if __name__ == '__main__':
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
     project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
-    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf'),
+    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf', content_extraction_only=True),
                      indent=2)
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
     # ngram_dist = {
