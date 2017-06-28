@@ -32,6 +32,9 @@ default_etk_config_str = """{
                 "field_name": "inferlink_extractions",
                 "extraction_policy": "keep_existing",
                 "landmark_threshold": 0.5
+            },
+            "table": {
+                "field_name": "table"
             }
         }
     }
