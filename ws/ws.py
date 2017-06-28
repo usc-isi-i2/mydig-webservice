@@ -1622,38 +1622,38 @@ class Actions(Resource):
 
             if pages_per_tld > 0:
                 query = '''
-                {
-                    "size": ''' + str(pages_per_tld) + ''',
-                    "query": {
-                        "filtered":{
+                        {
+                            "size": ''' + str(pages_per_tld) + ''',
                             "query": {
-                                "function_score": {
+                                "filtered":{
                                     "query": {
-                                        "range": {
-                                            "timestamp": {
-                                                "gte": "''' + s['start_date'] + '''",
-                                                "lt": "''' + s['end_date'] + '''",
-                                                "format": "yyyy-MM-dd"
-                                            }
+                                        "function_score": {
+                                            "query": {
+                                                "range": {
+                                                    "timestamp": {
+                                                        "gte": "''' + s['start_date'] + '''",
+                                                        "lt": "''' + s['end_date'] + '''",
+                                                        "format": "yyyy-MM-dd"
+                                                    }
+                                                }
+                                            },
+                                            "functions": [{"random_score":{}}]
                                         }
                                     },
-                                    "functions": [{"random_score":{}}]
-                                }
-                            },
-                            "filter": {
-                                "and": {
-                                    "filters": [
-                                        {"exists" : {"field": "raw_content"}},
-                                        {"exists" : {"field": "url"}},
-                                        {"exists" : {"field": "doc_id"}},
-                                        {"term": {"url.domain": "''' + tld + '''"}}
-                                    ]
+                                    "filter": {
+                                        "and": {
+                                            "filters": [
+                                                {"exists" : {"field": "raw_content"}},
+                                                {"exists" : {"field": "url"}},
+                                                {"exists" : {"field": "doc_id"}},
+                                                {"term": {"url.domain": "''' + tld + '''"}}
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-                '''
+                        '''
                 es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
                 hits = es.search(s['index'], s['type'], query)
                 if hits:
@@ -1667,56 +1667,55 @@ class Actions(Resource):
                             f.write(json.dumps(d['_source']))
                             f.write('\n')
 
+        # update tlds status to file
+        tlds_status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
+        write_to_file(json.dumps(tlds_status, indent=2), tlds_status_path)
+
         # extra
         if pages_extra > 0:
-            exclude_tlds_str = '[' + ','.join(s['tlds']) + ']'
+            exclude_tlds_str = ','.join(['\"{}\"'.format(t) for t in s['tlds']])
             query = '''
-            {
-                "size": ''' + str(pages_extra) + ''',
-                "query": {
-                    "filtered":{
+                    {
+                        "size": ''' + str(pages_extra) + ''',
                         "query": {
-                            "function_score": {
+                            "filtered":{
                                 "query": {
-                                    "range": {
-                                        "timestamp": {
-                                            "gte": "''' + s['start_date'] + '''",
-                                            "lt": "''' + s['end_date'] + '''",
-                                            "format": "yyyy-MM-dd"
-                                            "format": "yyyy-MM-dd"
-                                        }
+                                    "function_score": {
+                                        "query": {
+                                            "range": {
+                                                "timestamp": {
+                                                    "gte": "''' + s['start_date'] + '''",
+                                                    "lt": "''' + s['end_date'] + '''",
+                                                    "format": "yyyy-MM-dd"
+                                                }
+                                            }
+                                        },
+                                        "functions": [{"random_score":{}}]
                                     }
                                 },
-                                "functions": [{"random_score":{}}]
-                            }
-                        },
-                        "filter": {
-                            "and": {
-                                "filters": [
-                                    {"exists" : {"field": "raw_content"}},
-                                    {"exists" : {"field": "url"}},
-                                    {"exists" : {"field": "doc_id"}},
-                                    {"not":{"terms": {"url.domain": "''' + exclude_tlds_str + '''"}}}
-                                ]
+                                "filter": {
+                                    "and": {
+                                        "filters": [
+                                            {"exists" : {"field": "raw_content"}},
+                                            {"exists" : {"field": "url"}},
+                                            {"exists" : {"field": "doc_id"}},
+                                            {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
+                                        ]
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-            '''
+                    '''
             es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
             hits = es.search(s['index'], s['type'], query)
             if hits:
                 docs = hits['hits']['hits']
-                file_path = os.path.join(dir_path, tld + '.jl')
+                file_path = os.path.join(dir_path, 'extra.jl')
                 with open(file_path, 'w') as f:
                     for d in docs:
                         f.write(json.dumps(d['_source']))
                         f.write('\n')
-
-        # update tlds status to file
-        tlds_status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
-        write_to_file(json.dumps(tlds_status, indent=2), tlds_status_path)
 
         # invoke inferlink
         if len(cdr_ids) != 0:
