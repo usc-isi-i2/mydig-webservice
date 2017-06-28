@@ -16,5 +16,10 @@ python ${etk_path}/etk/run_core.py \
     -i ${data_path} \
     -o ${working_dir}/etk_out.jl \
     -c ${working_dir}/etk_config.json > ${working_dir}/etk_stdout.txt
+last_exit_code=$?
 
-exit $?
+if [ ${last_exit_code} == 0 ]; then
+    cp "${working_dir}/etk_out.jl" "${working_dir}/etk_input.jl"
+fi
+
+exit ${last_exit_code}
