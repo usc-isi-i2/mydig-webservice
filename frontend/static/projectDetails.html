@@ -695,15 +695,29 @@
 			
 			<table class="paperDatableClass">
 				<tr>
-					<th style="width:20%">Attribute</th>
-					<th style="">Field</th>
-					<th stlye="">Values</th>
+					<th style="width:20%;border: 1.5px solid black;">Attribute</th>
+					<th style="width:30%;border: 1.5px solid black;">Field</th>
+					<th style="border: 1.5px solid black;">Values</th>
 				</tr>
-				<template is="dom-repeat" items="{{searchImportance}}" as="item">
+				<template is="dom-repeat" items="{{dataTableValues}}" as="item">
 		   		<tr>
-			        <td><paper-item  value={{item}}>{{item}}</paper-item></td>
-			        <td>2</td>
-			        <td>3</td>
+			        <td><paper-item  value={{item}}>{{item.attribute}}</paper-item></td>
+			        <td>
+			        	<paper-dropdown-menu style="margin:0px;margin-left: 2em" class="projectInputStyle">
+					        <paper-menu id="tableFieldInput"  class="dropdown-content" selected="{{_getTableDropDown(item.fieldValue)}}">
+					            <template is="dom-repeat" items="{{fields}}" as="item">
+					                <paper-item  value={{item.0.name}}>{{item.0.name}}</paper-item>
+					            </template>
+					        </paper-menu>
+		       			</paper-dropdown-menu>
+			        
+			        </td>
+			        <td>
+				        <template is="dom-repeat" items="{{item.values}}" as="item">
+			                {{item}} &nbsp
+			            </template>
+			        
+			        </td>
 		     		
 				</tr>
 				</template>
@@ -1062,9 +1076,19 @@
 	    	this.type=["string","date","email","hyphenated","location","image","phone", "username"];
 	    	this.predefined_extractor_Array=["none","address","country","email","posting_date","phone","review_id","social_media","website","TLD"];
 	    	this.extractionTargetArray=["title_only","description_only","title_and_description"];
-	    	this.dataValues=["hi","hello"];
+	    	this.dataTableValues=[{"attribute":"abc","fieldValue":"country","values":["abc","xyz","pqr"]},
+	    	                      {"attribute":"pqr","fieldValue":"","values":["abc","xyz","pqr"]},
+	    	                      {"attribute":"xyz","fieldValue":"city","values":["abc","xyz","pqr"]}
+	    	                     ];
+	    	
 	    	
 		
+	     },
+	     _getTableDropDown:function(name) {
+	    	 if(name!=undefined && name!="") {
+	    	 	 return this.fields.indexOf(name);
+	    	 }
+	    	 return 0;
 	     },
 	     _getPredefinedExtractor:function(name) {
 	    	 if(name!=undefined && name!="") return this.predefined_extractor_Array.indexOf(name);
