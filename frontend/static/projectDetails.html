@@ -404,11 +404,11 @@
 			 on-error="done" on-response="downloadGlossaryCall"> </iron-ajax>
 		
 			<iron-ajax
-			id="editSpacyRules" method="GET" content-type="text/plain"
-			 on-error="done" on-response="fieldSpacyRules"> </iron-ajax>
+			id="editSpacyRules" method="GET" content-type="application/json"
+			 on-error="showSpacyRuleDummy" on-response="fieldSpacyRules"> </iron-ajax>
 			 
 			 <iron-ajax
-			id="updateSpacyRules" method="POST" content-type="text/plain"
+			id="updateSpacyRules" method="POST" content-type="application/json"
 			 on-error="done"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
@@ -911,9 +911,7 @@
 			
 					<paper-material class="addPaddingToSections">
 					<div>
-					<textarea style="margin: 0px;width:100%;height: 34em;resize:none"
-					value="{{spacy_rules}}"
-					></textarea>
+					<textarea id="spacyRulesTextArea" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
 					</div>
 					</paper-material> 
 					<div style="float:right">
@@ -1512,10 +1510,22 @@
    		},
    		fieldSpacyRules:function(data) {
    			this.spacyRules = [];
-   			this.spacyRules = data.detail.response;
+   			this.$$('#spacyRulesTextArea').value=JSON.stringify(data.detail.response);
    		},
    		updateFieldSpacyRules:function(){
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateSpacyRules.headers = obj;
+	         this.$.updateSpacyRules.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name+"/spacy_rules";
+	         
+	         this.$.updateSpacyRules.body = (this.$$('#spacyRulesTextArea').value);
+		     this.$.updateSpacyRules.generateRequest();
+		     spacyRulesDialog.toggle();
    			
+   		},
+   		showSpacyRuleDummy:function(){
+   			this.$$('#spacyRulesTextArea').value='{"field_name":'+this.fieldForm.name+',"results":[],"rules":[],"test_text":"string","test_tokens":["string"]}';
    		}
 	     
 	    
