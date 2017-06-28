@@ -659,7 +659,7 @@
 			</iron-collapse>
 			 <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
 	
-				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20"  class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
+				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="20" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Description" id="tagDescriptionInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Negative class precision" id="tagNegativeInput"></paper-input> 
@@ -728,7 +728,7 @@
 		        </paper-menu>
 		       </paper-dropdown-menu>
 		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
-		        <paper-menu id="fieldpredefinedExtractor"  class="dropdown-content" >
+		        <paper-menu id="fieldpredefinedExtractor"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
@@ -945,20 +945,20 @@
 	    	
 	    	this.searchImportance=["1","2","3","4","5","6","7","8","9","10"];
 	    	this.show_as_linkArray = ["text","entity"];
-	    	this.show_in_resultArray=["header","detail","no","title","description"];
-	    	this.type=["string","location", "username","date","email","hyphenated","phone","image"];
-	    	this.predefined_extractor_Array=["none","social_media","review_id","city","posting_date","phone","email","address","country","website"];
+	    	this.show_in_resultArray=["header","detail","description","no","title"];
+	    	this.type=["string","date","email","hyphenated","location","image","phone", "username"];
+	    	this.predefined_extractor_Array=["none","address","country","email","posting_date","phone","review_id","social_media","website","TLD"];
 	    	
 		
 	     },
 	     _getPredefinedExtractor:function(name) {
-	    	 if(name) return this.predefined_extractor_Array.indexOf(name);
-	    	 else return this.predefined_extractor_Array[0];
+	    	 if(name && name!="") return this.predefined_extractor_Array.indexOf(name);
+	    	 else return 0;
 	    	 
 	     },
 	     _getType:function(name) {
 	    	 if(name && name!="") return this.type.indexOf(name);
-	    	 else this.type[0];
+	    	 else 0;
 	     },
 	     _getSearchImportance:function(name){
 	    	 if(name && name!="") return name-1;
@@ -966,11 +966,11 @@
 	     },
 	     _getResult:function(name) {
 	    	 if(name && name!="") return this.show_in_resultArray.indexOf(name);
-	    	 else this.show_in_resultArray[0];
+	    	 else 0;
 	     },
 	     _getLink:function(name) {
 	    	 if(name && name!="" && name!="none") return this.show_as_linkArray.indexOf(name);
-	    	 else this.show_as_linkArray[0];
+	    	 else 0;
 	     },
 	     convertFileInputToFormData: function(){
 	    	 var file = this.$.input.inputElement.files[0];
