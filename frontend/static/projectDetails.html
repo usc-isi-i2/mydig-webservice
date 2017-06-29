@@ -403,6 +403,13 @@
 			id="downloadGlossary" method="GET" content-type="text/plain"
 			 on-error="done" on-response="downloadGlossaryCall"> </iron-ajax>
 		
+			<iron-ajax
+			id="editSpacyRules" method="GET" content-type="application/json"
+			 on-error="showSpacyRuleDummy" on-response="fieldSpacyRules"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateSpacyRules" method="POST" content-type="application/json"
+			 on-error="done"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
@@ -540,7 +547,7 @@
 				<div style="padding: 8px;">
 					<paper-button on-tap="editFieldFunction" raised
 						style="float:right"> <strong>Edit</strong></paper-button>
-					<paper-button on-tap="deleteFieldFunction" raised
+					<paper-button on-tap="sureToDeleteDialogFunction" raised
 						style="float:right"> <strong>Delete</strong></paper-button>
 					<strong disabled="disabled">Name:</strong> {{item.0.name}}
 				</div>
@@ -868,6 +875,8 @@
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editGlossariesDialog" class="FieldDialogStyles">
 			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
 					<h2>Glossary : {{glossaryForm}}</h2>
+					<paper-input type="hidden" id="glossary_name" value="{{glossaryForm}}"></paper-input>
+	      	
 					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
 				</form>
@@ -895,6 +904,23 @@
 					on-tap="saveFieldGlossaries" raised> <strong>Save</strong></paper-button>
 				<paper-button style="float:center;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+			</paper-dialog>
+			
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesDialog" class="FieldDialogStyles">
+			
+					<paper-material class="addPaddingToSections">
+					<div>
+					<textarea id="spacyRulesTextArea" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
+					</div>
+					</paper-material> 
+					<div style="float:right">
+					<paper-button
+					style="float:center;margin-top:20px;margin-left:10px;"
+					on-tap="updateFieldSpacyRules" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:center;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					</div>
 			</paper-dialog>
 			
 			
@@ -1038,6 +1064,14 @@
 	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccessIndex" modal>
 			 <paper-button dialog-confirm autofocus> Search Index switched to Newest Index</paper-button>
 	  		 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToDeleteDialog" modal>
+			 <paper-button autofocus> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
+	  		 <div class="buttons">
+	  		 	<paper-button on-tap="deleteFieldFunction">Delete</paper-button>
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
@@ -1233,12 +1267,17 @@
 	    	
 	     	
 	     },
+	     sureToDeleteDialogFunction:function(e) {
+	    	 this.fieldName = e.model.item[0].name;
+	    	 sureToDeleteDialog.toggle();
+	     },
 	     
-	     deleteFieldFunction:function(e) {
+	     deleteFieldFunction:function() {
+	    	 sureToDeleteDialog.toggle();
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.deleteFields.headers = obj;
-	         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+(e.model.item[0].name).split(":")[0];
+	         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+this.fieldName;
 	     	this.$.deleteFields.generateRequest();
 	    	 
 	     },
@@ -1457,7 +1496,7 @@
 			   	request.onreadystatechange = function () {
 					    if (request.readyState === 4 && request.status === 200) {
 					    	 var element = document.createElement('a');
-					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + request.responseText);
+					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' +  encodeURIComponent(request.responseText));
 					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
 
 					   		  element.style.display = 'none';
@@ -1472,8 +1511,34 @@
 				 request.send();
 	         
    		},
-   		editRules:function() {
+   		editRules:function(e) {
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.editSpacyRules.headers = obj;
+	         this.$.editSpacyRules.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name+"/spacy_rules?type=all";
+		     this.$.editSpacyRules.generateRequest();
+		     spacyRulesDialog.toggle();
    			
+   		},
+   		fieldSpacyRules:function(data) {
+   			this.spacyRules = [];
+   			this.$$('#spacyRulesTextArea').value=JSON.stringify(data.detail.response);
+   		},
+   		updateFieldSpacyRules:function(){
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateSpacyRules.headers = obj;
+	         this.$.updateSpacyRules.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name+"/spacy_rules";
+	         
+	         this.$.updateSpacyRules.body = (this.$$('#spacyRulesTextArea').value);
+		     this.$.updateSpacyRules.generateRequest();
+		     spacyRulesDialog.toggle();
+   			
+   		},
+   		showSpacyRuleDummy:function(){
+   			this.$$('#spacyRulesTextArea').value='{"rules": [],"test_text": "string"}';
    		}
 	     
 	    
