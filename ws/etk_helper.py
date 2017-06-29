@@ -37,35 +37,6 @@ default_etk_config_str = """{
                 "field_name": "table"
             }
         }
-    },
-    "kg_enhancement": {
-        "input_path": "knowledge_graph.`parent`",
-        "fields": {
-            "populated_places": {
-                "priority": 0,
-                "extractors": {
-                    "geonames_lookup": {
-                        "config": {}
-                    }
-                }
-            },
-            "country": {
-                "priority": 1,
-                "extractors": {
-                    "country_from_states": {
-                        "config": {}
-                    }
-                }
-            },
-            "city_state_pair": {
-                "priority": 2,
-                "extractors": {
-                    "create_city_state_pair": {
-                        "config": {}
-                    }
-                }
-            }
-        }
     }
 }"""
 
