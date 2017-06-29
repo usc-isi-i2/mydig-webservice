@@ -765,99 +765,99 @@
 			</paper-dialog> 
 				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
-				<paper-tooltip for="fieldnameinput" offset="0">The name of a field, cannot be changed</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldnameinput" >The name of a field, cannot be changed</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
-				<paper-tooltip for="fielddescriptioninput" offset="0">A description of the field</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fielddescriptioninput" >A description of the field</paper-tooltip>
 				
 				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
-				<paper-tooltip for="fieldscreenlabelinput" offset="0">The text to display the field in DIG</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelinput" >The text to display the field in DIG</paper-tooltip>
 				
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
-				<paper-tooltip for="fieldscreenlabelPluralinput" offset="0">Label when a field contains multiple values</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput" >Label when a field contains multiple values</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
-				<paper-tooltip for="fieldcolorinput" offset="0">The color used to display the field in DIG</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
-				<paper-tooltip for="fieldiconinput" offset="0">The icon to decorate the field in DIG</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
+				<paper-dropdown-menu id="searchDropdown" style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
 		        <paper-menu id="fieldsearchinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-				<paper-tooltip for="fieldsearchinput" offset="0">High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="searchDropdown" >High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
 				
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
+				<paper-dropdown-menu id="typeDropDown" style="margin:0px;" class="projectInputStyle" label="Type*:">
 		        <paper-menu id="fieldtypeinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldtypeinput" offset="0">Affects the appearance as well as search behavior</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="typeDropDown" >Affects the appearance as well as search behavior</paper-tooltip>
 				
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
+		       <paper-dropdown-menu id="linkDropDown" style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
 		        <paper-menu id="fieldlinkinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-				<paper-tooltip for="fieldlinkinput" offset="0">Specifies the appearance of the field</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="linkDropDown" >Specifies the appearance of the field</paper-tooltip>
 				
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
+				<paper-dropdown-menu id="resultDropDown" style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
 		        <paper-menu id="fieldresultinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldresultinput" offset="0">Location where the field appears in the results page</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="resultDropDown">Location where the field appears in the results page</paper-tooltip>
 				
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
+		       <paper-dropdown-menu id="predefinedExtractorDropDown" style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
 		        <paper-menu id="fieldpredefinedExtractor"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldpredefinedExtractor" offset="0">Specifies a default extractor to use for a field</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="predefinedExtractorDropDown" >Specifies a default extractor to use for a field</paper-tooltip>
 				
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
+		       <paper-dropdown-menu id="ruleExtractorDropDown" style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
 		        <paper-menu id="fieldRuleExtractorTarget"  class="dropdown-content" selected="2">
 		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldRuleExtractorTarget" offset="0">When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorDropDown" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 		       <div>
 				<paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields</paper-checkbox> 
 				
 				<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
-				<paper-tooltip for="fieldfacetinput" offset="0">When true, the field appears in the facets section</paper-tooltip>
+				<paper-tooltip for="fieldfacetinput">When true, the field appears in the facets section</paper-tooltip>
 				
 				<paper-checkbox class="projectInputStyle" id="fieldnetworkinput">Show in Network Search</paper-checkbox> 
-				<paper-tooltip for="fieldnetworkinput" offset="0">Support network creation using the values from a field</paper-tooltip>
+				<paper-tooltip for="fieldnetworkinput" >Support network creation using the values from a field</paper-tooltip>
 				
 				
 				<paper-checkbox class="projectInputStyle" id="fieldsearchinput2">Show in Search</paper-checkbox> 
-				<paper-tooltip for="fieldsearchinput2" offset="0">When true, the field appears in the query form</paper-tooltip>
+				<paper-tooltip for="fieldsearchinput2">When true, the field appears in the query form</paper-tooltip>
 				
 				
 				<paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled</paper-checkbox> 
-				<paper-tooltip for="fieldRuleExtractor" offset="0">When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				<paper-tooltip for="fieldRuleExtractor" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 				</div>
 				<br>
