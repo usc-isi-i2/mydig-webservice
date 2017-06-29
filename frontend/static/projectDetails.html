@@ -410,6 +410,15 @@
 			 <iron-ajax
 			id="updateSpacyRules" method="POST" content-type="application/json"
 			 on-error="done"> </iron-ajax>
+			 
+			 
+			 <iron-ajax
+			id="tableAttributes" method="GET" content-type="application/json"
+			 on-error="done" on-response="setTableAttributes"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateTableAttribute" method="POST" content-type="application/json"
+			 on-error="done" on-response="updateDone"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
@@ -432,8 +441,6 @@
 			<paper-tab class="paperTabs" id="tagSelector" onclick="showEntity()">Tags</paper-tab>
 			<paper-tab class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
 			</paper-tabs>
-			
-			
 			
 			<iron-collapse id="menu" style="margin-left:20px;">
 				<paper-material class="addPaddingToSections">
@@ -706,21 +713,21 @@
 					<th style="width:30%;border: 1.5px solid black;">Field</th>
 					<th style="border: 1.5px solid black;">Values</th>
 				</tr>
-				<template is="dom-repeat" items="{{dataTableValues}}" as="item">
+				<template is="dom-repeat" items="{{tableAttributes}}" as="item">
 		   		<tr>
-			        <td><paper-item  value={{item}}>{{item.attribute}}</paper-item></td>
+			        <td><paper-item  value={{item}}>{{item.0.name}}</paper-item></td>
 			        <td>
-			        	<paper-dropdown-menu style="margin:0px;margin-left: 2em" class="projectInputStyle">
-					        <paper-menu id="tableFieldInput"  class="dropdown-content" selected="{{_getTableDropDown(item.fieldValue)}}">
-					            <template is="dom-repeat" items="{{fields}}" as="item">
-					                <paper-item  value={{item.0.name}}>{{item.0.name}}</paper-item>
+			        	<paper-dropdown-menu style="margin:0px;margin-left: 2em;padding-bottom: 15px" class="projectInputStyle">
+					        <paper-menu id="tableFieldInput" on-iron-select="_itemSelected" class="dropdown-content" selected="{{_getTableDropDown(item.0.field_name)}}">
+					            <template is="dom-repeat" items="{{fieldNames}}" as="item">
+					                <paper-item  value={{item}}>{{item}}</paper-item>
 					            </template>
 					        </paper-menu>
 		       			</paper-dropdown-menu>
 			        
 			        </td>
 			        <td>
-				        <template is="dom-repeat" items="{{item.values}}" as="item">
+				        <template is="dom-repeat" items="{{item.0.value}}" as="item">
 			                {{item}} &nbsp
 			            </template>
 			        
@@ -734,7 +741,7 @@
 		
 		
 		
-			 <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
 	
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
@@ -749,6 +756,7 @@
 				<paper-button style="float:center;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
+			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editTagsDialog" class="OtherDialogStyles">
 				<h2>Tag : {{tagForm.name}}</h2>
 				<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.screen_label}}"></paper-input> 
@@ -763,7 +771,8 @@
 				<paper-button style="float:center;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
-				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldnameinput" >The name of a field, cannot be changed</paper-tooltip>
 				
@@ -1126,6 +1135,8 @@
 	    	this.fieldFormGlossaries=[];
 	    	this.tagsData = [];
 	    	this.fieldsData = [];
+	    	this.tableAttributes=[];
+	    	this.fieldNames=[];
 	    	var obj = {};
 	        obj.Authorization = "Basic " + btoa(username+":"+password);
 	        this.$.getTags.headers = obj;
@@ -1136,10 +1147,18 @@
 	        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
 	    	this.$.getFields.generateRequest();
 	    	
+	    	this.$.tableAttributes.headers = obj;
+	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+	    	this.$.tableAttributes.generateRequest();
+	    	
+	    	
 	    	
 	    	this.$.getGlossary.headers = obj;
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
+	    	
+	    	
+	    	
 	    	
 	    	this.searchImportance=["1","2","3","4","5","6","7","8","9","10"];
 	    	this.show_as_linkArray = ["text","entity"];
@@ -1157,9 +1176,9 @@
 	     },
 	     _getTableDropDown:function(name) {
 	    	 if(name!=undefined && name!="") {
-	    	 	 return this.fields.indexOf(name);
+	    	 	 return this.fieldNames.indexOf(name);
 	    	 }
-	    	 return 0;
+	    	 return this.fieldNames.indexOf("none");
 	     },
 	     _getPredefinedExtractor:function(name) {
 	    	 if(name!=undefined && name!="") return this.predefined_extractor_Array.indexOf(name);
@@ -1194,8 +1213,24 @@
 	    	        this.text = reader.result;	
 	    	    };
 	    	    reader.readAsText(file);
-	    	},
-	    
+	     },
+	     _itemSelected(e){
+	    	 	var obj = {};
+		        obj.Authorization = "Basic " + btoa(username+":"+password);
+		        var selectedValue = this.$$('#tableFieldInput').selectedItem.value;
+		        if(selectedValue =="none") selectedValue="";
+	    	 	this.$.updateTableAttribute.headers = obj;
+		        this.$.updateTableAttribute.url = backend_url + "projects/"+projectName[1]+"/table_attributes/"+e.model.item[0].name;
+		        this.$.updateTableAttribute.body= JSON.stringify({
+		        	"field_name": selectedValue,
+		        	"info":e.model.item[0].info,
+		        	"name":e.model.item[0].name,
+		        	"value":e.model.item[0].value
+		     	});
+		        this.$.updateTableAttribute.generateRequest();
+		    	
+	    	    
+	     },
 	     onPresubmit:function(e){
 	    	 var form = this.$.form;
 	         this.convertFileInputToFormData();
@@ -1211,6 +1246,16 @@
 	    	 }
 	    	 glossariesNewField = this.fieldFormGlossaries;
 	    	 EditFieldGlossaries.toggle();
+	     },
+	     setTableAttributes:function(data) {
+	    	 if(data.detail.response.length!=0) {
+		    	 this.tableAttributes = Object.keys(data.detail.response).map(function(e) {
+		     		  return [data.detail.response[e]];
+		     		});
+		    	
+		     	this.push('tableAttributes',this.tableAttributes.pop());
+		     	
+	    	 }
 	     },
 	    
 	     fillTags : function(data) {
@@ -1228,13 +1273,19 @@
 		    	 this.fields = Object.keys(data.detail.response).map(function(e) {
 		     		  return [data.detail.response[e]];
 		     		});
-		    	
+		    	 
 		     	this.push('fields',this.fields.pop());
-	    	 }
+		     	this.fieldNames = [];
+		    	 for(var i=0;i<this.fields.length;i++) {
+		    		 this.push('fieldNames',this.fields[i][0].name);
+		    	 }
+		    	 this.push('fieldNames',"none");
+		 	 }
 	     },
 	     fillGlossary : function(data) {
 	    	 
 	    	 if(data.detail.response.length!=0) {
+	    		 data.detail.response.sort();
 		    	 this.glossaries = Object.keys(data.detail.response).map(function(e) {
 		     		  return [data.detail.response[e]];
 		     		});
@@ -1294,6 +1345,10 @@
 	    	this.$.getGlossary.headers = obj;
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
+	    	
+	    	this.$.tableAttributes.headers = obj;
+	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+	    	this.$.tableAttributes.generateRequest();
 	    	
 	     	
 	     },
