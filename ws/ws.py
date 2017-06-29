@@ -1021,6 +1021,12 @@ class TableAttribute(Resource):
         if attribute_name not in data[project_name]['master_config']['table_attributes']:
             return rest.not_found('attribute name not found')
 
+        del data[project_name]['master_config']['table_attributes'][attribute_name]
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete table attributes: project {}, attribute {}'
+                          .format(project_name, attribute_name))
+
 
 # @api.route('/projects/<project_name>/entities/<kg_id>/tags')
 # class EntityTags(Resource):
