@@ -277,6 +277,7 @@ def add_glossary_extraction(etk_config, project_master_config):
         "*.inferlink_extractions.*.text.`parent`"
     ]
     de_obj['fields'] = dict()
+    ngram = 1
 
     for field in defined_fields.keys():
         field_definition = defined_fields[field]
@@ -286,7 +287,8 @@ def add_glossary_extraction(etk_config, project_master_config):
             for glossary in field_glossaries:
                 if glossary in glossaries.keys():
                     g_path = glossaries[glossary]['path']
-                    ngram = choose_ngram(glossaries[glossary]['ngram_distribution'])
+                    if 'ngram_distribution' in glossaries[glossary]:
+                        ngram = choose_ngram(glossaries[glossary]['ngram_distribution'])
 
                     # glossary path to etk
                     etk_config['resources']['dictionaries'][glossary] = g_path
