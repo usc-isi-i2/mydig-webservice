@@ -852,6 +852,167 @@ paths:
           description: "bad request"
         404:
           description: "not found"
+  # table attributes
+  /projects/{project_name}/table_attributes:
+    post:
+      tags:
+      - "table attributes"
+      summary: "Create a table attribute"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "body"
+        name: "body"
+        required: true
+        description: ""
+        schema:
+          $ref: "#/definitions/table_attribute"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+        409:
+          description: "exists"
+    get:
+      tags:
+      - "table attributes"
+      summary: "get table attributes"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "table attributes"
+      summary: "delete table attributes"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  /projects/{project_name}/table_attributes/{attribute_name}:
+    post:
+      tags:
+      - "table attributes"
+      summary: "update a table attribute"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "attribute_name"
+        required: true
+        description: ""
+      - in: "body"
+        name: "body"
+        required: true
+        description: ""
+        schema:
+          $ref: "#/definitions/table_attribute"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "table attributes"
+      summary: "get a table attribute"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "attribute_name"
+        required: true
+        description: ""
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    delete:
+      tags:
+      - "table attributes"
+      summary: "delete a table attribute"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "path"
+        name: "attribute_name"
+        required: true
+        description: ""
+      responses:
+        204:
+          description: "deleted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
   # actions
   /projects/{project_name}/actions/{action_name}:
     post:
@@ -1567,7 +1728,7 @@ definitions:
         type: "integer"
       predefined_extractor:
         type: "string"
-        description: "enum (social_media | review_id | posting_date | phone | email | address | website | TLD | none)"
+        description: "enum(social_media | review_id | posting_date | phone | email | address | website | TLD | none)"
       rule_extraction_target:
         type: "string"
         description: "enum(title_only | description_only | title_and_description)"
@@ -1626,6 +1787,17 @@ definitions:
         type: "array"
       test_text:
         type: "string"
+  table_attribute:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      field_name:
+        type: "string"
+      value:
+        type: "array"
+      info:
+        type: "object"
 
 securityDefinitions:
   basicAuth:

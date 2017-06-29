@@ -403,6 +403,13 @@
 			id="downloadGlossary" method="GET" content-type="text/plain"
 			 on-error="done" on-response="downloadGlossaryCall"> </iron-ajax>
 		
+			<iron-ajax
+			id="editSpacyRules" method="GET" content-type="application/json"
+			 on-error="showSpacyRuleDummy" on-response="fieldSpacyRules"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateSpacyRules" method="POST" content-type="application/json"
+			 on-error="done"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
@@ -540,7 +547,7 @@
 				<div style="padding: 8px;">
 					<paper-button on-tap="editFieldFunction" raised
 						style="float:right"> <strong>Edit</strong></paper-button>
-					<paper-button on-tap="deleteFieldFunction" raised
+					<paper-button on-tap="sureToDeleteDialogFunction" raised
 						style="float:right"> <strong>Delete</strong></paper-button>
 					<strong disabled="disabled">Name:</strong> {{item.0.name}}
 				</div>
@@ -758,99 +765,99 @@
 			</paper-dialog> 
 				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
-				<paper-tooltip for="fieldnameinput" offset="0">The name of a field, cannot be changed</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldnameinput" >The name of a field, cannot be changed</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
-				<paper-tooltip for="fielddescriptioninput" offset="0">A description of the field</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fielddescriptioninput" >A description of the field</paper-tooltip>
 				
 				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
-				<paper-tooltip for="fieldscreenlabelinput" offset="0">The text to display the field in DIG</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelinput" >The text to display the field in DIG</paper-tooltip>
 				
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
-				<paper-tooltip for="fieldscreenlabelPluralinput" offset="0">Label when a field contains multiple values</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput" >Label when a field contains multiple values</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
-				<paper-tooltip for="fieldcolorinput" offset="0">The color used to display the field in DIG</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
-				<paper-tooltip for="fieldiconinput" offset="0">The icon to decorate the field in DIG</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
+				<paper-dropdown-menu id="searchDropdown" style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
 		        <paper-menu id="fieldsearchinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-				<paper-tooltip for="fieldsearchinput" offset="0">High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="searchDropdown" >High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
 				
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
+				<paper-dropdown-menu id="typeDropDown" style="margin:0px;" class="projectInputStyle" label="Type*:">
 		        <paper-menu id="fieldtypeinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldtypeinput" offset="0">Affects the appearance as well as search behavior</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="typeDropDown" >Affects the appearance as well as search behavior</paper-tooltip>
 				
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
+		       <paper-dropdown-menu id="linkDropDown" style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
 		        <paper-menu id="fieldlinkinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-				<paper-tooltip for="fieldlinkinput" offset="0">Specifies the appearance of the field</paper-tooltip>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="linkDropDown" >Specifies the appearance of the field</paper-tooltip>
 				
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
+				<paper-dropdown-menu id="resultDropDown" style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
 		        <paper-menu id="fieldresultinput"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldresultinput" offset="0">Location where the field appears in the results page</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="resultDropDown">Location where the field appears in the results page</paper-tooltip>
 				
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
+		       <paper-dropdown-menu id="predefinedExtractorDropDown" style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
 		        <paper-menu id="fieldpredefinedExtractor"  class="dropdown-content" selected="0">
 		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldpredefinedExtractor" offset="0">Specifies a default extractor to use for a field</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="predefinedExtractorDropDown" >Specifies a default extractor to use for a field</paper-tooltip>
 				
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
+		       <paper-dropdown-menu id="ruleExtractorDropDown" style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
 		        <paper-menu id="fieldRuleExtractorTarget"  class="dropdown-content" selected="2">
 		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-tooltip for="fieldRuleExtractorTarget" offset="0">When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorDropDown" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 		       <div>
 				<paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields</paper-checkbox> 
 				
 				<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
-				<paper-tooltip for="fieldfacetinput" offset="0">When true, the field appears in the facets section</paper-tooltip>
+				<paper-tooltip for="fieldfacetinput">When true, the field appears in the facets section</paper-tooltip>
 				
 				<paper-checkbox class="projectInputStyle" id="fieldnetworkinput">Show in Network Search</paper-checkbox> 
-				<paper-tooltip for="fieldnetworkinput" offset="0">Support network creation using the values from a field</paper-tooltip>
+				<paper-tooltip for="fieldnetworkinput" >Support network creation using the values from a field</paper-tooltip>
 				
 				
 				<paper-checkbox class="projectInputStyle" id="fieldsearchinput2">Show in Search</paper-checkbox> 
-				<paper-tooltip for="fieldsearchinput2" offset="0">When true, the field appears in the query form</paper-tooltip>
+				<paper-tooltip for="fieldsearchinput2">When true, the field appears in the query form</paper-tooltip>
 				
 				
 				<paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled</paper-checkbox> 
-				<paper-tooltip for="fieldRuleExtractor" offset="0">When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				<paper-tooltip for="fieldRuleExtractor" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 				</div>
 				<br>
@@ -868,6 +875,8 @@
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editGlossariesDialog" class="FieldDialogStyles">
 			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
 					<h2>Glossary : {{glossaryForm}}</h2>
+					<paper-input type="hidden" id="glossary_name" value="{{glossaryForm}}"></paper-input>
+	      	
 					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
 				</form>
@@ -898,6 +907,23 @@
 			</paper-dialog>
 			
 			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesDialog" class="FieldDialogStyles">
+			
+					<paper-material class="addPaddingToSections">
+					<div>
+					<textarea id="spacyRulesTextArea" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
+					</div>
+					</paper-material> 
+					<div style="float:right">
+					<paper-button
+					style="float:center;margin-top:20px;margin-left:10px;"
+					on-tap="updateFieldSpacyRules" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:center;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					</div>
+			</paper-dialog>
+			
+			
 			
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:22em">
@@ -923,8 +949,15 @@
 				  </paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editFieldsDialog" class="FieldDialogStyles">
+				<div>
+				<paper-button style="float:right;"
+					on-tap="editRules" raised> <strong>Edit Rules</strong></paper-button>
 				<h2>Field : {{fieldForm.name}}</h2>
+				
+				</div>
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
+				
+				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
 				
@@ -1031,6 +1064,14 @@
 	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccessIndex" modal>
 			 <paper-button dialog-confirm autofocus> Search Index switched to Newest Index</paper-button>
 	  		 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToDeleteDialog" modal>
+			 <paper-button autofocus> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
+	  		 <div class="buttons">
+	  		 	<paper-button on-tap="deleteFieldFunction">Delete</paper-button>
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
@@ -1226,12 +1267,17 @@
 	    	
 	     	
 	     },
+	     sureToDeleteDialogFunction:function(e) {
+	    	 this.fieldName = e.model.item[0].name;
+	    	 sureToDeleteDialog.toggle();
+	     },
 	     
-	     deleteFieldFunction:function(e) {
+	     deleteFieldFunction:function() {
+	    	 sureToDeleteDialog.toggle();
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.deleteFields.headers = obj;
-	         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+(e.model.item[0].name).split(":")[0];
+	         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+this.fieldName;
 	     	this.$.deleteFields.generateRequest();
 	    	 
 	     },
@@ -1450,7 +1496,7 @@
 			   	request.onreadystatechange = function () {
 					    if (request.readyState === 4 && request.status === 200) {
 					    	 var element = document.createElement('a');
-					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + request.responseText);
+					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' +  encodeURIComponent(request.responseText));
 					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
 
 					   		  element.style.display = 'none';
@@ -1464,6 +1510,35 @@
 				
 				 request.send();
 	         
+   		},
+   		editRules:function(e) {
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.editSpacyRules.headers = obj;
+	         this.$.editSpacyRules.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name+"/spacy_rules?type=all";
+		     this.$.editSpacyRules.generateRequest();
+		     spacyRulesDialog.toggle();
+   			
+   		},
+   		fieldSpacyRules:function(data) {
+   			this.spacyRules = [];
+   			this.$$('#spacyRulesTextArea').value=JSON.stringify(data.detail.response);
+   		},
+   		updateFieldSpacyRules:function(){
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateSpacyRules.headers = obj;
+	         this.$.updateSpacyRules.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name+"/spacy_rules";
+	         
+	         this.$.updateSpacyRules.body = (this.$$('#spacyRulesTextArea').value);
+		     this.$.updateSpacyRules.generateRequest();
+		     spacyRulesDialog.toggle();
+   			
+   		},
+   		showSpacyRuleDummy:function(){
+   			this.$$('#spacyRulesTextArea').value='{"rules": [],"test_text": "string"}';
    		}
 	     
 	    

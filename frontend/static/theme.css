@@ -143,9 +143,7 @@
       		height:10px;
        }
        paper-tooltip {
-       	top:0px !important;
-       	left:0px !important;
-       	bottom:40px !important;
+       
        }
        
        .OtherDialogStyles{

@@ -542,6 +542,10 @@ class ProjectFields(Resource):
             return rest.not_found()
 
         data[project_name]['master_config']['fields'] = dict()
+        # remove all the fields associate with table attributes
+        for k, v in data[project_name]['master_config']['table_attributes'].items():
+            v['field_name'] = ''
+
         # write to file
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
@@ -650,6 +654,11 @@ class Field(Resource):
         if field_name not in data[project_name]['master_config']['fields']:
             return rest.not_found()
         del data[project_name]['master_config']['fields'][field_name]
+        # remove associated table attribute
+        for k, v in data[project_name]['master_config']['table_attributes'].items():
+            if v['field_name'] == field_name:
+                v['field_name'] = ''
+
         # write to file
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
@@ -688,7 +697,7 @@ class SpacyRulesOfAField(Resource):
 
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
         data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(rules)
-        data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
+        # data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
         update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
@@ -739,7 +748,7 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('no spacy rules')
         os.remove(path)
         data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = 0
-        del data[project_name]['master_config']['spacy_field_rules'][field_name]
+        # del data[project_name]['master_config']['spacy_field_rules'][field_name]
         update_master_config_file(project_name)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
             message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
@@ -924,25 +933,22 @@ class ProjectTableAttributes(Resource):
             return rest.not_found('Project {} not found'.format(project_name))
 
         input = request.get_json(force=True)
-        if len(input) == 0 or not isinstance(input, dict):
-            return rest.bad_request('Invalid input')
-        for k, v in input.iteritems():
-            is_valid, message = self.validator(v)
-            if not is_valid:
-                return rest.bad_request(message)
-            if k != v['name']:
-                return rest.bad_request('Invalid table attribute name')
-            if v['field_name'] not in data[project_name]['master_config']['fields']:
-                return rest.bad_request('No such field')
-        data[project_name]['master_config']['table_attributes'] = input
+
+        is_valid, message = ProjectTableAttributes.validator(input)
+        if not is_valid:
+            return rest.bad_request(message)
+        attribute_name = input['name']
+        if attribute_name in data[project_name]['master_config']['table_attributes']:
+            return rest.exists()
+
+        if input['field_name'] not in data[project_name]['master_config']['fields']:
+            return rest.bad_request('No such field')
+
+        data[project_name]['master_config']['table_attributes'][attribute_name] = input
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
-                          message='create / update table attributes: project {}'.format(project_name))
-        return rest.created()
-
-    @requires_auth
-    def put(self, project_name):
-        return self.post(project_name)
+                          message='create / update table attributes: project {}, attribute {}'
+                          .format(project_name, attribute_name))
 
     @requires_auth
     def get(self, project_name):
@@ -954,7 +960,15 @@ class ProjectTableAttributes(Resource):
 
     @requires_auth
     def delete(self, project_name):
-        pass
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if 'table_attributes' not in data[project_name]['master_config']:
+            return rest.deleted()
+        data[project_name]['master_config']['table_attributes'] = input
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete table attributes: project {}'.format(project_name))
+        return rest.deleted()
 
     @staticmethod
     def validator(obj):
@@ -967,6 +981,58 @@ class ProjectTableAttributes(Resource):
         if 'info' not in obj:
             return False, 'Invalid attribute: info'
         return True, None
+
+
+@api.route('/projects/<project_name>/table_attributes/<attribute_name>')
+class TableAttribute(Resource):
+    @requires_auth
+    def post(self, project_name, attribute_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if attribute_name not in data[project_name]['master_config']['table_attributes']:
+            return rest.not_found('attribute name not found')
+
+        input = request.get_json(force=True)
+        is_valid, message = ProjectTableAttributes.validator(input)
+        if not is_valid:
+            return rest.bad_request(message)
+        if attribute_name != input['name']:
+            return rest.bad_request('Invalid table attribute name')
+        if input['field_name'] not in data[project_name]['master_config']['fields']:
+            return rest.bad_request('No such field')
+        data[project_name]['master_config']['table_attributes'][attribute_name] = input
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='create / update table attributes: project {}, attribute {}'
+                          .format(project_name, attribute_name))
+        return rest.created()
+
+    @requires_auth
+    def put(self, project_name, attribute_name):
+        return self.post(project_name, attribute_name)
+
+    @requires_auth
+    def get(self, project_name, attribute_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if attribute_name not in data[project_name]['master_config']['table_attributes']:
+            return rest.not_found('attribute name not found')
+
+        return data[project_name]['master_config']['table_attributes'][attribute_name]
+
+    @requires_auth
+    def delete(self, project_name, attribute_name):
+        if project_name not in data:
+            return rest.not_found('Project {} not found'.format(project_name))
+        if attribute_name not in data[project_name]['master_config']['table_attributes']:
+            return rest.not_found('attribute name not found')
+
+        del data[project_name]['master_config']['table_attributes'][attribute_name]
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='delete table attributes: project {}, attribute {}'
+                          .format(project_name, attribute_name))
+        return rest.deleted()
 
 
 # @api.route('/projects/<project_name>/entities/<kg_id>/tags')
@@ -1567,41 +1633,40 @@ class Actions(Resource):
             if tld in tlds_status and tlds_status[tld] != 0:
                 continue
 
-            # tlds
             if pages_per_tld > 0:
                 query = '''
-                {
-                    "size": ''' + str(pages_per_tld) + ''',
-                    "query": {
-                        "filtered":{
+                        {
+                            "size": ''' + str(pages_per_tld) + ''',
                             "query": {
-                                "function_score": {
+                                "filtered":{
                                     "query": {
-                                        "range": {
-                                            "timestamp": {
-                                                "gte": "''' + s['start_date'] + '''",
-                                                "lt": "''' + s['end_date'] + '''",
-                                                "format": "yyyy-MM-dd"
-                                            }
+                                        "function_score": {
+                                            "query": {
+                                                "range": {
+                                                    "timestamp": {
+                                                        "gte": "''' + s['start_date'] + '''",
+                                                        "lt": "''' + s['end_date'] + '''",
+                                                        "format": "yyyy-MM-dd"
+                                                    }
+                                                }
+                                            },
+                                            "functions": [{"random_score":{}}]
                                         }
                                     },
-                                    "functions": [{"random_score":{}}]
-                                }
-                            },
-                            "filter": {
-                                "and": {
-                                    "filters": [
-                                        {"exists" : {"field": "raw_content"}},
-                                        {"exists" : {"field": "url"}},
-                                        {"exists" : {"field": "doc_id"}},
-                                        {"term": {"url.domain": "''' + tld + '''"}}
-                                    ]
+                                    "filter": {
+                                        "and": {
+                                            "filters": [
+                                                {"exists" : {"field": "raw_content"}},
+                                                {"exists" : {"field": "url"}},
+                                                {"exists" : {"field": "doc_id"}},
+                                                {"term": {"url.domain": "''' + tld + '''"}}
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-                '''
+                        '''
                 es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
                 hits = es.search(s['index'], s['type'], query)
                 if hits:
@@ -1615,54 +1680,55 @@ class Actions(Resource):
                             f.write(json.dumps(d['_source']))
                             f.write('\n')
 
-            # extra
-            if pages_extra > 0:
-                query = '''
-                {
-                    "size": ''' + str(pages_extra) + ''',
-                    "query": {
-                        "filtered":{
-                            "query": {
-                                "function_score": {
-                                    "query": {
-                                        "range": {
-                                            "timestamp": {
-                                                "gte": "''' + s['start_date'] + '''",
-                                                "lt": "''' + s['end_date'] + '''",
-                                                "format": "yyyy-MM-dd"
+        # update tlds status to file
+        tlds_status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
+        write_to_file(json.dumps(tlds_status, indent=2), tlds_status_path)
+
+        # extra
+        if pages_extra > 0:
+            exclude_tlds_str = ','.join(['\"{}\"'.format(t) for t in s['tlds']])
+            query = '''
+                    {
+                        "size": ''' + str(pages_extra) + ''',
+                        "query": {
+                            "filtered":{
+                                "query": {
+                                    "function_score": {
+                                        "query": {
+                                            "range": {
+                                                "timestamp": {
+                                                    "gte": "''' + s['start_date'] + '''",
+                                                    "lt": "''' + s['end_date'] + '''",
+                                                    "format": "yyyy-MM-dd"
+                                                }
                                             }
-                                        }
-                                    },
-                                    "functions": [{"random_score":{}}]
-                                }
-                            },
-                            "filter": {
-                                "and": {
-                                    "filters": [
-                                        {"exists" : {"field": "raw_content"}},
-                                        {"exists" : {"field": "url"}},
-                                        {"exists" : {"field": "doc_id"}},
-                                        {"not":{"term": {"url.domain": "''' + tld + '''"}}}
-                                    ]
+                                        },
+                                        "functions": [{"random_score":{}}]
+                                    }
+                                },
+                                "filter": {
+                                    "and": {
+                                        "filters": [
+                                            {"exists" : {"field": "raw_content"}},
+                                            {"exists" : {"field": "url"}},
+                                            {"exists" : {"field": "doc_id"}},
+                                            {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
+                                        ]
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                '''
-                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-                hits = es.search(s['index'], s['type'], query)
-                if hits:
-                    docs = hits['hits']['hits']
-                    file_path = os.path.join(dir_path, tld + '.jl')
-                    with open(file_path, 'w') as f:
-                        for d in docs:
-                            f.write(json.dumps(d['_source']))
-                            f.write('\n')
-
-        # update tlds status to file
-        tlds_status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
-        write_to_file(json.dumps(tlds_status, indent=2), tlds_status_path)
+                    '''
+            es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+            hits = es.search(s['index'], s['type'], query)
+            if hits:
+                docs = hits['hits']['hits']
+                file_path = os.path.join(dir_path, 'extra.jl')
+                with open(file_path, 'w') as f:
+                    for d in docs:
+                        f.write(json.dumps(d['_source']))
+                        f.write('\n')
 
         # invoke inferlink
         if len(cdr_ids) != 0:

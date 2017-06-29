@@ -125,7 +125,7 @@ default_fields = {
         'use_in_network_search': True,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': 'none'
+        'predefined_extractor': 'phone'
     },
     'state': {
         'name': 'state',
@@ -161,7 +161,7 @@ default_fields = {
         'combined_field': 'location',
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': 'none'
+        'predefined_extractor': 'address'
     },
     'posting_date': {
         'name': 'posting_date',
@@ -178,7 +178,7 @@ default_fields = {
         'use_in_network_search': True,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': 'none'
+        'predefined_extractor': 'posting_date'
     },
     'email': {
         'name': 'email',
@@ -195,7 +195,7 @@ default_fields = {
         'use_in_network_search': True,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': 'none'
+        'predefined_extractor': 'email'
     },
     'name': {
         'name': 'name',
@@ -213,11 +213,29 @@ default_fields = {
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
         'predefined_extractor': 'none'
+    },
+    'website': {
+        'name': 'website',
+        'screen_label': 'TLD',
+        'description': 'The field that contains the TLD of a page',
+        'type': 'string',
+        'show_in_search': True,
+        'show_in_facets': True,
+        'show_as_link': 'text',
+        'show_in_result': 'header',
+        'color': '--paper-amber-500',
+        'icon': 'default',
+        'search_importance': 1,
+        'use_in_network_search': True,
+        'rule_extractor_enabled': False,
+        'number_of_rules': 0,
+        'predefined_extractor': 'TLD',
+        'rule_extraction_target': 'title_and_description'
     }
 }
 
 master_config = {
-    'spacy_field_rules': {},
+    # 'spacy_field_rules': {},
     'table_attributes': {},
     'glossaries': {},
     'root_name': 'ads',
