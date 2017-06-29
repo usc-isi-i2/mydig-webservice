@@ -39,13 +39,14 @@
             <file>/user/worker/etk/lib/dictionaries/consolidated-services.json.gz#consolidated-services.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/countries.json.gz#countries.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/country_codes_dict.json#country_codes_dict.json</file>
-            <file>/user/worker/etk/lib/dictionaries/curated_cities.json.gz#curated_cities.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/ethnicities.json.gz#ethnicities.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/eyecolors.json.gz#eyecolors.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/female-names-trimmed.json.gz#female-names-trimmed.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/haircolors.json.gz#haircolors.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/states_usa_canada.json.gz#states_usa_canada.json.gz</file>
             <file>/user/worker/etk/lib/dictionaries/stop_words.json.gz#stop_words.json.gz</file>
+            <file>/user/worker/etk/lib/dictionaries/world_cities_with_population_25k.json.gz#world_cities_with_population_25k.json.gz</file>
+            <file>/user/worker/etk/lib/spacy_field_rules.json#spacy_field_rules.json</file>
             <archive>/user/worker/etk/lib/etk_env.zip#etk_env</archive>
               <capture-output/>
         </shell>
