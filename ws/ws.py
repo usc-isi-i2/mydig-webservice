@@ -28,6 +28,9 @@ from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
 
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
+
 # logger
 logger = logging.getLogger('mydig-webservice.log')
 log_file = logging.FileHandler(config['logging']['file_path'])
@@ -941,7 +944,8 @@ class ProjectTableAttributes(Resource):
         if attribute_name in data[project_name]['master_config']['table_attributes']:
             return rest.exists()
 
-        if input['field_name'] not in data[project_name]['master_config']['fields']:
+        if input['field_name'] != '' and \
+                        input['field_name'] not in data[project_name]['master_config']['fields']:
             return rest.bad_request('No such field')
 
         data[project_name]['master_config']['table_attributes'][attribute_name] = input
@@ -949,6 +953,7 @@ class ProjectTableAttributes(Resource):
         git_helper.commit(files=[project_name + '/master_config.json'],
                           message='create / update table attributes: project {}, attribute {}'
                           .format(project_name, attribute_name))
+        return rest.created()
 
     @requires_auth
     def get(self, project_name):
@@ -998,7 +1003,8 @@ class TableAttribute(Resource):
             return rest.bad_request(message)
         if attribute_name != input['name']:
             return rest.bad_request('Invalid table attribute name')
-        if input['field_name'] not in data[project_name]['master_config']['fields']:
+        if input['field_name'] != '' and \
+                        input['field_name'] not in data[project_name]['master_config']['fields']:
             return rest.bad_request('No such field')
         data[project_name]['master_config']['table_attributes'][attribute_name] = input
         update_master_config_file(project_name)
@@ -1572,6 +1578,9 @@ class Actions(Resource):
             return self._extract_and_load_test_data(project_name)
         elif action_name == 'update_to_new_index':
             return self._update_to_new_index(project_name)
+        elif action_name == 'run_on_cluster':
+            # call job action here
+            return rest.accepted()
         elif action_name == 'publish':
             git_helper.push()
             return rest.accepted()
