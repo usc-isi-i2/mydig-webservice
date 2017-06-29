@@ -857,7 +857,7 @@ paths:
     post:
       tags:
       - "table attributes"
-      summary: "Create / update table attributes"
+      summary: "Create a table attribute"
       description: ""
       operationId: ""
       consumes:
@@ -874,7 +874,7 @@ paths:
         required: true
         description: ""
         schema:
-          $ref: "#/definitions/table_attributes"
+          $ref: "#/definitions/table_attribute"
       responses:
         201:
           description: "created"
@@ -882,6 +882,8 @@ paths:
           description: "bad request"
         404:
           description: "not found"
+        409:
+          description: "exists"
     get:
       tags:
       - "table attributes"
@@ -1796,12 +1798,6 @@ definitions:
         type: "array"
       info:
         type: "object"
-  table_attributes:
-    type: "object"
-    properties:
-      attribute_name:
-        description: "attribute_name should be the same to the name in object"
-        $ref: "#/definitions/table_attribute"
 
 securityDefinitions:
   basicAuth:

@@ -542,6 +542,10 @@ class ProjectFields(Resource):
             return rest.not_found()
 
         data[project_name]['master_config']['fields'] = dict()
+        # remove all the fields associate with table attributes
+        for k, v in data[project_name]['master_config']['table_attributes'].items():
+            v['field_name'] = ''
+
         # write to file
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
@@ -650,6 +654,11 @@ class Field(Resource):
         if field_name not in data[project_name]['master_config']['fields']:
             return rest.not_found()
         del data[project_name]['master_config']['fields'][field_name]
+        # remove associated table attribute
+        for k, v in data[project_name]['master_config']['table_attributes'].items():
+            if v['field_name'] == field_name:
+                v['field_name'] = ''
+
         # write to file
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
@@ -924,25 +933,22 @@ class ProjectTableAttributes(Resource):
             return rest.not_found('Project {} not found'.format(project_name))
 
         input = request.get_json(force=True)
-        if len(input) == 0 or not isinstance(input, dict):
-            return rest.bad_request('Invalid input')
-        for k, v in input.iteritems():
-            is_valid, message = self.validator(v)
-            if not is_valid:
-                return rest.bad_request(message)
-            if k != v['name']:
-                return rest.bad_request('Invalid table attribute name')
-            if v['field_name'] not in data[project_name]['master_config']['fields']:
-                return rest.bad_request('No such field')
-        data[project_name]['master_config']['table_attributes'] = input
+
+        is_valid, message = ProjectTableAttributes.validator(input)
+        if not is_valid:
+            return rest.bad_request(message)
+        attribute_name = input['name']
+        if attribute_name in data[project_name]['master_config']['table_attributes']:
+            return rest.exists()
+
+        if input['field_name'] not in data[project_name]['master_config']['fields']:
+            return rest.bad_request('No such field')
+
+        data[project_name]['master_config']['table_attributes'][attribute_name] = input
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
-                          message='create / update table attributes: project {}'.format(project_name))
-        return rest.created()
-
-    @requires_auth
-    def put(self, project_name):
-        return self.post(project_name)
+                          message='create / update table attributes: project {}, attribute {}'
+                          .format(project_name, attribute_name))
 
     @requires_auth
     def get(self, project_name):
@@ -962,7 +968,7 @@ class ProjectTableAttributes(Resource):
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
                           message='delete table attributes: project {}'.format(project_name))
-        return
+        return rest.deleted()
 
     @staticmethod
     def validator(obj):
@@ -1026,6 +1032,7 @@ class TableAttribute(Resource):
         git_helper.commit(files=[project_name + '/master_config.json'],
                           message='delete table attributes: project {}, attribute {}'
                           .format(project_name, attribute_name))
+        return rest.deleted()
 
 
 # @api.route('/projects/<project_name>/entities/<kg_id>/tags')
