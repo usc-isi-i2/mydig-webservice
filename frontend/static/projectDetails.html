@@ -955,75 +955,105 @@
 				<h2>Field : {{fieldForm.name}}</h2>
 				
 				</div>
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
+				<paper-input id="descriptionField" style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="descriptionField" >A description of the field</paper-tooltip>
 				
 				
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
-				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
+				<paper-input id="screenLabelField" style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelField" >The text to display the field in DIG</paper-tooltip>
 				
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+				<paper-input id="screenLabelPluralField" style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelPluralField" >Label when a field contains multiple values</paper-tooltip>
+				
+				
+				<paper-input id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
+				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+				<paper-input id="iconField" style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField" >The icon to decorate the field in DIG</paper-tooltip>
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
+				
+				<paper-dropdown-menu id="searchFieldEdit" style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
 		        <paper-menu id="editSearchImpValue" selected="{{_getSearchImportance(fieldForm.search_importance)}}" class="dropdown-content" >
 		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="searchFieldEdit" >High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Type*:">
+				
+				<paper-dropdown-menu id="typeFieldEdit" style="margin:0px;" class="projectInputStyle" label="Type*:">
 		        <paper-menu id="editTypeValue" selected="{{_getType(fieldForm.type)}}" class="dropdown-content" >
 		            <template is="dom-repeat" items="{{type}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="typeFieldEdit" >Affects the appearance as well as search behavior</paper-tooltip>
+				
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
+		       <paper-dropdown-menu id="linkFieldEdit" style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
 		        <paper-menu id="editlinkValue" selected={{_getLink(fieldForm.show_as_link)}} class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="linkFieldEdit" >Specifies the appearance of the field</paper-tooltip>
 				
 				
-				<paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
+				
+				<paper-dropdown-menu id="resultFieldEdit" style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
 		        <paper-menu id="editResultValue" selected={{_getResult(fieldForm.show_in_result)}}  class="dropdown-content" >
 		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="resultFieldEdit" >Location where the field appears in the results page</paper-tooltip>
+				
+		       
+		       <paper-dropdown-menu id="predefinedFieldEdit" style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
 		        <paper-menu id="editfieldpredefinedExtractor"  selected={{_getPredefinedExtractor(fieldForm.predefined_extractor)}} class="dropdown-content" >
 		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="predefinedFieldEdit" >Specifies a default extractor to use for a field</paper-tooltip>
+				
 		       
-		       <paper-dropdown-menu style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
+		       <paper-dropdown-menu id="ruleExtractFieldEdit" style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
 		        <paper-menu id="editRuleExtractionTargetValue"  selected={{_getExtractorTarget(fieldForm.rule_extractor_target)}} class="dropdown-content" >
 		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
 		                <paper-item  value={{item}}>{{item}}</paper-item>
 		            </template>
 		        </paper-menu>
 		       </paper-dropdown-menu>
-		       
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractFieldEdit" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				
 		       
 		       <div>
 				
 				
 				
-				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.combine_fields}}">Combine Fields</paper-checkbox> 
-				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.show_in_facets}}">Show in Facets</paper-checkbox> 
-				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.use_in_network_search}}">Show in Network Search</paper-checkbox> 
-				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.show_in_search}}">Show in Search</paper-checkbox> 
-				<paper-checkbox class="projectInputStyle" checked="{{fieldForm.rule_extractor_enabled}}">Rule Extractor Enabled</paper-checkbox> 
+				<paper-checkbox id="combineEditField" class="projectInputStyle" checked="{{fieldForm.combine_fields}}">Combine Fields</paper-checkbox> 
+				
+				
+				<paper-checkbox id="facetFieldEdit" class="projectInputStyle" checked="{{fieldForm.show_in_facets}}">Show in Facets</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="facetFieldEdit" >When true, the field appears in the facets section</paper-tooltip>
+				
+				<paper-checkbox id="networkFieldEdit" class="projectInputStyle" checked="{{fieldForm.use_in_network_search}}">Show in Network Search</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="networkFieldEdit" >Support network creation using the values from a field</paper-tooltip>
+				
+				<paper-checkbox id="searcheditField2" class="projectInputStyle" checked="{{fieldForm.show_in_search}}">Show in Search</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="searcheditField2" >When true, the field appears in the query form</paper-tooltip>
+				
+				<paper-checkbox id="ruleExtractorEditField" class="projectInputStyle" checked="{{fieldForm.rule_extractor_enabled}}">Rule Extractor Enabled</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorEditField" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 				</div>
 				<br>
