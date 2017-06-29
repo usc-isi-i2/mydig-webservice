@@ -94,8 +94,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
    <iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
 
     <template is="dom-repeat" items="{{iconsets}}">
-      <h2>{{item.name}}</h2>
-
       <div class="set">
         <template is="dom-repeat" items="{{getIconNames(item)}}">
           <span class="container">
