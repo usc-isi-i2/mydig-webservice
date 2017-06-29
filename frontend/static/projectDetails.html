@@ -547,7 +547,7 @@
 				<div style="padding: 8px;">
 					<paper-button on-tap="editFieldFunction" raised
 						style="float:right"> <strong>Edit</strong></paper-button>
-					<paper-button on-tap="deleteFieldFunction" raised
+					<paper-button on-tap="sureToDeleteDialogFunction" raised
 						style="float:right"> <strong>Delete</strong></paper-button>
 					<strong disabled="disabled">Name:</strong> {{item.0.name}}
 				</div>
@@ -1067,6 +1067,14 @@
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToDeleteDialog" modal>
+			 <paper-button autofocus> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
+	  		 <div class="buttons">
+	  		 	<paper-button on-tap="deleteFieldFunction">Delete</paper-button>
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
 			
 			</paper-material>
 	</template>
@@ -1259,12 +1267,17 @@
 	    	
 	     	
 	     },
+	     sureToDeleteDialogFunction:function(e) {
+	    	 this.fieldName = e.model.item[0].name;
+	    	 sureToDeleteDialog.toggle();
+	     },
 	     
-	     deleteFieldFunction:function(e) {
+	     deleteFieldFunction:function() {
+	    	 sureToDeleteDialog.toggle();
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.deleteFields.headers = obj;
-	         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+(e.model.item[0].name).split(":")[0];
+	         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+this.fieldName;
 	     	this.$.deleteFields.generateRequest();
 	    	 
 	     },
