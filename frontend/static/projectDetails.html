@@ -10,6 +10,8 @@
 	<link rel="import" href="../static/bower_components/paper-tabs/paper-tab.html">
 	<link rel="import" href="../static/bower_components/paper-checkbox/paper-checkbox.html">
 	<link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+	<link rel="import" href="../static/bower_components/paper-icon-button/paper-icon-button.html">
+	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 	
 	
 	<link rel="import" href="../static/bower_components/paper-styles/color.html">
@@ -790,8 +792,11 @@
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
-				
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
+				<div style="margin-top:0px;">
+						<paper-button style="float:right" onclick="papericonSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
+						<paper-input style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
+			
+				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
 				
 				<paper-dropdown-menu id="searchDropdown" style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
@@ -980,7 +985,10 @@
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
-				<paper-input id="iconField" style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+				<div style="margin-top:0px;">
+					<paper-button style="float:right" onclick="papericonEditSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
+					<paper-input id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField" >The icon to decorate the field in DIG</paper-tooltip>
 				
 				
@@ -1115,6 +1123,36 @@
 			 </div>
 	  		</paper-dialog>
 			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonSet">
+				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
+				
+				<template is="dom-repeat" items="{{iconsets}}">
+			      <div class="set">
+			        <template is="dom-repeat" items="{{getIconNames(item)}}">
+			          <span class="container">
+			            <iron-icon icon="{{item}}" on-tap="setIcon"></iron-icon>
+			          </span>
+			        </template>
+			      </div>
+			    </template>
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
+			
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonEditSet">
+				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
+				
+				<template is="dom-repeat" items="{{iconsets}}">
+			      <div class="set">
+			        <template is="dom-repeat" items="{{getIconNames(item)}}">
+			          <span class="container">
+			            <iron-icon icon="{{item}}" on-tap="setEditIcon"></iron-icon>
+			          </span>
+			        </template>
+			      </div>
+			    </template>
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
 			</paper-material>
 	</template>
 	</dom-module>
@@ -1565,8 +1603,8 @@
 		     this.$.updateIndex.generateRequest();
    		},
    		
-   		downloadData:function(filename, text) {
-   		 
+   		getIconNames : function(iconset) {
+   	      return iconset.getIconNames();
    		},
    		downloadGlossaryFunction:function(e) {
    			 
@@ -1624,6 +1662,15 @@
    		},
    		showSpacyRuleDummy:function(){
    			this.$$('#spacyRulesTextArea').value='{"rules": [],"test_text": "string"}';
+   		},
+   		setIcon:function(e) {
+   			this.$$('#fieldiconinput').value = e.model.item;
+   			papericonSet.toggle();
+   			
+   		},
+   		setEditIcon:function(e) {
+   			this.$$('#iconField').value=e.model.item;
+   			papericonEditSet.toggle();
    		}
 	     
 	    
