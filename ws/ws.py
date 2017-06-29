@@ -1741,6 +1741,9 @@ class Actions(Resource):
                 'cdr_ids': cdr_ids
             }
             print url
+            logger.info('sent to inferlink: url: {} payload: {}'.format(url, json.dumps(payload)))
+            payload_dump_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/last_payload.json')
+            write_to_file(json.dumps(payload, indent=2), payload_dump_path)
             resp = requests.post(url, json.dumps(payload))
             if resp.status_code // 100 != 2:
                 logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
