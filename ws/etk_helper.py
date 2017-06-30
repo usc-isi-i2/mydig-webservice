@@ -133,9 +133,9 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
                 "extraction_policy": "keep_existing",
                 "landmark_threshold": 0.5
             }
-        
-    defined_fields = project_master_config['fields']
-    mapping = create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
+
+        defined_fields = project_master_config['fields']
+        mapping = create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
 
     if 'data_extraction' not in default_etk_config:
         default_etk_config['data_extraction'] = list()
