@@ -157,6 +157,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         add_glossary_extraction(default_etk_config, project_master_config, glossary_dir_path),
         project_master_config, project_name, project_local_path)
     etk_config = add_default_field_extractors(project_master_config, etk_config)
+    etk_config = add_kg_enhancement(etk_config)
     return etk_config
 
 
@@ -340,7 +341,7 @@ def add_default_field_extractors(project_master_config, etk_config):
         field_name = field_definition['name']
         if 'predefined_extractor' in field_definition and field_definition['predefined_extractor'].strip() != '':
             default_field = field_definition['predefined_extractor']
-            if default_field in out_of_the_box_fields_and_extractors:
+            if default_field in out_of_the_box_fields_and_extractors and default_field != 'TLD':
                 extractor = out_of_the_box_fields_and_extractors[default_field]
                 de_obj['fields'][field_name] = dict()
                 de_obj['fields'][field_name]['extractors'] = dict()
@@ -351,6 +352,73 @@ def add_default_field_extractors(project_master_config, etk_config):
         if 'data_extraction' not in etk_config:
             etk_config['data_extraction'] = list()
         etk_config['data_extraction'].append(de_obj)
+
+    etk_config = add_default_TLD_extractor(project_master_config, etk_config)
+    return etk_config
+
+
+def add_default_TLD_extractor(project_master_config, etk_config):
+    de_obj = dict()
+    # even if we have multiple data extraction blocks with same input paths, the etk will do the right thing in running
+    # the extraction efficiently
+    de_obj['input_path'] = [
+        "*.url.text.`parent`"
+    ]
+    de_obj['fields'] = dict()
+
+    fields = project_master_config['fields']
+
+    for field in fields.keys():
+        field_definition = fields[field]
+        field_name = field_definition['name']
+        if 'predefined_extractor' in field_definition and field_definition['predefined_extractor'].strip() != '':
+            default_field = field_definition['predefined_extractor']
+            if default_field in out_of_the_box_fields_and_extractors and default_field == 'TLD':
+                extractor = out_of_the_box_fields_and_extractors[default_field]
+                de_obj['fields'][field_name] = dict()
+                de_obj['fields'][field_name]['extractors'] = dict()
+                de_obj['fields'][field_name]['extractors'][extractor] = dict()
+                de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
+
+    if de_obj['fields'].keys() > 0:
+        if 'data_extraction' not in etk_config:
+            etk_config['data_extraction'] = list()
+        etk_config['data_extraction'].append(de_obj)
+    return etk_config
+
+
+def add_kg_enhancement(etk_config):
+    kg_enhancement = {
+    "input_path": "knowledge_graph.`parent`",
+    "fields": {
+      "populated_places": {
+        "priority": 0,
+        "extractors": {
+          "geonames_lookup": {
+            "config": {}
+          }
+        }
+      },
+      "country": {
+        "priority": 1,
+        "extractors": {
+          "country_from_states": {
+            "config": {}
+          }
+        }
+      },
+      "city_state_country_triple":{
+        "priority": 2,
+        "extractors": {
+          "create_city_state_country_triple":{
+            "config": {}
+          }
+        }
+      }
+    }
+  }
+
+    etk_config['kg_enhancement'] = kg_enhancement
     return etk_config
 
 
@@ -395,7 +463,7 @@ if __name__ == '__main__':
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
     project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
     print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf',
-                                         content_extraction_only=True),
+                                         content_extraction_only=False),
                      indent=2)
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
     # ngram_dist = {
