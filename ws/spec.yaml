@@ -1657,6 +1657,17 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/source"
+      configuration:
+        type: "object"
+        properties:
+          digapp_full_url:
+            type: "string"
+          digapp_sample_url:
+            type: "string"
+          sandpaper_full_url:
+            type: "string"
+          sandpaper_sample_url:
+            type: "string"
   tag:
     type: "object"
     properties:

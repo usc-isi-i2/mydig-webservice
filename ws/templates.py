@@ -31,6 +31,13 @@ project = {
 #     }
 # }
 
+default_configurations = {
+    'digapp_full_url': 'http://52.36.12.77:8090',
+    'digapp_sample_url': 'http://52.36.12.77:8090',
+    'sandpaper_full_url': 'http://172.31.1.187:9876',
+    'sandpaper_sample_url': 'http://172.31.1.187:9877'
+}
+
 default_tags = {
     'movement': {
         'name': 'movement',
@@ -235,6 +242,7 @@ default_fields = {
 }
 
 master_config = {
+    'configuration': {},
     'table_attributes': {},
     'glossaries': {},
     'root_name': 'ads',
