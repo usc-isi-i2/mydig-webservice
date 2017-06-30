@@ -28,11 +28,6 @@ default_etk_config_str = """{
             "title": {
                 "extraction_policy": "keep_existing"
             },
-            "landmark": {
-                "field_name": "inferlink_extractions",
-                "extraction_policy": "keep_existing",
-                "landmark_threshold": 0.5
-            },
             "table": {
                 "field_name": "table"
             }
@@ -86,8 +81,7 @@ def consolidate_landmark_rules(landmark_rules_path):
             for j in range(0, len(rules)):
                 rule = rules[j]
                 rule['name'] = '{}-{}-{}'.format(rule['name'].split('-')[0], i, j)
-    return consolidated_rules
-
+    return consolidated_rules if len(consolidated_rules.keys()) > 0 else None
 
 def unique_landmark_field_names(consolidated_rules):
     fields = set()
@@ -126,13 +120,20 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     project_local_path = os.path.join(os.path.dirname(__file__), webservice_config['repo']['local_path'])
     landmark_rules_path = os.path.join(landmark_repo_path, project_name + "/landmark")
     consolidated_rules = consolidate_landmark_rules(landmark_rules_path)
-    output_landmark_file_path = landmark_rules_path + "/consolidated_rules.json"
-    o_file = codecs.open(output_landmark_file_path, 'w')
-    o_file.write(json.dumps(consolidated_rules))
-    o_file.close()
+    if consolidated_rules:
+        output_landmark_file_path = landmark_rules_path + "/consolidated_rules.json"
+        o_file = codecs.open(output_landmark_file_path, 'w')
+        o_file.write(json.dumps(consolidated_rules))
+        o_file.close()
 
-    # Add this file location to default etk config for landmark
-    default_etk_config['resources']['landmark'].append(output_landmark_file_path)
+        # Add this file location to default etk config for landmark
+        default_etk_config['resources']['landmark'].append(output_landmark_file_path)
+        default_etk_config['content_extraction']['landmark'] = {
+                "field_name": "inferlink_extractions",
+                "extraction_policy": "keep_existing",
+                "landmark_threshold": 0.5
+            }
+        
     defined_fields = project_master_config['fields']
     mapping = create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
 
