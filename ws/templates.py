@@ -295,6 +295,6 @@ master_config = {
 #     'rule_extractor_enabled': boolean,
 #     'number_of_rules': integer,
 #     'predefined_extractor': 'enum (social_media | review_id | city | posting_date | phone | email | address |
-#      country | website | none)',
+#      country | TLD | none)',
 #     'rule_extraction_target': enum('title_only', 'description_only', 'title_and_description')
 # }

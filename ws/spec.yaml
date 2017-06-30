@@ -1739,7 +1739,7 @@ definitions:
         type: "integer"
       predefined_extractor:
         type: "string"
-        description: "enum(social_media | review_id | posting_date | phone | email | address | website | TLD | none)"
+        description: "enum(social_media | review_id | posting_date | phone | email | address | TLD | none)"
       rule_extraction_target:
         type: "string"
         description: "enum(title_only | description_only | title_and_description)"
