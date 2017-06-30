@@ -14,6 +14,7 @@ import subprocess
 import requests
 import copy
 import gzip
+import urlparse
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -1758,12 +1759,25 @@ class Actions(Resource):
         if len(cdr_ids) != 0:
             host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
             port = 5000
-            url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'\
-                .format(host, port, s['type'], project_name)
-            payload = {
-                'tlds': s['tlds'],
-                'cdr_ids': cdr_ids
-            }
+            src_url = urlparse.urlparse(s['url'])
+            url = ''
+            payload = dict()
+            if src_url.hostname.find('hyperiongray.com') == -1:
+                url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'\
+                    .format(host, port, s['type'], project_name)
+                payload = {
+                    'tlds': s['tlds'],
+                    'cdr_ids': cdr_ids
+                }
+            else:
+                domain_host = src_url.hostname.split('.')[0]
+                url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'.\
+                    format(host, port, domain_host, project_name)
+                payload = {
+                    'production': True,
+                    'tlds': s['tlds'],
+                    'cdr_ids': cdr_ids
+                }
             print url
             logger.info('sent to inferlink: url: {} payload: {}'.format(url, json.dumps(payload)))
             payload_dump_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/last_payload.json')
