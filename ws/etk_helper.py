@@ -119,7 +119,8 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     if 'repo_landmark' not in webservice_config:
         raise KeyError('landmark repository path not defined in the master config')
     default_etk_config = json.loads(default_etk_config_str)
-    default_etk_config = add_default_glossaries(default_etk_config, project_master_config)
+    default_etk_config = add_default_glossaries(default_etk_config, project_master_config,
+                                glossary_dir_path = webservice_config['default_glossary_dicts_path'])
     default_etk_config['document_id'] = document_id
     landmark_repo_path = os.path.join(os.path.dirname(__file__), webservice_config['repo_landmark']['local_path'])
     project_local_path = os.path.join(os.path.dirname(__file__), webservice_config['repo']['local_path'])
@@ -151,9 +152,10 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
 
     if content_extraction_only:
         return default_etk_config
-
-    etk_config = add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config),
-                                             project_master_config, project_name, project_local_path)
+    glossary_dir_path = os.path.join(project_local_path, project_name, 'glossaries')
+    etk_config = add_custom_spacy_extractors(
+        add_glossary_extraction(default_etk_config, project_master_config, glossary_dir_path),
+        project_master_config, project_name, project_local_path)
     etk_config = add_default_field_extractors(project_master_config, etk_config)
     return etk_config
 
@@ -261,20 +263,19 @@ def create_dictionary_data_extractor_for_field(ngram, dictionary_name):
     }
 
 
-def add_default_glossaries(etk_config, project_master_config):
-    glossaries = project_master_config['glossaries']
+def add_default_glossaries(etk_config, project_master_config, glossary_dir_path):
+    gloss_dict = project_master_config['glossary_dicts']
     if 'resources' not in etk_config:
         etk_config['resources'] = dict()
     if 'dictionaries' not in etk_config['resources']:
         etk_config['resources']['dictionaries'] = dict()
 
-    for d in glossaries.keys():
-        if 'default' in glossaries[d] and glossaries[d]['default']:
-            etk_config['resources']['dictionaries'][d] = glossaries[d]['path']
+    for d in gloss_dict.keys():
+        etk_config['resources']['dictionaries'][d] = os.path.join(glossary_dir_path, gloss_dict[d]['path'])
 
     return etk_config
 
-def add_glossary_extraction(etk_config, project_master_config):
+def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path):
     defined_fields = project_master_config['fields']
     glossaries = project_master_config['glossaries']
 
@@ -300,7 +301,7 @@ def add_glossary_extraction(etk_config, project_master_config):
             field_glossaries = field_definition['glossaries']
             for glossary in field_glossaries:
                 if glossary in glossaries.keys():
-                    g_path = glossaries[glossary]['path']
+                    g_path = os.path.join(glossary_dir_path, glossaries[glossary]['path'])
                     if 'ngram_distribution' in glossaries[glossary]:
                         ngram = choose_ngram(glossaries[glossary]['ngram_distribution'])
 
