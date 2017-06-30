@@ -2,6 +2,7 @@ from manage_oozie_jobs import OozieJobs
 from optparse import OptionParser
 import json
 
+
 def submit_es_job_cluster(project_master_config, project_name):
     """
     "sources": [
@@ -22,7 +23,8 @@ def submit_es_job_cluster(project_master_config, project_name):
     """
     property_dict = dict()
     property_dict["user.name"] = "asingh"
-    property_dict["oozie.wf.application.path"] = "hdfs://memex:8020/user/worker/summer_evaluation_2017/workflows/load_from_es/"
+    property_dict[
+        "oozie.wf.application.path"] = "hdfs://memex:8020/user/worker/summer_evaluation_2017/workflows/load_from_es/"
     property_dict["jobTracker"] = "memex-rm.xdata.data-tactics-corp.com:8032"
     property_dict["nameNode"] = "hdfs://memex"
     property_dict["oozie.use.system.libpath"] = "True"
@@ -35,7 +37,7 @@ def submit_es_job_cluster(project_master_config, project_name):
     property_dict['ES_DOC'] = sources['type']
     es_url = sources['url']
     vals = es_url.split(':')
-    property_dict['ES_HOST'] = vals[1].replace('/','').strip()
+    property_dict['ES_HOST'] = vals[1].replace('/', '').strip()
     property_dict['ES_PORT'] = vals[2].replace('/', '').strip()
     property_dict['ES_USER'] = sources['username']
     property_dict['ES_PASSWORD'] = sources['password']
@@ -65,28 +67,29 @@ if __name__ == '__main__':
                                {"match_all": {}},
                            "filter":
                                {"and":
-                                    {"filters":
-                                         [
-                                             {"missing": {"field": "obj_parent"}},
-                                             {"exists": {"field": "doc_id"}},
-                                             {"range": {"timestamp": {"gte": start_date,
-                                                                      "lt": end_date
-                                                                      }
-                                                        }
-                                              }
-                                         ]
-                                    }
+                                   {"filters":
+                                       [
+                                           {"missing": {"field": "obj_parent"}},
+                                           {"exists": {"field": "doc_id"}},
+                                           {"range": {"timestamp": {"gte": start_date,
+                                                                    "lt": end_date
+                                                                    }
+                                                      }
+                                            }
+                                       ]
+                                   }
                                }
                            }
                       }
                  }
     else:
-        query = {"query":{"match_all":{}}}
+        query = {"query": {"match_all": {}}}
 
     (c_options, args) = parser.parse_args()
     property_dict = dict()
     property_dict["user.name"] = "asingh"
-    property_dict["oozie.wf.application.path"] = "hdfs://memex:8020/user/worker/summer_evaluation_2017/workflows/load_from_es/"
+    property_dict[
+        "oozie.wf.application.path"] = "hdfs://memex:8020/user/worker/summer_evaluation_2017/workflows/load_from_es/"
     property_dict["jobTracker"] = "memex-rm.xdata.data-tactics-corp.com:8032"
     property_dict["nameNode"] = "hdfs://memex"
     property_dict["oozie.use.system.libpath"] = "True"

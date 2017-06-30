@@ -10,10 +10,12 @@
 	<link rel="import" href="../static/bower_components/paper-tabs/paper-tab.html">
 	<link rel="import" href="../static/bower_components/paper-checkbox/paper-checkbox.html">
 	<link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+	<link rel="import" href="../static/bower_components/paper-icon-button/paper-icon-button.html">
+	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
+	<link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
 	
 	
 	<link rel="import" href="../static/bower_components/paper-styles/color.html">
-	<link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
 	<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
 	<link rel="import" href="../static/bower_components/paper-card/paper-card.html">
 	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
@@ -409,7 +411,16 @@
 			 
 			 <iron-ajax
 			id="updateSpacyRules" method="POST" content-type="application/json"
-			 on-error="done"> </iron-ajax>
+			 on-error="done" on-response="updateDone"> </iron-ajax>
+			 
+			 
+			 <iron-ajax
+			id="tableAttributes" method="GET" content-type="application/json"
+			 on-error="done" on-response="setTableAttributes"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateTableAttribute" method="POST" content-type="application/json"
+			 on-error="done" on-response="updateDone"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
@@ -432,8 +443,6 @@
 			<paper-tab class="paperTabs" id="tagSelector" onclick="showEntity()">Tags</paper-tab>
 			<paper-tab class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
 			</paper-tabs>
-			
-			
 			
 			<iron-collapse id="menu" style="margin-left:20px;">
 				<paper-material class="addPaddingToSections">
@@ -706,21 +715,21 @@
 					<th style="width:30%;border: 1.5px solid black;">Field</th>
 					<th style="border: 1.5px solid black;">Values</th>
 				</tr>
-				<template is="dom-repeat" items="{{dataTableValues}}" as="item">
+				<template is="dom-repeat" items="{{tableAttributes}}" as="item">
 		   		<tr>
-			        <td><paper-item  value={{item}}>{{item.attribute}}</paper-item></td>
+			        <td><paper-item  value={{item}}>{{item.0.name}}</paper-item></td>
 			        <td>
-			        	<paper-dropdown-menu style="margin:0px;margin-left: 2em" class="projectInputStyle">
-					        <paper-menu id="tableFieldInput"  class="dropdown-content" selected="{{_getTableDropDown(item.fieldValue)}}">
-					            <template is="dom-repeat" items="{{fields}}" as="item">
-					                <paper-item  value={{item.0.name}}>{{item.0.name}}</paper-item>
+			        	<paper-dropdown-menu style="margin:0px;margin-left: 2em;padding-bottom: 15px" class="projectInputStyle">
+					        <paper-menu id="tableFieldInput" on-iron-select="_itemSelected" class="dropdown-content" selected="{{_getTableDropDown(item.0.field_name)}}">
+					            <template is="dom-repeat" items="{{fieldNames}}" as="item">
+					                <paper-item  value={{item}}>{{item}}</paper-item>
 					            </template>
 					        </paper-menu>
 		       			</paper-dropdown-menu>
 			        
 			        </td>
 			        <td>
-				        <template is="dom-repeat" items="{{item.values}}" as="item">
+				        <template is="dom-repeat" items="{{item.0.value}}" as="item">
 			                {{item}} &nbsp
 			            </template>
 			        
@@ -734,7 +743,7 @@
 		
 		
 		
-			 <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
 	
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
@@ -749,6 +758,7 @@
 				<paper-button style="float:center;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
+			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editTagsDialog" class="OtherDialogStyles">
 				<h2>Tag : {{tagForm.name}}</h2>
 				<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.screen_label}}"></paper-input> 
@@ -763,7 +773,8 @@
 				<paper-button style="float:center;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
-				<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldnameinput" >The name of a field, cannot be changed</paper-tooltip>
 				
@@ -775,14 +786,19 @@
 				
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput" >Label when a field contains multiple values</paper-tooltip>
-				
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Color:" id="fieldcolorinput"></paper-input> 
+				<div style="margin-top:0px;">
+				     <paper-swatch-picker id="colorSelect" on-iron-select="_getColor" column-count=2 style="float:right" on-tap="_getColor"
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			  	<paper-input style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
+				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
 				
-				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
-				
-				<paper-input style="margin:0px;" class="projectInputStyle" label="Icon:" id="fieldiconinput" value="default"></paper-input> 
+				<div style="margin-top:0px;">
+						<paper-button style="float:right" onclick="papericonSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
+						<paper-input style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
+			
+				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
 				
 				<paper-dropdown-menu id="searchDropdown" style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
@@ -965,13 +981,19 @@
 				<paper-input id="screenLabelPluralField" style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelPluralField" >Label when a field contains multiple values</paper-tooltip>
 				
-				
-				<paper-input id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+				<div style="margin-top:0px;">
+				     <paper-swatch-picker id="colorSelect2" on-iron-select="_getEditColor" column-count=2 style="float:right" on-tap="_getEditColor" color="{{_getColorSelected(fieldForm.color)}}"
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			  	<paper-input id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
-				<paper-input id="iconField" style="margin:0px;" class="projectInputStyle" label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+				<div style="margin-top:0px;">
+					<paper-button style="float:right" onclick="papericonEditSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
+					<paper-input id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField" >The icon to decorate the field in DIG</paper-tooltip>
 				
 				
@@ -1106,6 +1128,46 @@
 			 </div>
 	  		</paper-dialog>
 			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonSet">
+				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
+				
+				<template is="dom-repeat" items="{{iconsets}}">
+			      <div class="set">
+			        <template is="dom-repeat" items="{{getIconNames(item)}}">
+			          <span class="container">
+			            <iron-icon icon="{{item}}" on-tap="setIcon"></iron-icon>
+			          </span>
+			        </template>
+			      </div>
+			    </template>
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
+			
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonEditSet">
+				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
+				
+				<template is="dom-repeat" items="{{iconsets}}">
+			      <div class="set">
+			        <template is="dom-repeat" items="{{getIconNames(item)}}">
+			          <span class="container">
+			            <iron-icon icon="{{item}}" on-tap="setEditIcon"></iron-icon>
+			          </span>
+			        </template>
+			      </div>
+			    </template>
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papercolorSet">
+				
+				  <div class="set">
+			       <paper-swatch-picker column-count=2 on-tap="setColor"
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			      </div>
+			    
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
 			</paper-material>
 	</template>
 	</dom-module>
@@ -1126,6 +1188,8 @@
 	    	this.fieldFormGlossaries=[];
 	    	this.tagsData = [];
 	    	this.fieldsData = [];
+	    	this.tableAttributes=[];
+	    	this.fieldNames=[];
 	    	var obj = {};
 	        obj.Authorization = "Basic " + btoa(username+":"+password);
 	        this.$.getTags.headers = obj;
@@ -1136,10 +1200,40 @@
 	        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
 	    	this.$.getFields.generateRequest();
 	    	
+	    	this.$.tableAttributes.headers = obj;
+	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+	    	this.$.tableAttributes.generateRequest();
+	    	
+	    	
 	    	
 	    	this.$.getGlossary.headers = obj;
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
+	    	
+	    	
+	    	this.colorSet={
+	    			"#ffb300":"var(--paper-amber-600)",
+	    			"#1e88e5":"var(--paper-blue-600)",
+	    			"#546e7a":"var(--paper-blue-grey-600)",
+	    			"#6d4c41":"var(--paper-brown-600)",
+	    			"#00acc1":"var(--paper-cyan-600)",
+	    			"#f4511e":"var(--paper-deep-orange-600)",
+	    			"#5e35b1":"var(--paper-deep-purple-600)",
+	    			"#43a047":"var(--paper-green-600)",
+	    			"#1b5e20":"var(--paper-green-900)",
+	    			"#757575":"var(--paper-grey-600)",
+	    			"#3949ab":"var(--paper-indigo-600)",
+	    			"#039be5":"var(--paper-light-blue-600)",
+	    			"#7cb342":"var(--paper-light-green-600)",
+	    			"#c0ca33":"var(--paper-lime-600)",
+	    			"#fb8c00":"var(--paper-orange-600)",
+	    			"#d81b60":"var(--paper-pink-600)",
+	    			"#8e24aa":"var(--paper-purple-600)",
+	    			"#e53935":"var(--paper-red-600)",
+	    			"#00897b":"var(--paper-teal-600)",
+	    			"#fdd835":"var(--paper-yellow-600)"
+	    	};
+	    	
 	    	
 	    	this.searchImportance=["1","2","3","4","5","6","7","8","9","10"];
 	    	this.show_as_linkArray = ["text","entity"];
@@ -1155,11 +1249,28 @@
 	    	
 		
 	     },
+	     _getColor:function() {
+	    	 if(this.$$('#colorSelect').color == undefined) return "var(--paper-amber-600)";
+	    	 this.$$('#fieldcolorinput').value = this.colorSet[this.$$('#colorSelect').color];
+	    	 return this.colorSet[this.$$('#colorSelect').color];
+		    	
+	    	 
+	     },
+	     _getEditColor:function() {
+	    	 if(this.$$('#colorSelect2').color == undefined) return "var(--paper-amber-600)";
+	    	 this.$$('#colorField').value = this.colorSet[this.$$('#colorSelect2').color];
+	    	 return this.colorSet[this.$$('#colorSelect2').color];
+		    	
+	    	 
+	     },
+	     _getColorSelected:function(color) {
+	    	 return Object.keys(this.colorSet).find(key => this.colorSet[key] === color);
+	     },
 	     _getTableDropDown:function(name) {
 	    	 if(name!=undefined && name!="") {
-	    	 	 return this.fields.indexOf(name);
+	    	 	 return this.fieldNames.indexOf(name);
 	    	 }
-	    	 return 0;
+	    	 return this.fieldNames.indexOf("none");
 	     },
 	     _getPredefinedExtractor:function(name) {
 	    	 if(name!=undefined && name!="") return this.predefined_extractor_Array.indexOf(name);
@@ -1180,11 +1291,11 @@
 	     },
 	     _getResult:function(name) {
 	    	 if(name!=undefined && name!="") return this.show_in_resultArray.indexOf(name);
-	    	 else 0;
+	    	 else return 0;
 	     },
 	     _getLink:function(name) {
 	    	 if(name!=undefined && name!="" && name!="none") return this.show_as_linkArray.indexOf(name);
-	    	 else 0;
+	    	 else return 0;
 	     },
 	     convertFileInputToFormData: function(){
 	    	 var file = this.$.input.inputElement.files[0];
@@ -1194,8 +1305,24 @@
 	    	        this.text = reader.result;	
 	    	    };
 	    	    reader.readAsText(file);
-	    	},
-	    
+	     },
+	     _itemSelected(e){
+	    	 	var obj = {};
+		        obj.Authorization = "Basic " + btoa(username+":"+password);
+		        var selectedValue = this.$$('#tableFieldInput').selectedItem.value;
+		        if(selectedValue =="none") selectedValue="";
+	    	 	this.$.updateTableAttribute.headers = obj;
+		        this.$.updateTableAttribute.url = backend_url + "projects/"+projectName[1]+"/table_attributes/"+e.model.item[0].name;
+		        this.$.updateTableAttribute.body= JSON.stringify({
+		        	"field_name": selectedValue,
+		        	"info":e.model.item[0].info,
+		        	"name":e.model.item[0].name,
+		        	"value":e.model.item[0].value
+		     	});
+		        this.$.updateTableAttribute.generateRequest();
+		    	
+	    	    
+	     },
 	     onPresubmit:function(e){
 	    	 var form = this.$.form;
 	         this.convertFileInputToFormData();
@@ -1211,6 +1338,16 @@
 	    	 }
 	    	 glossariesNewField = this.fieldFormGlossaries;
 	    	 EditFieldGlossaries.toggle();
+	     },
+	     setTableAttributes:function(data) {
+	    	 if(data.detail.response.length!=0) {
+		    	 this.tableAttributes = Object.keys(data.detail.response).map(function(e) {
+		     		  return [data.detail.response[e]];
+		     		});
+		    	
+		     	this.push('tableAttributes',this.tableAttributes.pop());
+		     	
+	    	 }
 	     },
 	    
 	     fillTags : function(data) {
@@ -1228,13 +1365,19 @@
 		    	 this.fields = Object.keys(data.detail.response).map(function(e) {
 		     		  return [data.detail.response[e]];
 		     		});
-		    	
+		    	 
 		     	this.push('fields',this.fields.pop());
-	    	 }
+		     	this.fieldNames = [];
+		    	 for(var i=0;i<this.fields.length;i++) {
+		    		 this.push('fieldNames',this.fields[i][0].name);
+		    	 }
+		    	 this.push('fieldNames',"none");
+		 	 }
 	     },
 	     fillGlossary : function(data) {
 	    	 
 	    	 if(data.detail.response.length!=0) {
+	    		 data.detail.response.sort();
 		    	 this.glossaries = Object.keys(data.detail.response).map(function(e) {
 		     		  return [data.detail.response[e]];
 		     		});
@@ -1294,6 +1437,10 @@
 	    	this.$.getGlossary.headers = obj;
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
+	    	
+	    	this.$.tableAttributes.headers = obj;
+	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+	    	this.$.tableAttributes.generateRequest();
 	    	
 	     	
 	     },
@@ -1448,8 +1595,7 @@
 	    	 if(this.tldResponse) showTLDsDialog.toggle();
 	     },
 	     etkStatus:function() {
-	    	 this.glossaries = [];
-	     	 var obj = {};
+	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         
 
@@ -1510,8 +1656,8 @@
 		     this.$.updateIndex.generateRequest();
    		},
    		
-   		downloadData:function(filename, text) {
-   		 
+   		getIconNames : function(iconset) {
+   	      return iconset.getIconNames();
    		},
    		downloadGlossaryFunction:function(e) {
    			 
@@ -1569,7 +1715,18 @@
    		},
    		showSpacyRuleDummy:function(){
    			this.$$('#spacyRulesTextArea').value='{"rules": [],"test_text": "string"}';
-   		}
+   		},
+   		setIcon:function(e) {
+   			this.$$('#fieldiconinput').value = e.model.item;
+   			papericonSet.toggle();
+   			
+   		},
+   		setEditIcon:function(e) {
+   			this.$$('#iconField').value=e.model.item;
+   			papericonEditSet.toggle();
+   		},
+   		  
+   	
 	     
 	    
 	    });

@@ -1,0 +1,63 @@
+<workflow-app name="Generate KG Index Fields " xmlns="uri:oozie:workflow:0.5">
+    <start to="shell-4739"/>
+    <kill name="Kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <action name="shell-4739">
+        <shell xmlns="uri:oozie:shell-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>mapred.input.dir.recursive</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>oozie.action.max.output.data</name>
+                    <value>8192</value>
+                </property>
+            </configuration>
+            <exec>./run.sh</exec>
+              <argument>${INPUT}</argument>
+              <argument>${OUTPUT}</argument>
+              <argument>index_knowledge_graph.json</argument>
+            <file>hdfs:///user/worker/dig-sandpaper/run.sh#run.sh</file>
+            <file>/user/worker/dig-sandpaper/index_knowledge_graph.json#index_knowledge_graph.json</file>
+            <file>/user/worker/dig-sandpaper/index_knowledge_graph_spark.py#index_knowledge_graph_spark.py</file>
+              <capture-output/>
+        </shell>
+        <ok to="shell-6487"/>
+        <error to="Kill"/>
+    </action>
+    <action name="shell-6487">
+        <shell xmlns="uri:oozie:shell-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>mapred.input.dir.recursive</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>oozie.action.max.output.data</name>
+                    <value>8192</value>
+                </property>
+            </configuration>
+            <exec>./run.sh</exec>
+              <argument>${OUTPUT}</argument>
+              <argument>${INDEX}</argument>
+              <argument>${DOC}</argument>
+              <argument>${ES_ID}</argument>
+            <file>/user/worker/lib/load_into_es/load_into_es.py#load_into_es.py</file>
+            <file>/user/worker/lib/load_into_es/python-lib.zip#python-lib.zip</file>
+            <file>/user/worker/lib/load_into_es/run.sh#run.sh</file>
+            <file>/user/worker/lib/ht-cdr2-end-to-end/elasticsearch-hadoop-2.3.2.jar#elasticsearch-hadoop-2.3.2.jar</file>
+            <file>/user/worker/lib/ht-cdr2-end-to-end/random-0.0.1-SNAPSHOT-shaded.jar#random-0.0.1-SNAPSHOT-shaded.jar</file>
+            <file>/user/worker/lib/ht-cdr2-end-to-end/spark-examples_2.10-1.0.0-cdh5.1.5.jar#spark-examples_2.10-1.0.0-cdh5.1.5.jar</file>
+              <capture-output/>
+        </shell>
+        <ok to="End"/>
+        <error to="Kill"/>
+    </action>
+    <end name="End"/>
+</workflow-app>
