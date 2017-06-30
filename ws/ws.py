@@ -229,55 +229,53 @@ class AllProjects(Resource):
 
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
-        try:
-            # project_lock.acquire(project_name)
-            if not os.path.exists(project_dir_path):
-                os.makedirs(project_dir_path)
 
-            # create global gitignore file
-            write_to_file('credentials.json\n', os.path.join(project_dir_path, '.gitignore'))
+        if not os.path.exists(project_dir_path):
+            os.makedirs(project_dir_path)
 
-            # extract credentials to a separated file
-            credentials = self.extract_credentials_from_sources(project_sources)
-            write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
+        # create global gitignore file
+        write_to_file('credentials.json\n', os.path.join(project_dir_path, '.gitignore'))
 
-            # initialize data structure
-            data[project_name] = templates.get('project')
-            data[project_name]['master_config'] = templates.get('master_config')
-            data[project_name]['master_config']['sources'] = project_sources
-            data[project_name]['master_config']['index'] = {
-                'sample': project_name,
-                'full': project_name + '_deployed',
-                'version': 0
-            }
-            data[project_name]['master_config']['configuration'] = project_config
-            update_master_config_file(project_name)
+        # extract credentials to a separated file
+        credentials = self.extract_credentials_from_sources(project_sources)
+        write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
 
-            # create other dirs and files
-            # .gitignore file should be created for empty folder will not be show in commit
-            os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
-            write_to_file('', os.path.join(project_dir_path, 'field_annotations/.gitignore'))
-            os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
-            write_to_file('', os.path.join(project_dir_path, 'entity_annotations/.gitignore'))
-            os.makedirs(os.path.join(project_dir_path, 'glossaries'))
-            write_to_file('', os.path.join(project_dir_path, 'glossaries/.gitignore'))
-            src = os.path.join(_get_project_dir_path(project_name), 'glossaries/*')
-            dst = os.path.join(config['default_glossaries_path'], '/*')
-            shutil.copy(src, dst)
-            os.makedirs(os.path.join(project_dir_path, 'spacy_rules'))
-            write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
-            os.makedirs(os.path.join(project_dir_path, 'pages'))
-            write_to_file('*\n', os.path.join(project_dir_path, 'pages/.gitignore'))
-            os.makedirs(os.path.join(project_dir_path, 'working_dir'))
-            write_to_file('*\n', os.path.join(project_dir_path, 'working_dir/.gitignore'))
+        # initialize data structure
+        data[project_name] = templates.get('project')
+        data[project_name]['master_config'] = templates.get('master_config')
+        data[project_name]['master_config']['sources'] = project_sources
+        data[project_name]['master_config']['index'] = {
+            'sample': project_name,
+            'full': project_name + '_deployed',
+            'version': 0
+        }
+        data[project_name]['master_config']['configuration'] = project_config
+        update_master_config_file(project_name)
 
-            git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
-            logger.info('project %s created.' % project_name)
-            return rest.created()
-        except Exception as e:
-            logger.error('creating project %s: %s' % (project_name, e.message))
-        # finally:
-        #     project_lock.release(project_name)
+        # create other dirs and files
+        # .gitignore file should be created for empty folder will not be show in commit
+        os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
+        write_to_file('', os.path.join(project_dir_path, 'field_annotations/.gitignore'))
+        os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
+        write_to_file('', os.path.join(project_dir_path, 'entity_annotations/.gitignore'))
+        os.makedirs(os.path.join(project_dir_path, 'glossaries'))
+        write_to_file('', os.path.join(project_dir_path, 'glossaries/.gitignore'))
+        dst_dir = os.path.join(_get_project_dir_path(project_name), 'glossaries')
+        src_dir = config['default_glossaries_path']
+        for file_name in os.listdir(src_dir):
+            full_file_name = os.path.join(src_dir, file_name)
+            if os.path.isfile(full_file_name):
+                shutil.copy(full_file_name, dst_dir)
+        os.makedirs(os.path.join(project_dir_path, 'spacy_rules'))
+        write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
+        os.makedirs(os.path.join(project_dir_path, 'pages'))
+        write_to_file('*\n', os.path.join(project_dir_path, 'pages/.gitignore'))
+        os.makedirs(os.path.join(project_dir_path, 'working_dir'))
+        write_to_file('*\n', os.path.join(project_dir_path, 'working_dir/.gitignore'))
+
+        git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
+        logger.info('project %s created.' % project_name)
+        return rest.created()
 
     @requires_auth
     def get(self):
@@ -833,7 +831,7 @@ class ProjectGlossaries(Resource):
         return rest.deleted()
 
     @staticmethod
-    def compute_statistics(project_name, glossary_name, file_path, json_file_path):
+    def compute_statistics(project_name, glossary_name, file_path):
         THRESHOLD = 5
         ngram = {}
         with open(file_path, 'r') as f:
@@ -850,7 +848,7 @@ class ProjectGlossaries(Resource):
             data[project_name]['master_config']['glossaries'][glossary_name] = {
                 'ngram_distribution': ngram,
                 'entry_count': line_count,
-                'path': json_file_path
+                'path': glossary_name + '.json.gz'
             }
             update_master_config_file(project_name)
 
@@ -896,7 +894,7 @@ class Glossary(Resource):
             f.write(ProjectGlossaries.convert_glossary_to_json(content))
         write_to_file(content, file_path)
 
-        ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path, json_file_path)
+        ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='update a glossary: project {}, glossary {}'.format(project_name, name))
         return rest.created()
