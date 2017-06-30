@@ -558,7 +558,7 @@
 						style="float:right"> <strong>Edit</strong></paper-button>
 					<paper-button on-tap="sureToDeleteDialogFunction" raised
 						style="float:right"> <strong>Delete</strong></paper-button>
-					<strong disabled="disabled">Name:</strong> {{item.0.name}}
+					<h3><strong disabled="disabled"> {{item.0.name}}</strong></h3>
 				</div>
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Label:</strong> {{item.0.screen_label}}
@@ -901,7 +901,7 @@
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" class="FieldDialogStyles">
 				<paper-button style="float:right;"
-					dialog-dismiss raised> <strong>X</strong></paper-button>
+					dialog-dismiss raised on-tap="saveTempGlossaries"> <strong>X</strong></paper-button>
 				<br><br><br>
 				<template is="dom-repeat" items="{{glossaries}}">
 					<paper-material class="addPaddingToSections">
@@ -1334,8 +1334,11 @@
 	    	 glossariesNewField = this.fieldFormGlossaries;
 	    	 EditFieldGlossaries.toggle();
 	     },
+	     
 	     setTableAttributes:function(data) {
-	    	 if(data.detail.response.length!=0) {
+	    	 
+	    	 this.tableAttributes=[];
+	    	 if(data.detail.response.length!=0 && data.detail.response.length!=undefined ) {
 		    	 this.tableAttributes = Object.keys(data.detail.response).map(function(e) {
 		     		  return [data.detail.response[e]];
 		     		});
@@ -1644,15 +1647,47 @@
 	  		    	 	}
 	  				 }
   	    	      } 
+	  			 
+	  			if(this.fieldFormGlossaries) {
+	  				 	for(var i=0;i<this.fieldFormGlossaries.length;i++){
+	  		    		 for(var j=0;j<this.glossaries.length;j++){
+	  		    			 if(this.fieldFormGlossaries[i] == this.glossaries[j][0]) {
+	  		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+	  		    				 break;
+	  		    			 } 
+	  		    		 }
+	  		    		 
+	  		    	 	}
+	  				 
+ 	    	      } 
+		    	 
+	  			 
   			 
   		},
    		
    		getFieldGlossariesForAdd:function() {
    			EditFieldGlossaries.toggle();
-			 for(var j=0;j<this.glossaries.length;j++){
- 				 this.$$('#'+this.glossaries[j][0]).checked ="";
- 			 
-	  		 }
+   			 
+	    	 if(glossariesNewField) {
+				 	for(var i=0;i<glossariesNewField.length;i++){
+		    		 for(var j=0;j<this.glossaries.length;j++){
+		    			 if(glossariesNewField[i] == this.glossaries[j][0]) {
+		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+		    				 break;
+		    			 } 
+		    		 }
+		    		 
+		    	 	}
+				 
+  	         } else {
+  	        	glossariesNewField=[];
+  		    	for(var i=0;i<this.glossaries.length;i++) {
+  		    		 var gloss = this.glossaries[i];
+  		    		 if(this.$$('#'+gloss).checked) {
+  		    			 glossariesNewField.push(gloss[0]);
+  		    		 }
+  		    	 }
+  	         }
    		},
    		updateToNewIndex:function() {
    			 var obj = {};
@@ -1733,6 +1768,7 @@
    			papericonEditSet.toggle();
    		},
    		setEditFieldForm:function(data) {
+   			this.fieldFormGlossaries=[];
    			this.fieldForm=[];
    			this.fieldForm = data.detail.response;
    			for(var j=0;j<this.glossaries.length;j++){
@@ -1778,7 +1814,19 @@
 		    	this.$$("#fieldsearchinput2").checked=false;
 		    	this.$$("#fieldnetworkinput").checked=false;
 		    	this.$$("#fieldRuleExtractorTarget").selected="2";
+   		},
+   		saveTempGlossaries:function() {
+   			this.fieldFormGlossaries=[];
+   			glossariesNewField=[];
+	    	 for(var i=0;i<this.glossaries.length;i++) {
+	    		 var gloss = this.glossaries[i];
+	    		 if(this.$$('#'+gloss).checked) {
+	    			 this.fieldFormGlossaries.push(gloss[0]);
+	    		 }
+	    	 }
+	    	 glossariesNewField = this.fieldFormGlossaries;
    		}
+   		
    		  
    	
 	     

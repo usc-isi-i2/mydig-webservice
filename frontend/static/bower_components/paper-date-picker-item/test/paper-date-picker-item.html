@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+	<head>
+		<title>paper-date-picker-item</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+		<script src="../../web-component-tester/browser.js"></script>
+		<script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+		<link rel="import" href="../paper-date-picker-item.html">
+		<link rel="import" href="../../test-fixture/test-fixture.html">
+	</head>
+	<body>
+
+		<test-fixture id="TrivialDatePickerElement">
+			<template>
+				<paper-date-picker-item></paper-date-picker-item>
+			</template>
+		</test-fixture>
+
+		<script>
+			suite('<paper-date-picker-item>', function() {
+				suite('components integration behavior', function() {
+					var element;
+
+					setup(function() {
+						element = fixture('TrivialDatePickerElement');
+					});
+
+					test('component triggers creation of a date picker dialog', function(done) {
+						expect(element._editDate().tagName.toLowerCase()).to.be.eql('paper-date-picker-edit-dialog');
+						done();
+					});
+				});
+			});
+		</script>
+
+	</body>
+</html>

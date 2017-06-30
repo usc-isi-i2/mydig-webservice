@@ -44,16 +44,23 @@ function addProject(data)  {
 		    }
 		};
 		
-		var data = JSON.stringify({"project_name":name,"sources": [{
-			
-			"start_date":start_date,
-			"tlds":tlds,
-			"end_date":end_date,
-			"username":userN,
-			"password":passWd,
-			"url":Url,
-			"index":index_name,
-			"type":type_name}]});
+		var data = JSON.stringify({"configuration": {
+		    "digapp_full_url": "",
+		    "digapp_sample_url": "",
+		    "sandpaper_full_url": "",
+		    "sandpaper_sample_url": ""
+		  },
+		  	"project_name":name,
+		  	"sources": [{
+				"start_date":start_date,
+				"tlds":tlds,
+				"end_date":end_date,
+				"username":userN,
+				"password":passWd,
+				"url":Url,
+				"index":index_name,
+				"type":type_name}]
+		  });
 		
 		xhr.send(data);
 	
@@ -97,8 +104,10 @@ function addProject(data)  {
 	              <paper-button style="float:right" raised class="indigo"><strong>Open</strong></paper-button>
 	              </a>
 	              
-	              <paper-button on-tap="editProjectData" style="float:right" raised class="indigo"><strong>Edit</strong></paper-button>
-	              
+	              <paper-button on-tap="editProjectData" style="float:right;color:black" raised class="indigo"><strong>Edit</strong></paper-button>
+	      	 	  <a target="_blank" style="color:black" href="{{item.value.configuration.digapp_sample_url}}/project={{item.name}}">
+	              <paper-button style="float:right" raised class="indigo"><strong>Sample DigApp</strong></paper-button>
+	              </a>       
               </div>
               <div style="margin-top:0.5em">
                   <span><strong>Start Date : </strong>{{item.value.sources.0.start_date}}</span>
@@ -155,24 +164,32 @@ function addProject(data)  {
 			        
 			        </div>
 			        <div>
-			        <span>Start Date:</span>
-					<paper-date-picker-item class="projectInputStyle"   date-format="YYYY-MM-DD"
-    				placeholder="Select:" date="{{editProjectForm.value.sources.0.start_date}}"
-    					id=editProjectFormStart_date>
-					</paper-date-picker-item>
-					</div>
-					<div>
+			        <div style="float:right;margin-right: 20em">
 					<span>End Date:</span>
 					<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
 					   date="{{editProjectForm.value.sources.0.end_date}}"
 					    placeholder="Select:"
 					    id=editProjectFormEnd_date>
 					</paper-date-picker-item>
-					</div>		
-					<paper-input  class="addProjClass" label="UserName:" value="{{editProjectForm.value.sources.0.username}}"></paper-input>
-			        <paper-input  class="addProjClass" label="Password:" value="{{editProjectForm.value.sources.0.password}}"></paper-input>
+					</div>
+			        <div>
+			        <span>Start Date:</span>
+					<paper-date-picker-item class="projectInputStyle"   date-format="YYYY-MM-DD"
+    				placeholder="Select:" date="{{editProjectForm.value.sources.0.start_date}}"
+    					id=editProjectFormStart_date>
+					</paper-date-picker-item>
+					</div>
+					</div>	
+					<paper-input  style="float:right;margin-right: 20em" class="addProjClass" label="Password:" value="{{editProjectForm.value.sources.0.password}}"></paper-input>
+			        <paper-input  class="addProjClass" label="UserName:" value="{{editProjectForm.value.sources.0.username}}"></paper-input>
 			        <paper-input  class="addProjClass" label="URL:" value="{{editProjectForm.value.sources.0.url}}"></paper-input>
-			        	        
+			        
+			        <paper-input  style="float:right;margin-right: 20em" class="addProjClass" label="DigApp Sample URL:" value="{{editProjectForm.value.configuration.digapp_sample_url}}"></paper-input>
+			        <paper-input  class="addProjClass" label="DigApp Full URL:" value="{{editProjectForm.value.configuration.digapp_full_url}}"></paper-input>
+			        <paper-input  style="float:right;margin-right: 20em" class="addProjClass" label="Sandpaper Sample URL" value="{{editProjectForm.value.configuration.sandpaper_sample_url}}"></paper-input>
+			       	
+			        <paper-input  class="addProjClass" label="Sandpaper Full URL" value="{{editProjectForm.value.configuration.sandpaper_full_url}}"></paper-input>
+			       	        
 			        
 			        <paper-button on-tap="updateEditData" style="float:center;margin-top:20px;margin-left:10px;"  raised><strong>Save</strong></paper-button>
 			        <paper-button style="float:center;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
@@ -257,7 +274,18 @@ Polymer({
     	
     	this.$.updateEditDataRequest.url=backend_url +"projects/"+this.editProjectForm.name;
     	tlds=this.$$("#editProjectFormTLD_name").value.split("\n");
-    	this.$.updateEditDataRequest.body=JSON.stringify({"project_name":this.editProjectForm.name,"sources": [{
+    	this.$.updateEditDataRequest.body=JSON.stringify({
+    		"configuration": {
+    		    "digapp_full_url": this.editProjectForm.value.configuration.digapp_full_url,
+    		    "digapp_sample_url": this.editProjectForm.value.configuration.digapp_sample_url,
+    		    "sandpaper_full_url": this.editProjectForm.value.configuration.sandpaper_full_url,
+    		    "sandpaper_sample_url": this.editProjectForm.value.configuration.sandpaper_sample_url
+    		  },
+    		  
+    		
+    	
+    		"project_name":this.editProjectForm.name,"sources": [{
+    	
 			"index":this.editProjectForm.value.sources[0].index,
 			"type":this.editProjectForm.value.sources[0].type,
 			"start_date":this.$$("#editProjectFormStart_date").innerText,

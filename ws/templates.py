@@ -33,60 +33,40 @@ project = {
 
 default_glossary_dicts = {
     'state_to_country': {
-        'default': True,
         'path': 'state_country_dict.json'
     },
     'country_code': {
-        'default': True,
         'path': 'country_codes_dict.json'
     },
     'state_to_codes_lower': {
-        'default': True,
         'path': 'states-to-codes-lower.json'
     },
     'geonames': {
-        'default': True,
         'path': 'city_dict_alt_15000.json'
     }
 }
 
 default_glossaries = {
-    'female_names': {
-        'path': 'female_names.json.gz',
-        'entry_count': 8315,
-        'ngram_distribution': {
-            '1': 8307,
-            '2': 8
-        }
-    },
-    'city': {
-        'path': 'city.json.gz',
+    'cities_25k': {
+        'path': 'cities_25k.json.gz',
         'entry_count': 13156,
         'ngram_distribution': {
             '1': 11333,
-            '3': 229,
             '2': 1485,
-            '5': 15,
-            '4': 93
-        }
-    },
-    'stop_words': {
-        'path': 'stop_words.json.gz',
-        'entry_count': 161,
-        'ngram_distribution': {
-            '1': 155,
-            '2': 6
+            '3': 229,
+            '4': 93,
+            '5': 15
         }
     },
     'countries': {
         'path': 'countries.json.gz',
-        'entry_count': 512,
+        'entry_count': 257,
         'ngram_distribution': {
-            '1': 367,
-            '3': 26,
-            '2': 93,
-            '5': 10,
-            '4': 14
+            '1': 185,
+            '2': 46,
+            '3': 13,
+            '4': 7,
+            '5': 5
         }
     },
     'ethnicities': {
@@ -94,8 +74,8 @@ default_glossaries = {
         'entry_count': 291,
         'ngram_distribution': {
             '1': 262,
-            '3': 2,
-            '2': 27
+            '2': 27,
+            '3': 2
         }
     },
     'haircolors': {
@@ -105,40 +85,35 @@ default_glossaries = {
             '1': 60
         }
     },
-    'consolidated-services': {
-        'path': 'consolidated-services.json.gz',
-        'entry_count': 151,
+    'states_usc_codes': {
+        'path': 'states_usc_codes.json.gz',
+        'entry_count': 59,
         'ngram_distribution': {
-            '1': 119,
-            '3': 4,
-            '2': 28
+            '1': 59
         }
     },
-    'adult_services': {
-        'path': 'adult_services.json.gz',
+    'escort_services': {
+        'path': 'escort_services.json.gz',
         'entry_count': 151,
         'ngram_distribution': {
             '1': 119,
-            '3': 4,
-            '2': 28
+            '2': 28,
+            '3': 4
+        }
+    },
+    'female_names': {
+        'path': 'female_names.json.gz',
+        'entry_count': 8315,
+        'ngram_distribution': {
+            '1': 8307,
+            '2': 8
         }
     },
     'eyecolors': {
         'path': 'eyecolors.json.gz',
         'entry_count': 28,
         'ngram_distribution': {
-            '2': 28
-        }
-    },
-    'world_cities_with_population_25k': {
-        'path': 'world_cities_with_population_25k.json.gz',
-        'entry_count': 13156,
-        'ngram_distribution': {
-            '1': 11333,
-            '3': 229,
-            '2': 1485,
-            '5': 15,
-            '4': 93
+            '1': 28
         }
     },
     'states_usa_canada': {
@@ -146,22 +121,8 @@ default_glossaries = {
         'entry_count': 63,
         'ngram_distribution': {
             '1': 47,
-            '3': 2,
-            '2': 14
-        }
-    },
-    'female-names-trimmed': {
-        'path': 'female-names-trimmed.json.gz',
-        'entry_count': 4823,
-        'ngram_distribution': {
-            '1': 4823
-        }
-    },
-    'states_usa_codes': {
-        'path': 'states_usa_codes.json.gz',
-        'entry_count': 59,
-        'ngram_distribution': {
-            '1': 59
+            '2': 14,
+            '3': 2
         }
     }
 }
@@ -377,7 +338,12 @@ default_fields = {
 }
 
 master_config = {
-    'configuration': {},
+    'configuration': {
+        'digapp_full_url': '',
+        'digapp_sample_url': '',
+        'sandpaper_full_url': '',
+        'sandpaper_sample_url': ''
+    },
     'table_attributes': {},
     'glossaries': copy.deepcopy(default_glossaries),
     'glossary_dicts': copy.deepcopy(default_glossary_dicts),

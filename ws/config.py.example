@@ -50,5 +50,7 @@ config = {
     'users': {
         'admin': '123' # basic YWRtaW46MTIz
     },
-    'default_source_credentials_path': './default_source_credentials.json'
+    'default_source_credentials_path': './default_source_credentials.json',
+    'default_glossary_dicts_path': '/jpl/mydig-defaults/glossary_dicts/',
+    'default_glossaries_path': '/jpl/mydig-defaults/glossaries'
 }

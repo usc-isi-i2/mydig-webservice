@@ -1,0 +1,75 @@
+<!doctype html>
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="paper-date-picker-edit-dialog.html">
+<link rel="import" href="paper-date-picker-behaviors.html">
+
+<!--
+`paper-date-picker-item` provides a Material Design item that shows a date and opens a date picker dialog on tap.
+
+### Example
+
+```html
+<paper-date-picker-item icon="icons:today" date="{{date}}" date-format="ll"></paper-date-picker-item>
+```
+
+@demo demo/index.html
+-->
+<dom-module id="paper-date-picker-item">
+
+	<template>
+		<style>
+			:host([disabled]) .text{
+				color: var(--disabled-text-color);
+			}
+
+			.icon {
+				color: var(--disabled-text-color);
+			}
+
+			.item {
+				cursor: pointer;
+			}
+
+			.item[has-no-date] .text {
+				color: var(--secondary-text-color);
+			}
+		</style>
+
+		<paper-icon-item class="item" on-tap="_editDate" has-no-date$="[[!date]]">
+			<paper-ripple class="fit"></paper-ripple>
+			<iron-icon icon="[[icon]]" slot="item-icon" item-icon class="icon"></iron-icon>
+			<paper-item-body class="text">[[_getFormattedDate(date, placeholder, locale)]]</paper-item-body>
+		</paper-icon-item>
+	</template>
+
+</dom-module>
+
+<script>
+
+(function() {
+
+	Polymer({
+		is: 'paper-date-picker-item',
+		properties: {
+			/**
+			 * Icon shown left of the date
+			 */
+			icon: String
+		},
+
+		behaviors: [
+			Polymer.PaperDatePickerItemBehavior
+		],
+
+		_editDate: function() {
+			return this._edit('paper-date-picker-edit-dialog');
+		}
+	});
+})();
+
+</script>
