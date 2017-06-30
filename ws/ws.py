@@ -1841,7 +1841,7 @@ class Actions(Resource):
         # upload_to_sandpaper.sh sandpaper_url ws_url project_name index type working_dir
         sandpaper_cmd = '{} {} {} {} {} {} {}'.format(
             os.path.abspath('upload_to_sandpaper.sh'),
-            config['sandpaper']['url'],
+            data[project_name]['master_config']['configuration']['sandpaper_sample_url'],
             config['sandpaper']['ws_url'],
             project_name,
             data[project_name]['master_config']['index']['sample'],
@@ -1885,18 +1885,6 @@ class Actions(Resource):
         return rest.accepted()
 
     def _update_to_new_index(self, project_name):
-        # sandpaper_cmd = 'curl -XPOST "{}/config?url={}&project={}&index={}&type={}"'.format(
-        #     config['sandpaper']['url'],
-        #     config['sandpaper']['ws_url'],
-        #     project_name,
-        #     data[project_name]['master_config']['index']['sample'],
-        #     data[project_name]['master_config']['root_name']
-        # )
-        # print sandpaper_cmd
-        # ret = subprocess.call(sandpaper_cmd, shell=True)
-        # if ret != 0:
-        #     return rest.internal_error('failed to switch index in sandpaper')
-        # return rest.ok()
 
         url = '{}/config?url={}&project={}&index={}&type={}'.format(
             config['sandpaper']['url'],
