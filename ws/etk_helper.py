@@ -47,7 +47,7 @@ out_of_the_box_fields_and_extractors = {
     "phone": "extract_phone",
     "email": "extract_email",
     "address": "extract_using_spacy",
-    "website": "extract_website_domain"
+    "TLD": "extract_website_domain"
 }
 
 inferlink_fields_post_filter = {
