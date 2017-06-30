@@ -1887,7 +1887,7 @@ class Actions(Resource):
     def _update_to_new_index(self, project_name):
 
         url = '{}/config?url={}&project={}&index={}&type={}'.format(
-            config['sandpaper']['url'],
+            data[project_name]['master_config']['configuration']['sandpaper_sample_url'],
             config['sandpaper']['ws_url'],
             project_name,
             data[project_name]['master_config']['index']['sample'],
