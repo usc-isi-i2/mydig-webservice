@@ -205,6 +205,11 @@ class AllProjects(Resource):
         project_sources = input.get('sources', [])
         if len(project_sources) == 0:
             return rest.bad_request('Invalid sources.')
+        project_config = input.get('configuration', {})
+        for k, v in templates.default_configurations.iteritems():
+            if k not in project_config or len(project_config[k].strip()) == 0:
+                project_config[k] = v
+
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
         #     return rest.bad_request('Invalid index.')
@@ -245,6 +250,7 @@ class AllProjects(Resource):
                 'full': project_name + '_deployed',
                 'version': 0
             }
+            data[project_name]['master_config']['configuration'] = project_config
             update_master_config_file(project_name)
 
             # create other dirs and files
@@ -331,6 +337,10 @@ class Project(Resource):
         project_sources = input.get('sources', [])
         if len(project_sources) == 0:
             return rest.bad_request('Invalid sources.')
+        project_config = input.get('configuration', {})
+        for k, v in templates.default_configurations.iteritems():
+            if k not in project_config or len(project_config[k].strip()) == 0:
+                project_config[k] = v
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
         #     return rest.bad_request('Invalid index.')
@@ -342,6 +352,7 @@ class Project(Resource):
             write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
 
             data[project_name]['master_config']['sources'] = project_sources
+            data[project_name]['master_config']['configuration'] = project_config
             # data[project_name]['master_config']['index'] = es_index
             # write to file
             update_master_config_file(project_name)
@@ -1576,10 +1587,13 @@ class Actions(Resource):
             return self._get_sample_pages(project_name)
         elif action_name == 'extract_and_load_test_data':
             return self._extract_and_load_test_data(project_name)
+        elif action_name == 'extract_and_load_deployed_data':
+            # TODO
+            return rest.accepted()
         elif action_name == 'update_to_new_index':
             return self._update_to_new_index(project_name)
-        elif action_name == 'run_on_cluster':
-            # call job action here
+        elif action_name == 'update_to_new_index_deployed':
+            # TODO
             return rest.accepted()
         elif action_name == 'publish':
             git_helper.push()
