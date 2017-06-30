@@ -119,6 +119,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     if 'repo_landmark' not in webservice_config:
         raise KeyError('landmark repository path not defined in the master config')
     default_etk_config = json.loads(default_etk_config_str)
+    default_etk_config = add_default_glossaries(default_etk_config, project_master_config)
     default_etk_config['document_id'] = document_id
     landmark_repo_path = os.path.join(os.path.dirname(__file__), webservice_config['repo_landmark']['local_path'])
     project_local_path = os.path.join(os.path.dirname(__file__), webservice_config['repo']['local_path'])
@@ -259,6 +260,19 @@ def create_dictionary_data_extractor_for_field(ngram, dictionary_name):
         }
     }
 
+
+def add_default_glossaries(etk_config, project_master_config):
+    glossaries = project_master_config['glossaries']
+    if 'resources' not in etk_config:
+        etk_config['resources'] = dict()
+    if 'dictionaries' not in etk_config['resources']:
+        etk_config['resources']['dictionaries'] = dict()
+
+    for d in glossaries.keys():
+        if 'default' in glossaries[d] and glossaries[d]['default']:
+            etk_config['resources']['dictionaries'][d] = glossaries[d]['path']
+
+    return etk_config
 
 def add_glossary_extraction(etk_config, project_master_config):
     defined_fields = project_master_config['fields']
