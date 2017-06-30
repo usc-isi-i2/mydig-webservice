@@ -558,7 +558,7 @@
 						style="float:right"> <strong>Edit</strong></paper-button>
 					<paper-button on-tap="sureToDeleteDialogFunction" raised
 						style="float:right"> <strong>Delete</strong></paper-button>
-					<strong disabled="disabled">Name:</strong> {{item.0.name}}
+					<h3><strong disabled="disabled"> {{item.0.name}}</strong></h3>
 				</div>
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Label:</strong> {{item.0.screen_label}}
@@ -1667,10 +1667,27 @@
    		
    		getFieldGlossariesForAdd:function() {
    			EditFieldGlossaries.toggle();
-			 for(var j=0;j<this.glossaries.length;j++){
- 				 this.$$('#'+this.glossaries[j][0]).checked ="";
- 			 
-	  		 }
+   			 
+	    	 if(glossariesNewField) {
+				 	for(var i=0;i<glossariesNewField.length;i++){
+		    		 for(var j=0;j<this.glossaries.length;j++){
+		    			 if(glossariesNewField[i] == this.glossaries[j][0]) {
+		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+		    				 break;
+		    			 } 
+		    		 }
+		    		 
+		    	 	}
+				 
+  	         } else {
+  	        	glossariesNewField=[];
+  		    	for(var i=0;i<this.glossaries.length;i++) {
+  		    		 var gloss = this.glossaries[i];
+  		    		 if(this.$$('#'+gloss).checked) {
+  		    			 glossariesNewField.push(gloss[0]);
+  		    		 }
+  		    	 }
+  	         }
    		},
    		updateToNewIndex:function() {
    			 var obj = {};
@@ -1800,6 +1817,7 @@
    		},
    		saveTempGlossaries:function() {
    			this.fieldFormGlossaries=[];
+   			glossariesNewField=[];
 	    	 for(var i=0;i<this.glossaries.length;i++) {
 	    		 var gloss = this.glossaries[i];
 	    		 if(this.$$('#'+gloss).checked) {
@@ -1808,6 +1826,7 @@
 	    	 }
 	    	 glossariesNewField = this.fieldFormGlossaries;
    		}
+   		
    		  
    	
 	     
