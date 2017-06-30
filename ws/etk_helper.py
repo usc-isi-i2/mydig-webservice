@@ -155,6 +155,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     etk_config = add_custom_spacy_extractors(add_glossary_extraction(default_etk_config, project_master_config),
                                              project_master_config, project_name, project_local_path)
     etk_config = add_default_field_extractors(project_master_config, etk_config)
+    etk_config = add_kg_enhancement(etk_config)
     return etk_config
 
 
@@ -353,6 +354,41 @@ def add_default_field_extractors(project_master_config, etk_config):
     return etk_config
 
 
+def add_kg_enhancement(etk_config):
+    kg_enhancement = {
+    "input_path": "knowledge_graph.`parent`",
+    "fields": {
+      "populated_places": {
+        "priority": 0,
+        "extractors": {
+          "geonames_lookup": {
+            "config": {}
+          }
+        }
+      },
+      "country": {
+        "priority": 1,
+        "extractors": {
+          "country_from_states": {
+            "config": {}
+          }
+        }
+      },
+      "city_state_country_triple":{
+        "priority": 2,
+        "extractors": {
+          "create_city_state_country_triple":{
+            "config": {}
+          }
+        }
+      }
+    }
+  }
+
+    etk_config['kg_enhancement'] = kg_enhancement
+    return etk_config
+
+
 def add_custom_spacy_extractors(etk_config, project_master_config, project_name, project_local_path):
     if 'data_extraction' not in etk_config:
         etk_config['data_extraction'] = list()
@@ -394,7 +430,7 @@ if __name__ == '__main__':
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
     project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
     print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf',
-                                         content_extraction_only=True),
+                                         content_extraction_only=False),
                      indent=2)
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
     # ngram_dist = {
