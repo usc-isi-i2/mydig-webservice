@@ -400,16 +400,8 @@ def add_kg_enhancement(etk_config):
           }
         }
       },
-      "country": {
-        "priority": 1,
-        "extractors": {
-          "country_from_states": {
-            "config": {}
-          }
-        }
-      },
       "city":{
-        "priority": 2,
+        "priority": 1,
         "extractors": {
           "create_city_state_country_triple":{
             "config": {}

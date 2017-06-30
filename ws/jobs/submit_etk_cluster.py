@@ -4,7 +4,9 @@ import json
 
 class SubmitEtk(object):
     def __init__(self):
-        self.web_hdfs_url = "http://10.1.94.54:14000/webhdfs/v1"
+        # http://10.1.94.54:14000/webhdfs/v1?user.name=aglahe&op=LISTSTATUS
+        # https://webhdfs.memexproxy.com/webhdfs/v1?user.name=aglahe&op=LISTSTATUS
+        self.web_hdfs_url = "http://10.1.94.54:14000/webhdfs/v1?user.name={}"
         self.oozie_url = "http://10.1.94.54:11000/oozie"
         self.default_etk_path = '/user/worker/etk'
 
