@@ -340,7 +340,39 @@ def add_default_field_extractors(project_master_config, etk_config):
         field_name = field_definition['name']
         if 'predefined_extractor' in field_definition and field_definition['predefined_extractor'].strip() != '':
             default_field = field_definition['predefined_extractor']
-            if default_field in out_of_the_box_fields_and_extractors:
+            if default_field in out_of_the_box_fields_and_extractors and default_field != 'TLD':
+                extractor = out_of_the_box_fields_and_extractors[default_field]
+                de_obj['fields'][field_name] = dict()
+                de_obj['fields'][field_name]['extractors'] = dict()
+                de_obj['fields'][field_name]['extractors'][extractor] = dict()
+                de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
+
+    if de_obj['fields'].keys() > 0:
+        if 'data_extraction' not in etk_config:
+            etk_config['data_extraction'] = list()
+        etk_config['data_extraction'].append(de_obj)
+
+    etk_config = add_default_TLD_extractor(project_master_config, etk_config)
+    return etk_config
+
+
+def add_default_TLD_extractor(project_master_config, etk_config):
+    de_obj = dict()
+    # even if we have multiple data extraction blocks with same input paths, the etk will do the right thing in running
+    # the extraction efficiently
+    de_obj['input_path'] = [
+        "*.url.text.`parent`"
+    ]
+    de_obj['fields'] = dict()
+
+    fields = project_master_config['fields']
+
+    for field in fields.keys():
+        field_definition = fields[field]
+        field_name = field_definition['name']
+        if 'predefined_extractor' in field_definition and field_definition['predefined_extractor'].strip() != '':
+            default_field = field_definition['predefined_extractor']
+            if default_field in out_of_the_box_fields_and_extractors and default_field == 'TLD':
                 extractor = out_of_the_box_fields_and_extractors[default_field]
                 de_obj['fields'][field_name] = dict()
                 de_obj['fields'][field_name]['extractors'] = dict()
