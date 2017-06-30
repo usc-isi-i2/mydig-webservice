@@ -406,7 +406,7 @@ def add_kg_enhancement(etk_config):
           }
         }
       },
-      "city_state_country_triple":{
+      "city":{
         "priority": 2,
         "extractors": {
           "create_city_state_country_triple":{
