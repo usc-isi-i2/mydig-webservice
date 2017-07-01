@@ -4,7 +4,7 @@ import requests
 
 
 class OozieJobs(object):
-    def __init__(self, oozie_url='http://localhost:11000/oozie'):
+    def __init__(self, oozie_url='https://oozie.memexproxy.com/'):
         self.oozie_url = oozie_url
 
     def submit_oozie_jobs(self, property_dict):
@@ -36,13 +36,6 @@ class OozieJobs(object):
             payload = OozieJobs.append_property_toXML(payload, key, property_dict[key])
         payload += "</configuration>"
         return payload
-
-    @staticmethod
-    def add_file_property_to_workflow_definition_xml(default_lib_prefix, file_path):
-        v = file_path.split('/')
-        file_name = v[len(v)-1].strip()
-        if file_name and file_name != '':
-
 
 
 if __name__ == '__main__':

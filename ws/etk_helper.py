@@ -348,6 +348,8 @@ def add_default_field_extractors(project_master_config, etk_config):
                 de_obj['fields'][field_name]['extractors'] = dict()
                 de_obj['fields'][field_name]['extractors'][extractor] = dict()
                 de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
+                if default_field == 'posting_date':
+                    de_obj['fields'][field_name]['extractors'][extractor]['config']['post_filter'] = 'parse_date'
 
     if de_obj['fields'].keys() > 0:
         if 'data_extraction' not in etk_config:
@@ -381,10 +383,47 @@ def add_default_TLD_extractor(project_master_config, etk_config):
                 de_obj['fields'][field_name]['extractors'][extractor] = dict()
                 de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
 
+    more_default_fields = {
+        "state": {
+            "extractors": {
+                "extract_using_dictionary": {
+                    "config": {
+                        "dictionary": "state"
+                    }
+                }
+            }
+        },
+        "city_name": {
+            "extractors": {
+                "extract_using_dictionary": {
+                    "config": {
+                        "dictionary": "city"
+                    }
+                }
+            }
+        },
+        "country": {
+            "extractors": {
+                "extract_country_url": {
+                    "config": {
+                        "dictionary": "stop_words"
+                    }
+                },
+                "extract_using_dictionary": {
+                    "config": {
+                        "dictionary": "country"
+                    }
+                }
+            }
+        }
+    }
+    de_obj['fields'].update(more_default_fields)
+
     if de_obj['fields'].keys() > 0:
         if 'data_extraction' not in etk_config:
             etk_config['data_extraction'] = list()
         etk_config['data_extraction'].append(de_obj)
+
     return etk_config
 
 
@@ -400,16 +439,8 @@ def add_kg_enhancement(etk_config):
           }
         }
       },
-      "country": {
-        "priority": 1,
-        "extractors": {
-          "country_from_states": {
-            "config": {}
-          }
-        }
-      },
       "city":{
-        "priority": 2,
+        "priority": 1,
         "extractors": {
           "create_city_state_country_triple":{
             "config": {}
