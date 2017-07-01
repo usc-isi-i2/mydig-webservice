@@ -348,6 +348,8 @@ def add_default_field_extractors(project_master_config, etk_config):
                 de_obj['fields'][field_name]['extractors'] = dict()
                 de_obj['fields'][field_name]['extractors'][extractor] = dict()
                 de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
+                if default_field == 'posting_date':
+                    de_obj['fields'][field_name]['extractors'][extractor]['post_filter'] = 'parse_date'
 
     if de_obj['fields'].keys() > 0:
         if 'data_extraction' not in etk_config:
