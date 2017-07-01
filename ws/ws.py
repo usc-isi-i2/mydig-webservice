@@ -346,26 +346,20 @@ class Project(Resource):
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
         #     return rest.bad_request('Invalid index.')
-        try:
-            # project_lock.acquire(project_name)
 
-            # extract credentials to a separated file
-            credentials = AllProjects.extract_credentials_from_sources(project_sources)
-            write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
+        # extract credentials to a separated file
+        credentials = AllProjects.extract_credentials_from_sources(project_sources)
+        write_to_file(json.dumps(credentials, indent=4),
+                      os.path.join(_get_project_dir_path(project_name), 'credentials.json'))
 
-            data[project_name]['master_config']['sources'] = project_sources
-            data[project_name]['master_config']['configuration'] = project_config
-            # data[project_name]['master_config']['index'] = es_index
-            # write to file
-            update_master_config_file(project_name)
-            git_helper.commit(files=[project_name + '/master_config.json'],
-                              message='update project {}'.format(project_name))
-            return rest.created()
-        except Exception as e:
-            logger.error('Updating project %s: %s' % (project_name, e.message))
-            return rest.internal_error('Updating project %s error, halted.' % project_name)
-        # finally:
-        #     project_lock.release(project_name)
+        data[project_name]['master_config']['sources'] = project_sources
+        data[project_name]['master_config']['configuration'] = project_config
+        # data[project_name]['master_config']['index'] = es_index
+        # write to file
+        update_master_config_file(project_name)
+        git_helper.commit(files=[project_name + '/master_config.json'],
+                          message='update project {}'.format(project_name))
+        return rest.created()
 
     @requires_auth
     def put(self, project_name):
@@ -1650,6 +1644,9 @@ class Actions(Resource):
         s = sources[0]
         cdr_ids = {}
         tlds_status = Actions._get_tlds_status(project_name)
+        src_url = urlparse.urlparse(s['url'])
+        hg_domain = None if src_url.hostname.find('hyperiongray.com') == -1 else \
+            src_url.hostname.split('.')[0]
 
         # retrieve from es
         for tld in s['tlds']:
@@ -1659,51 +1656,98 @@ class Actions(Resource):
                 continue
 
             if pages_per_tld > 0:
-                query = '''
-                        {
-                            "size": ''' + str(pages_per_tld) + ''',
-                            "query": {
-                                "filtered":{
-                                    "query": {
-                                        "function_score": {
-                                            "query": {
-                                                "range": {
-                                                    "timestamp": {
-                                                        "gte": "''' + s['start_date'] + '''",
-                                                        "lt": "''' + s['end_date'] + '''",
-                                                        "format": "yyyy-MM-dd"
-                                                    }
+                if hg_domain is None:
+                    query = '''
+                    {
+                        "size": ''' + str(pages_per_tld) + ''',
+                        "query": {
+                            "filtered":{
+                                "query": {
+                                    "function_score": {
+                                        "query": {
+                                            "range": {
+                                                "timestamp": {
+                                                    "gte": "''' + s['start_date'] + '''",
+                                                    "lt": "''' + s['end_date'] + '''",
+                                                    "format": "yyyy-MM-dd"
                                                 }
-                                            },
-                                            "functions": [{"random_score":{}}]
-                                        }
-                                    },
-                                    "filter": {
-                                        "and": {
-                                            "filters": [
-                                                {"exists" : {"field": "raw_content"}},
-                                                {"exists" : {"field": "url"}},
-                                                {"exists" : {"field": "doc_id"}},
-                                                {"term": {"url.domain": "''' + tld + '''"}}
-                                            ]
-                                        }
+                                            }
+                                        },
+                                        "functions": [{"random_score":{}}]
+                                    }
+                                },
+                                "filter": {
+                                    "and": {
+                                        "filters": [
+                                            {"exists" : {"field": "raw_content"}},
+                                            {"exists" : {"field": "url"}},
+                                            {"exists" : {"field": "doc_id"}},
+                                            {"term": {"url.domain": "''' + tld + '''"}}
+                                        ]
                                     }
                                 }
                             }
                         }
-                        '''
-                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-                hits = es.search(s['index'], s['type'], query)
-                if hits:
-                    docs = hits['hits']['hits']
-                    tlds_status[tld] = len(docs)
-                    cdr_ids[tld] = list()
-                    file_path = os.path.join(dir_path, tld + '.jl')
-                    with open(file_path, 'w') as f:
-                        for d in docs:
-                            cdr_ids[tld].append(d['_source']['doc_id'])
-                            f.write(json.dumps(d['_source']))
-                            f.write('\n')
+                    }
+                    '''
+                    es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                    hits = es.search(s['index'], s['type'], query)
+                    if hits:
+                        docs = hits['hits']['hits']
+                        tlds_status[tld] = len(docs)
+                        cdr_ids[tld] = list()
+                        file_path = os.path.join(dir_path, tld + '.jl')
+                        with open(file_path, 'w') as f:
+                            for d in docs:
+                                cdr_ids[tld].append(d['_source']['doc_id'])
+                                f.write(json.dumps(d['_source']))
+                                f.write('\n')
+                else: # HG domain
+                    query = '''
+                    {
+                        "size": ''' + str(pages_per_tld) + ''',
+                        "query": {
+                            "filtered":{
+                                "query": {
+                                    "function_score": {
+                                        "query": {
+                                            "range": {
+                                                "timestamp_crael": {
+                                                    "gte": "''' + s['start_date'] + '''",
+                                                    "lt": "''' + s['end_date'] + '''",
+                                                    "format": "yyyy-MM-dd"
+                                                }
+                                            }
+                                        },
+                                        "functions": [{"random_score":{}}]
+                                    }
+                                },
+                                "filter": {
+                                    "and": {
+                                        "filters": [
+                                            {"exists" : {"field": "raw_content"}},
+                                            {"exists" : {"field": "url"}},
+                                            {"term": {"url.domain": "''' + tld + '''"}}
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    '''
+                    es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                    hits = es.search(s['index'], s['type'], query)
+                    if hits:
+                        docs = hits['hits']['hits']
+                        tlds_status[tld] = len(docs)
+                        cdr_ids[tld] = list()
+                        file_path = os.path.join(dir_path, tld + '.jl')
+                        with open(file_path, 'w') as f:
+                            for d in docs:
+                                cdr_ids[tld].append(d['_id'])
+                                d['_source']['doc_id'] = d['_id']
+                                f.write(json.dumps(d['_source']))
+                                f.write('\n')
 
         # update tlds status to file
         tlds_status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
@@ -1759,10 +1803,9 @@ class Actions(Resource):
         if len(cdr_ids) != 0:
             host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
             port = 5000
-            src_url = urlparse.urlparse(s['url'])
             url = ''
             payload = dict()
-            if src_url.hostname.find('hyperiongray.com') == -1:
+            if hg_domain is None:
                 url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'\
                     .format(host, port, s['type'], project_name)
                 payload = {
@@ -1770,9 +1813,8 @@ class Actions(Resource):
                     'cdr_ids': cdr_ids
                 }
             else:
-                domain_host = src_url.hostname.split('.')[0]
                 url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'.\
-                    format(host, port, domain_host, project_name)
+                    format(host, port, hg_domain, project_name)
                 payload = {
                     'production': True,
                     'tlds': s['tlds'],
