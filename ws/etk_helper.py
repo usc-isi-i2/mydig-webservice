@@ -421,7 +421,7 @@ def add_default_TLD_extractor(project_master_config, etk_config):
         if 'data_extraction' not in etk_config:
             etk_config['data_extraction'] = list()
         etk_config['data_extraction'].append(de_obj)
-        
+
     return etk_config
 
 
@@ -438,7 +438,7 @@ def add_kg_enhancement(etk_config):
         }
       },
       "city":{
-        "priority": ,
+        "priority": 1,
         "extractors": {
           "create_city_state_country_triple":{
             "config": {}
