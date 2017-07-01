@@ -10,11 +10,17 @@ class SubmitEtk(object):
         self.oozie_url = "http://10.1.94.54:11000/oozie"
         self.worker_dir_path = '/user/worker/etk'
         self.default_lib_path = '{}/{}/lib/{}'
+        self.files_to_upload = dict()
 
     @staticmethod
     def get_file_name_from_path(file_path):
         v = file_path.split('/')
         return v[len(v) - 1].strip()
+
+    def add_things_to_upload(self, key, source, destination):
+        self.files_to_upload[key] = dict()
+        self.files_to_upload[key]['source'] = source
+        self.files_to_upload[key]['destination'] = destination
 
     def create_worflow_xml(self, etk_config, project_name, workflow_manager):
         # Add arguments for etk
@@ -29,22 +35,24 @@ class SubmitEtk(object):
             if 'dictionaries' in etk_config['resources']:
                 dictionaries = etk_config['resources']['dictionaries']
                 for k, v in dictionaries.items():
-                    f = self.get_file_name_from_path(v)
-                    files += workflow_manager.create_file_property_for_workflow_xml(
-                        self.default_lib_path.format(self.worker_dir_path, project_name, f))
+                    f = self.default_lib_path.format(self.worker_dir_path, project_name, self.get_file_name_from_path(v))
+                    files += workflow_manager.create_file_property_for_workflow_xml(f)
+                    self.add_things_to_upload(k, v, f)
             if 'landmark' in etk_config['resources']:
                 landmark = etk_config['resources']['landmark']
                 if len(landmark) > 0:
                     landmark_f = landmark[0]
-                    f = self.get_file_name_from_path(landmark_f)
-                    files += workflow_manager.create_file_property_for_workflow_xml(
-                        self.default_lib_path.format(self.worker_dir_path, project_name, f))
+                    f = self.default_lib_path.format(self.worker_dir_path, project_name,
+                                                     self.get_file_name_from_path(landmark_f))
+                    files += workflow_manager.create_file_property_for_workflow_xml(f)
+                    self.add_things_to_upload('landmark', landmark_f, f)
             if 'spacy_field_rules' in etk_config['resources']:
                 spacy_field_rules = etk_config['resources']
                 for k, v in spacy_field_rules.items():
-                    f = self.get_file_name_from_path(v)
-                    files += workflow_manager.create_file_property_for_workflow_xml(
-                        self.default_lib_path.format(self.worker_dir_path, project_name, f))
+                    f = self.default_lib_path.format(self.worker_dir_path, project_name,
+                                                     self.get_file_name_from_path(v))
+                    files += workflow_manager.create_file_property_for_workflow_xml(f)
+                    self.add_things_to_upload(k, v, f)
 
         # add some defaults to files
         """
@@ -59,7 +67,10 @@ class SubmitEtk(object):
         # put everything else in project's lib
         def_fs = ['run_etk_spark.py', 'python-lib.zip', 'run.sh', 'pyspark' ]
         for def_f in def_fs:
-            files += workflow_manager.create_file_property_for_workflow_xml(self.default_lib_path.format(self.worker_dir_path, project_name, def_f))
+            if def_f == 'run.sh':
+                self.add_things_to_upload('run.sh', 'run.sh', self.default_lib_path.format(self.worker_dir_path, project_name, def_f))
+            files += workflow_manager.create_file_property_for_workflow_xml(
+                self.default_lib_path.format(self.worker_dir_path, project_name, def_f))
 
         # add the etk env, this should be pretty constant and wouldn't have to be updated
         archive = workflow_manager.create_archive_property_for_workflow_xml('{}/lib/etk_env.zip'.format(self.worker_dir_path))
