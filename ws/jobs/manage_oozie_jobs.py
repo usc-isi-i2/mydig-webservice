@@ -38,9 +38,6 @@ class OozieJobs(object):
         return payload
 
 
-
-
-
 if __name__ == '__main__':
     property_dict = dict()
     property_dict["user.name"] = "skaraman"
