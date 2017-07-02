@@ -794,7 +794,7 @@ class ProjectGlossaries(Resource):
         write_to_file(content, file_path)
         # file.save(file_path)
 
-        self.compute_statistics(project_name, name, file_path, json_file_path)
+        self.compute_statistics(project_name, name, file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='create a glossary: project {}, glossary {}'.format(project_name, name))
 
@@ -1824,9 +1824,9 @@ class Actions(Resource):
             logger.info('sent to inferlink: url: {} payload: {}'.format(url, json.dumps(payload)))
             payload_dump_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/last_payload.json')
             write_to_file(json.dumps(payload, indent=2), payload_dump_path)
-            # resp = requests.post(url, json.dumps(payload))
-            # if resp.status_code // 100 != 2:
-            #     logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
+            resp = requests.post(url, json.dumps(payload))
+            if resp.status_code // 100 != 2:
+                logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
 
         print 'action get_sample_pages is done'
 
