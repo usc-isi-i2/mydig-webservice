@@ -646,6 +646,10 @@ class Field(Resource):
             return rest.bad_request(message)
         if 'name' not in field_object or field_object['name'] != field_name:
             return rest.bad_request('Name of tag is not correct')
+        # replace number_of_rules with previous value
+        if 'number_of_rules' in data[project_name]['master_config']['fields'][field_name]:
+            num_of_rules = data[project_name]['master_config']['fields'][field_name]['number_of_rules']
+            field_object['number_of_rules'] = num_of_rules
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
         update_master_config_file(project_name)
@@ -906,9 +910,9 @@ class Glossary(Resource):
         if glossary_name not in data[project_name]['master_config']['glossaries']:
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
-        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
-        ret = send_file(file_path, mimetype='text/plain',
-                         as_attachment=True, attachment_filename=glossary_name + '.txt')
+        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.json.gz')
+        ret = send_file(file_path, mimetype='application/gzip',
+                         as_attachment=True, attachment_filename=glossary_name + '.json.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
 
