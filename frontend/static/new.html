@@ -105,10 +105,7 @@ function addProject(data)  {
 	              </a>
 	              
 	              <paper-button on-tap="editProjectData" style="float:right;color:black" raised class="indigo"><strong>Edit</strong></paper-button>
-	      	 	  <a target="_blank" style="color:black" href="{{item.value.configuration.digapp_sample_url}}/?project={{item.name}}">
-	              <paper-button style="float:right" raised class="indigo"><strong>Sample DigApp</strong></paper-button>
-	              </a>       
-              </div>
+	          </div>
               <div style="margin-top:0.5em">
                   <span><strong>Start Date : </strong>{{item.value.sources.0.start_date}}</span>
 	              <div style="float: right;margin-right: 30em"><strong>End Date : </strong>{{item.value.sources.0.end_date}}</div>
