@@ -1524,7 +1524,6 @@
 	       		    "rule_extraction_target":this.$$('#editRuleExtractionTargetValue').selectedItem.value,
 	       		    "show_in_search": this.fieldForm.show_in_search,
 	       			"rule_extractor_enabled":this.fieldForm.rule_extractor_enabled,
-	       			"number_of_rules":this.fieldForm.number_of_rules,
 	       		    "type": this.$$('#editTypeValue').selectedItem.value,
 	       		    "use_in_network_search": this.fieldForm.use_in_network_search,
 	       		    "predefined_extractor":predefinedExtr
@@ -1713,13 +1712,13 @@
 				
 			   	request.onreadystatechange = function () {
 					    if (request.readyState === 4 && request.status === 200) {
+					    	request.responseText = request.responseText.replace(/[^a-zA-Z0-9]|%0A/gmi, "*");
 					    	 var element = document.createElement('a');
-					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' +  encodeURIComponent(request.responseText));
-					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
+					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + request.responseText);
+					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1].split(".")[0]);
 
 					   		  element.style.display = 'none';
 					   		  document.body.appendChild(element);
-
 					   		  element.click();
 
 					   		  document.body.removeChild(element);
