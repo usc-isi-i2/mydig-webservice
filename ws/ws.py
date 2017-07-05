@@ -789,10 +789,12 @@ class ProjectGlossaries(Resource):
         if name in data[project_name]['master_config']['glossaries']:
             return rest.exists('Glossary {} exists'.format(name))
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
+        gzip_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt.gz')
         json_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.json.gz')
 
-        # maybe this works, maybe doesn't
         content = args['glossary_file'].stream.read()
+        with gzip.open(gzip_file_path, 'w') as f:
+            f.write(content)
         with gzip.open(json_file_path, 'w') as f:
             f.write(ProjectGlossaries.convert_glossary_to_json(content))
         write_to_file(content, file_path)
@@ -882,13 +884,15 @@ class Glossary(Resource):
         name = glossary_name
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
+        gzip_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt.gz')
         json_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.json.gz')
 
         # file = args['glossary_file']
         # file.save(file_path)
 
-        # maybe this works, maybe doesn't
         content = args['glossary_file'].stream.read()
+        with gzip.open(gzip_file_path, 'w') as f:
+            f.write(content)
         with gzip.open(json_file_path, 'w') as f:
             f.write(ProjectGlossaries.convert_glossary_to_json(content))
         write_to_file(content, file_path)
@@ -910,9 +914,9 @@ class Glossary(Resource):
         if glossary_name not in data[project_name]['master_config']['glossaries']:
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
-        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.json.gz')
+        file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt.gz')
         ret = send_file(file_path, mimetype='application/gzip',
-                         as_attachment=True, attachment_filename=glossary_name + '.json.gz')
+                         as_attachment=True, attachment_filename=glossary_name + '.txt.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
 
@@ -925,8 +929,10 @@ class Glossary(Resource):
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt')
+        gzip_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt.gz')
         json_file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.json.gz')
         os.remove(file_path)
+        os.remove(gzip_file_path)
         os.remove(json_file_path)
         del data[project_name]['master_config']['glossaries'][glossary_name]
         # remove glossary_name from field which contains it
