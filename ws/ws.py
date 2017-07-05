@@ -1766,48 +1766,92 @@ class Actions(Resource):
         # extra
         if pages_extra > 0:
             exclude_tlds_str = ','.join(['\"{}\"'.format(t) for t in s['tlds']])
-            query = '''
-            {
-                "size": ''' + str(pages_extra) + ''',
-                "query": {
-                    "filtered":{
-                        "query": {
-                            "function_score": {
-                                "query": {
-                                    "range": {
-                                        "timestamp": {
-                                            "gte": "''' + s['start_date'] + '''",
-                                            "lt": "''' + s['end_date'] + '''",
-                                            "format": "yyyy-MM-dd"
+            if hg_domain is None:
+                query = '''
+                {
+                    "size": ''' + str(pages_extra) + ''',
+                    "query": {
+                        "filtered":{
+                            "query": {
+                                "function_score": {
+                                    "query": {
+                                        "range": {
+                                            "timestamp": {
+                                                "gte": "''' + s['start_date'] + '''",
+                                                "lt": "''' + s['end_date'] + '''",
+                                                "format": "yyyy-MM-dd"
+                                            }
                                         }
-                                    }
-                                },
-                                "functions": [{"random_score":{}}]
-                            }
-                        },
-                        "filter": {
-                            "and": {
-                                "filters": [
-                                    {"exists" : {"field": "raw_content"}},
-                                    {"exists" : {"field": "url"}},
-                                    {"exists" : {"field": "doc_id"}},
-                                    {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
-                                ]
+                                    },
+                                    "functions": [{"random_score":{}}]
+                                }
+                            },
+                            "filter": {
+                                "and": {
+                                    "filters": [
+                                        {"exists" : {"field": "raw_content"}},
+                                        {"exists" : {"field": "url"}},
+                                        {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
+                                    ]
+                                }
                             }
                         }
                     }
                 }
-            }
-            '''
-            es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-            hits = es.search(s['index'], s['type'], query)
-            if hits:
-                docs = hits['hits']['hits']
-                file_path = os.path.join(dir_path, 'extra.jl')
-                with open(file_path, 'w') as f:
-                    for d in docs:
-                        f.write(json.dumps(d['_source']))
-                        f.write('\n')
+                '''
+                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                hits = es.search(s['index'], s['type'], query)
+                if hits:
+                    docs = hits['hits']['hits']
+                    file_path = os.path.join(dir_path, 'extra.jl')
+                    with open(file_path, 'w') as f:
+                        for d in docs:
+                            f.write(json.dumps(d['_source']))
+                            f.write('\n')
+            else: # HG domain
+                query = '''
+                {
+                    "size": ''' + str(pages_extra) + ''',
+                    "query": {
+                        "filtered":{
+                            "query": {
+                                "function_score": {
+                                    "query": {
+                                        "range": {
+                                            "timestamp_crawl": {
+                                                "gte": "''' + s['start_date'] + '''",
+                                                "lt": "''' + s['end_date'] + '''",
+                                                "format": "yyyy-MM-dd"
+                                            }
+                                        }
+                                    },
+                                    "functions": [{"random_score":{}}]
+                                }
+                            },
+                            "filter": {
+                                "and": {
+                                    "filters": [
+                                        {"exists" : {"field": "raw_content"}},
+                                        {"exists" : {"field": "url"}},
+                                        {"exists" : {"field": "doc_id"}},
+                                        {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+                '''
+                es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+                hits = es.search(s['index'], s['type'], query)
+                if hits:
+                    docs = hits['hits']['hits']
+                    file_path = os.path.join(dir_path, 'extra.jl')
+                    with open(file_path, 'w') as f:
+                        for d in docs:
+                            d['_source']['doc_id'] = d['_id']
+                            f.write(json.dumps(d['_source']))
+                            f.write('\n')
 
         # invoke inferlink
         if len(cdr_ids) != 0:
