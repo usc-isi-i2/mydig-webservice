@@ -1706,25 +1706,28 @@
 		     var url = backend_url  +"projects/"+projectName[1]+"/glossaries/"+e.model.item[0];
 		   	
 		     request.open("GET", url);
-		     request.setRequestHeader("Content-type", "text/plain");
-			  
+		     request.setRequestHeader("Content-type", "application/gzip");
+		     request.setRequestHeader("Content-Transfer-Encoding","binary");
 			 request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
-				
+			 request.responseType = "blob";
 			   	request.onreadystatechange = function () {
 					    if (request.readyState === 4 && request.status === 200) {
-					    	request.responseText = request.responseText.replace(/[^a-zA-Z0-9]|%0A/gmi, "*");
 					    	 var element = document.createElement('a');
-					   		  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + request.responseText);
-					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1].split(".")[0]);
+					    	    blob = new Blob([request.response], {type: "application/gzip"}),
+					            url = window.URL.createObjectURL(blob);
+					   		  element.setAttribute('href',url);
+					   		  
+					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
 
 					   		  element.style.display = 'none';
 					   		  document.body.appendChild(element);
 					   		  element.click();
 
 					   		  document.body.removeChild(element);
+					   		window.URL.revokeObjectURL(url);
 					   }
 					};
-				
+				 
 				 request.send();
 	         
    		},
