@@ -41,7 +41,8 @@ config = {
         'daemon': {
             'host': 'localhost',
             'port': 12121
-        }
+        },
+        'number_of_processes': 8
     },
     'sandpaper': {
         'url': 'http://localhost:9878',

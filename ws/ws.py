@@ -1767,38 +1767,38 @@ class Actions(Resource):
         if pages_extra > 0:
             exclude_tlds_str = ','.join(['\"{}\"'.format(t) for t in s['tlds']])
             query = '''
-                    {
-                        "size": ''' + str(pages_extra) + ''',
+            {
+                "size": ''' + str(pages_extra) + ''',
+                "query": {
+                    "filtered":{
                         "query": {
-                            "filtered":{
+                            "function_score": {
                                 "query": {
-                                    "function_score": {
-                                        "query": {
-                                            "range": {
-                                                "timestamp": {
-                                                    "gte": "''' + s['start_date'] + '''",
-                                                    "lt": "''' + s['end_date'] + '''",
-                                                    "format": "yyyy-MM-dd"
-                                                }
-                                            }
-                                        },
-                                        "functions": [{"random_score":{}}]
+                                    "range": {
+                                        "timestamp": {
+                                            "gte": "''' + s['start_date'] + '''",
+                                            "lt": "''' + s['end_date'] + '''",
+                                            "format": "yyyy-MM-dd"
+                                        }
                                     }
                                 },
-                                "filter": {
-                                    "and": {
-                                        "filters": [
-                                            {"exists" : {"field": "raw_content"}},
-                                            {"exists" : {"field": "url"}},
-                                            {"exists" : {"field": "doc_id"}},
-                                            {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
-                                        ]
-                                    }
-                                }
+                                "functions": [{"random_score":{}}]
+                            }
+                        },
+                        "filter": {
+                            "and": {
+                                "filters": [
+                                    {"exists" : {"field": "raw_content"}},
+                                    {"exists" : {"field": "url"}},
+                                    {"exists" : {"field": "doc_id"}},
+                                    {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
+                                ]
                             }
                         }
                     }
-                    '''
+                }
+            }
+            '''
             es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
             hits = es.search(s['index'], s['type'], query)
             if hits:
@@ -1889,13 +1889,14 @@ class Actions(Resource):
 
         # run etk
         Actions._update_status(project_name, 'etk running')
-        # run_etk.sh page_path working_dir conda_bin_path etk_path
+        # run_etk.sh page_path working_dir conda_bin_path etk_path num_processes
         etk_cmd = '{} {} {} {} {}'.format(
             os.path.abspath('run_etk.sh'),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'pages')),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir')),
             os.path.abspath(config['etk']['conda_path']),
-            os.path.abspath(config['etk']['path'])
+            os.path.abspath(config['etk']['path']),
+            config['etk']['number_of_processes']
         )
         print etk_cmd
         ret = subprocess.call(etk_cmd, shell=True)
