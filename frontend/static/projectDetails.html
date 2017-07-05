@@ -421,6 +421,10 @@
 			 <iron-ajax
 			id="updateTableAttribute" method="POST" content-type="application/json"
 			 on-error="done" on-response="updateDone"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="digURI" method="GET" content-type="application/json"
+			on-response="setDigURI"> </iron-ajax>
 			
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
 			  <paper-header-panel>
@@ -445,10 +449,14 @@
 			</paper-tabs>
 			
 			<iron-collapse id="menu" style="margin-left:20px;">
+			<br>
+			<a target="_blank" style="color:black;text-decoration: none;" href="{{digURI}}"><paper-button raised class="indigo"><strong>Sample DigApp</strong></paper-button></a> 
+					
 				<paper-material class="addPaddingToSections">
+				    
 					<br><br>
 					<div>
-						
+						  
 						<h3><strong>Get Sample Pages</strong></h3>
 						<br>
 						<span><i>Lorem Ipsum is simply dummy text of the printing and 
@@ -1191,6 +1199,11 @@
 	        this.$.getTags.url = backend_url + "projects/"+projectName[1]+"/tags";
 	    	this.$.getTags.generateRequest();
 	    	
+	    	
+	    	this.$.digURI.headers = obj;
+	        this.$.digURI.url = backend_url + "projects/"+projectName[1];
+	    	this.$.digURI.generateRequest();
+	    	
 	    	this.$.getFields.headers = obj;
 	        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
 	    	this.$.getFields.generateRequest();
@@ -1827,6 +1840,9 @@
 	    		 }
 	    	 }
 	    	 glossariesNewField = this.fieldFormGlossaries;
+   		},
+   		setDigURI:function(data) {
+   			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
    		}
    		
    		  
