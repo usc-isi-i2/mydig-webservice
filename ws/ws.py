@@ -1552,7 +1552,6 @@ class TagAnnotationsForEntity(Resource):
         parser.add_argument('kg', required=False, type=str, help='knowledge graph')
         args = parser.parse_args()
 
-
         return_kg = True if args['kg'] is not None and \
             args['kg'].lower() == 'true' else False
 
@@ -1855,11 +1854,11 @@ class Actions(Resource):
 
         # invoke inferlink
         if len(cdr_ids) != 0:
-            host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
-            port = 5000
             url = ''
             payload = dict()
             if hg_domain is None:
+                host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
+                port = 5000
                 url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'\
                     .format(host, port, s['type'], project_name)
                 payload = {
@@ -1867,6 +1866,8 @@ class Actions(Resource):
                     'cdr_ids': cdr_ids
                 }
             else:
+                host = 'isi-{}.inferlink.com'.format(hg_domain)
+                port = 5000
                 url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'.\
                     format(host, port, hg_domain, project_name)
                 payload = {
