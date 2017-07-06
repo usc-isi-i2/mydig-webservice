@@ -44,7 +44,7 @@ progress_job_id=$!
 python ${etk_path}/etk/run_core.py \
     -i ${data_path} \
     -o ${working_dir}/tmp \
-    --dummy-this-is-mydig-backend-etk-process
+    --dummy-this-is-mydig-backend-etk-process \
     -c ${working_dir}/etk_config.json \
     -m -t ${num_processes} > ${working_dir}/etk_stdout.txt
 last_exit_code=$?
