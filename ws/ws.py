@@ -1934,7 +1934,7 @@ class Actions(Resource):
         # run etk
         Actions._update_status(project_name, 'etk running')
         # run_etk.sh page_path working_dir conda_bin_path etk_path num_processes
-        etk_cmd = '{} {} {} {} {}'.format(
+        etk_cmd = '{} {} {} {} {} {}'.format(
             os.path.abspath('run_etk.sh'),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'pages')),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir')),

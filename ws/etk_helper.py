@@ -56,7 +56,8 @@ def consolidate_landmark_rules(landmark_rules_path):
     consolidated_rules = dict()
 
     if not os.path.exists(landmark_rules_path):
-        raise Exception('landmark rules path does not exist: {}'.format(landmark_rules_path))
+        # raise Exception('landmark rules path does not exist: {}'.format(landmark_rules_path))
+        return None
 
     for rules_file_name in os.listdir(landmark_rules_path):
         if not rules_file_name.startswith('.') and rules_file_name.endswith(
