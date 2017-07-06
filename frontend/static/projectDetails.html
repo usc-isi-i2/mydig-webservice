@@ -1388,7 +1388,7 @@
 	     setTableAttributes:function(data) {
 	    	 
 	    	 this.tableAttributes=[];
-	    	 if(data.detail.response!=undefined ) {
+	    	 if(Object.keys(data.detail.response).length != 0 ) {
 		    	 this.tableAttributes = Object.keys(data.detail.response).map(function(e) {
 		     		  return [data.detail.response[e]];
 		     		});
