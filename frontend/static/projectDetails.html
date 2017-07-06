@@ -1132,21 +1132,21 @@
 	  		</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccess" modal>
-			 <paper-button dialog-confirm autofocus> Request Submitted  with Success</paper-button>
+			 <paper-button style="text-transform:none" dialog-confirm autofocus> Request Submitted  with Success</paper-button>
 	  		 <div class="buttons">
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
 	  		
 	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccessIndex" modal>
-			 <paper-button dialog-confirm autofocus> Search Index switched to Newest Index</paper-button>
+			 <paper-button dialog-confirm autofocus style="text-transform:none" > Search Index switched to Newest Index</paper-button>
 	  		 <div class="buttons">
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
 	  		
 	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToDeleteDialog" modal>
-			 <paper-button autofocus> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
+			 <paper-button autofocus style="text-transform:none"> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
 	  		 <div class="buttons">
 	  		 	<paper-button on-tap="deleteFieldFunction">Delete</paper-button>
 			    <paper-button dialog-dismiss>Close</paper-button>
