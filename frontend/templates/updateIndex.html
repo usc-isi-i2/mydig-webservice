@@ -26,12 +26,13 @@
 	<link rel="import" href="static/bower_components/polymer/polymer.html">
 	<style is="custom-style" include="shared-styles"></style>
 	<style is="custom-style" include="search-styles"></style>
-	<link rel="stylesheet" href="static/theme.css">
+	
+	<link rel="import" href="../static/technology.html">
 	<script type="text/javascript">
 	 
-               	   if(null == localStorage.getItem("username") || null == localStorage.getItem("password"))
+                  	   if(null == localStorage.getItem("username") || null == localStorage.getItem("password"))
 				location.href="/login"; 
-                              
+                                
  	 console.log();
 	 
 	</script>
@@ -39,6 +40,8 @@
 
 <body unresolved class="fullbleed layout vertical">
 <template is="dom-bind" id="app">
+<link rel="import" href="../static/technology.css" type="css">
+
           <user-demo></user-demo>
 	
 </template>

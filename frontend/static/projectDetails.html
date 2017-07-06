@@ -29,6 +29,8 @@
 	 --><style is="custom-style" include="shared-styles"></style>
 	<style is="custom-style" include="search-styles"></style>
 	<link rel="import" href="theme.css">
+	<link rel="import" href="../static/technology.html">
+	
 	
 	<script>
 	
@@ -327,6 +329,7 @@
 	    
 	</script>
 	<dom-module id="project-details"> 
+	<link rel="import" href="../static/technology.css" type="css">
 	<template>
 	
 			<iron-ajax
@@ -426,7 +429,11 @@
 			id="digURI" method="GET" content-type="application/json"
 			on-response="setDigURI"> </iron-ajax>
 			
-		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
+		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt="">
+		 	<h4 style="padding-left:15em;text-align:center" class="projectNameValue"></h4>
+			   <script>document.querySelector('.projectNameValue').innerHTML = " Project : "+projectName[1];</script>
+	        
+		 </paper-toolbar>
 			  <paper-header-panel>
 			  
 	          <section class="adjustProjectSection">
@@ -435,30 +442,28 @@
 	            </div>
 	            <div class="h-divider"></div>
 	          </section>
-	          </paper-header-panel>
-	          <h3 style="padding:0em;margin-left:10px" class="projectNameValue"></h3>
-			   <script>document.querySelector('.projectNameValue').innerHTML = projectName[1];</script>
-	         
+	          </paper-header-panel><br>
 	         <paper-material id="projectOpenDialog" class="paperMaterialStyle">
-			<paper-tabs selected="0" noink style="width:100%"> 
-			<paper-tab class="paperTabs" id="menuSelector" onclick="showMenu()">Actions</paper-tab>
-			<paper-tab class="paperTabs" id="tableSelector" onclick="showTable()">Tables</paper-tab>
-			<paper-tab class="paperTabs" id="fieldSelector" onclick="showField()">Fields</paper-tab> 
-			<paper-tab class="paperTabs" id="tagSelector" onclick="showEntity()">Tags</paper-tab>
-			<paper-tab class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
+			<paper-tabs selected="0" noink style="width: 100%;height: 3em !important;display: block;"> 
+			<paper-tab style="width:17%;height: 100%;" class="paperTabs" id="menuSelector" onclick="showMenu()">Actions</paper-tab>
+			<paper-tab style="width:17%;height: 100%;" class="paperTabs" id="tableSelector" onclick="showTable()">Tables</paper-tab>
+			<paper-tab style="width:19%;height: 100%;" class="paperTabs" id="fieldSelector" onclick="showField()">Fields</paper-tab> 
+			<paper-tab style="width:17%;height: 100%;" class="paperTabs" id="tagSelector" onclick="showEntity()">Tags</paper-tab>
+			<paper-tab style="width:19%;height: 100%;" class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
 			</paper-tabs>
 			
 			<iron-collapse id="menu" style="margin-left:20px;">
 			<br>
-			<a target="_blank" style="color:black;text-decoration: none;" href="{{digURI}}"><paper-button raised class="indigo"><strong>Sample DigApp</strong></paper-button></a> 
-					
-				<paper-material class="addPaddingToSections">
+			<a target="_blank" style="color:black;text-decoration: none;" href="{{digURI}}"><paper-button raised style="text-transform: none;" ><strong>Sample DigApp</strong></paper-button></a> 
+				<br>	<br>
+				<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 				    
 					<br><br>
 					<div>
-						  
-						<h3><strong>Get Sample Pages</strong></h3>
-						<br>
+						 <a style="color:blue;float:right" target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
+						
+						<h4>Get Sample Pages</h4>
+						<br><br>
 						<span><i>Lorem Ipsum is simply dummy text of the printing and 
 						typesetting industry. Lorem Ipsum has been the industry's standard dummy 
 						text ever since the 1500s, when an unknown printer took a galley of type 
@@ -467,28 +472,29 @@
 						essentially unchanged</i></span>
 						<br><br>
 						<div>
-						<strong>Number of Pages per TLD</strong>
+						Number of Pages per TLD
 						<input type="number" value="200" class="projectInputStyle" id="perPage"></input> 
-						<strong style="padding-left:80px">Number of Pages for Extra TLD</strong>
+						<span style="padding-left:80px">Number of Pages for Extra TLD</span>
 						<input value="0" type="number" class="projectInputStyle" id="extraPage"></input> 
 						</div>
 						<br><br>
-						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
-						style="clear:left"> <span> <strong>Show TLDs Data</strong> </span></paper-button>
-						<a target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
 						<div style="float: right">
 							<paper-button raised id="get_sample_pages" on-tap="inferlink"
 						style="clear:left"> <strong>Go</strong></paper-button>
-						</div>
+						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
+						style="clear:left;text-transform:none"> <span> <strong>Show TLDs Data</strong> </span></paper-button>
 						
+						</div>
+						<br>
 					</div>
 					<br><br>
 					</paper-material>
-					<paper-material class="addPaddingToSections">
+					<br>
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<br><br>
 					<div>
 						
-						<h3><strong>Publish</strong></h3>
+						<h4>Publish</h4>
 						<br>
 						<span><i>This will publish To GitHub</i></span>
 						<div>
@@ -498,17 +504,17 @@
 							<paper-button raised id="publish" on-tap="publish"
 						style="clear:left"> <strong>Go</strong></paper-button>
 						</div>
-						
+						<br>
 					</div>
 					<br><br>
 					</paper-material>
 				
-				
-					<paper-material class="addPaddingToSections">
+					<br>
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<br><br>
 					<div>
 						
-						<h3><strong>Extract Load/Test Data </strong></h3>
+						<h4>Extract Load/Test Data </h4>
 						<br>
 						<span><i>Lorem Ipsum is simply dummy text of the printing and 
 						typesetting industry. Lorem Ipsum has been the industry's standard dummy 
@@ -516,26 +522,27 @@
 						and scrambled it to make a type specimen book. It has survived not only 
 						five centuries, but also the leap into electronic typesetting, remaining 
 						essentially unchanged</i></span>
-						<br><br>
-						<div>
-							<paper-button raised on-tap="etkStatus"
-						style="clear:left"> <strong> Get ETK Status</strong></paper-button>
-							<strong>Running: </strong>{{etkFields.is_running}}
-							<strong style="margin-left:20px">Last Message: </strong>{{etkFields.last_message}}
-						</div> 
+						<br><br><br>
+						
+						<strong>Running: </strong>{{etkFields.is_running}}
+						<strong style="margin-left:20px">Last Message: </strong>{{etkFields.last_message}}
 						<div style="float: right">
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
+							<paper-button raised on-tap="etkStatus"
+						style="clear:left;text-transform:none"> <strong> Get ETK Status</strong></paper-button>
+							
 						</div>
-						
+						<br>
 					</div>
 					<br><br>
 					</paper-material>
-					<paper-material class="addPaddingToSections">
+					<br>
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<br><br>
 					<div>
 						
-						<h3><strong>Update to new Index</strong></h3>
+						<h4>Update to new Index</h4>
 						<br>
 						<span><i>This will update to new Index</i></span>
 						<div>
@@ -545,68 +552,57 @@
 							<paper-button raised  on-tap="updateToNewIndex"
 						style="clear:left"> <strong>Go</strong></paper-button>
 						</div>
-						
+						<br><br>
 					</div>
-					<br><br>
+					<br>
 					</paper-material>
-					
+					<br><br><br>
 			</iron-collapse>
+			
 			<iron-collapse id="field">
 			
 			
 					<div style="margin-bottom: 2em;">
 					<br>
 					<paper-button on-tap="addNewFieldSetup" raised
-						style="float:right"> <strong>Add Field</strong></paper-button>
-					<br> <br>
+						style="float:right;text-transform:none"> <strong>Add Field</strong></paper-button>
+					<br> <br><br>
 					<template is="dom-repeat" items="{{fields}}">
-				<paper-material class="addPaddingToSections">
+				<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 				<div style="padding: 8px;">
 					<paper-button on-tap="editFieldFunction" raised
-						style="float:right"> <strong>Edit</strong></paper-button>
+						style="float:right;text-transform:none"> <strong>Edit</strong></paper-button>
 					<paper-button on-tap="sureToDeleteDialogFunction" raised
-						style="float:right"> <strong>Delete</strong></paper-button>
-					<h3><strong disabled="disabled"> {{item.0.name}}</strong></h3>
+						style="float:right;text-transform:none"> <strong>Delete</strong></paper-button>
+					<h4><strong disabled="disabled"> {{item.0.name}}</strong></h4>
 				</div>
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Label:</strong> {{item.0.screen_label}}
-					<strong style="margin-left:20px" disabled="disabled">Label Plural:</strong> {{item.0.screen_label_plural}}
-		
-				</div>
-				<div style="padding: 8px;">
-					<strong disabled="disabled">Description:</strong>
-					{{item.0.description}}
-				</div>
-				<div style="padding: 8px;">
-					<strong disabled="disabled">Color:</strong>
-					{{item.0.color}}
-					<strong style="margin-left:20px" disabled="disabled">Icon:</strong>
-					{{item.0.icon}}
-				</div>
-				<div style="padding: 8px;">
-					<strong disabled="disabled">Group Name:</strong>
-					{{item.0.group_name}}
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Label:</strong> {{item.0.screen_label}}</span>
+					<span style="width: 17em;display: inline-block;"><strong  disabled="disabled">Label Plural:</strong> {{item.0.screen_label_plural}}</span>
+					<span style="width: 25em;display: inline-block;"><strong disabled="disabled">Description:</strong>{{item.0.description}}</span>
+			
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Number of Extraction Rules:</strong>
-					{{item.0.number_of_rules}}
-					<strong style="margin-left:53px" disabled="disabled">Rule Extraction Target:</strong>
-					{{item.0.rule_extraction_target}}
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Color:</strong>{{item.0.color}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Icon:</strong>
+					{{item.0.icon}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Type:</strong>
-					{{item.0.type}}
-				</div>
-				<div style="padding: 8px;">
-					<strong disabled="disabled">Search Importance:</strong>
-					{{item.0.search_importance}}
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Number of Extraction Rules:</strong>{{item.0.number_of_rules}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong>
+					{{item.0.rule_extraction_target}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Show as Link:</strong>
-					{{item.0.show_as_link}}
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Type:</strong>{{item.0.type}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Group Name:</strong>{{item.0.group_name}}</span>
+			
+				</div>
+				<div style="padding: 8px;">
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Search Importance:</strong>{{item.0.search_importance}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong>{{item.0.show_as_link}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
@@ -638,7 +634,7 @@
 						{{item}} &nbsp
 					</template>
 				</div>
-				</paper-material> </template>
+				</paper-material> <br><br></template>
 			</div>
 					
 			
@@ -648,15 +644,15 @@
 					<div style="margin-bottom: 2em;">
 					<br>
 					<paper-button onclick="addTagsDialog.toggle()" raised
-						style="float:right"> <strong>Add Tag</strong></paper-button>
-					<br> <br>
+						style="float:right;text-transform:none"> <strong>Add Tag</strong></paper-button>
+					<br> <br><br>
 					<template is="dom-repeat" items="{{tags}}">
-					<paper-material class="addPaddingToSections">
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<div>
 						<strong>Name:</strong> {{item.0.name}}
 						<div style="float: right">
-							<paper-button on-tap="deleteTagsFunction" raised> <strong>Delete</strong></paper-button>
-							<paper-button on-tap="editTagFunction" raised>
+							<paper-button style="text-transform:none" on-tap="deleteTagsFunction" raised> <strong>Delete</strong></paper-button>
+							<paper-button style="text-transform:none" on-tap="editTagFunction" raised>
 							<strong>Edit</strong></paper-button>
 						</div>
 						<br>
@@ -683,7 +679,7 @@
 						
 						<br>
 					</div>
-					</paper-material> 
+					</paper-material> <br><br>
 					</template>
 					</div>
 			</iron-collapse>
@@ -692,19 +688,19 @@
 				<div style="margin-bottom: 2em;">
 					<br>
 					<paper-button onclick="addGlossaryDialog.toggle()" raised
-						style="float:right"> <strong>Add Glossary</strong></paper-button>
+						style="float:right;text-transform:none"> <strong>Add Glossary</strong></paper-button>
 					<br> <br>
 					<template is="dom-repeat" items="{{glossaries}}">
-					<paper-material class="addPaddingToSections">
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<br><br>
 					<div>
 						
 						<strong>Name:</strong> {{item.0}}
 						<div style="float: right">
-							<paper-button on-tap="editGlossaryFunction" raised>
+							<paper-button style="text-transform:none" on-tap="editGlossaryFunction" raised>
 							<strong>Edit</strong></paper-button>
-							<paper-button on-tap="downloadGlossaryFunction" raised> <strong>Download</strong></paper-button>
-							<paper-button on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
+							<paper-button style="text-transform:none" on-tap="downloadGlossaryFunction" raised> <strong>Download</strong></paper-button>
+							<paper-button style="text-transform:none" on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
 							
 						</div>
 						
@@ -750,9 +746,8 @@
 			</iron-collapse>
 		
 		
-		
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" class="OtherDialogStyles">
-	
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" style="width:50%;margin-left:auto;margin-right:auto">
+			  <paper-dialog-scrollable>
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Description" id="tagDescriptionInput"></paper-input> 
@@ -760,6 +755,7 @@
 				<paper-input class="projectInputStyle" label="Positive class precision" id="tagPositiveInput"></paper-input> 
 				<paper-checkbox class="projectInputStyle" id="tagCheckBoxInput">Include in Menu</paper-checkbox> 
 					<br>
+				</paper-dialog-scrollable>
 					<paper-button
 					style="float:center;margin-top:20px;margin-left:10px;"
 					onclick="addNewTag()" raised> <strong>Save</strong></paper-button>
@@ -767,14 +763,18 @@
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editTagsDialog" class="OtherDialogStyles">
-				<h2>Tag : {{tagForm.name}}</h2>
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editTagsDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+				<h4>Tag : {{tagForm.name}}</h4>
 				<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.screen_label}}"></paper-input> 
 				<paper-input class="projectInputStyle" label="Description" value="{{tagForm.description}}"></paper-input> 
 				<paper-input class="projectInputStyle" label="Negative class precision" value="{{tagForm.negative_class_precision}}"></paper-input> 
 				<paper-input class="projectInputStyle" label="Positive class precision" value="{{tagForm.positive_class_precision}}"></paper-input> 
 				<paper-checkbox class="projectInputStyle" checked="{{tagForm.include_in_menu}}">Include in Menu</paper-checkbox> 
 					<br>
+				</paper-dialog-scrollable>
+			
 					<paper-button
 					style="float:center;margin-top:20px;margin-left:10px;"
 					on-tap="updateTag" raised> <strong>Save</strong></paper-button>
@@ -782,7 +782,9 @@
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" class="FieldDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldnameinput" >The name of a field, cannot be changed</paper-tooltip>
 				
@@ -884,6 +886,8 @@
 				<paper-tooltip for="fieldRuleExtractor" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 				</div>
+				</paper-dialog-scrollable>
+			
 				<br>
 								<paper-button style="float:center;margin-top:20px"
 					on-tap="getFieldGlossariesForAdd"  raised> <strong>Glossaries</strong></paper-button>
@@ -896,43 +900,54 @@
 					
 				</paper-dialog>
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editGlossariesDialog" class="FieldDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editGlossariesDialog" style="width:50%;margin-left:auto;margin-right:auto">
+			<paper-dialog-scrollable>
+			
 			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
-					<h2>Glossary : {{glossaryForm}}</h2>
+					<h4>Glossary : {{glossaryForm}}</h4>
 					<paper-input type="hidden" id="glossary_name" value="{{glossaryForm}}"></paper-input>
 	      	
 					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
 				</form>
+			</paper-dialog-scrollable>
+			
 			</paper-dialog>
 			
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" class="FieldDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" style="width:50%;margin-left:auto;margin-right:auto">
+				
 				<paper-button style="float:right;"
 					dialog-dismiss raised on-tap="saveTempGlossaries"> <strong>X</strong></paper-button>
 				<br><br><br>
+				<paper-dialog-scrollable>
+			
 				<template is="dom-repeat" items="{{glossaries}}">
-					<paper-material class="addPaddingToSections">
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<div>
 						
-						<strong>Name:</strong> {{item.0}}
-						<div style="float: right">
-							<paper-checkbox id="{{item.0}}" raised value=""> <strong>Use</strong></paper-button>
-							</div>
+						<strong style="float:left">Name:</strong> {{item.0}}
+						<paper-checkbox style="float:right;position:fixed"  id="{{item.0}}" raised value=""> <strong>Use</strong></paper-checkbox>
 						
+												
 					</div>
 					</paper-material> 
 					</template>
+				</paper-dialog-scrollable>
+			
 			</paper-dialog>
 			
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesDialog" class="FieldDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
 			
-					<paper-material class="addPaddingToSections">
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<div>
 					<textarea id="spacyRulesTextArea" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
 					</div>
 					</paper-material> 
+				</paper-dialog-scrollable>
+			
 					<div style="float:right">
 					<paper-button
 					style="float:center;margin-top:20px;margin-left:10px;"
@@ -945,7 +960,7 @@
 			
 			
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:22em">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:50%;margin-left:auto;margin-right:auto">
  
 				  <paper-dialog-scrollable>
 				  	
@@ -957,8 +972,8 @@
 					  </tr>
 				   	<template is="dom-repeat" items="{{tldResponse}}">
 						<tr>
-						    <td>{{item.0}}</td>
-						    <td>{{item.1}}</td>
+						    <td style="text-align:center">{{item.0}}</td>
+						    <td style="text-align:center">{{item.1}}</td>
 						</tr>
 					</template>
 				   	 </table>
@@ -967,11 +982,13 @@
 				  
 				  </paper-dialog>
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editFieldsDialog" class="FieldDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editFieldsDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
 				<div>
 				<paper-button style="float:right;"
 					on-tap="editRules" raised> <strong>Edit Rules</strong></paper-button>
-				<h2>Field : {{fieldForm.name}}</h2>
+				<h4>Field : {{fieldForm.name}}</h4>
 				
 				</div>
 				<paper-input id="descriptionField" style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
@@ -1081,6 +1098,8 @@
 				<paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorEditField" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
 				
 				</div>
+				</paper-dialog-scrollable>
+			
 				<br>
 								<paper-button style="float:center;margin-top:20px"
 					on-tap="getFieldGlossary" raised> <strong>Glossaries</strong></paper-button>
@@ -1095,11 +1114,14 @@
 			
 			
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" class="GlossaryDialogStyles">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+				
 					<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:*"></paper-input> 
 				    <paper-input type="file" id="glossary_fileInput"></paper-input>
 	      		<paper-button raised onclick="submitFormData()">Submit</paper-button>
-				
+				</paper-dialog-scrollable>
+			
 			</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialog" modal>
@@ -1110,28 +1132,30 @@
 	  		</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccess" modal>
-			 <paper-button dialog-confirm autofocus> Request Submitted  with Success</paper-button>
+			 <paper-button style="text-transform:none" dialog-confirm autofocus> Request Submitted  with Success</paper-button>
 	  		 <div class="buttons">
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
 	  		
 	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccessIndex" modal>
-			 <paper-button dialog-confirm autofocus> Search Index switched to Newest Index</paper-button>
+			 <paper-button dialog-confirm autofocus style="text-transform:none" > Search Index switched to Newest Index</paper-button>
 	  		 <div class="buttons">
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
 	  		
 	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToDeleteDialog" modal>
-			 <paper-button autofocus> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
+			 <paper-button autofocus style="text-transform:none"> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
 	  		 <div class="buttons">
 	  		 	<paper-button on-tap="deleteFieldFunction">Delete</paper-button>
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonSet">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonSet" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
 				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
 				
 				<template is="dom-repeat" items="{{iconsets}}">
@@ -1143,11 +1167,15 @@
 			        </template>
 			      </div>
 			    </template>
+			    </paper-dialog-scrollable>
+			
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
 			</paper-dialog>
 			
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonEditSet">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonEditSet" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
 				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
 				
 				<template is="dom-repeat" items="{{iconsets}}">
@@ -1159,10 +1187,11 @@
 			        </template>
 			      </div>
 			    </template>
+			    </paper-dialog-scrollable>
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
 			</paper-dialog>
 			
-			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papercolorSet">
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papercolorSet" >
 				
 				  <div class="set">
 			       <paper-swatch-picker column-count=2 on-tap="setColor"
