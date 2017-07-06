@@ -3,6 +3,9 @@
 	<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
 	<link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
 	
+	
+	<link rel="import" href="../static/bower_components/paper-progress/paper-progress.html">
+	
 	<link rel="import" href="../static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	<link rel="import" href="../static/bower_components/paper-input/paper-textarea.html">
@@ -526,7 +529,12 @@
 						
 						<strong>Running: </strong>{{etkFields.is_running}}
 						<strong style="margin-left:20px">Last Message: </strong>{{etkFields.last_message}}
+						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
+						<paper-progress style="display: block;width: 80%;position: relative;padding-top: 10px;"
+						value="{{etkFields.etk_progress.current}}" min="0" max="{{etkFields.etk_progress.total}}" class="red"></paper-progress>
+						
 						<div style="float: right">
+						
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
 							<paper-button raised on-tap="etkStatus"
@@ -909,6 +917,8 @@
 	      	
 					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
 				</form>
 			</paper-dialog-scrollable>
 			
@@ -1117,8 +1127,10 @@
 					<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:*"></paper-input> 
 				    <paper-input type="file" id="glossary_fileInput"></paper-input>
 	      		<paper-button raised onclick="submitFormData()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
 				</paper-dialog-scrollable>
-			
+				
 			</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialog" modal>
@@ -1377,7 +1389,7 @@
 	     setTableAttributes:function(data) {
 	    	 
 	    	 this.tableAttributes=[];
-	    	 if(data.detail.response.length!=0 && data.detail.response.length!=undefined ) {
+	    	 if(Object.keys(data.detail.response).length != 0 ) {
 		    	 this.tableAttributes = Object.keys(data.detail.response).map(function(e) {
 		     		  return [data.detail.response[e]];
 		     		});
@@ -1658,7 +1670,18 @@
 	     etkdetails:function(data) {
 	    	 this.etkFields=[];
 	    	 this.etkFields = data.detail.response;
-	    	 if(this.etkFields.is_running != false) etkStatus();
+	    	 if(this.etkFields.is_running != false) {
+	    		 var obj = {};
+		         obj.Authorization = "Basic " + btoa(username+":"+password);
+		         
+
+		         this.$.etkGet.headers = obj;
+		         this.$.etkGet.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+		         this.async(function() {
+		        	 this.$.etkGet.generateRequest();
+		           }, 2000);
+	    		 
+	    	 }
 	     },
 	     _disableDocumentScrolling: function() {
 	    	  document.body.style.overflow = 'hidden';
@@ -1870,10 +1893,5 @@
    		setDigURI:function(data) {
    			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
    		}
-   		
-   		  
-   	
-	     
-	    
-	    });
+     });
 	</script>
