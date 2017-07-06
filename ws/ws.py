@@ -1625,11 +1625,18 @@ class Actions(Resource):
 
             ret = {'last_message': last_message, 'is_running': is_running}
 
-            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_stdout_tailed.txt')
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_progress')
             if os.path.exists(path):
                 with open(path, 'r') as f:
-                    ret['etk_progress'] = f.read()
-
+                    content = f.read()
+                    if len(content) > 0:
+                        content = content.split(' ')
+                    if len(content) == 2:
+                        total, current = map(int, content)
+                        ret['etk_progress'] = {
+                            'total': total,
+                            'current': current
+                        }
             return ret
 
         elif action_name == 'get_sample_pages':
