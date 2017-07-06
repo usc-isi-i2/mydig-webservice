@@ -26,9 +26,10 @@ if [ ! -d ${working_dir}/tmp ]; then
     mkdir ${working_dir}/tmp
 fi
 
+rm ${working_dir}/tmp/output_chunk_*
 num_of_docs=$(wc -l ${working_dir}/consolidated_data.jl | awk '{print $1}')
 while true; do sleep 5; \
-    wc -l ${working_dir}/tmp/input_chunk_* | tail -n 1 | awk -v total=$num_of_docs '{print total" "$1}' \
+    wc -l ${working_dir}/tmp/output_chunk_* | tail -n 1 | awk -v total=$num_of_docs '{print total" "$1}' \
      > ${working_dir}/etk_progress; \
 done &
 progress_job_id=$!
