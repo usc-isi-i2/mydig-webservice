@@ -529,6 +529,7 @@
 						
 						<strong>Running: </strong>{{etkFields.is_running}}
 						<strong style="margin-left:20px">Last Message: </strong>{{etkFields.last_message}}
+						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
 						<paper-progress style="display: block;width: 80%;position: relative;padding-top: 10px;"
 						value="{{etkFields.etk_progress.current}}" min="0" max="{{etkFields.etk_progress.total}}" class="red"></paper-progress>
 						
@@ -1892,10 +1893,5 @@
    		setDigURI:function(data) {
    			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
    		}
-   		
-   		  
-   	
-	     
-	    
-	    });
+     });
 	</script>
