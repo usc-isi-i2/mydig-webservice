@@ -757,9 +757,9 @@
 					<br>
 				</paper-dialog-scrollable>
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;margin-left:10px;"
 					onclick="addNewTag()" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
 			
@@ -776,9 +776,9 @@
 				</paper-dialog-scrollable>
 			
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;margin-left:10px;"
 					on-tap="updateTag" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
 			
@@ -889,13 +889,13 @@
 				</paper-dialog-scrollable>
 			
 				<br>
-								<paper-button style="float:center;margin-top:20px"
+								<paper-button style="float:right;margin-top:20px"
 					on-tap="getFieldGlossariesForAdd"  raised> <strong>Glossaries</strong></paper-button>
 		
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;"
 					onclick="addNewField()" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 					
 				</paper-dialog>
@@ -905,7 +905,7 @@
 			
 			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
 					<h4>Glossary : {{glossaryForm}}</h4>
-					<paper-input type="hidden" id="glossary_name" value="{{glossaryForm}}"></paper-input>
+					<paper-input type="hidden" style="display:none" id="glossary_name" value="{{glossaryForm}}"></paper-input>
 	      	
 					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
@@ -950,9 +950,9 @@
 			
 					<div style="float:right">
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;margin-right:20px;"
 					on-tap="updateFieldSpacyRules" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 					</div>
 			</paper-dialog>
@@ -1101,13 +1101,13 @@
 				</paper-dialog-scrollable>
 			
 				<br>
-								<paper-button style="float:center;margin-top:20px"
+								<paper-button style="float:right;margin-top:20px"
 					on-tap="getFieldGlossary" raised> <strong>Glossaries</strong></paper-button>
 		
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;"
 					on-tap="updateField" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			
 			</paper-dialog>
