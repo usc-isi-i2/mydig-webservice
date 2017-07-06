@@ -916,6 +916,8 @@
 	      	
 					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
 				</form>
 			</paper-dialog-scrollable>
 			
@@ -1124,8 +1126,10 @@
 					<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:*"></paper-input> 
 				    <paper-input type="file" id="glossary_fileInput"></paper-input>
 	      		<paper-button raised onclick="submitFormData()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
 				</paper-dialog-scrollable>
-			
+				
 			</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialog" modal>
@@ -1665,7 +1669,18 @@
 	     etkdetails:function(data) {
 	    	 this.etkFields=[];
 	    	 this.etkFields = data.detail.response;
-	    	 if(this.etkFields.is_running != false) this.$.etkStatus();
+	    	 if(this.etkFields.is_running != false) {
+	    		 var obj = {};
+		         obj.Authorization = "Basic " + btoa(username+":"+password);
+		         
+
+		         this.$.etkGet.headers = obj;
+		         this.$.etkGet.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+		         this.async(function() {
+		        	 this.$.etkGet.generateRequest();
+		           }, 2000);
+	    		 
+	    	 }
 	     },
 	     _disableDocumentScrolling: function() {
 	    	  document.body.style.overflow = 'hidden';
