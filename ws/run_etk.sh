@@ -49,15 +49,16 @@ python ${etk_path}/etk/run_core.py \
     -m -t ${num_processes} > ${working_dir}/etk_stdout.txt
 last_exit_code=$?
 
-# close progress background job
+# close progress background job (sleep more than 5 seconds to let progressbar finished)
+sleep 6
 kill ${progress_job_id}
 
-if [ ${last_exit_code} == 0 ]; then
+if [ ${last_exit_code} != 0 ]; then
     exit ${last_exit_code}
 fi
 
 # concatenate outputs
-cat ${working_dir}/tmp/* > ${working_dir}/etk_out.jl
+cat ${working_dir}/tmp/output_chunk_* > ${working_dir}/etk_out.jl
 
 #if [ ${last_exit_code} == 0 ]; then
 #    cp "${working_dir}/etk_out.jl" "${working_dir}/etk_input.jl"
