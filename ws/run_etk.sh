@@ -21,7 +21,9 @@ source ${conda_bin_path}/activate etk_env
 #    -c ${working_dir}/etk_config.json > ${working_dir}/etk_stdout.txt
 
 # parallel
-mkdir ${working_dir}/tmp
+if [ ! -d ${working_dir}/tmp ]; then
+    mkdir ${working_dir}/tmp
+fi
 python ${etk_path}/etk/run_core.py \
     -i ${data_path} \
     -o ${working_dir}/tmp \
