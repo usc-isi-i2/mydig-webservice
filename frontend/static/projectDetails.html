@@ -757,9 +757,9 @@
 					<br>
 				</paper-dialog-scrollable>
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;margin-left:10px;"
 					onclick="addNewTag()" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog>
 			
@@ -776,9 +776,9 @@
 				</paper-dialog-scrollable>
 			
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;margin-left:10px;"
 					on-tap="updateTag" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			</paper-dialog> 
 			
@@ -889,13 +889,13 @@
 				</paper-dialog-scrollable>
 			
 				<br>
-								<paper-button style="float:center;margin-top:20px"
+								<paper-button style="float:right;margin-top:20px;margin-right:20px"
 					on-tap="getFieldGlossariesForAdd"  raised> <strong>Glossaries</strong></paper-button>
 		
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;"
 					onclick="addNewField()" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 					
 				</paper-dialog>
@@ -905,7 +905,7 @@
 			
 			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
 					<h4>Glossary : {{glossaryForm}}</h4>
-					<paper-input type="hidden" id="glossary_name" value="{{glossaryForm}}"></paper-input>
+					<paper-input type="hidden" style="display:none" id="glossary_name" value="{{glossaryForm}}"></paper-input>
 	      	
 					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
 	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
@@ -924,12 +924,9 @@
 			
 				<template is="dom-repeat" items="{{glossaries}}">
 					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-					<div>
-						
-						<strong style="float:left">Name:</strong> {{item.0}}
-						<paper-checkbox style="float:right;position:fixed"  id="{{item.0}}" raised value=""> <strong>Use</strong></paper-checkbox>
-						
-												
+					<div style="padding-bottom:0.5em">
+						<span><strong style="float:left">Name:</strong> {{item.0}}</span>
+						<paper-checkbox style="float:right;"  id="{{item.0}}" raised value=""> <strong>Use</strong></paper-checkbox>
 					</div>
 					</paper-material> 
 					</template>
@@ -950,9 +947,9 @@
 			
 					<div style="float:right">
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;margin-right:20px;"
 					on-tap="updateFieldSpacyRules" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 					</div>
 			</paper-dialog>
@@ -1004,7 +1001,7 @@
 				<div style="margin-top:0px;">
 				     <paper-swatch-picker id="colorSelect2" on-iron-select="_getEditColor" column-count=2 style="float:right" on-tap="_getEditColor" color="{{_getColorSelected(fieldForm.color)}}"
 			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
-			  	<paper-input id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+			  	<paper-input disabled id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
 				
@@ -1101,13 +1098,13 @@
 				</paper-dialog-scrollable>
 			
 				<br>
-								<paper-button style="float:center;margin-top:20px"
+								<paper-button style="float:right;margin-top:20px;margin-right:20px"
 					on-tap="getFieldGlossary" raised> <strong>Glossaries</strong></paper-button>
 		
 					<paper-button
-					style="float:center;margin-top:20px;margin-left:10px;"
+					style="float:right;margin-top:20px;"
 					on-tap="updateField" raised> <strong>Save</strong></paper-button>
-				<paper-button style="float:center;margin-top:20px"
+				<paper-button style="float:right;margin-top:20px"
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 			
 			</paper-dialog>
@@ -1616,7 +1613,7 @@
 	     },
 	     deletedGlossary:function() {
 	    	 this.glossaries = [];
-	     	 var obj = {};
+	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         
 	         this.$.getFields.headers = obj;
@@ -1629,7 +1626,7 @@
 	     },
 	     inferlinkGet:function() {
 	    	 	
-	    	 this.glossaries = [];
+	    	 
 	     	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         
