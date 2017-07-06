@@ -1869,9 +1869,9 @@ class Actions(Resource):
                 host = 'isi-{}.inferlink.com'.format(hg_domain)
                 port = 5000
                 url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'.\
-                    format(host, port, hg_domain, project_name)
+                    format(host, port, s['index'], project_name)
                 payload = {
-                    'production': True,
+                    # 'production': True,
                     'tlds': s['tlds'],
                     'cdr_ids': cdr_ids
                 }
