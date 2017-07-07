@@ -380,6 +380,13 @@ def add_default_TLD_extractor(project_master_config, etk_config):
                 de_obj['fields'][field_name]['extractors'][extractor]['config'] = dict()
 
     more_default_fields = {
+        "website": {
+            "extractors": {
+                "extract_website_domain": {
+                    "config": {}
+                }
+            }
+        },
         "state": {
             "extractors": {
                 "extract_using_dictionary": {
