@@ -384,7 +384,8 @@ def add_default_TLD_extractor(project_master_config, etk_config):
             "extractors": {
                 "extract_using_dictionary": {
                     "config": {
-                        "dictionary": "states"
+                        "dictionary": "states",
+                        "ngrams": 3
                     }
                 }
             }
@@ -393,7 +394,8 @@ def add_default_TLD_extractor(project_master_config, etk_config):
             "extractors": {
                 "extract_using_dictionary": {
                     "config": {
-                        "dictionary": "cities"
+                        "dictionary": "cities",
+                        "ngrams": 3
                     }
                 }
             }
@@ -407,7 +409,8 @@ def add_default_TLD_extractor(project_master_config, etk_config):
                 },
                 "extract_using_dictionary": {
                     "config": {
-                        "dictionary": "countries"
+                        "dictionary": "countries",
+                        "ngrams": 3
                     }
                 }
             }
