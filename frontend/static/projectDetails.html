@@ -2,7 +2,7 @@
 	<script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 	<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
 	<link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
-	
+	<link href="https://fonts.googleapis.com/css?family=Zilla+Slab:500i" rel="stylesheet">
 	
 	<link rel="import" href="../static/bower_components/paper-progress/paper-progress.html">
 	
@@ -361,6 +361,24 @@
 	   		
 	      }
 	    
+	    function setDefaultIcon() {
+	    	document.getElementById("iconField").value="icons:default";
+	    }
+	    
+	    function setDefaultColor() {
+	    	document.getElementById("colorField").value="amber";
+	    	
+	    }
+	    
+	    function addDefaultIcon() {
+	    	document.getElementById("fieldiconinput").value="icons:default";
+	    }
+	    
+	    function addDefaultColor() {
+	    	document.getElementById("fieldcolorinput").value="amber";
+	    	
+	    }
+	    
 	</script>
 	<dom-module id="project-details"> 
 	<link rel="import" href="../static/technology.css" type="css">
@@ -372,7 +390,7 @@
 			
 			<iron-ajax
 			id="etk" method="POST" content-type="application/json"
-			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax> 
+			handle-as="json" on-error="done" on-response="etkStatus"> </iron-ajax> 
 			
 			<iron-ajax
 			id="etkGet" method="GET" content-type="application/json"
@@ -500,14 +518,9 @@
 					<div>
 						 <a style="margin-right: 20px;color:blue;float:right" target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
 						
-						<h4>Get Sample Pages</h4>
+						<h4><strong>Get Sample Pages</strong></h4>
 						<br><br>
-						<span><i>Lorem Ipsum is simply dummy text of the printing and 
-						typesetting industry. Lorem Ipsum has been the industry's standard dummy 
-						text ever since the 1500s, when an unknown printer took a galley of type 
-						and scrambled it to make a type specimen book. It has survived not only 
-						five centuries, but also the leap into electronic typesetting, remaining 
-						essentially unchanged</i></span>
+						<span style="font-size: 18px;;font-family: 'Zilla Slab', serif;">Retrieve sample pages from the CDR for testing your extractions. The sample will contain pages from each of your specified TLDs as well as a random selection of pages from other TLDs</span>
 						<br><br>
 						<div>
 						Number of Pages per TLD
@@ -532,9 +545,9 @@
 					<br><br>
 					<div>
 						
-						<h4>Publish</h4>
+						<h4><strong>Publish Project Files</strong></h4>
 						<br>
-						<span><i>This will publish To GitHub</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Upload all the project files to the myDIG protected GitHub repository, backing up your files to allow going to previous versions or preserving files in case of disk failure.</i></span>
 						<div>
 						
 						</div>
@@ -552,14 +565,9 @@
 					<br><br>
 					<div>
 						
-						<h4>Extract Load/Test Data </h4>
+						<h4><strong>Run Extractions and Load Index For Sample Pages</strong></h4>
 						<br>
-						<span><i>Lorem Ipsum is simply dummy text of the printing and 
-						typesetting industry. Lorem Ipsum has been the industry's standard dummy 
-						text ever since the 1500s, when an unknown printer took a galley of type 
-						and scrambled it to make a type specimen book. It has survived not only 
-						five centuries, but also the leap into electronic typesetting, remaining 
-						essentially unchanged</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index. Important: wait for this command to show Running: false before clicking Update To New Index</i></span>
 						<br><br><br>
 						
 						<strong>Running: </strong>{{etkFields.is_running}}
@@ -572,9 +580,6 @@
 						
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
-							<paper-button raised on-tap="etkStatus"
-						style="clear:left;text-transform:none"> <strong> Get ETK Status</strong></paper-button>
-							
 						</div>
 						<br>
 					</div>
@@ -585,9 +590,9 @@
 					<br><br>
 					<div>
 						
-						<h4>Update to new Index</h4>
+						<h4><strong>Update To New Index</strong></h4>
 						<br>
-						<span><i>This will update to new Index</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index. Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</i></span>
 						<div>
 						
 						</div>
@@ -847,16 +852,18 @@
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput" >Label when a field contains multiple values</paper-tooltip>
 				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="addDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect" on-iron-select="_getColor" column-count=2 style="float:right" on-tap="_getColor"
 			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
-			  	<paper-input style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
+			  	<paper-input readonly style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<div style="margin-top:0px;">
+						<button style="float:right" onclick="addDefaultIcon()">X</button>
 						<paper-button style="float:right" onclick="papericonSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
-						<paper-input style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
+						<paper-input readonly style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
 			
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
@@ -1046,17 +1053,19 @@
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelPluralField" >Label when a field contains multiple values</paper-tooltip>
 				
 				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="setDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect2" on-iron-select="_getEditColor" column-count=2 style="float:right" on-tap="_getEditColor" color="{{_getColorSelected(fieldForm.color)}}"
 			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
-			  	<paper-input disabled id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+			  	<paper-input readonly id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
 				<div style="margin-top:0px;">
+					<button style="float:right" onclick="setDefaultIcon()">X</button>
 					<paper-button style="float:right" onclick="papericonEditSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
-					<paper-input id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+					<paper-input readonly id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField" >The icon to decorate the field in DIG</paper-tooltip>
 				
@@ -1479,6 +1488,8 @@
 		    	 }
 		    	 this.push('fieldNames',"none");
 		 	 }
+		    	 var obj = {};
+		         obj.Authorization = "Basic " + btoa(username+":"+password);
 	    	    this.$.tableAttributes.headers = obj;
 		    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
 		    	this.$.tableAttributes.generateRequest();

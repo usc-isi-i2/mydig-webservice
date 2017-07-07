@@ -2006,6 +2006,10 @@ class Actions(Resource):
 
     def _update_to_new_index(self, project_name):
 
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        if os.path.exists(lock_path):
+            return rest.bad_request('etk is still running')
+
         url = '{}/config?url={}&project={}&index={}&type={}'.format(
             data[project_name]['master_config']['configuration']['sandpaper_sample_url'],
             config['sandpaper']['ws_url'],
