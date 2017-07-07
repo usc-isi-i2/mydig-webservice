@@ -68,28 +68,28 @@ default_glossaries = {
             '3': 4
         }
     },
-    # 'cities': {
-    #     'path': 'cities.json.gz',
-    #     'entry_count': 13156,
-    #     'ngram_distribution': {
-    #         '1': 11333,
-    #         '2': 1485,
-    #         '3': 229,
-    #         '4': 93,
-    #         '5': 15
-    #     }
-    # },
-    # 'countries': {
-    #     'path': 'countries.json.gz',
-    #     'entry_count': 257,
-    #     'ngram_distribution': {
-    #         '1': 185,
-    #         '2': 46,
-    #         '3': 13,
-    #         '4': 7,
-    #         '5': 5
-    #     }
-    # },
+    'cities': {
+        'path': 'cities.json.gz',
+        'entry_count': 13156,
+        'ngram_distribution': {
+            '1': 11333,
+            '2': 1485,
+            '3': 229,
+            '4': 93,
+            '5': 15
+        }
+    },
+    'countries': {
+        'path': 'countries.json.gz',
+        'entry_count': 257,
+        'ngram_distribution': {
+            '1': 185,
+            '2': 46,
+            '3': 13,
+            '4': 7,
+            '5': 5
+        }
+    },
     'ethnicities': {
         'path': 'ethnicities.json.gz',
         'entry_count': 291,
@@ -120,15 +120,15 @@ default_glossaries = {
             '1': 59
         }
     },
-    # 'states_usa_canada': {
-    #     'path': 'states_usa_canada.json.gz',
-    #     'entry_count': 63,
-    #     'ngram_distribution': {
-    #         '1': 47,
-    #         '2': 14,
-    #         '3': 2
-    #     }
-    # }
+    'states_usa_canada': {
+        'path': 'states_usa_canada.json.gz',
+        'entry_count': 63,
+        'ngram_distribution': {
+            '1': 47,
+            '2': 14,
+            '3': 2
+        }
+    }
 }
 
 default_configurations = {
