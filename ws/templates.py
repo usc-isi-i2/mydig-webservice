@@ -49,6 +49,12 @@ default_glossary_dicts = {
     },
     'cities': {
         'path': 'cities.json.gz'
+    },
+    'countries': {
+        'path': 'countries.json.gz'
+    },
+    'states_usa_canada': {
+        'path': 'states_usa_canada.json.gz'
     }
 }
 
@@ -73,17 +79,17 @@ default_glossaries = {
     #         '5': 15
     #     }
     # },
-    'countries': {
-        'path': 'countries.json.gz',
-        'entry_count': 257,
-        'ngram_distribution': {
-            '1': 185,
-            '2': 46,
-            '3': 13,
-            '4': 7,
-            '5': 5
-        }
-    },
+    # 'countries': {
+    #     'path': 'countries.json.gz',
+    #     'entry_count': 257,
+    #     'ngram_distribution': {
+    #         '1': 185,
+    #         '2': 46,
+    #         '3': 13,
+    #         '4': 7,
+    #         '5': 5
+    #     }
+    # },
     'ethnicities': {
         'path': 'ethnicities.json.gz',
         'entry_count': 291,
@@ -114,15 +120,15 @@ default_glossaries = {
             '1': 59
         }
     },
-    'states_usa_canada': {
-        'path': 'states_usa_canada.json.gz',
-        'entry_count': 63,
-        'ngram_distribution': {
-            '1': 47,
-            '2': 14,
-            '3': 2
-        }
-    }
+    # 'states_usa_canada': {
+    #     'path': 'states_usa_canada.json.gz',
+    #     'entry_count': 63,
+    #     'ngram_distribution': {
+    #         '1': 47,
+    #         '2': 14,
+    #         '3': 2
+    #     }
+    # }
 }
 
 default_configurations = {
