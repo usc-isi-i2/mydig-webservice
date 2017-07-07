@@ -1305,15 +1305,13 @@
 	        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
 	    	this.$.getFields.generateRequest();
 	    	
-	    	this.$.tableAttributes.headers = obj;
-	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
-	    	this.$.tableAttributes.generateRequest();
-	    	
-	    	
-	    	
 	    	this.$.getGlossary.headers = obj;
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
+	    	
+	    	this.$.tableAttributes.headers = obj;
+	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+	    	this.$.tableAttributes.generateRequest();
 	    	
 	    	
 	    	this.colorSet={
@@ -1481,6 +1479,9 @@
 		    	 }
 		    	 this.push('fieldNames',"none");
 		 	 }
+	    	    this.$.tableAttributes.headers = obj;
+		    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+		    	this.$.tableAttributes.generateRequest();
 	     },
 	     fillGlossary : function(data) {
 	    	 
@@ -1546,11 +1547,6 @@
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
 	    	
-	    	this.$.tableAttributes.headers = obj;
-	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
-	    	this.$.tableAttributes.generateRequest();
-	    	
-	     	
 	     },
 	     sureToDeleteDialogFunction:function(e) {
 	    	 this.fieldName = e.model.item[0].name;
