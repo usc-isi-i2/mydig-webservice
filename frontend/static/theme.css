@@ -216,6 +216,11 @@
      	height:2em;
      }
      
+     .disabledClass {
+     	pointer-events: none;
+        opacity: 0.4;
+     }
+     
      .paperDatableClass td {
      	height:2em;
      	
