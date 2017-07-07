@@ -384,7 +384,7 @@ def add_default_TLD_extractor(project_master_config, etk_config):
             "extractors": {
                 "extract_using_dictionary": {
                     "config": {
-                        "dictionary": "states",
+                        "dictionary": "states_usa_canada",
                         "ngrams": 3
                     }
                 }
