@@ -280,7 +280,7 @@
 	   		   		document.getElementById("fielddescriptioninput").value="";
 	   		   		document.getElementById("fieldscreenlabelinput").value="";
 	   		   	    document.getElementById("fieldscreenlabelPluralinput").value="";
-	   		   		document.getElementById("fieldcolorinput").value="var(--paper-amber-600)";
+	   		   		document.getElementById("fieldcolorinput").value="amber";
 	   		   		
 	   		   		
 	   		   		document.getElementById("fieldgroupnameinput").value="";
@@ -1258,26 +1258,26 @@
 	    	
 	    	
 	    	this.colorSet={
-	    			"#ffb300":"var(--paper-amber-600)",
-	    			"#1e88e5":"var(--paper-blue-600)",
-	    			"#546e7a":"var(--paper-blue-grey-600)",
-	    			"#6d4c41":"var(--paper-brown-600)",
-	    			"#00acc1":"var(--paper-cyan-600)",
-	    			"#f4511e":"var(--paper-deep-orange-600)",
-	    			"#5e35b1":"var(--paper-deep-purple-600)",
-	    			"#43a047":"var(--paper-green-600)",
-	    			"#1b5e20":"var(--paper-green-900)",
-	    			"#757575":"var(--paper-grey-600)",
-	    			"#3949ab":"var(--paper-indigo-600)",
-	    			"#039be5":"var(--paper-light-blue-600)",
-	    			"#7cb342":"var(--paper-light-green-600)",
-	    			"#c0ca33":"var(--paper-lime-600)",
-	    			"#fb8c00":"var(--paper-orange-600)",
-	    			"#d81b60":"var(--paper-pink-600)",
-	    			"#8e24aa":"var(--paper-purple-600)",
-	    			"#e53935":"var(--paper-red-600)",
-	    			"#00897b":"var(--paper-teal-600)",
-	    			"#fdd835":"var(--paper-yellow-600)"
+	    			"#ffb300":"amber",
+	    			"#1e88e5":"blue",
+	    			"#546e7a":"blue-grey",
+	    			"#6d4c41":"brown",
+	    			"#00acc1":"cyan",
+	    			"#f4511e":"deep-orange",
+	    			"#5e35b1":"deep-purple",
+	    			"#43a047":"green",
+	    			"#1b5e20":"green",
+	    			"#757575":"grey",
+	    			"#3949ab":"indigo",
+	    			"#039be5":"light-blue",
+	    			"#7cb342":"light-green",
+	    			"#c0ca33":"lime",
+	    			"#fb8c00":"orange",
+	    			"#d81b60":"pink",
+	    			"#8e24aa":"purple",
+	    			"#e53935":"red",
+	    			"#00897b":"teal",
+	    			"#fdd835":"yellow"
 	    	};
 	    	
 	    	
@@ -1296,14 +1296,14 @@
 		
 	     },
 	     _getColor:function() {
-	    	 if(this.$$('#colorSelect').color == undefined) return "var(--paper-amber-600)";
+	    	 if(this.$$('#colorSelect').color == undefined) return "amber";
 	    	 this.$$('#fieldcolorinput').value = this.colorSet[this.$$('#colorSelect').color];
 	    	 return this.colorSet[this.$$('#colorSelect').color];
 		    	
 	    	 
 	     },
 	     _getEditColor:function() {
-	    	 if(this.$$('#colorSelect2').color == undefined) return "var(--paper-amber-600)";
+	    	 if(this.$$('#colorSelect2').color == undefined) return "amber";
 	    	 this.$$('#colorField').value = this.colorSet[this.$$('#colorSelect2').color];
 	    	 return this.colorSet[this.$$('#colorSelect2').color];
 		    	
@@ -1861,7 +1861,7 @@
 		    	this.$$("#fielddescriptioninput").value="";
 		    	this.$$("#fieldscreenlabelinput").value="";
 		    	this.$$("#fieldscreenlabelPluralinput").value="";
-		    	this.$$("#fieldcolorinput").value="var(--paper-amber-600)";
+		    	this.$$("#fieldcolorinput").value="amber";
 		   		
 		   		
 		    	this.$$("#fieldgroupnameinput").value="";
