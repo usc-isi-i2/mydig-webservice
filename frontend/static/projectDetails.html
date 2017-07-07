@@ -236,6 +236,37 @@
 	   		xhr.send(data);
 	   		
 	      }
+	    
+	    function addNewTableValue() {
+	    	var xhr = new XMLHttpRequest();
+	    	var url = backend_url + "projects/"+projectName[1]+"/table_attributes";
+	    	var fieldName=document.getElementById("fieldInputDropDownInput").selectedItem.value;
+	   		var attribute=document.getElementById("tableAttributeInputValue").value;
+	   		var values = (document.getElementById("textAreaForTableAttribute").value).split("\n");
+			
+	   		xhr.open("POST", url, true);
+	   		xhr.setRequestHeader("Content-type", "application/json");
+	   		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+	   		xhr.onreadystatechange = function () {
+	   		    if (xhr.readyState === 4 && xhr.status === 201) {
+	   		    	AddNewTableAttributeDialog.toggle();
+	   		    	document.getElementById("fieldInputDropDownInput").selected="0";
+	   		    	document.getElementById("tableAttributeInputValue").value="";
+	   		    	document.getElementById("textAreaForTableAttribute").value="";
+	   		    	document.getElementById("tableAttributes").generateRequest();
+	   		    	
+	   		    }
+	   		}
+	   		var data = JSON.stringify({
+	   			"field_name": fieldName,
+	   		  "info": {},
+	   		  "name": attribute,
+	   		  "value": values
+	   		});
+	   		xhr.send(data);
+	   		
+	    }
 	     
 	    function addNewField() {
 	    	var xhr = new XMLHttpRequest();
@@ -280,7 +311,7 @@
 	   		   		document.getElementById("fielddescriptioninput").value="";
 	   		   		document.getElementById("fieldscreenlabelinput").value="";
 	   		   	    document.getElementById("fieldscreenlabelPluralinput").value="";
-	   		   		document.getElementById("fieldcolorinput").value="var(--paper-amber-600)";
+	   		   		document.getElementById("fieldcolorinput").value="amber";
 	   		   		
 	   		   		
 	   		   		document.getElementById("fieldgroupnameinput").value="";
@@ -371,6 +402,10 @@
 			
 			<iron-ajax
 			id="deleteFields" method="DELETE" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="deleteTableAttribute" method="DELETE" content-type="application/json"
 			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
 			
 			<iron-ajax
@@ -566,7 +601,6 @@
 					</paper-material>
 					<br><br><br>
 			</iron-collapse>
-			
 			<iron-collapse id="field">
 			
 			
@@ -720,12 +754,17 @@
 			
 			</iron-collapse>
 			<iron-collapse id="tables">
-			
+			<br>
+				<paper-button
+					style="text-transform:none;float:right;margin-top:20px;margin-right:20px;"
+					on-tap="addNewAttribute" raised> <strong>Add</strong></paper-button>
+			<br><br>	
 			<table class="paperDatableClass">
 				<tr>
 					<th style="width:20%;border: 1.5px solid black;">Attribute</th>
 					<th style="width:30%;border: 1.5px solid black;">Field</th>
-					<th style="border: 1.5px solid black;">Values</th>
+					<th style="width:30%;border: 1.5px solid black;">Values</th>
+					<th style="border: 1.5px solid black;">Action</th>
 				</tr>
 				<template is="dom-repeat" items="{{tableAttributes}}" as="item">
 		   		<tr>
@@ -746,6 +785,9 @@
 			            </template>
 			        
 			        </td>
+			        <td>
+				      <paper-button style="text-transform:none;margin-left:3em"on-tap="deleteAttribute" raised> <strong>Delete</strong></paper-button>
+				    </td>
 		     		
 				</tr>
 				</template>
@@ -924,7 +966,6 @@
 			
 			</paper-dialog>
 			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" style="width:50%;margin-left:auto;margin-right:auto">
 				
 				<paper-button style="float:right;"
@@ -944,7 +985,6 @@
 			
 			</paper-dialog>
 			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesDialog" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
 			
@@ -963,9 +1003,6 @@
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 					</div>
 			</paper-dialog>
-			
-			
-			
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:50%;margin-left:auto;margin-right:auto">
  
@@ -1119,8 +1156,6 @@
 			
 			</paper-dialog>
 			
-			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
 				
@@ -1181,7 +1216,6 @@
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
 			</paper-dialog>
 			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonEditSet" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
 			
@@ -1209,6 +1243,31 @@
 			    
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
 			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="AddNewTableAttributeDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+						<paper-input auto-validate required style="margin:0px;" class="projectInputStyle" label="Attribute*" id="tableAttributeInputValue"></paper-input> 
+				
+						<paper-dropdown-menu id="fieldInputDropDown" style="margin:0px;" class="projectInputStyle" label="Field:">
+					        <paper-menu id="fieldInputDropDownInput"  class="dropdown-content" selected="0">
+					            <template is="dom-repeat" items="{{fieldNames}}" as="item">
+					                <paper-item  value={{item}}>{{item}}</paper-item>
+					            </template>
+					        </paper-menu>
+		       			</paper-dropdown-menu>
+		       			<div>
+				        <span>Values</span>
+				        <textarea id=textAreaForTableAttribute  style="height:4em;clear:left;width:100%;resize:none"></textarea>
+				        </div>
+		       
+				</paper-dialog-scrollable>
+				<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					onclick="addNewTableValue()" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+			</paper-dialog>
+			
 			</paper-material>
 	</template>
 	</dom-module>
@@ -1258,26 +1317,26 @@
 	    	
 	    	
 	    	this.colorSet={
-	    			"#ffb300":"var(--paper-amber-600)",
-	    			"#1e88e5":"var(--paper-blue-600)",
-	    			"#546e7a":"var(--paper-blue-grey-600)",
-	    			"#6d4c41":"var(--paper-brown-600)",
-	    			"#00acc1":"var(--paper-cyan-600)",
-	    			"#f4511e":"var(--paper-deep-orange-600)",
-	    			"#5e35b1":"var(--paper-deep-purple-600)",
-	    			"#43a047":"var(--paper-green-600)",
-	    			"#1b5e20":"var(--paper-green-900)",
-	    			"#757575":"var(--paper-grey-600)",
-	    			"#3949ab":"var(--paper-indigo-600)",
-	    			"#039be5":"var(--paper-light-blue-600)",
-	    			"#7cb342":"var(--paper-light-green-600)",
-	    			"#c0ca33":"var(--paper-lime-600)",
-	    			"#fb8c00":"var(--paper-orange-600)",
-	    			"#d81b60":"var(--paper-pink-600)",
-	    			"#8e24aa":"var(--paper-purple-600)",
-	    			"#e53935":"var(--paper-red-600)",
-	    			"#00897b":"var(--paper-teal-600)",
-	    			"#fdd835":"var(--paper-yellow-600)"
+	    			"#ffb300":"amber",
+	    			"#1e88e5":"blue",
+	    			"#546e7a":"blue-grey",
+	    			"#6d4c41":"brown",
+	    			"#00acc1":"cyan",
+	    			"#f4511e":"deep-orange",
+	    			"#5e35b1":"deep-purple",
+	    			"#43a047":"green",
+	    			"#1b5e20":"green",
+	    			"#757575":"grey",
+	    			"#3949ab":"indigo",
+	    			"#039be5":"light-blue",
+	    			"#7cb342":"light-green",
+	    			"#c0ca33":"lime",
+	    			"#fb8c00":"orange",
+	    			"#d81b60":"pink",
+	    			"#8e24aa":"purple",
+	    			"#e53935":"red",
+	    			"#00897b":"teal",
+	    			"#fdd835":"yellow"
 	    	};
 	    	
 	    	
@@ -1296,14 +1355,14 @@
 		
 	     },
 	     _getColor:function() {
-	    	 if(this.$$('#colorSelect').color == undefined) return "var(--paper-amber-600)";
+	    	 if(this.$$('#colorSelect').color == undefined) return "amber";
 	    	 this.$$('#fieldcolorinput').value = this.colorSet[this.$$('#colorSelect').color];
 	    	 return this.colorSet[this.$$('#colorSelect').color];
 		    	
 	    	 
 	     },
 	     _getEditColor:function() {
-	    	 if(this.$$('#colorSelect2').color == undefined) return "var(--paper-amber-600)";
+	    	 if(this.$$('#colorSelect2').color == undefined) return "amber";
 	    	 this.$$('#colorField').value = this.colorSet[this.$$('#colorSelect2').color];
 	    	 return this.colorSet[this.$$('#colorSelect2').color];
 		    	
@@ -1861,7 +1920,7 @@
 		    	this.$$("#fielddescriptioninput").value="";
 		    	this.$$("#fieldscreenlabelinput").value="";
 		    	this.$$("#fieldscreenlabelPluralinput").value="";
-		    	this.$$("#fieldcolorinput").value="var(--paper-amber-600)";
+		    	this.$$("#fieldcolorinput").value="amber";
 		   		
 		   		
 		    	this.$$("#fieldgroupnameinput").value="";
@@ -1892,6 +1951,22 @@
    		},
    		setDigURI:function(data) {
    			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
+   		},
+   		addNewAttribute:function() {
+   			this.$$("#tableAttributeInputValue").value="";
+   			this.$$("#fieldInputDropDownInput").selected="";
+   			this.$$("#textAreaForTableAttribute").value="";
+   			
+   			AddNewTableAttributeDialog.toggle();
+   		},
+   		deleteAttribute:function(e) {
+   			
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.deleteTableAttribute.headers = obj;
+	         this.$.deleteTableAttribute.url = backend_url + "projects/"+projectName[1]+"/table_attributes/"+e.model.item[0].name;
+	     	this.$.deleteTableAttribute.generateRequest();
+	    	 
    		}
      });
 	</script>
