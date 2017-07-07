@@ -361,6 +361,24 @@
 	   		
 	      }
 	    
+	    function setDefaultIcon() {
+	    	document.getElementById("iconField").value="icons:default";
+	    }
+	    
+	    function setDefaultColor() {
+	    	document.getElementById("colorField").value="amber";
+	    	
+	    }
+	    
+	    function addDefaultIcon() {
+	    	document.getElementById("fieldiconinput").value="icons:default";
+	    }
+	    
+	    function addDefaultColor() {
+	    	document.getElementById("fieldcolorinput").value="amber";
+	    	
+	    }
+	    
 	</script>
 	<dom-module id="project-details"> 
 	<link rel="import" href="../static/technology.css" type="css">
@@ -847,16 +865,18 @@
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput" >Label when a field contains multiple values</paper-tooltip>
 				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="addDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect" on-iron-select="_getColor" column-count=2 style="float:right" on-tap="_getColor"
 			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
-			  	<paper-input style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
+			  	<paper-input readonly style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<div style="margin-top:0px;">
+						<button style="float:right" onclick="addDefaultIcon()">X</button>
 						<paper-button style="float:right" onclick="papericonSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
-						<paper-input style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
+						<paper-input readonly style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
 			
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
@@ -1046,17 +1066,19 @@
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelPluralField" >Label when a field contains multiple values</paper-tooltip>
 				
 				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="setDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect2" on-iron-select="_getEditColor" column-count=2 style="float:right" on-tap="_getEditColor" color="{{_getColorSelected(fieldForm.color)}}"
 			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
-			  	<paper-input disabled id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+			  	<paper-input readonly id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
 				<div style="margin-top:0px;">
+					<button style="float:right" onclick="setDefaultIcon()">X</button>
 					<paper-button style="float:right" onclick="papericonEditSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
-					<paper-input id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+					<paper-input readonly id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField" >The icon to decorate the field in DIG</paper-tooltip>
 				
@@ -1479,6 +1501,8 @@
 		    	 }
 		    	 this.push('fieldNames',"none");
 		 	 }
+		    	 var obj = {};
+		         obj.Authorization = "Basic " + btoa(username+":"+password);
 	    	    this.$.tableAttributes.headers = obj;
 		    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
 		    	this.$.tableAttributes.generateRequest();
