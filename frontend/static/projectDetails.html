@@ -627,40 +627,36 @@
 				<div style="padding: 8px;">
 					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Label:</strong> {{item.0.screen_label}}</span>
 					<span style="width: 17em;display: inline-block;"><strong  disabled="disabled">Label Plural:</strong> {{item.0.screen_label_plural}}</span>
-					<span style="width: 25em;display: inline-block;"><strong disabled="disabled">Description:</strong>{{item.0.description}}</span>
+					<span style="width: 25em;display: inline-block;"><strong disabled="disabled">Description:</strong> {{item.0.description}}</span>
 			
 				</div>
 				
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Color:</strong>{{item.0.color}}</span>
-					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Icon:</strong>
-					{{item.0.icon}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Color:</strong> {{item.0.color}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Icon:</strong> {{item.0.icon}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Number of Extraction Rules:</strong>{{item.0.number_of_rules}}</span>
-					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong>
-					{{item.0.rule_extraction_target}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Number of Extraction Rules:</strong> {{item.0.number_of_rules}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong> {{item.0.rule_extraction_target}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Type:</strong>{{item.0.type}}</span>
-					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Group Name:</strong>{{item.0.group_name}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Type:</strong> {{item.0.type}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Group Name:</strong> {{item.0.group_name}}</span>
 			
 				</div>
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Search Importance:</strong>{{item.0.search_importance}}</span>
-					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong>{{item.0.show_as_link}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Search Importance:</strong> {{item.0.search_importance}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong> {{item.0.show_as_link}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Predefined Extractor:</strong>
-					{{item.0.predefined_extractor}}
+					<strong disabled="disabled">Predefined Extractor:</strong> {{item.0.predefined_extractor}}
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Show in Result:</strong>
-					{{item.0.show_in_result}}
+					<strong disabled="disabled">Show in Result:</strong> {{item.0.show_in_result}}
 				</div>
 				
 				<div style="padding: 8px;">
@@ -1213,6 +1209,8 @@
 				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
 				
 				<template is="dom-repeat" items="{{iconsets}}">
+				<h4>{{item.name}}</h4>
+				<br>
 			      <div class="set">
 			        <template is="dom-repeat" items="{{getIconNames(item)}}">
 			          <span class="container">
@@ -1220,6 +1218,7 @@
 			          </span>
 			        </template>
 			      </div>
+			     <br>
 			    </template>
 			    </paper-dialog-scrollable>
 			
@@ -1232,6 +1231,8 @@
 				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
 				
 				<template is="dom-repeat" items="{{iconsets}}">
+				<h4>{{item.name}}</h4>
+				<br>
 			      <div class="set">
 			        <template is="dom-repeat" items="{{getIconNames(item)}}">
 			          <span class="container">
@@ -1239,6 +1240,7 @@
 			          </span>
 			        </template>
 			      </div>
+			     <br>
 			    </template>
 			    </paper-dialog-scrollable>
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
