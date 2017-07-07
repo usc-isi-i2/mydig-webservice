@@ -390,7 +390,7 @@
 			
 			<iron-ajax
 			id="etk" method="POST" content-type="application/json"
-			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax> 
+			handle-as="json" on-error="done" on-response="etkStatus"> </iron-ajax> 
 			
 			<iron-ajax
 			id="etkGet" method="GET" content-type="application/json"
@@ -580,9 +580,6 @@
 						
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
-							<paper-button raised on-tap="etkStatus"
-						style="clear:left;text-transform:none"> <strong> Get ETK Status</strong></paper-button>
-							
 						</div>
 						<br>
 					</div>
