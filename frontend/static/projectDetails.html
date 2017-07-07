@@ -567,13 +567,13 @@
 						
 						<h4><strong>Run Extractions and Load Index For Sample Pages</strong></h4>
 						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index. Important: wait for this command to show Running: false before clicking Update To New Index</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Index</span>
 						<br><br><br>
 						
-						<strong>Running: </strong>{{etkFields.is_running}}
-						<strong style="margin-left:20px">Last Message: </strong>{{etkFields.last_message}}
+						<strong>Status: </strong>{{etkFields.last_message}}
 						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
-						<paper-progress style="display: block;width: 80%;position: relative;padding-top: 10px;"
+						<paper-progress on-tap="etkStatus" id="progr" style="display: block;width: 80%;position: relative;padding-top: 10px;"
 						value="{{etkFields.etk_progress.current}}" min="0" max="{{etkFields.etk_progress.total}}" class="red"></paper-progress>
 						
 						<div style="float: right">
@@ -592,7 +592,8 @@
 						
 						<h4><strong>Update To New Index</strong></h4>
 						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index. Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;"> Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</span>
 						<div>
 						
 						</div>
@@ -1736,6 +1737,9 @@
 	     etkdetails:function(data) {
 	    	 this.etkFields=[];
 	    	 this.etkFields = data.detail.response;
+	    	 if(this.etkFields.is_running ==false && this.etkFields.last_message=="done") {
+	    		 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "#22941b";
+	    	 }
 	    	 if(this.etkFields.is_running != false) {
 	    		 var obj = {};
 		         obj.Authorization = "Basic " + btoa(username+":"+password);
