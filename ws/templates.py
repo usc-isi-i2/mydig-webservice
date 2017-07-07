@@ -48,7 +48,7 @@ default_glossary_dicts = {
         'path': 'populated_cities.json'
     },
     'cities': {
-        'path': 'cities.json'
+        'path': 'cities.json.gz'
     }
 }
 
