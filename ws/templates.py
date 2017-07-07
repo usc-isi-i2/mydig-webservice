@@ -39,16 +39,28 @@ default_glossary_dicts = {
         'path': 'country_codes_dict.json'
     },
     'state_to_codes_lower': {
-        'path': 'states-to-codes-lower.json'
+        'path': 'states_to_codes_lower.json'
     },
     'geonames': {
         'path': 'city_dict_alt_15000.json'
+    },
+    'populated_cities': {
+        'path': 'populated_cities.json'
     }
 }
 
 default_glossaries = {
-    'cities_25k': {
-        'path': 'cities_25k.json.gz',
+    'adult_services': {
+        'path': 'adult_services.json.gz',
+        'entry_count': 151,
+        'ngram_distribution': {
+            '1': 119,
+            '2': 28,
+            '3': 4
+        }
+    },
+    'cities': {
+        'path': 'cities.json.gz',
         'entry_count': 13156,
         'ngram_distribution': {
             '1': 11333,
@@ -78,6 +90,13 @@ default_glossaries = {
             '3': 2
         }
     },
+    'eyecolors': {
+        'path': 'eyecolors.json.gz',
+        'entry_count': 28,
+        'ngram_distribution': {
+            '1': 28
+        }
+    },
     'haircolors': {
         'path': 'haircolors.json.gz',
         'entry_count': 60,
@@ -85,35 +104,11 @@ default_glossaries = {
             '1': 60
         }
     },
-    'states_usc_codes': {
-        'path': 'states_usc_codes.json.gz',
+    'states_usa_codes': {
+        'path': 'states_usa_codes.json.gz',
         'entry_count': 59,
         'ngram_distribution': {
             '1': 59
-        }
-    },
-    'escort_services': {
-        'path': 'escort_services.json.gz',
-        'entry_count': 151,
-        'ngram_distribution': {
-            '1': 119,
-            '2': 28,
-            '3': 4
-        }
-    },
-    'female_names': {
-        'path': 'female_names.json.gz',
-        'entry_count': 8315,
-        'ngram_distribution': {
-            '1': 8307,
-            '2': 8
-        }
-    },
-    'eyecolors': {
-        'path': 'eyecolors.json.gz',
-        'entry_count': 28,
-        'ngram_distribution': {
-            '1': 28
         }
     },
     'states_usa_canada': {

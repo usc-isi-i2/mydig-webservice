@@ -49,11 +49,11 @@ python ${etk_path}/etk/run_core.py \
     -m -t ${num_processes} > ${working_dir}/etk_stdout.txt
 last_exit_code=$?
 
-# close progress background job (sleep more than 5 seconds to let progressbar finished)
+# close progress background job (sleep more than 5 seconds to let progressbar finish)
 sleep 6
 kill ${progress_job_id}
 
-if [ ${last_exit_code} != 0 ]; then
+if [ ${last_exit_code} ne 0 ]; then
     exit ${last_exit_code}
 fi
 
