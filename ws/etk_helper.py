@@ -22,9 +22,6 @@ default_etk_config_str = """{
             ],
             "title": {
                 "extraction_policy": "keep_existing"
-            },
-            "table": {
-                "field_name": "table"
             }
         }
     }
