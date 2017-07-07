@@ -62,17 +62,17 @@ default_glossaries = {
             '3': 4
         }
     },
-    'cities': {
-        'path': 'cities.json.gz',
-        'entry_count': 13156,
-        'ngram_distribution': {
-            '1': 11333,
-            '2': 1485,
-            '3': 229,
-            '4': 93,
-            '5': 15
-        }
-    },
+    # 'cities': {
+    #     'path': 'cities.json.gz',
+    #     'entry_count': 13156,
+    #     'ngram_distribution': {
+    #         '1': 11333,
+    #         '2': 1485,
+    #         '3': 229,
+    #         '4': 93,
+    #         '5': 15
+    #     }
+    # },
     'countries': {
         'path': 'countries.json.gz',
         'entry_count': 257,
