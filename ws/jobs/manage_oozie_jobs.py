@@ -14,6 +14,7 @@ class OozieJobs(object):
         # config_xml = codecs.open('config.xml, 'r')
         headers = {'Content-Type': 'application/xml'}
         payload = OozieJobs.create_worfklow_xml(property_dict)
+        print payload
         response = requests.post(oozie_url, data=payload, headers=headers)
         return response
 
