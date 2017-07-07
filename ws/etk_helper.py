@@ -124,7 +124,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
 
         # Add this file location to default etk config for landmark
         default_etk_config['resources']['landmark'].append(output_landmark_file_path)
-        default_etk_config['content_extraction']['landmark'] = {
+        default_etk_config['content_extraction']['extractors']['landmark'] = {
                 "field_name": "inferlink_extractions",
                 "extraction_policy": "keep_existing",
                 "landmark_threshold": 0.5
