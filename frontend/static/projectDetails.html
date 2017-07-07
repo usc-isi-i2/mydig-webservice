@@ -227,8 +227,8 @@
 	   		    "description": description+"",
 	   		    "include_in_menu": inmenu,
 	   		    "name": name+"",
-	   		    "negative_class_precision": negativeprecision,
-	   		    "positive_class_precision": positiveprecision,
+	   		    "negative_class_precision": parseFloat(negativeprecision),
+	   		    "positive_class_precision": parseFloat(positiveprecision),
 	   		    "screen_label":screenlabel
 	   		  }
 	   		});
@@ -759,8 +759,8 @@
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
 				<paper-input class="projectInputStyle" label="Description" id="tagDescriptionInput"></paper-input> 
-				<paper-input class="projectInputStyle" label="Negative class precision" id="tagNegativeInput"></paper-input> 
-				<paper-input class="projectInputStyle" label="Positive class precision" id="tagPositiveInput"></paper-input> 
+				<paper-input  type = "number"  class="projectInputStyle" label="Negative class precision" id="tagNegativeInput"></paper-input> 
+				<paper-input type = "number" minlength="0" maxlength="1" class="projectInputStyle" label="Positive class precision" id="tagPositiveInput"></paper-input> 
 				<paper-checkbox class="projectInputStyle" id="tagCheckBoxInput">Include in Menu</paper-checkbox> 
 					<br>
 				</paper-dialog-scrollable>
@@ -1464,8 +1464,8 @@
 	       		    "description": this.tagForm.description+"",
 	       		    "include_in_menu": this.tagForm.include_in_menu,
 	       		    "name": this.tagForm.name+"",
-	       		    "negative_class_precision": this.tagForm.negative_class_precision,
-	       		    "positive_class_precision": this.tagForm.positive_class_precision,
+	       		    "negative_class_precision": parseFloat(this.tagForm.negative_class_precision),
+	       		    "positive_class_precision": parseFloat(this.tagForm.positive_class_precision),
 	       		    "screen_label":this.tagForm.screen_label
 	       		  }
 	       		});
