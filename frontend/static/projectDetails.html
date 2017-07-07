@@ -2,7 +2,7 @@
 	<script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 	<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
 	<link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
-	
+	<link href="https://fonts.googleapis.com/css?family=Zilla+Slab:500i" rel="stylesheet">
 	
 	<link rel="import" href="../static/bower_components/paper-progress/paper-progress.html">
 	
@@ -236,6 +236,37 @@
 	   		xhr.send(data);
 	   		
 	      }
+	    
+	    function addNewTableValue() {
+	    	var xhr = new XMLHttpRequest();
+	    	var url = backend_url + "projects/"+projectName[1]+"/table_attributes";
+	    	var fieldName=document.getElementById("fieldInputDropDownInput").selectedItem.value;
+	   		var attribute=document.getElementById("tableAttributeInputValue").value;
+	   		var values = (document.getElementById("textAreaForTableAttribute").value).split("\n");
+			
+	   		xhr.open("POST", url, true);
+	   		xhr.setRequestHeader("Content-type", "application/json");
+	   		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+	   		xhr.onreadystatechange = function () {
+	   		    if (xhr.readyState === 4 && xhr.status === 201) {
+	   		    	AddNewTableAttributeDialog.toggle();
+	   		    	document.getElementById("fieldInputDropDownInput").selected="0";
+	   		    	document.getElementById("tableAttributeInputValue").value="";
+	   		    	document.getElementById("textAreaForTableAttribute").value="";
+	   		    	document.getElementById("tableAttributes").generateRequest();
+	   		    	
+	   		    }
+	   		}
+	   		var data = JSON.stringify({
+	   			"field_name": fieldName,
+	   		  "info": {},
+	   		  "name": attribute,
+	   		  "value": values
+	   		});
+	   		xhr.send(data);
+	   		
+	    }
 	     
 	    function addNewField() {
 	    	var xhr = new XMLHttpRequest();
@@ -280,7 +311,7 @@
 	   		   		document.getElementById("fielddescriptioninput").value="";
 	   		   		document.getElementById("fieldscreenlabelinput").value="";
 	   		   	    document.getElementById("fieldscreenlabelPluralinput").value="";
-	   		   		document.getElementById("fieldcolorinput").value="var(--paper-amber-600)";
+	   		   		document.getElementById("fieldcolorinput").value="amber";
 	   		   		
 	   		   		
 	   		   		document.getElementById("fieldgroupnameinput").value="";
@@ -330,6 +361,24 @@
 	   		
 	      }
 	    
+	    function setDefaultIcon() {
+	    	document.getElementById("iconField").value="icons:default";
+	    }
+	    
+	    function setDefaultColor() {
+	    	document.getElementById("colorField").value="amber";
+	    	
+	    }
+	    
+	    function addDefaultIcon() {
+	    	document.getElementById("fieldiconinput").value="icons:default";
+	    }
+	    
+	    function addDefaultColor() {
+	    	document.getElementById("fieldcolorinput").value="amber";
+	    	
+	    }
+	    
 	</script>
 	<dom-module id="project-details"> 
 	<link rel="import" href="../static/technology.css" type="css">
@@ -371,6 +420,10 @@
 			
 			<iron-ajax
 			id="deleteFields" method="DELETE" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="deleteTableAttribute" method="DELETE" content-type="application/json"
 			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
 			
 			<iron-ajax
@@ -463,16 +516,11 @@
 				    
 					<br><br>
 					<div>
-						 <a style="color:blue;float:right" target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
+						 <a style="margin-right: 20px;color:blue;float:right" target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
 						
-						<h4>Get Sample Pages</h4>
+						<h4><strong>Get Sample Pages</strong></h4>
 						<br><br>
-						<span><i>Lorem Ipsum is simply dummy text of the printing and 
-						typesetting industry. Lorem Ipsum has been the industry's standard dummy 
-						text ever since the 1500s, when an unknown printer took a galley of type 
-						and scrambled it to make a type specimen book. It has survived not only 
-						five centuries, but also the leap into electronic typesetting, remaining 
-						essentially unchanged</i></span>
+						<span style="font-size: 18px;;font-family: 'Zilla Slab', serif;">Retrieve sample pages from the CDR for testing your extractions. The sample will contain pages from each of your specified TLDs as well as a random selection of pages from other TLDs</span>
 						<br><br>
 						<div>
 						Number of Pages per TLD
@@ -497,9 +545,9 @@
 					<br><br>
 					<div>
 						
-						<h4>Publish</h4>
+						<h4><strong>Publish Project Files</strong></h4>
 						<br>
-						<span><i>This will publish To GitHub</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Upload all the project files to the myDIG protected GitHub repository, backing up your files to allow going to previous versions or preserving files in case of disk failure.</i></span>
 						<div>
 						
 						</div>
@@ -517,14 +565,9 @@
 					<br><br>
 					<div>
 						
-						<h4>Extract Load/Test Data </h4>
+						<h4><strong>Run Extractions and Load Index For Sample Pages</strong></h4>
 						<br>
-						<span><i>Lorem Ipsum is simply dummy text of the printing and 
-						typesetting industry. Lorem Ipsum has been the industry's standard dummy 
-						text ever since the 1500s, when an unknown printer took a galley of type 
-						and scrambled it to make a type specimen book. It has survived not only 
-						five centuries, but also the leap into electronic typesetting, remaining 
-						essentially unchanged</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index. Important: wait for this command to show Running: false before clicking Update To New Index</i></span>
 						<br><br><br>
 						
 						<strong>Running: </strong>{{etkFields.is_running}}
@@ -550,9 +593,9 @@
 					<br><br>
 					<div>
 						
-						<h4>Update to new Index</h4>
+						<h4><strong>Update To New Index</strong></h4>
 						<br>
-						<span><i>This will update to new Index</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index. Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</i></span>
 						<div>
 						
 						</div>
@@ -566,7 +609,6 @@
 					</paper-material>
 					<br><br><br>
 			</iron-collapse>
-			
 			<iron-collapse id="field">
 			
 			
@@ -720,12 +762,17 @@
 			
 			</iron-collapse>
 			<iron-collapse id="tables">
-			
+			<br>
+				<paper-button
+					style="text-transform:none;float:right;;margin-right:20px;"
+					on-tap="addNewAttribute" raised> <strong>Add</strong></paper-button>
+			<br><br>
 			<table class="paperDatableClass">
 				<tr>
 					<th style="width:20%;border: 1.5px solid black;">Attribute</th>
 					<th style="width:30%;border: 1.5px solid black;">Field</th>
-					<th style="border: 1.5px solid black;">Values</th>
+					<th style="width:30%;border: 1.5px solid black;">Values</th>
+					<th style="border: 1.5px solid black;">Action</th>
 				</tr>
 				<template is="dom-repeat" items="{{tableAttributes}}" as="item">
 		   		<tr>
@@ -746,6 +793,9 @@
 			            </template>
 			        
 			        </td>
+			        <td>
+				      <paper-button style="text-transform:none;margin-left:3em"on-tap="deleteAttribute" raised> <strong>Delete</strong></paper-button>
+				    </td>
 		     		
 				</tr>
 				</template>
@@ -805,16 +855,18 @@
 				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput" >Label when a field contains multiple values</paper-tooltip>
 				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="addDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect" on-iron-select="_getColor" column-count=2 style="float:right" on-tap="_getColor"
 			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
-			  	<paper-input style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
+			  	<paper-input readonly style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
 				<div style="margin-top:0px;">
+						<button style="float:right" onclick="addDefaultIcon()">X</button>
 						<paper-button style="float:right" onclick="papericonSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
-						<paper-input style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
+						<paper-input readonly style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
 			
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
@@ -924,7 +976,6 @@
 			
 			</paper-dialog>
 			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" style="width:50%;margin-left:auto;margin-right:auto">
 				
 				<paper-button style="float:right;"
@@ -944,7 +995,6 @@
 			
 			</paper-dialog>
 			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesDialog" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
 			
@@ -963,9 +1013,6 @@
 					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
 					</div>
 			</paper-dialog>
-			
-			
-			
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:50%;margin-left:auto;margin-right:auto">
  
@@ -1009,17 +1056,19 @@
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelPluralField" >Label when a field contains multiple values</paper-tooltip>
 				
 				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="setDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect2" on-iron-select="_getEditColor" column-count=2 style="float:right" on-tap="_getEditColor" color="{{_getColorSelected(fieldForm.color)}}"
 			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
-			  	<paper-input disabled id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+			  	<paper-input readonly id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
 				
 				
 				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
 				<div style="margin-top:0px;">
+					<button style="float:right" onclick="setDefaultIcon()">X</button>
 					<paper-button style="float:right" onclick="papericonEditSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
-					<paper-input id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+					<paper-input readonly id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField" >The icon to decorate the field in DIG</paper-tooltip>
 				
@@ -1119,8 +1168,6 @@
 			
 			</paper-dialog>
 			
-			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
 				
@@ -1181,7 +1228,6 @@
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
 			</paper-dialog>
 			
-			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonEditSet" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
 			
@@ -1209,6 +1255,31 @@
 			    
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
 			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="AddNewTableAttributeDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+						<paper-input auto-validate required style="margin:0px;" class="projectInputStyle" label="Attribute*" id="tableAttributeInputValue"></paper-input> 
+				
+						<paper-dropdown-menu id="fieldInputDropDown" style="margin:0px;" class="projectInputStyle" label="Field:">
+					        <paper-menu id="fieldInputDropDownInput"  class="dropdown-content" selected="0">
+					            <template is="dom-repeat" items="{{fieldNames}}" as="item">
+					                <paper-item  value={{item}}>{{item}}</paper-item>
+					            </template>
+					        </paper-menu>
+		       			</paper-dropdown-menu>
+		       			<div>
+				        <span>Values</span>
+				        <textarea id=textAreaForTableAttribute  style="height:4em;clear:left;width:100%;resize:none"></textarea>
+				        </div>
+		       
+				</paper-dialog-scrollable>
+				<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					onclick="addNewTableValue()" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+			</paper-dialog>
+			
 			</paper-material>
 	</template>
 	</dom-module>
@@ -1246,38 +1317,36 @@
 	        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
 	    	this.$.getFields.generateRequest();
 	    	
+	    	this.$.getGlossary.headers = obj;
+	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
+	    	this.$.getGlossary.generateRequest();
+	    	
 	    	this.$.tableAttributes.headers = obj;
 	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
 	    	this.$.tableAttributes.generateRequest();
 	    	
 	    	
-	    	
-	    	this.$.getGlossary.headers = obj;
-	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
-	    	this.$.getGlossary.generateRequest();
-	    	
-	    	
 	    	this.colorSet={
-	    			"#ffb300":"var(--paper-amber-600)",
-	    			"#1e88e5":"var(--paper-blue-600)",
-	    			"#546e7a":"var(--paper-blue-grey-600)",
-	    			"#6d4c41":"var(--paper-brown-600)",
-	    			"#00acc1":"var(--paper-cyan-600)",
-	    			"#f4511e":"var(--paper-deep-orange-600)",
-	    			"#5e35b1":"var(--paper-deep-purple-600)",
-	    			"#43a047":"var(--paper-green-600)",
-	    			"#1b5e20":"var(--paper-green-900)",
-	    			"#757575":"var(--paper-grey-600)",
-	    			"#3949ab":"var(--paper-indigo-600)",
-	    			"#039be5":"var(--paper-light-blue-600)",
-	    			"#7cb342":"var(--paper-light-green-600)",
-	    			"#c0ca33":"var(--paper-lime-600)",
-	    			"#fb8c00":"var(--paper-orange-600)",
-	    			"#d81b60":"var(--paper-pink-600)",
-	    			"#8e24aa":"var(--paper-purple-600)",
-	    			"#e53935":"var(--paper-red-600)",
-	    			"#00897b":"var(--paper-teal-600)",
-	    			"#fdd835":"var(--paper-yellow-600)"
+	    			"#ffb300":"amber",
+	    			"#1e88e5":"blue",
+	    			"#546e7a":"blue-grey",
+	    			"#6d4c41":"brown",
+	    			"#00acc1":"cyan",
+	    			"#f4511e":"deep-orange",
+	    			"#5e35b1":"deep-purple",
+	    			"#43a047":"green",
+	    			"#1b5e20":"green",
+	    			"#757575":"grey",
+	    			"#3949ab":"indigo",
+	    			"#039be5":"light-blue",
+	    			"#7cb342":"light-green",
+	    			"#c0ca33":"lime",
+	    			"#fb8c00":"orange",
+	    			"#d81b60":"pink",
+	    			"#8e24aa":"purple",
+	    			"#e53935":"red",
+	    			"#00897b":"teal",
+	    			"#fdd835":"yellow"
 	    	};
 	    	
 	    	
@@ -1296,14 +1365,14 @@
 		
 	     },
 	     _getColor:function() {
-	    	 if(this.$$('#colorSelect').color == undefined) return "var(--paper-amber-600)";
+	    	 if(this.$$('#colorSelect').color == undefined) return "amber";
 	    	 this.$$('#fieldcolorinput').value = this.colorSet[this.$$('#colorSelect').color];
 	    	 return this.colorSet[this.$$('#colorSelect').color];
 		    	
 	    	 
 	     },
 	     _getEditColor:function() {
-	    	 if(this.$$('#colorSelect2').color == undefined) return "var(--paper-amber-600)";
+	    	 if(this.$$('#colorSelect2').color == undefined) return "amber";
 	    	 this.$$('#colorField').value = this.colorSet[this.$$('#colorSelect2').color];
 	    	 return this.colorSet[this.$$('#colorSelect2').color];
 		    	
@@ -1422,6 +1491,11 @@
 		    	 }
 		    	 this.push('fieldNames',"none");
 		 	 }
+		    	 var obj = {};
+		         obj.Authorization = "Basic " + btoa(username+":"+password);
+	    	    this.$.tableAttributes.headers = obj;
+		    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+		    	this.$.tableAttributes.generateRequest();
 	     },
 	     fillGlossary : function(data) {
 	    	 
@@ -1487,11 +1561,6 @@
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
 	    	
-	    	this.$.tableAttributes.headers = obj;
-	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
-	    	this.$.tableAttributes.generateRequest();
-	    	
-	     	
 	     },
 	     sureToDeleteDialogFunction:function(e) {
 	    	 this.fieldName = e.model.item[0].name;
@@ -1861,7 +1930,7 @@
 		    	this.$$("#fielddescriptioninput").value="";
 		    	this.$$("#fieldscreenlabelinput").value="";
 		    	this.$$("#fieldscreenlabelPluralinput").value="";
-		    	this.$$("#fieldcolorinput").value="var(--paper-amber-600)";
+		    	this.$$("#fieldcolorinput").value="amber";
 		   		
 		   		
 		    	this.$$("#fieldgroupnameinput").value="";
@@ -1892,6 +1961,22 @@
    		},
    		setDigURI:function(data) {
    			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
+   		},
+   		addNewAttribute:function() {
+   			this.$$("#tableAttributeInputValue").value="";
+   			this.$$("#fieldInputDropDownInput").selected="";
+   			this.$$("#textAreaForTableAttribute").value="";
+   			
+   			AddNewTableAttributeDialog.toggle();
+   		},
+   		deleteAttribute:function(e) {
+   			
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.deleteTableAttribute.headers = obj;
+	         this.$.deleteTableAttribute.url = backend_url + "projects/"+projectName[1]+"/table_attributes/"+e.model.item[0].name;
+	     	this.$.deleteTableAttribute.generateRequest();
+	    	 
    		}
      });
 	</script>

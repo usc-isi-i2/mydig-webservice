@@ -79,6 +79,7 @@ def consolidate_landmark_rules(landmark_rules_path):
                 rule['name'] = '{}-{}-{}'.format(rule['name'].split('-')[0], i, j)
     return consolidated_rules if len(consolidated_rules.keys()) > 0 else None
 
+
 def unique_landmark_field_names(consolidated_rules):
     fields = set()
     for tld in consolidated_rules.keys():
@@ -97,7 +98,7 @@ def create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
     for field in defined_fields.keys():
         field_name = defined_fields[field]['name']
         for unique_field in unique_fields:
-            if field_name in unique_field:
+            if field_name == unique_field.split('-')[0]:
                 if field_name not in mapping:
                     mapping[field_name] = list()
                 mapping[field_name].append(unique_field)
@@ -110,7 +111,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         raise KeyError('landmark repository path not defined in the master config')
     default_etk_config = json.loads(default_etk_config_str)
     default_etk_config = add_default_glossaries(default_etk_config, project_master_config,
-                                glossary_dir_path = webservice_config['default_glossary_dicts_path'])
+                                                glossary_dir_path=webservice_config['default_glossary_dicts_path'])
     default_etk_config['document_id'] = document_id
     landmark_repo_path = os.path.join(os.path.dirname(__file__), webservice_config['repo_landmark']['local_path'])
     project_local_path = os.path.join(os.path.dirname(__file__), webservice_config['repo']['local_path'])
@@ -124,11 +125,11 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
 
         # Add this file location to default etk config for landmark
         default_etk_config['resources']['landmark'].append(output_landmark_file_path)
-        default_etk_config['content_extraction']['landmark'] = {
-                "field_name": "inferlink_extractions",
-                "extraction_policy": "keep_existing",
-                "landmark_threshold": 0.5
-            }
+        default_etk_config['content_extraction']['extractors']['landmark'] = {
+            "field_name": "inferlink_extractions",
+            "extraction_policy": "keep_existing",
+            "landmark_threshold": 0.5
+        }
 
         defined_fields = project_master_config['fields']
         mapping = create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
@@ -144,7 +145,8 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         data_e_object['input_path'] = ["*.{}.*.text.`parent`".format(inferlink_field_name)]
         data_e_object['fields'] = dict()
         for field_name in mapping.keys():
-            data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name], field_name)
+            data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name],
+                                                                                           field_name)
         default_etk_config['data_extraction'].append(data_e_object)
 
     if content_extraction_only:
@@ -272,6 +274,7 @@ def add_default_glossaries(etk_config, project_master_config, glossary_dir_path)
         etk_config['resources']['dictionaries'][d] = os.path.join(glossary_dir_path, gloss_dict[d]['path'])
 
     return etk_config
+
 
 def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path):
     defined_fields = project_master_config['fields']
@@ -435,26 +438,26 @@ def add_default_TLD_extractor(project_master_config, etk_config):
 
 def add_kg_enhancement(etk_config):
     kg_enhancement = {
-    "input_path": "knowledge_graph.`parent`",
-    "fields": {
-      "populated_places": {
-        "priority": 0,
-        "extractors": {
-          "geonames_lookup": {
-            "config": {}
-          }
+        "input_path": "knowledge_graph.`parent`",
+        "fields": {
+            "populated_places": {
+                "priority": 0,
+                "extractors": {
+                    "geonames_lookup": {
+                        "config": {}
+                    }
+                }
+            },
+            "city": {
+                "priority": 1,
+                "extractors": {
+                    "create_city_state_country_triple": {
+                        "config": {}
+                    }
+                }
+            }
         }
-      },
-      "city":{
-        "priority": 1,
-        "extractors": {
-          "create_city_state_country_triple":{
-            "config": {}
-          }
-        }
-      }
     }
-  }
 
     etk_config['kg_enhancement'] = kg_enhancement
     return etk_config
@@ -469,7 +472,7 @@ def add_custom_spacy_extractors(etk_config, project_master_config, project_name,
     # the extraction efficiently
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
-        #"*.content_relaxed.text.`parent`",
+        # "*.content_relaxed.text.`parent`",
         "*.title.text.`parent`"
     ]
     de_obj['fields'] = dict()
@@ -500,9 +503,11 @@ if __name__ == '__main__':
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
     project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
-    print json.dumps(generate_etk_config(project_master_config, webservice_config, 'project02', document_id='gtufhf',
-                                         content_extraction_only=False),
-                     indent=2)
+    x = json.dumps(
+        generate_etk_config(project_master_config, webservice_config, 'domain1_test_04', document_id='gtufhf',
+                            content_extraction_only=False),
+        indent=2)
+    print 'done'
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
     # ngram_dist = {
     #     "1" : 4,
