@@ -567,13 +567,13 @@
 						
 						<h4><strong>Run Extractions and Load Index For Sample Pages</strong></h4>
 						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index. Important: wait for this command to show Running: false before clicking Update To New Index</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Index</span>
 						<br><br><br>
 						
-						<strong>Running: </strong>{{etkFields.is_running}}
-						<strong style="margin-left:20px">Last Message: </strong>{{etkFields.last_message}}
+						<strong>Status: </strong>{{etkFields.last_message}}
 						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
-						<paper-progress style="display: block;width: 80%;position: relative;padding-top: 10px;"
+						<paper-progress on-tap="etkStatus" id="progr" style="display: block;width: 80%;position: relative;padding-top: 10px;"
 						value="{{etkFields.etk_progress.current}}" min="0" max="{{etkFields.etk_progress.total}}" class="red"></paper-progress>
 						
 						<div style="float: right">
@@ -592,7 +592,8 @@
 						
 						<h4><strong>Update To New Index</strong></h4>
 						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index. Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</i></span>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;"> Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</span>
 						<div>
 						
 						</div>
@@ -626,40 +627,36 @@
 				<div style="padding: 8px;">
 					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Label:</strong> {{item.0.screen_label}}</span>
 					<span style="width: 17em;display: inline-block;"><strong  disabled="disabled">Label Plural:</strong> {{item.0.screen_label_plural}}</span>
-					<span style="width: 25em;display: inline-block;"><strong disabled="disabled">Description:</strong>{{item.0.description}}</span>
+					<span style="width: 25em;display: inline-block;"><strong disabled="disabled">Description:</strong> {{item.0.description}}</span>
 			
 				</div>
 				
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Color:</strong>{{item.0.color}}</span>
-					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Icon:</strong>
-					{{item.0.icon}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Color:</strong> {{item.0.color}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Icon:</strong> {{item.0.icon}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Number of Extraction Rules:</strong>{{item.0.number_of_rules}}</span>
-					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong>
-					{{item.0.rule_extraction_target}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Number of Extraction Rules:</strong> {{item.0.number_of_rules}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong> {{item.0.rule_extraction_target}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Type:</strong>{{item.0.type}}</span>
-					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Group Name:</strong>{{item.0.group_name}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Type:</strong> {{item.0.type}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Group Name:</strong> {{item.0.group_name}}</span>
 			
 				</div>
 				<div style="padding: 8px;">
-					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Search Importance:</strong>{{item.0.search_importance}}</span>
-					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong>{{item.0.show_as_link}}</span>
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Search Importance:</strong> {{item.0.search_importance}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong> {{item.0.show_as_link}}</span>
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Predefined Extractor:</strong>
-					{{item.0.predefined_extractor}}
+					<strong disabled="disabled">Predefined Extractor:</strong> {{item.0.predefined_extractor}}
 				</div>
 				
 				<div style="padding: 8px;">
-					<strong disabled="disabled">Show in Result:</strong>
-					{{item.0.show_in_result}}
+					<strong disabled="disabled">Show in Result:</strong> {{item.0.show_in_result}}
 				</div>
 				
 				<div style="padding: 8px;">
@@ -1212,6 +1209,8 @@
 				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
 				
 				<template is="dom-repeat" items="{{iconsets}}">
+				<h4>{{item.name}}</h4>
+				<br>
 			      <div class="set">
 			        <template is="dom-repeat" items="{{getIconNames(item)}}">
 			          <span class="container">
@@ -1219,6 +1218,7 @@
 			          </span>
 			        </template>
 			      </div>
+			     <br>
 			    </template>
 			    </paper-dialog-scrollable>
 			
@@ -1231,6 +1231,8 @@
 				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
 				
 				<template is="dom-repeat" items="{{iconsets}}">
+				<h4>{{item.name}}</h4>
+				<br>
 			      <div class="set">
 			        <template is="dom-repeat" items="{{getIconNames(item)}}">
 			          <span class="container">
@@ -1238,6 +1240,7 @@
 			          </span>
 			        </template>
 			      </div>
+			     <br>
 			    </template>
 			    </paper-dialog-scrollable>
 				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
@@ -1736,6 +1739,9 @@
 	     etkdetails:function(data) {
 	    	 this.etkFields=[];
 	    	 this.etkFields = data.detail.response;
+	    	 if(this.etkFields.is_running ==false && this.etkFields.last_message=="done") {
+	    		 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "#22941b";
+	    	 }
 	    	 if(this.etkFields.is_running != false) {
 	    		 var obj = {};
 		         obj.Authorization = "Basic " + btoa(username+":"+password);
