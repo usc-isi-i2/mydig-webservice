@@ -18,11 +18,6 @@ default_etk_config_str = """{
                     "strict": "yes",
                     "extraction_policy": "keep_existing",
                     "field_name": "content_strict"
-                },
-                {
-                    "strict": "no",
-                    "extraction_policy": "keep_existing",
-                    "field_name": "content_relaxed"
                 }
             ],
             "title": {
@@ -464,7 +459,7 @@ def add_custom_spacy_extractors(etk_config, project_master_config, project_name,
     # the extraction efficiently
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
-        "*.content_relaxed.text.`parent`",
+        #"*.content_relaxed.text.`parent`",
         "*.title.text.`parent`"
     ]
     de_obj['fields'] = dict()
