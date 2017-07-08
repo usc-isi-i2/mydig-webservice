@@ -136,8 +136,8 @@ default_configurations = {
     'digapp_sample_url': 'http://52.36.12.77:8090',
     # 'sandpaper_full_url': 'http://172.31.1.187:9876',
     # 'sandpaper_sample_url': 'http://172.31.1.187:9877'
-    'sandpaper_full_url': 'http://35.160.106.225:9876',
-    'sandpaper_sample_url': 'http://35.160.106.225:9877'
+    'sandpaper_full_url': 'http://172.31.30.159:9876',
+    'sandpaper_sample_url': 'http://172.31.30.159:9877'
 }
 
 default_tags = {
