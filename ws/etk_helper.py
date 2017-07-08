@@ -22,9 +22,6 @@ default_etk_config_str = """{
             ],
             "title": {
                 "extraction_policy": "keep_existing"
-            },
-            "table": {
-                "field_name": "table"
             }
         }
     }
@@ -473,6 +470,8 @@ def add_custom_spacy_extractors(etk_config, project_master_config, project_name,
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
         # "*.content_relaxed.text.`parent`",
+        "*.inferlink_extractions.title.text.`parent`",
+        "*.inferlink_extractions.description.text.`parent`",
         "*.title.text.`parent`"
     ]
     de_obj['fields'] = dict()
@@ -493,8 +492,8 @@ def add_custom_spacy_extractors(etk_config, project_master_config, project_name,
                 etk_config['resources']['spacy_field_rules'] = dict()
 
             etk_config['resources']['spacy_field_rules'][field_name] = field_rule_file_path
-
-    etk_config['data_extraction'].append(de_obj)
+    if len(de_obj['fields'].keys()) > 0:
+        etk_config['data_extraction'].append(de_obj)
     return etk_config
 
 
