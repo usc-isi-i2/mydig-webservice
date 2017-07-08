@@ -1038,12 +1038,22 @@ paths:
       - in: "query"
         name: "pages_per_tld"
         required: false
-        description: "number of pages for per TLD"
+        description: "number of pages for per TLD (only works for get_sample_pages)"
         type: "integer"
       - in: "query"
         name: "pages_extra"
         required: false
-        description: "number of pages for extra TLDs"
+        description: "number of pages for extra TLDs (only works for get_sample_pages)"
+        type: "integer"
+      - in: "query"
+        name: "pages_per_tld_to_run"
+        required: false
+        description: "number of pages for per TLD to run (only works for extract_and_load_test_data)"
+        type: "integer"
+      - in: "query"
+        name: "pages_extra_to_run"
+        required: false
+        description: "number of pages for extra TLDs to run (only works for extract_and_load_test_data)"
         type: "integer"
       - in: "query"
         name: "force_start_new_extraction"

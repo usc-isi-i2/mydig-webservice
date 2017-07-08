@@ -5,12 +5,17 @@ working_dir="$2"
 conda_bin_path="$3"
 etk_path="$4"
 num_processes="$5"
+pages_per_tld_to_run="$6"
+pages_extra_to_run="$7"
 
 # prepare data source
-#data_path="${working_dir}/etk_input.jl"
-#if [ ! -f ${data_path} ]; then
-    data_path="${working_dir}/consolidated_data.jl"
-    cat ${page_path}/* > ${data_path}
+#data_file_path="${working_dir}/etk_input.jl"
+#if [ ! -f ${data_file_path} ]; then
+    data_file_path="${working_dir}/consolidated_data.jl"
+    echo -n > ${data_file_path} # clean all
+    ls ${page_path} | grep -v extra.jl | xargs -I {} head -q -n ${pages_per_tld_to_run} ${page_path}/{} \
+        >> ${data_file_path}
+    head -q -n ${pages_extra_to_run} ${page_path}/extra.jl >> ${data_file_path}
 #fi
 
 # initiate etk env
@@ -18,7 +23,7 @@ source ${conda_bin_path}/activate etk_env
 
 # serial
 #python ${etk_path}/etk/run_core.py \
-#    -i ${data_path} \
+#    -i ${data_file_path} \
 #    -o ${working_dir}/etk_out.jl \
 #    -c ${working_dir}/etk_config.json > ${working_dir}/etk_stdout.txt
 
@@ -42,7 +47,7 @@ progress_job_id=$!
 
 # run etk parallelly
 python ${etk_path}/etk/run_core.py \
-    -i ${data_path} \
+    -i ${data_file_path} \
     -o ${working_dir}/tmp \
     --dummy-this-is-mydig-backend-etk-process \
     -c ${working_dir}/etk_config.json \
