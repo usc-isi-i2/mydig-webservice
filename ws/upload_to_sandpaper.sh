@@ -7,14 +7,14 @@ index="$4"
 type="$5"
 working_dir="$6"
 
-curl -XPUT "{$sandpaper_url}/mapping?url=${ws_url}&project=${project_name}&index=${index}"
-last_exit_code=$?
-if [ ${last_exit_code} -ne 0 ]; then
-    exit ${last_exit_code}
+
+status_code=$(curl -LI -XPUT "{$sandpaper_url}/mapping?url=${ws_url}&project=${project_name}&index=${index}" \
+    -o /dev/null -w '%{http_code}\n' -s)
+if [ ${status_code} -ne 200 ]; then
+    exit ${status_code}
 fi
 
-curl -H "Content-Type: application/json" -XPOST \
+status_code=$(curl -LI -H "Content-Type: application/json" -XPOST \
     --data-binary "@${working_dir}/etk_out.jl" \
-    "{$sandpaper_url}/indexing?index=${index}"
-last_exit_code=$?
-exit ${last_exit_code}
+    "{$sandpaper_url}/indexing?index=${index}" -o /dev/null -w '%{http_code}\n' -s)
+exit ${status_code}

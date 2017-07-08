@@ -1979,7 +1979,7 @@ class Actions(Resource):
         )
         print sandpaper_cmd
         ret = subprocess.call(sandpaper_cmd, shell=True)
-        if ret != 0:
+        if ret // 100 != 2:
             Actions._update_status(project_name, 'sandpaper failed', done=True)
             return
 
