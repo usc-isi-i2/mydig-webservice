@@ -1976,8 +1976,8 @@
    		setDigURI:function(data) {
    			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
    			var inferlinkURL = data.detail.response.sources[0].url;
-   			if(inferlinkURL.indexOf("hyperiongray")!=-1)this.inferlinkLink = "http://isi-"+inferlinkURL.substring(9,inferlinkURL.indexOf("hyperiongray"))+".inferlink.com:3333/";
-   			this.inferlinkLink="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/";
+   			if(inferlinkURL.indexOf("hyperiongray")!=-1)this.inferlinkLink = "http://isi-"+inferlinkURL.substring(8,inferlinkURL.indexOf("hyperiongray"))+"inferlink.com:3333/";
+   			else this.inferlinkLink="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/";
    		},
    		addNewAttribute:function() {
    			this.$$("#tableAttributeInputValue").value="";
