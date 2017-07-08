@@ -484,12 +484,13 @@
 			 <iron-ajax
 			id="digURI" method="GET" content-type="application/json"
 			on-response="setDigURI"> </iron-ajax>
-			
+		    
+		
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt="">
+		  <paper-button raised style="float:right">Home</paper-button>
 		 	<h4 style="padding-left:15em;text-align:center" class="projectNameValue"></h4>
 			   <script>document.querySelector('.projectNameValue').innerHTML = " Project : "+projectName[1];</script>
-	        
-		 </paper-toolbar>
+	    </paper-toolbar>
 			  <paper-header-panel>
 			  
 	          <section class="adjustProjectSection">
@@ -516,7 +517,7 @@
 				    
 					<br><br>
 					<div>
-						 <a style="margin-right: 20px;color:blue;float:right" target="_blank" href="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/"> Link to Inferlink Tool</a>
+						 <a style="margin-right: 20px;color:blue;float:right" target="_blank" href="{{inferlinkLink}}"> Link to Inferlink Tool</a>
 						
 						<h4><strong>Get Sample Pages</strong></h4>
 						<br><br>
@@ -525,8 +526,8 @@
 						<div>
 						Number of Pages per TLD
 						<input type="number" value="200" class="projectInputStyle" id="perPage"></input> 
-						<span style="padding-left:80px">Number of Pages for Extra TLD</span>
-						<input value="0" type="number" class="projectInputStyle" id="extraPage"></input> 
+						<span style="padding-left:80px">Number of Pages for Extra TLDs</span>
+						<input value="1000" type="number" class="projectInputStyle" id="extraPage"></input> 
 						</div>
 						<br><br>
 						<div style="float: right">
@@ -569,12 +570,15 @@
 						<br>
 						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
 						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Index</span>
-						<br><br><br>
-						
+						<br><br><br><div>
+						<paper-input id="etkTLD" style="width:15em;margin-right: 42em;float:right" label="Number of Pages for Extra TLDs to run" type="number" value="100" class="projectInputStyle" ></paper-input> 
+						<paper-input  id="etkExtraTLD" style="width:15em" label="Number of Pages per TLD to run" value="20" type="number" class="projectInputStyle"></paper-input> 
+						</div>
 						<strong>Status: </strong>{{etkFields.last_message}}
 						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
 						<paper-progress on-tap="etkStatus" id="progr" style="display: block;width: 80%;position: relative;padding-top: 10px;"
 						value="{{etkFields.etk_progress.current}}" min="0" max="{{etkFields.etk_progress.total}}" class="red"></paper-progress>
+						
 						
 						<div style="float: right">
 						
@@ -1671,7 +1675,10 @@
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.etk.headers = obj;
 	          this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
-	     	 
+	          this.$.etk.body = JSON.stringify({
+	      		  "pages_per_tld_to_run": parseInt(this.$$("#etkTLD").value),
+	       		  "pages_extra_to_run": parseInt(this.$$("#etkExtraTLD").value)
+	          });
 	         this.$.etk.generateRequest();
 	     },
 	     publish:function() {
@@ -1740,7 +1747,7 @@
 	    	 this.etkFields=[];
 	    	 this.etkFields = data.detail.response;
 	    	 if(this.etkFields.is_running ==false && this.etkFields.last_message=="done") {
-	    		 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "#22941b";
+	    		 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "green";
 	    	 }
 	    	 if(this.etkFields.is_running != false) {
 	    		 var obj = {};
@@ -1964,6 +1971,9 @@
    		},
    		setDigURI:function(data) {
    			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
+   			var inferlinkURL = data.detail.response.sources[0].url;
+   			if(inferlinkURL.indexOf("hyperiongray")!=-1)this.inferlinkLink = "http://isi-"+inferlinkURL.substring(9,inferlinkURL.indexOf("hyperiongray"))+".inferlink.com:3333/";
+   			this.inferlinkLink="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/";
    		},
    		addNewAttribute:function() {
    			this.$$("#tableAttributeInputValue").value="";
