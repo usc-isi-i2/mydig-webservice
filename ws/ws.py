@@ -1804,6 +1804,7 @@ class Actions(Resource):
                                     "filters": [
                                         {"exists" : {"field": "raw_content"}},
                                         {"exists" : {"field": "url"}},
+                                        {"exists" : {"field": "doc_id"}},
                                         {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
                                     ]
                                 }
@@ -1846,7 +1847,6 @@ class Actions(Resource):
                                     "filters": [
                                         {"exists" : {"field": "raw_content"}},
                                         {"exists" : {"field": "url"}},
-                                        {"exists" : {"field": "doc_id"}},
                                         {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
                                     ]
                                 }
