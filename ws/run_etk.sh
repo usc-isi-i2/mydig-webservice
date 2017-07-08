@@ -58,7 +58,7 @@ last_exit_code=$?
 sleep 6
 kill ${progress_job_id}
 
-if [ ${last_exit_code} ne 0 ]; then
+if [ ${last_exit_code} -ne 0 ]; then
     exit ${last_exit_code}
 fi
 
