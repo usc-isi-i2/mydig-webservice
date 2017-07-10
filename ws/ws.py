@@ -244,7 +244,7 @@ class AllProjects(Resource):
         # initialize data structure
         data[project_name] = templates.get('project')
         data[project_name]['master_config'] = templates.get('master_config')
-        data[project_name]['master_config']['sources'] = project_sources
+        data[project_name]['master_config']['sources'] = self.trim_empty_tld_in_sources(project_sources)
         data[project_name]['master_config']['index'] = {
             'sample': project_name,
             'full': project_name + '_deployed',
@@ -335,6 +335,18 @@ class AllProjects(Resource):
                     s['http_auth'] = (j[id]['username'], j[id]['password'])
         return sources
 
+    @staticmethod
+    def trim_empty_tld_in_sources(source):
+        tlds = []
+        if 'tlds' in source:
+            for tld in source['tlds']:
+                tld = tld.strip()
+                if len(tld) == 0:
+                    continue
+                tlds.append(tld)
+        source['tlds'] = tlds
+        return source
+
 
 @api.route('/projects/<project_name>')
 class Project(Resource):
@@ -359,7 +371,7 @@ class Project(Resource):
         write_to_file(json.dumps(credentials, indent=4),
                       os.path.join(_get_project_dir_path(project_name), 'credentials.json'))
 
-        data[project_name]['master_config']['sources'] = project_sources
+        data[project_name]['master_config']['sources'] = AllProjects.trim_empty_tld_in_sources(project_sources)
         data[project_name]['master_config']['configuration'] = project_config
         # data[project_name]['master_config']['index'] = es_index
         # write to file
@@ -1673,11 +1685,6 @@ class Actions(Resource):
 
         # retrieve from es
         for tld in s['tlds']:
-
-            # trim empty lines
-            tld = tld.strip()
-            if len(tld) == 0:
-                continue
 
             # if retrieved, skip
             if tld in tlds_status and tlds_status[tld] != 0:
