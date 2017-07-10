@@ -1674,6 +1674,11 @@ class Actions(Resource):
         # retrieve from es
         for tld in s['tlds']:
 
+            # trim empty lines
+            tld = tld.strip()
+            if len(tld) == 0:
+                continue
+
             # if retrieved, skip
             if tld in tlds_status and tlds_status[tld] != 0:
                 continue
