@@ -1638,7 +1638,7 @@ class Actions(Resource):
                 with open(path, 'r') as f:
                     last_message = f.read()
 
-            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
             if os.path.exists(path):
                 is_running = True
 
@@ -1675,6 +1675,9 @@ class Actions(Resource):
 
     @staticmethod
     def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra):
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
+        write_to_file('', lock_path)
+
         # assume there's only one source
         s = sources[0]
         cdr_ids = {}
@@ -1909,9 +1912,16 @@ class Actions(Resource):
             if resp.status_code // 100 != 2:
                 logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
 
+        if os.path.exists(lock_path):
+            os.remove(lock_path)
         print 'action get_sample_pages is done'
 
     def _get_sample_pages(self, project_name):
+
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
+        if os.path.exists(lock_path):
+            return rest.exists('still running')
+
         sources = AllProjects.get_authenticated_sources(project_name)
         if len(sources) == 0:
             return rest.bad_request('invalid sources')
@@ -1938,7 +1948,7 @@ class Actions(Resource):
     def _update_status(project_name, content, done=False):
         write_to_file(content, os.path.join(_get_project_dir_path(project_name), 'working_dir/status'))
         # if not done, create a lock
-        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
         if not done and not os.path.exists(lock_path):
             write_to_file('', lock_path)
         elif done:
@@ -2008,7 +2018,7 @@ class Actions(Resource):
         force_extraction = True if args['force_start_new_extraction'] is not None and \
             args['force_start_new_extraction'].lower() == 'true' else False
 
-        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
         if force_extraction and os.path.exists(lock_path):
             os.remove(lock_path)
         if os.path.exists(lock_path):
@@ -2031,7 +2041,7 @@ class Actions(Resource):
 
     def _update_to_new_index(self, project_name):
 
-        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
         if os.path.exists(lock_path):
             return rest.bad_request('etk is still running')
 
