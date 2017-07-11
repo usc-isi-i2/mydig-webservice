@@ -244,7 +244,7 @@ class AllProjects(Resource):
         # initialize data structure
         data[project_name] = templates.get('project')
         data[project_name]['master_config'] = templates.get('master_config')
-        data[project_name]['master_config']['sources'] = project_sources
+        data[project_name]['master_config']['sources'] = self.trim_empty_tld_in_sources(project_sources)
         data[project_name]['master_config']['index'] = {
             'sample': project_name,
             'full': project_name + '_deployed',
@@ -268,6 +268,13 @@ class AllProjects(Resource):
             if os.path.isfile(full_file_name):
                 shutil.copy(full_file_name, dst_dir)
         os.makedirs(os.path.join(project_dir_path, 'spacy_rules'))
+        write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
+        dst_dir = os.path.join(_get_project_dir_path(project_name), 'spacy_rules')
+        src_dir = config['default_spacy_rules_path']
+        for file_name in os.listdir(src_dir):
+            full_file_name = os.path.join(src_dir, file_name)
+            if os.path.isfile(full_file_name):
+                shutil.copy(full_file_name, dst_dir)
         write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'pages'))
         write_to_file('*\n', os.path.join(project_dir_path, 'pages/.gitignore'))
@@ -328,6 +335,20 @@ class AllProjects(Resource):
                     s['http_auth'] = (j[id]['username'], j[id]['password'])
         return sources
 
+    @staticmethod
+    def trim_empty_tld_in_sources(sources):
+        for i in xrange(len(sources)):
+            s = sources[i]
+            tlds = []
+            if 'tlds' in s:
+                for tld in s['tlds']:
+                    tld = tld.strip()
+                    if len(tld) == 0:
+                        continue
+                    tlds.append(tld)
+            s['tlds'] = tlds
+        return sources
+
 
 @api.route('/projects/<project_name>')
 class Project(Resource):
@@ -352,7 +373,7 @@ class Project(Resource):
         write_to_file(json.dumps(credentials, indent=4),
                       os.path.join(_get_project_dir_path(project_name), 'credentials.json'))
 
-        data[project_name]['master_config']['sources'] = project_sources
+        data[project_name]['master_config']['sources'] = AllProjects.trim_empty_tld_in_sources(project_sources)
         data[project_name]['master_config']['configuration'] = project_config
         # data[project_name]['master_config']['index'] = es_index
         # write to file
@@ -1619,7 +1640,7 @@ class Actions(Resource):
                 with open(path, 'r') as f:
                     last_message = f.read()
 
-            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+            path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
             if os.path.exists(path):
                 is_running = True
 
@@ -1656,6 +1677,9 @@ class Actions(Resource):
 
     @staticmethod
     def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra):
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
+        write_to_file('', lock_path)
+
         # assume there's only one source
         s = sources[0]
         cdr_ids = {}
@@ -1797,6 +1821,7 @@ class Actions(Resource):
                                     "filters": [
                                         {"exists" : {"field": "raw_content"}},
                                         {"exists" : {"field": "url"}},
+                                        {"exists" : {"field": "doc_id"}},
                                         {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
                                     ]
                                 }
@@ -1839,7 +1864,6 @@ class Actions(Resource):
                                     "filters": [
                                         {"exists" : {"field": "raw_content"}},
                                         {"exists" : {"field": "url"}},
-                                        {"exists" : {"field": "doc_id"}},
                                         {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
                                     ]
                                 }
@@ -1886,13 +1910,23 @@ class Actions(Resource):
             logger.info('sent to inferlink: url: {} payload: {}'.format(url, json.dumps(payload)))
             payload_dump_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/last_payload.json')
             write_to_file(json.dumps(payload, indent=2), payload_dump_path)
-            resp = requests.post(url, json.dumps(payload))
-            if resp.status_code // 100 != 2:
-                logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
+            try:
+                resp = requests.post(url, json.dumps(payload), timeout=10)
+                if resp.status_code // 100 != 2:
+                    logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
+            except requests.exceptions.Timeout as e:
+                logger.error('inferlink server timeout: {}'.format(e.message))
 
+        if os.path.exists(lock_path):
+            os.remove(lock_path)
         print 'action get_sample_pages is done'
 
     def _get_sample_pages(self, project_name):
+
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
+        if os.path.exists(lock_path):
+            return rest.exists('still running')
+
         sources = AllProjects.get_authenticated_sources(project_name)
         if len(sources) == 0:
             return rest.bad_request('invalid sources')
@@ -1905,7 +1939,7 @@ class Actions(Resource):
         parser.add_argument('pages_extra', required=False, type=int)
         args = parser.parse_args()
         pages_per_tld = 200 if args['pages_per_tld'] is None else args['pages_per_tld']
-        pages_extra = 0 if args['pages_extra'] is None else args['pages_extra']
+        pages_extra = 1000 if args['pages_extra'] is None else args['pages_extra']
 
         # async
         p = multiprocessing.Process(target=self._get_sample_pages_worker,
@@ -1919,14 +1953,14 @@ class Actions(Resource):
     def _update_status(project_name, content, done=False):
         write_to_file(content, os.path.join(_get_project_dir_path(project_name), 'working_dir/status'))
         # if not done, create a lock
-        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
         if not done and not os.path.exists(lock_path):
             write_to_file('', lock_path)
         elif done:
             os.remove(lock_path)
 
     @staticmethod
-    def _extractor_worker(project_name):
+    def _extractor_worker(project_name, pages_per_tld_to_run, pages_extra_to_run):
 
         # pull down rules
         Actions._update_status(project_name, 'pulling rules from github')
@@ -1942,13 +1976,15 @@ class Actions(Resource):
         # run etk
         Actions._update_status(project_name, 'etk running')
         # run_etk.sh page_path working_dir conda_bin_path etk_path num_processes
-        etk_cmd = '{} {} {} {} {} {}'.format(
+        etk_cmd = '{} {} {} {} {} {} {} {}'.format(
             os.path.abspath('run_etk.sh'),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'pages')),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir')),
             os.path.abspath(config['etk']['conda_path']),
             os.path.abspath(config['etk']['path']),
-            config['etk']['number_of_processes']
+            config['etk']['number_of_processes'],
+            pages_per_tld_to_run,
+            pages_extra_to_run
         )
         print etk_cmd
         ret = subprocess.call(etk_cmd, shell=True)
@@ -1970,7 +2006,7 @@ class Actions(Resource):
         )
         print sandpaper_cmd
         ret = subprocess.call(sandpaper_cmd, shell=True)
-        if ret != 0:
+        if ret // 100 != 2:
             Actions._update_status(project_name, 'sandpaper failed', done=True)
             return
 
@@ -1978,12 +2014,16 @@ class Actions(Resource):
 
     def _extract_and_load_test_data(self, project_name):
         parser = reqparse.RequestParser()
+        parser.add_argument('pages_per_tld_to_run', required=False, type=int)
+        parser.add_argument('pages_extra_to_run', required=False, type=int)
         parser.add_argument('force_start_new_extraction', required=False, type=str)
         args = parser.parse_args()
+        pages_per_tld_to_run = 20 if args['pages_per_tld_to_run'] is None else args['pages_per_tld_to_run']
+        pages_extra_to_run = 100 if args['pages_extra_to_run'] is None else args['pages_extra_to_run']
         force_extraction = True if args['force_start_new_extraction'] is not None and \
             args['force_start_new_extraction'].lower() == 'true' else False
 
-        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
         if force_extraction and os.path.exists(lock_path):
             os.remove(lock_path)
         if os.path.exists(lock_path):
@@ -2000,13 +2040,13 @@ class Actions(Resource):
         # async
         p = multiprocessing.Process(
             target=self._extractor_worker,
-            args=(project_name,))
+            args=(project_name, pages_per_tld_to_run, pages_extra_to_run))
         p.start()
         return rest.accepted()
 
     def _update_to_new_index(self, project_name):
 
-        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/lock')
+        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
         if os.path.exists(lock_path):
             return rest.bad_request('etk is still running')
 

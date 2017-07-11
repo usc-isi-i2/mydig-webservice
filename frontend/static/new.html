@@ -7,6 +7,8 @@
 <link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../static/bower_components/paper-card/paper-card.html">
 <link rel="import" href="../static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
+	
 	
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
@@ -188,7 +190,9 @@ function addProject(data)  {
 					</paper-date-picker-item>
 					</div>
 					</div>	
-					<img onclick="enable()" style="height: 20px;float:right" src="../static/images/Authorize.png" alt="">
+					<img onclick="enable()" id="auth" style="height: 20px;float:right" src="../static/images/Authorize.png" alt="">
+					<paper-tooltip fit-to-visible-bounds="true" position="left" for="auth" >Click Here to edit Authorized data</paper-tooltip>
+				
 					<div id="isDisabled" style="pointer-events:none;opacity:0.4">
 					<paper-input class="addProjClass" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index}}"></paper-input>
 			        <paper-input class="addProjClass" label="Type Name:" id=editProjectFormType_name value="{{editProjectForm.value.sources.0.type}}"></paper-input>
