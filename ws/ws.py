@@ -336,16 +336,18 @@ class AllProjects(Resource):
         return sources
 
     @staticmethod
-    def trim_empty_tld_in_sources(source):
-        tlds = []
-        if 'tlds' in source:
-            for tld in source['tlds']:
-                tld = tld.strip()
-                if len(tld) == 0:
-                    continue
-                tlds.append(tld)
-        source['tlds'] = tlds
-        return source
+    def trim_empty_tld_in_sources(sources):
+        for i in xrange(sources):
+            s = sources[i]
+            tlds = []
+            if 'tlds' in s:
+                for tld in s['tlds']:
+                    tld = tld.strip()
+                    if len(tld) == 0:
+                        continue
+                    tlds.append(tld)
+            s['tlds'] = tlds
+        return sources
 
 
 @api.route('/projects/<project_name>')
