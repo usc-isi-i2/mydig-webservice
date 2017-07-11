@@ -607,26 +607,6 @@
 					<br><br>
 					<div>
 						
-						<h4><strong>Run Extractions and Load Index For Deployed Pages</strong></h4>
-						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
-						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Index</span>
-						<br><br>
-						
-						<div style="float: right">
-						
-							<paper-button raised on-tap="etkDeployed"
-						style="clear:left"> <strong>Go</strong></paper-button>
-						</div>
-						<br>
-					</div>
-					<br><br>
-					</paper-material>
-					<br>
-					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-					<br><br>
-					<div>
-						
 						<h4><strong>Update To New Sample Index</strong></h4>
 						<br>
 						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
@@ -651,13 +631,14 @@
 						<h4><strong>Update To New Index</strong></h4>
 						<br>
 						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
-						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;"> Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</span>
 						<div>
 						
 						</div>
 						<div style="float: right">
-							<paper-button raised  on-tap="updateToNewIndexNew"
-						style="clear:left"> <strong>Go</strong></paper-button>
+							<paper-button raised style="text-transform:none" on-tap="updateToNewIndexNew"
+						style="clear:left"> <strong>Go - Switch Index</strong></paper-button>
+						<paper-button raised on-tap="etkDeployed" style="text-transform:none"
+						style="clear:left"> <strong>Go - ETK </strong></paper-button>
 						</div>
 						<br><br>
 					</div>
