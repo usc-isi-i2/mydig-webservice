@@ -1893,7 +1893,7 @@ class Actions(Resource):
                 url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'\
                     .format(host, port, s['type'], project_name)
                 payload = {
-                    'tlds': s['tlds'],
+                    'tlds': cdr_ids.keys(),
                     'cdr_ids': cdr_ids
                 }
             else:
@@ -1903,7 +1903,7 @@ class Actions(Resource):
                     format(host, port, s['index'], project_name)
                 payload = {
                     # 'production': True,
-                    'tlds': s['tlds'],
+                    'tlds': cdr_ids.keys(),
                     'cdr_ids': cdr_ids
                 }
             print url
