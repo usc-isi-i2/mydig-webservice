@@ -1033,7 +1033,7 @@ paths:
       - in: "path"
         name: "action_name"
         required: true
-        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index"]
+        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index", "extract_and_load_deployed_data", "update_to_new_index_deployed"]
         description: ""
       - in: "query"
         name: "pages_per_tld"
