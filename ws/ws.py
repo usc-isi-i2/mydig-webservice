@@ -337,7 +337,7 @@ class AllProjects(Resource):
 
     @staticmethod
     def trim_empty_tld_in_sources(sources):
-        for i in xrange(sources):
+        for i in xrange(len(sources)):
             s = sources[i]
             tlds = []
             if 'tlds' in s:
