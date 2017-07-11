@@ -393,6 +393,10 @@
 			handle-as="json" on-error="done" on-response="etkStatus"> </iron-ajax> 
 			
 			<iron-ajax
+			id="etkDeployed" method="POST" content-type="application/json"
+			handle-as="json" on-error="done" > </iron-ajax> 
+			
+			<iron-ajax
 			id="etkGet" method="GET" content-type="application/json"
 			handle-as="json" on-response="etkdetails" on-error="done"> </iron-ajax> 
 			
@@ -458,6 +462,11 @@
 			
 			<iron-ajax
 			id="updateIndex" method="POST" content-type="application/json"
+			handle-as="json" on-error="done" on-response="successDoneIndex"> </iron-ajax>
+			
+			
+			<iron-ajax
+			id="updateIndexNew" method="POST" content-type="application/json"
 			handle-as="json" on-error="done" on-response="successDoneIndex"> </iron-ajax>
 			
 			<iron-ajax
@@ -570,7 +579,7 @@
 						<h4><strong>Run Extractions and Load Index For Sample Pages</strong></h4>
 						<br>
 						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
-						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Index</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Sample Index</span>
 						<br><br>
 						<div>
 						Number of Pages per TLD to run
@@ -598,7 +607,27 @@
 					<br><br>
 					<div>
 						
-						<h4><strong>Update To New Index</strong></h4>
+						<h4><strong>Run Extractions and Load Index For Deployed Pages</strong></h4>
+						<br>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Index</span>
+						<br><br>
+						
+						<div style="float: right">
+						
+							<paper-button raised on-tap="etkDeployed"
+						style="clear:left"> <strong>Go</strong></paper-button>
+						</div>
+						<br>
+					</div>
+					<br><br>
+					</paper-material>
+					<br>
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<br><br>
+					<div>
+						
+						<h4><strong>Update To New Sample Index</strong></h4>
 						<br>
 						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
 						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;"> Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</span>
@@ -613,7 +642,29 @@
 					</div>
 					<br>
 					</paper-material>
-					<br><br><br>
+					<br>
+					
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<br><br>
+					<div>
+						
+						<h4><strong>Update To New Index</strong></h4>
+						<br>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;"> Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</span>
+						<div>
+						
+						</div>
+						<div style="float: right">
+							<paper-button raised  on-tap="updateToNewIndexNew"
+						style="clear:left"> <strong>Go</strong></paper-button>
+						</div>
+						<br><br>
+					</div>
+					<br>
+					</paper-material>
+					
+					<br><br>
 			</iron-collapse>
 			<iron-collapse id="field">
 			
@@ -1685,6 +1736,14 @@
 	          });
 	         this.$.etk.generateRequest();
 	     },
+	     etkDeployed:function() {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.etkDeployed.headers = obj;
+	          this.$.etkDeployed.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_deployed_data";
+	          
+	         this.$.etkDeployed.generateRequest();
+	     },
 	     publish:function() {
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
@@ -1750,6 +1809,7 @@
 	     etkdetails:function(data) {
 	    	 this.etkFields=[];
 	    	 this.etkFields = data.detail.response;
+	    	 	
 	    	 if(this.etkFields.is_running ==false && this.etkFields.last_message=="done") {
 	    		 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "green";
 	    	 }
@@ -1763,7 +1823,8 @@
 		         this.async(function() {
 		        	 this.$.etkGet.generateRequest();
 		           }, 2000);
-	    		 
+		         this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "#641ba7";
+				   
 	    	 }
 	     },
 	     _disableDocumentScrolling: function() {
@@ -1841,6 +1902,14 @@
 	         this.$.updateIndex.url = backend_url +"projects/"+projectName[1]+"/actions/update_to_new_index";
 		     this.$.updateIndex.generateRequest();
    		},
+   		updateToNewIndexNew:function() {
+  			 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateIndexNew.headers = obj;
+	         this.$.updateIndexNew.url = backend_url +"projects/"+projectName[1]+"/actions/update_to_new_index_deployed";
+		     this.$.updateIndexNew.generateRequest();
+  		},
    		
    		getIconNames : function(iconset) {
    	      return iconset.getIconNames();
