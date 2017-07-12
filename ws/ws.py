@@ -28,6 +28,7 @@ import rest
 from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
+import jobs
 
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
@@ -1614,8 +1615,7 @@ class Actions(Resource):
         elif action_name == 'extract_and_load_test_data':
             return self._extract_and_load_test_data(project_name)
         elif action_name == 'extract_and_load_deployed_data':
-            # TODO
-            return rest.accepted()
+            return self._extract_and_load_deployed_data(project_name)
         elif action_name == 'update_to_new_index':
             return self._update_to_new_index(project_name)
         elif action_name == 'update_to_new_index_deployed':
@@ -2042,6 +2042,28 @@ class Actions(Resource):
             target=self._extractor_worker,
             args=(project_name, pages_per_tld_to_run, pages_extra_to_run))
         p.start()
+        return rest.accepted()
+
+    def _extract_and_load_deployed_data(self, project_name):
+        s = jobs.submit_etk_cluster.SubmitEtk()
+        wm = jobs.manage_workflow_xml.WM()
+
+        etk_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json')
+        if not os.path.exists(etk_config_path):
+            return rest.bad_request('etk config doesn\'t exist')
+
+        etk_config = None
+        with open(etk_config_path, 'r') as f:
+            etk_config = json.load(f.read())
+
+        # print s.create_worflow_xml(etk_config, project_name, wm)
+        s.update_etk_lib_cluster(etk_config, project_name)
+        resp = s.submit_etk_cluster(data[project_name]['master_config'], 'my_project').content
+
+        path = os.path.join(_get_project_dir_path(project_name), 'working_dir/cluster_job_resp.json')
+        with open(path, 'r') as f:
+            f.write(json.dumps(resp))
+
         return rest.accepted()
 
     def _update_to_new_index(self, project_name):
