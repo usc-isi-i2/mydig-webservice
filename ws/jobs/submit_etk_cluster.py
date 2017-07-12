@@ -32,7 +32,7 @@ class SubmitEtk(object):
 
     def create_worflow_xml(self, etk_config, project_name, workflow_manager):
         # Add arguments for etk
-        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json', '-p 1000']
+        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json']
         argument_xml = ''
         for argument in arguments:
             argument_xml += workflow_manager.create_arguments_for_workflow_xml(argument)
@@ -99,7 +99,7 @@ class SubmitEtk(object):
                 self.add_things_to_upload('run.sh', 'run.sh',
                                           self.default_lib_path.format(self.worker_dir_path, project_name, def_f))
                 files += workflow_manager.create_file_property_for_workflow_xml(
-                    self.default_lib_path.format(self.worker_dir_path, project_name, def_f))
+                    'hdfs://' + self.default_lib_path.format(self.worker_dir_path, project_name, def_f))
 
         # add the etk env, this should be pretty constant and wouldn't have to be updated
         archive = workflow_manager.create_archive_property_for_workflow_xml(
@@ -161,10 +161,9 @@ class SubmitEtk(object):
         local_files = list()
         for k in self.files_to_upload.keys():
             local_files.append(self.get_file_name_from_path(self.files_to_upload[k]['source']))
-        list_files = ','.join(local_files)
-        run_content += list_files
-        run_content += ' \\'
-        run_content += 'run_etk_spark.py \ $@'
+        list_files = ','.join(local_files) + ' '
+        run_content += list_files + ' '
+        run_content += 'run_etk_spark.py $@'
         return run_content
 
     def submit_etk_cluster(self, master_project_config, project_name):
