@@ -2,6 +2,7 @@ from manage_oozie_jobs import OozieJobs
 from manage_workflow_xml import WM
 from hdfs_operations import HdfsOp
 import gzip
+import os
 
 
 class SubmitEtk(object):
@@ -153,7 +154,8 @@ class SubmitEtk(object):
         run_etk_spark.py \
         $@
         """
-        run_content = codecs.open('run_template.sh', 'r').read()
+        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'run_template.sh')
+        run_content = codecs.open(script_path, 'r').read()
         run_content += ' --files '
         local_files = list()
         for k in self.files_to_upload.keys():
