@@ -2,6 +2,7 @@ from manage_oozie_jobs import OozieJobs
 from manage_workflow_xml import WM
 from hdfs_operations import HdfsOp
 import gzip
+import json, codecs
 import os
 
 
@@ -184,7 +185,6 @@ class SubmitEtk(object):
 if __name__ == '__main__':
     etk_config = '/data/github/mydig-projects/my_project/working_dir/etk_config.json'
     s = SubmitEtk()
-    import json, codecs
 
     wm = WM()
     #print s.create_worflow_xml(json.load(codecs.open(etk_config)), 'my_project', wm)
