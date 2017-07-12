@@ -2055,11 +2055,15 @@ class Actions(Resource):
             etk_config = json.load(f.read())
 
         s.update_etk_lib_cluster(etk_config, project_name)
-        resp = s.submit_etk_cluster(data[project_name]['master_config'], 'my_project').content
+        resp = s.submit_etk_cluster(data[project_name]['master_config'], 'my_project')
+
+        if resp.status_code // 100 != 2:
+            logger.error('extract_and_load_deployed_data: {}, {}'.format(resp.status_code, resp.content))
+            return rest.internal_error('failed in extract_and_load_deployed_data')
 
         path = os.path.join(_get_project_dir_path(project_name), 'working_dir/cluster_job_resp.json')
         with open(path, 'r') as f:
-            f.write(json.dumps(resp))
+            f.write(json.dumps(resp.json()))
 
         return rest.accepted()
 
