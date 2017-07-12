@@ -469,7 +469,8 @@ master_config = {
         'sample': '',
         'full': '',
         'version': 0
-    }
+    },
+    'image_prefix': ''
 }
 
 # table_attribute = {
