@@ -880,8 +880,12 @@ class ProjectGlossaries(Resource):
     @staticmethod
     def convert_glossary_to_json(lines):
         glossary = list()
+        lines = lines.replace('\r', '\n') # convert
         lines = lines.split('\n')
         for line in lines:
+            line = line.strip()
+            if len(line) == 0: # trim empty line
+                continue
             glossary.append(line)
         return json.dumps(glossary)
 
