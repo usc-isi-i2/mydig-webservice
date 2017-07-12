@@ -41,6 +41,7 @@ function addProject(data)  {
 		if (/\s/.test(name)) {return;}
 		var userN = document.getElementById("saveProjectFormUserName").value;
 		var passWd = document.getElementById("saveProjectFormPassword").value ;
+		var imgPrefix = document.getElementById("saveProjectFormImagePrefix").value;
 		var Url = document.getElementById("saveProjectURL").value;
 		var type_name=document.getElementById("saveProjectFormType_name").value;
 		var index_name=document.getElementById("saveProjectFormIndex_name").value;
@@ -71,6 +72,7 @@ function addProject(data)  {
 				"username":userN,
 				"password":passWd,
 				"url":Url,
+				"image_prefix":imgPrefix,
 				"index":index_name,
 				"type":type_name}]
 		  });
@@ -135,6 +137,8 @@ function addProject(data)  {
 	    			<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Name:" id=saveProjectFormName></paper-input>
 			        <paper-input  class="addProjClass"label="Type:" id=saveProjectFormType_name></paper-input>
 			        <paper-input class="addProjClass" label="Index Name:" id=saveProjectFormIndex_name></paper-input>
+			        <paper-input class="addProjClass" label="Image Prefix:" id=saveProjectFormImagePrefix></paper-input>
+			        
 			        <div>
 			        <span>TLDs</span>
 			        <textarea id=saveProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
@@ -193,6 +197,8 @@ function addProject(data)  {
 				
 					<div id="isDisabled" style="pointer-events:none;opacity:0.4">
 					<paper-input class="addProjClass" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index}}"></paper-input>
+			        <paper-input class="addProjClass" label="Image Prefix:" id=editProjectFormImgePrefix value="{{editProjectForm.value.sources.0.image_prefix}}"></paper-input>
+			        
 			        <div>
 			        
 						<paper-input style="float:right;margin-right:10em" class="addProjClass" label="Root Name:" id=editProjectFormRoot_name value="{{editProjectForm.value.root_name}}"></paper-input>
@@ -311,6 +317,7 @@ Polymer({
     	
 			"index":this.editProjectForm.value.sources[0].index,
 			"type":this.editProjectForm.value.sources[0].type,
+			"image_prefix":this.editProjectForm.value.sources[0].image_prefix,
 			"start_date":this.$$("#editProjectFormStart_date").innerText,
 			"tlds":tlds,
 			"url":this.editProjectForm.value.sources[0].url,
