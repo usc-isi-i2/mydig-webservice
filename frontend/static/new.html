@@ -65,6 +65,7 @@ function addProject(data)  {
 		    "sandpaper_sample_url": ""
 		  },
 		  	"project_name":name,
+		  	"image_prefix":imgPrefix,
 		  	"sources": [{
 				"start_date":start_date,
 				"tlds":tlds,
@@ -72,7 +73,6 @@ function addProject(data)  {
 				"username":userN,
 				"password":passWd,
 				"url":Url,
-				"image_prefix":imgPrefix,
 				"index":index_name,
 				"type":type_name}]
 		  });
@@ -197,7 +197,7 @@ function addProject(data)  {
 				
 					<div id="isDisabled" style="pointer-events:none;opacity:0.4">
 					<paper-input class="addProjClass" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index}}"></paper-input>
-			        <paper-input class="addProjClass" label="Image Prefix:" id=editProjectFormImgePrefix value="{{editProjectForm.value.sources.0.image_prefix}}"></paper-input>
+			        <paper-input class="addProjClass" label="Image Prefix:" id=editProjectFormImgePrefix value="{{editProjectForm.value.image_prefix}}"></paper-input>
 			        
 			        <div>
 			        
@@ -313,11 +313,12 @@ Polymer({
     		  
     		
     	
-    		"project_name":this.editProjectForm.name,"sources": [{
+    		"project_name":this.editProjectForm.name,
+    		"image_prefix":this.editProjectForm.value.image_prefix,
+    		"sources": [{
     	
 			"index":this.editProjectForm.value.sources[0].index,
 			"type":this.editProjectForm.value.sources[0].type,
-			"image_prefix":this.editProjectForm.value.sources[0].image_prefix,
 			"start_date":this.$$("#editProjectFormStart_date").innerText,
 			"tlds":tlds,
 			"url":this.editProjectForm.value.sources[0].url,
