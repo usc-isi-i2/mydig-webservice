@@ -31,7 +31,7 @@ class SubmitEtk(object):
 
     def create_worflow_xml(self, etk_config, project_name, workflow_manager):
         # Add arguments for etk
-        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json']
+        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json', '-p 1000']
         argument_xml = ''
         for argument in arguments:
             argument_xml += workflow_manager.create_arguments_for_workflow_xml(argument)
