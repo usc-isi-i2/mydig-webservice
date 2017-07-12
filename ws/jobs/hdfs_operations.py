@@ -10,8 +10,8 @@ class HdfsOp(object):
         url = '{}{}/?op=MKDIRS&user.name={}'.format(self.web_hdfs_url, path, hdfs_user)
         return requests.put(url)
 
-    def create_or_overwrite_file(self, path, f, hdfs_user='worker'):
-        hdfs = PyWebHdfsClient(host='10.1.94.54', port=14000, user_name=hdfs_user)
+    def create_or_overwrite_file(self, path, f, hdfs_user='worker', request_extra_opts={}):
+        hdfs = PyWebHdfsClient(host='10.1.94.54', port=14000, user_name=hdfs_user, request_extra_opts=request_extra_opts)
         return hdfs.create_file(path, f, overwrite=True)
 
 

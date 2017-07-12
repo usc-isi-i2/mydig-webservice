@@ -64,6 +64,8 @@ class SubmitEtk(object):
                     self.add_things_to_upload(k, v, f)
 
         # upload extraction_config
+        # but first change the path of resources
+        etk_config = self.reformat_etk_config(etk_config)
         e_f = codecs.open('/tmp/extraction_config.json', 'w')
         e_f.write(json.dumps(etk_config))
         e_f.close()
@@ -127,6 +129,7 @@ class SubmitEtk(object):
         run_f.close()
 
         # upload the dicts and other resources to cluster
+        print json.dumps(self.files_to_upload, indent=2)
         self.upload_files_to_hdfs()
 
 
@@ -134,12 +137,37 @@ class SubmitEtk(object):
 
         return True
 
+    def reformat_etk_config(self, etk_config):
+        if 'resources' in etk_config:
+            if 'dictionaries' in etk_config['resources']:
+                dictionaries = etk_config['resources']['dictionaries']
+                for k, v in dictionaries.items():
+                    f = self.get_file_name_from_path(v)
+                    dictionaries[k] = f
+            if 'landmark' in etk_config['resources']:
+                landmark = etk_config['resources']['landmark']
+                if len(landmark) > 0:
+                    landmark_f = landmark[0]
+                    f = self.get_file_name_from_path(landmark_f)
+                    etk_config['resources']['landmark'][0] = f
+            if 'spacy_field_rules' in etk_config['resources']:
+                spacy_field_rules = etk_config['resources']['spacy_field_rules']
+                for k, v in spacy_field_rules.items():
+                    f = self.get_file_name_from_path(v)
+                    spacy_field_rules[k] = f
+        return etk_config
+
     def upload_files_to_hdfs(self):
         for file_name in self.files_to_upload.keys():
             f = self.files_to_upload[file_name]
             if f['source'].endswith('gz'):
                 gzip_file_handle = gzip.GzipFile(f['source'])
-                success = self.hdfsop.create_or_overwrite_file(f['destination'], gzip_file_handle)
+                request_extra_opts = dict()
+                request_extra_opts['content-encoding'] = 'gzip'
+
+                special_hdfsop = HdfsOp(request_extra_opts=request_extra_opts)
+
+                success = special_hdfsop.create_or_overwrite_file(f['destination'], gzip_file_handle)
             else:
                 success = self.hdfsop.create_or_overwrite_file(f['destination'], codecs.open(f['source']))
             if not success:
