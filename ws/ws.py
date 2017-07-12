@@ -2065,7 +2065,7 @@ class Actions(Resource):
             etk_config = json.loads(f.read())
 
         s.update_etk_lib_cluster(etk_config, project_name)
-        resp = s.submit_etk_cluster(data[project_name]['master_config'], 'my_project')
+        resp = s.submit_etk_cluster(data[project_name]['master_config'], project_name)
 
         if resp.status_code // 100 != 2:
             logger.error('extract_and_load_deployed_data: {}, {}'.format(resp.status_code, resp.content))
