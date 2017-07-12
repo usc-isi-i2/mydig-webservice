@@ -202,6 +202,7 @@ class AllProjects(Resource):
         project_name = input.get('project_name', '')
         if len(project_name) == 0 or len(project_name) >= 256:
             return rest.bad_request('Invalid project name.')
+        project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
         if project_name in data:
             return rest.exists('Project name already exists.')
         project_sources = input.get('sources', [])
