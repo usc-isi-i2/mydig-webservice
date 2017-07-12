@@ -27,4 +27,4 @@ def pages():
     return render_template('projectDetailsUpdate.html')
 
 if __name__ == '__main__':
-    app.run(debug=config['debug'], host=config['host'], port=config['port'])
+    app.run(debug=config['debug'], host=config['host'], port=config['port'], threaded=True)

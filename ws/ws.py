@@ -202,6 +202,7 @@ class AllProjects(Resource):
         project_name = input.get('project_name', '')
         if len(project_name) == 0 or len(project_name) >= 256:
             return rest.bad_request('Invalid project name.')
+        project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
         if project_name in data:
             return rest.exists('Project name already exists.')
         project_sources = input.get('sources', [])
@@ -564,6 +565,7 @@ class ProjectFields(Resource):
 
     @requires_auth
     def get(self, project_name):
+        project_name = project_name.lower() # patches for inferlink
         if project_name not in data:
             return rest.not_found()
         return data[project_name]['master_config']['fields']
@@ -878,8 +880,12 @@ class ProjectGlossaries(Resource):
     @staticmethod
     def convert_glossary_to_json(lines):
         glossary = list()
+        lines = lines.replace('\r', '\n') # convert
         lines = lines.split('\n')
         for line in lines:
+            line = line.strip()
+            if len(line) == 0: # trim empty line
+                continue
             glossary.append(line)
         return json.dumps(glossary)
 
