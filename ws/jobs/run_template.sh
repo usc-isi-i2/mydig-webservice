@@ -17,7 +17,7 @@ export DEFAULT_PYTHON=./etk_env.zip/etk_env/bin/python
   --conf spark.executorEnv.PYSPARK_PYTHON=./etk_env.zip/etk_env/bin/python \
   --conf spark.executorEnv.DEFAULT_PYTHON=./etk_env.zip/etk_env/bin/python \
  --master yarn-client \
- --num-executors 100  --executor-memory 12g \
+ --num-executors 200  --executor-memory 12g \
 --archives etk_env.zip \
     --conf spark.eventLog.enabled=true \
     --conf spark.eventLog.dir=hdfs://memex/user/spark/applicationHistory \

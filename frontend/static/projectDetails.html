@@ -133,6 +133,7 @@
 		function submitFormData() {
 		 
 		 var glossName = document.getElementById('glossary_nameInput').value;
+		 if (/\s/.test(glossName)) {return;}
 		 var file =  document.getElementById("glossary_fileInput").getElementsByTagName("input")[0].files[0];  	 
 	   	 
 	   	 var url=backend_url + "projects/"+projectName[1]+"/glossaries";
@@ -196,6 +197,7 @@
 	    	var xhr = new XMLHttpRequest();
 	    	var url = backend_url +"projects/"+projectName[1]+"/tags";
 	   		var name=document.getElementById("tagNameInput").value;
+	   		if (/\s/.test(name)) {return;}
 	   		var description=document.getElementById("tagDescriptionInput").value;
 	   		var screenlabel=document.getElementById("tagSceenLabelInput").value;
 	   		var positiveprecision=document.getElementById("tagPositiveInput").value;
@@ -272,6 +274,7 @@
 	    	var xhr = new XMLHttpRequest();
 	    	var url = backend_url + "projects/"+projectName[1]+"/fields";
 	   		var name=document.getElementById("fieldnameinput").value;
+	   		if (/\s/.test(name)) {return;}
 	   		var description=document.getElementById("fielddescriptioninput").value;
 	   		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
 	   		var screen_label_plural = document.getElementById("fieldscreenlabelPluralinput").value;
@@ -638,8 +641,9 @@
 						
 						<paper-button raised on-tap="etkDeployed" style="text-transform:none"
 						style="clear:left"> <strong>Start Extraction</strong></paper-button>
-						<paper-button raised style="text-transform:none" on-tap="updateToNewIndexNew"
-						style="clear:left"> <strong>DIG App</strong></paper-button>
+						<a target="_blank" style="color:black;text-decoration: none;" href="{{digAppURI}}">
+						<paper-button raised style="text-transform:none"
+						style="clear:left"> <strong>DIG App</strong></paper-button></a>
 						</div>
 						<br><br>
 					</div>
@@ -2029,6 +2033,7 @@
    			var inferlinkURL = data.detail.response.sources[0].url;
    			if(inferlinkURL.indexOf("hyperiongray")!=-1)this.inferlinkLink = "http://isi-"+inferlinkURL.substring(8,inferlinkURL.indexOf("hyperiongray"))+"inferlink.com:3333/";
    			else this.inferlinkLink="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/";
+   			this.digAppURI = "http://52.36.12.77:8091/?project="+projectName[1];
    		},
    		addNewAttribute:function() {
    			this.$$("#tableAttributeInputValue").value="";

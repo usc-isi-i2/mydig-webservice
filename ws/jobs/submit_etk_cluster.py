@@ -32,7 +32,7 @@ class SubmitEtk(object):
 
     def create_worflow_xml(self, etk_config, project_name, workflow_manager):
         # Add arguments for etk
-        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json']
+        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json', '-p 1000']
         argument_xml = ''
         for argument in arguments:
             argument_xml += workflow_manager.create_arguments_for_workflow_xml(argument)
@@ -70,7 +70,7 @@ class SubmitEtk(object):
         e_f.write(json.dumps(etk_config))
         e_f.close()
         e_e_f = self.default_lib_path.format(self.worker_dir_path, project_name,
-                                         self.get_file_name_from_path('/tmp/extraction_config.json'))
+                                             self.get_file_name_from_path('/tmp/extraction_config.json'))
         files += workflow_manager.create_file_property_for_workflow_xml(e_e_f)
         self.add_things_to_upload('extraction_config.json', '/tmp/extraction_config.json', e_e_f)
 
@@ -107,7 +107,6 @@ class SubmitEtk(object):
         archive = workflow_manager.create_archive_property_for_workflow_xml(
             '{}/lib/etk_env.zip'.format(self.worker_dir_path))
 
-
         return '{}{}{}{}{}'.format(workflow_manager.workflow_xml_start, argument_xml, files, archive,
                                    workflow_manager.workflow_xml_end)
 
@@ -120,7 +119,8 @@ class SubmitEtk(object):
         temp_workflow_file = codecs.open('workflow.xml', 'r')
         # create wf application path
         self.hdfsop.create_dir(self.wf_application_path.format(project_name))
-        self.hdfsop.create_or_overwrite_file(self.wf_application_path.format(project_name) + '/workflow.xml', temp_workflow_file)
+        self.hdfsop.create_or_overwrite_file(self.wf_application_path.format(project_name) + '/workflow.xml',
+                                             temp_workflow_file)
 
         # update run_sh
         run_content = self.create_run_sh()
@@ -129,11 +129,7 @@ class SubmitEtk(object):
         run_f.close()
 
         # upload the dicts and other resources to cluster
-        print json.dumps(self.files_to_upload, indent=2)
         self.upload_files_to_hdfs()
-
-
-
 
         return True
 
@@ -160,14 +156,7 @@ class SubmitEtk(object):
     def upload_files_to_hdfs(self):
         for file_name in self.files_to_upload.keys():
             f = self.files_to_upload[file_name]
-            if f['source'].endswith('gz'):
-                gzip_file_handle = gzip.GzipFile(f['source'])
-                request_extra_opts = dict()
-                request_extra_opts['content-encoding'] = 'gzip'
-
-                success = self.hdfsop.create_or_overwrite_file(f['destination'], gzip_file_handle, request_extra_opts=request_extra_opts)
-            else:
-                success = self.hdfsop.create_or_overwrite_file(f['destination'], codecs.open(f['source']))
+            success = self.hdfsop.create_or_overwrite_file(f['destination'], codecs.open(f['source']))
             if not success:
                 raise Exception('file upload failed, {}, {}, {}'.format(file_name, f['source'], f['destination']))
         return True
@@ -207,12 +196,13 @@ class SubmitEtk(object):
         oj = OozieJobs(oozie_url=self.oozie_url)
         return oj.submit_oozie_jobs(property_dict)
 
+
 if __name__ == '__main__':
     etk_config = '/data/github/mydig-projects/my_project/working_dir/etk_config.json'
     s = SubmitEtk()
 
     wm = WM()
-    #print s.create_worflow_xml(json.load(codecs.open(etk_config)), 'my_project', wm)
+    # print s.create_worflow_xml(json.load(codecs.open(etk_config)), 'my_project', wm)
     s.update_etk_lib_cluster(json.load(codecs.open(etk_config)), 'my_project')
     master_project_config = json.load(codecs.open('/data/github/mydig-projects/my_project/master_config.json'))
     print s.submit_etk_cluster(master_project_config, 'my_project').content
