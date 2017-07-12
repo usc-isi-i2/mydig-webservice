@@ -2052,7 +2052,7 @@ class Actions(Resource):
             return rest.bad_request('etk config doesn\'t exist')
 
         with open(etk_config_path, 'r') as f:
-            etk_config = json.load(f.read())
+            etk_config = json.loads(f.read())
 
         s.update_etk_lib_cluster(etk_config, project_name)
         resp = s.submit_etk_cluster(data[project_name]['master_config'], 'my_project')
