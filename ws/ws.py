@@ -2062,7 +2062,7 @@ class Actions(Resource):
             return rest.internal_error('failed in extract_and_load_deployed_data')
 
         path = os.path.join(_get_project_dir_path(project_name), 'working_dir/cluster_job_resp.json')
-        with open(path, 'r') as f:
+        with open(path, 'w') as f:
             f.write(json.dumps(resp.json()))
 
         return rest.accepted()
