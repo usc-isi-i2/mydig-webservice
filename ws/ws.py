@@ -2046,17 +2046,14 @@ class Actions(Resource):
 
     def _extract_and_load_deployed_data(self, project_name):
         s = jobs.submit_etk_cluster.SubmitEtk()
-        wm = jobs.manage_workflow_xml.WM()
 
         etk_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json')
         if not os.path.exists(etk_config_path):
             return rest.bad_request('etk config doesn\'t exist')
 
-        etk_config = None
         with open(etk_config_path, 'r') as f:
             etk_config = json.load(f.read())
 
-        # print s.create_worflow_xml(etk_config, project_name, wm)
         s.update_etk_lib_cluster(etk_config, project_name)
         resp = s.submit_etk_cluster(data[project_name]['master_config'], 'my_project').content
 
