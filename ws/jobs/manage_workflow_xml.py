@@ -25,7 +25,7 @@ workflow_xml_start = """<workflow-app name="etk-april-2017" xmlns="uri:oozie:wor
                     <value>8192</value>
                 </property>
             </configuration>
-            <exec>./run_template.sh</exec>
+            <exec>./run.sh</exec>
 """
 
 workflow_xml_end = """              <capture-output/>
