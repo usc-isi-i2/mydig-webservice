@@ -212,6 +212,7 @@ class AllProjects(Resource):
         for k, v in templates.default_configurations.iteritems():
             if k not in project_config or len(project_config[k].strip()) == 0:
                 project_config[k] = v
+        image_prefix = input.get('image_prefix', '')
 
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
@@ -253,6 +254,7 @@ class AllProjects(Resource):
             'version': 0
         }
         data[project_name]['master_config']['configuration'] = project_config
+        data[project_name]['master_config']['image_prefix'] = image_prefix
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -366,6 +368,7 @@ class Project(Resource):
         for k, v in templates.default_configurations.iteritems():
             if k not in project_config or len(project_config[k].strip()) == 0:
                 project_config[k] = v
+        image_prefix = input.get('image_prefix', '')
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
         #     return rest.bad_request('Invalid index.')
@@ -377,6 +380,7 @@ class Project(Resource):
 
         data[project_name]['master_config']['sources'] = AllProjects.trim_empty_tld_in_sources(project_sources)
         data[project_name]['master_config']['configuration'] = project_config
+        data[project_name]['master_config']['image_prefix'] = image_prefix
         # data[project_name]['master_config']['index'] = es_index
         # write to file
         update_master_config_file(project_name)

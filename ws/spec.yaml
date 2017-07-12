@@ -1678,6 +1678,8 @@ definitions:
             type: "string"
           sandpaper_sample_url:
             type: "string"
+      image_prefix:
+        type: "string"
   tag:
     type: "object"
     properties:
