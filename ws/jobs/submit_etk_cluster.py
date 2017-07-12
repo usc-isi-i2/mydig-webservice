@@ -32,7 +32,7 @@ class SubmitEtk(object):
 
     def create_worflow_xml(self, etk_config, project_name, workflow_manager):
         # Add arguments for etk
-        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json']
+        arguments = ['${INPUT}', '${OUTPUT}', 'extraction_config.json', '-p 1000']
         argument_xml = ''
         for argument in arguments:
             argument_xml += workflow_manager.create_arguments_for_workflow_xml(argument)
@@ -160,14 +160,7 @@ class SubmitEtk(object):
     def upload_files_to_hdfs(self):
         for file_name in self.files_to_upload.keys():
             f = self.files_to_upload[file_name]
-            if f['source'].endswith('gz'):
-                gzip_file_handle = gzip.GzipFile(f['source'])
-                request_extra_opts = dict()
-                request_extra_opts['content-encoding'] = 'gzip'
-
-                success = self.hdfsop.create_or_overwrite_file(f['destination'], gzip_file_handle, request_extra_opts=request_extra_opts)
-            else:
-                success = self.hdfsop.create_or_overwrite_file(f['destination'], codecs.open(f['source']))
+            success = self.hdfsop.create_or_overwrite_file(f['destination'], codecs.open(f['source']))
             if not success:
                 raise Exception('file upload failed, {}, {}, {}'.format(file_name, f['source'], f['destination']))
         return True
