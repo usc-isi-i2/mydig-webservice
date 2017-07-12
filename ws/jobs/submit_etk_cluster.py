@@ -165,9 +165,7 @@ class SubmitEtk(object):
                 request_extra_opts = dict()
                 request_extra_opts['content-encoding'] = 'gzip'
 
-                special_hdfsop = HdfsOp(request_extra_opts=request_extra_opts)
-
-                success = special_hdfsop.create_or_overwrite_file(f['destination'], gzip_file_handle)
+                success = self.hdfsop.create_or_overwrite_file(f['destination'], gzip_file_handle, request_extra_opts=request_extra_opts)
             else:
                 success = self.hdfsop.create_or_overwrite_file(f['destination'], codecs.open(f['source']))
             if not success:
