@@ -1056,9 +1056,14 @@ paths:
         description: "number of pages for extra TLDs to run (only works for extract_and_load_test_data)"
         type: "integer"
       - in: "query"
+        name: "force_getting_sample_pages"
+        required: false
+        description: "ignore lock and get sample pages (only works for get_sample_pages)"
+        type: "boolean"
+      - in: "query"
         name: "force_start_new_extraction"
         required: false
-        description: "force start a new process for etk extraction"
+        description: "force start a new process for etk extraction (only works for extract_and_load_test_data)"
         type: "boolean"
       responses:
         202:

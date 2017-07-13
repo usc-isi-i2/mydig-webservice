@@ -1686,7 +1686,7 @@ class Actions(Resource):
         return content
 
     @staticmethod
-    def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra):
+    def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra, force_getting_pages):
         lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
         write_to_file('', lock_path)
 
@@ -1701,8 +1701,8 @@ class Actions(Resource):
         # retrieve from es
         for tld in s['tlds']:
 
-            # if retrieved, skip
-            if tld in tlds_status and tlds_status[tld] != 0:
+            # if it's not in force mode and has already been retrieved, skip it
+            if not force_getting_pages and tld in tlds_status and tlds_status[tld] != 0:
                 continue
 
             if pages_per_tld > 0:
@@ -1917,7 +1917,7 @@ class Actions(Resource):
                     'cdr_ids': cdr_ids
                 }
             print url
-            logger.info('sent to inferlink: url: {} payload: {}'.format(url, json.dumps(payload)))
+            # logger.info('sent to inferlink: url: {} payload: {}'.format(url, json.dumps(payload)))
             payload_dump_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/last_payload.json')
             write_to_file(json.dumps(payload, indent=2), payload_dump_path)
             try:
@@ -1933,7 +1933,19 @@ class Actions(Resource):
 
     def _get_sample_pages(self, project_name):
 
+        parser = reqparse.RequestParser()
+        parser.add_argument('pages_per_tld', required=False, type=int)
+        parser.add_argument('pages_extra', required=False, type=int)
+        parser.add_argument('force_getting_sample_pages', required=False, type=str)
+        args = parser.parse_args()
+        pages_per_tld = 200 if args['pages_per_tld'] is None else args['pages_per_tld']
+        pages_extra = 1000 if args['pages_extra'] is None else args['pages_extra']
+        force_getting_pages = True if args['force_getting_sample_pages'] is not None and \
+            args['force_getting_sample_pages'].lower() == 'true' else False
+
         lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
+        if force_getting_pages and os.path.exists(lock_path):
+            os.remove(lock_path)
         if os.path.exists(lock_path):
             return rest.exists('still running')
 
@@ -1944,18 +1956,12 @@ class Actions(Resource):
             if 'tlds' not in s or len(s['tlds']) == 0:
                 return rest.bad_request('invalid tlds in sources')
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('pages_per_tld', required=False, type=int)
-        parser.add_argument('pages_extra', required=False, type=int)
-        args = parser.parse_args()
-        pages_per_tld = 200 if args['pages_per_tld'] is None else args['pages_per_tld']
-        pages_extra = 1000 if args['pages_extra'] is None else args['pages_extra']
-
         # async
-        p = multiprocessing.Process(target=self._get_sample_pages_worker,
+        p = multiprocessing.Process(
+            target=self._get_sample_pages_worker,
             args=(project_name, sources,
                   os.path.join(_get_project_dir_path(project_name), 'pages'),
-                  pages_per_tld, pages_extra))
+                  pages_per_tld, pages_extra, force_getting_pages))
         p.start()
         return rest.accepted()
 
@@ -2065,7 +2071,7 @@ class Actions(Resource):
             etk_config = json.loads(f.read())
 
         s.update_etk_lib_cluster(etk_config, project_name)
-        resp = s.submit_etk_cluster(data[project_name]['master_config'], 'my_project')
+        resp = s.submit_etk_cluster(data[project_name]['master_config'], project_name)
 
         if resp.status_code // 100 != 2:
             logger.error('extract_and_load_deployed_data: {}, {}'.format(resp.status_code, resp.content))
