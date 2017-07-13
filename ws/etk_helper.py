@@ -18,11 +18,6 @@ default_etk_config_str = """{
                     "strict": "yes",
                     "extraction_policy": "keep_existing",
                     "field_name": "content_strict"
-                },
-                {
-                    "strict": "no",
-                    "extraction_policy": "keep_existing",
-                    "field_name": "content_relaxed"
                 }
             ],
             "title": {
