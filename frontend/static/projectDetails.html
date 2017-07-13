@@ -544,6 +544,8 @@
 						</div>
 						<br><br>
 						<div style="float: right">
+							<paper-checkbox id="samplePageForce">Force</paper-checkbox>
+					
 							<paper-button raised id="get_sample_pages" on-tap="inferlink"
 						style="clear:left"> <strong>Go</strong></paper-button>
 						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
@@ -597,7 +599,7 @@
 						
 						
 						<div style="float: right">
-						
+							<paper-checkbox id="etkForce">Force</paper-checkbox>
 							<paper-button raised on-tap="etk"
 						style="clear:left"> <strong>Go</strong></paper-button>
 						</div>
@@ -1707,7 +1709,8 @@
 	         
 	         perPage = this.$$('#perPage').value;
 	         extraPage = this.$$('#extraPage').value;
-	         this.$.inferlink.url = backend_url +"projects/"+projectName[1]+"/actions/get_sample_pages?pages_per_tld="+perPage+"&pages_extra="+extraPage;
+	         var force=this.$$('#samplePageForce').checked;
+	         this.$.inferlink.url = backend_url +"projects/"+projectName[1]+"/actions/get_sample_pages?pages_per_tld="+perPage+"&pages_extra="+extraPage+"&force_getting_sample_pages="+force;
 	     	 
 	         this.$.inferlink.generateRequest();
 	     },
@@ -1715,7 +1718,8 @@
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.etk.headers = obj;
-	          this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+	         var force=this.$$('#etkForce').checked;
+	          this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data?force_start_new_extraction="+force;
 	          this.$.etk.body = JSON.stringify({
 	      		  "pages_per_tld_to_run": parseInt(this.$$("#etkTLD").value),
 	       		  "pages_extra_to_run": parseInt(this.$$("#etkExtraTLD").value)
@@ -1740,9 +1744,12 @@
 	         this.$.publish.generateRequest();
 	     },
 	     done:function(data) {
+	    	 this.$$('#samplePageForce').checked="";
+	    	 this.$$('#etkForce').checked="";
 	    	 modalDialog.open();
 	     },
 	     successDone:function() {
+	    	 this.$$('#samplePageForce').checked="";
 	    	 modalDialogSuccess.open();
 	     },
 	     successDoneIndex:function() {
@@ -1781,6 +1788,7 @@
 	     },
 	     etkStatus:function() {
 	    	 var obj = {};
+	    	 this.$$("#etkForce").checked="";
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         
 
