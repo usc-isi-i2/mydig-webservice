@@ -1980,7 +1980,9 @@ class Actions(Resource):
 
         # pull down rules
         Actions._update_status(project_name, 'pulling rules from github')
-        if git_helper.pull_landmark() == 'ERROR':
+        git_resp = git_helper.pull_landmark()
+        if git_resp in ('ERROR', 'REJECTED'):
+            print 'git resp: {}'.format(git_resp)
             return rest.internal_error('fail of pulling landmark data')
 
         # generate etk config
