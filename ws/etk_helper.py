@@ -170,7 +170,8 @@ def create_landmark_data_extractor_for_field(mapped_fields, field_name):
 
     if field_name == 'phone' or field_name == 'email' or field_name == 'posting_date':
         de['extractors']['extract_from_landmark']['config']['post_filter'] = [inferlink_fields_post_filter[field_name]]
-
+    elif 'date' in field_name:
+        de['extractors']['extract_from_landmark']['config']['post_filter'] = [inferlink_fields_post_filter['posting_date']]
     return de
 
 
