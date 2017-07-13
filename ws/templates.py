@@ -132,7 +132,7 @@ default_glossaries = {
 }
 
 default_configurations = {
-    'digapp_full_url': 'http://52.36.12.77:8090',
+    'digapp_full_url': '52.36.12.77:8091',
     'digapp_sample_url': 'http://52.36.12.77:8090',
     # 'sandpaper_full_url': 'http://172.31.1.187:9876',
     # 'sandpaper_sample_url': 'http://172.31.1.187:9877'
