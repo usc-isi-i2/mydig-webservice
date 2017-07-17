@@ -250,12 +250,13 @@ def choose_ngram(ngram_distribution):
     return max
 
 
-def create_dictionary_data_extractor_for_field(ngram, dictionary_name):
+def create_dictionary_data_extractor_for_field(ngram, dictionary_name, case_sensitive=False):
     return {
         "extract_using_dictionary": {
             "config": {
                 "dictionary": dictionary_name,
-                "ngrams": ngram
+                "ngrams": ngram,
+                "case_sensitive": case_sensitive
             }
         }
     }
@@ -314,8 +315,10 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
                     if 'extractors' not in de_obj['fields'][field_name]:
                         de_obj['fields'][field_name]['extractors'] = dict()
 
+                    case_sensitive = field_definition[
+                        'case_sensitive'] if 'case_sensitive' in field_definition else False
                     de_obj['fields'][field_name]['extractors'].update(
-                        create_dictionary_data_extractor_for_field(ngram, glossary))
+                        create_dictionary_data_extractor_for_field(ngram, glossary, case_sensitive))
     etk_config['data_extraction'].append(de_obj)
     return etk_config
 
