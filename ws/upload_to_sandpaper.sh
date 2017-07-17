@@ -16,9 +16,8 @@ if [ $(( ${status_code}/100 )) -ne 2 ]; then
 fi
 
 # split file
-if [ ! -d ${working_dir}/etk_out_part ]; then
-    mkdir ${working_dir}/etk_out_part
-fi
+rm -rf ${working_dir}/etk_out_part
+mkdir ${working_dir}/etk_out_part
 split -l 1000 --additional-suffix=.jl "${working_dir}/etk_out.jl" "${working_dir}/etk_out_part/part_"
 
 # upload files
