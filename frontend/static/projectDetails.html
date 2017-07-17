@@ -723,13 +723,12 @@
 				
 				<div style="padding: 8px;">
 					<strong disabled="disabled">Glossaries:</strong>
-					<template is="dom-repeat" items="{{item.0.glossaries}}" >
+					<template is="dom-repeat" items="{{item.0.glossaries}}" renderedItemCount="{{renderedCount}}">
 						{{item}} &nbsp;
 					</template>
 					&nbsp;
-					<template is="dom-if" if="{{item.0.glossaries}}">
-					{{renderedCount}}
-					<paper-checkbox disabled="disabled" checked="{{item.0.case_sensitive}}"><span>Case Sensitive ?</span></paper-checkbox>
+					<template is="dom-if" if="{{checkLength(item)}}">
+						<paper-checkbox disabled="disabled" checked="{{item.0.case_sensitive}}"><span>Case Sensitive ?</span></paper-checkbox>
 					</template>
 				</div>
 				</paper-material> <br><br></template>
@@ -1031,7 +1030,7 @@
 				<br><br><br>
 				<paper-dialog-scrollable>
 				<paper-checkbox id="getCaseSenstive" checked="{{fieldForm.case_sensitive}}"><span>Case Sensitive ?</span></paper-checkbox>
-				<br>
+				<br><br>
 				<template is="dom-repeat" items="{{glossaries}}">
 					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
 					<div style="padding-bottom:0.5em">
@@ -1604,14 +1603,16 @@
 	     updateDone:function() {
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.getFields.headers = obj;
+		        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
+		    	this.$.getFields.generateRequest();
+		    	
+	         
 	         this.$.getTags.headers = obj;
 	         this.$.getTags.url = backend_url + "projects/"+projectName[1]+"/tags";
 	     	this.$.getTags.generateRequest();
 	     	
-	     	this.$.getFields.headers = obj;
-	        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
-	    	this.$.getFields.generateRequest();
-	    	
+	     	
 	    	this.$.getGlossary.headers = obj;
 	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
 	    	this.$.getGlossary.generateRequest();
@@ -1684,7 +1685,7 @@
 	      		  "field_name": this.fieldForm.name,
 	       		  "field_object": {
 	       		    "color":this.fieldForm.color ,
-	       		    "case_sensitive":this.fieldForm.case_sensitive,
+	       		    "case_sensitive":this.fieldFormGlossaries.length>0?this.fieldForm.case_sensitive:false,
 	       		    "combine_fields": this.fieldForm.combine_fields,
 	       		    "description": this.fieldForm.description,
 	       		    "glossaries": this.fieldFormGlossaries,
@@ -2071,6 +2072,10 @@
    		},
    		getToHome:function() {
    			location.href = "/"
+   		},
+   		checkLength:function(item) {
+   			return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length>0;
+   			
    		}
      });
 	</script>
