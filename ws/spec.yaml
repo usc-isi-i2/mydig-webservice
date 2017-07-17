@@ -1760,6 +1760,9 @@ definitions:
       rule_extraction_target:
         type: "string"
         description: "enum(title_only | description_only | title_and_description)"
+      case_sensitive:
+        type: "boolean"
+        description: "only effective when there are glossaries associated"
   create_tag:
     type: "object"
     properties:

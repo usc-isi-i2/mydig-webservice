@@ -648,6 +648,9 @@ class ProjectFields(Resource):
         if 'rule_extraction_target' not in field_obj or \
                 field_obj['rule_extraction_target'] not in ('title_only', 'description_only', 'title_and_description'):
             field_obj['rule_extraction_target'] = 'title_and_description'
+        if 'case_sensitive' not in field_obj or \
+                not isinstance(field_obj['case_sensitive'], bool):
+            field_obj['case_sensitive'] = False
         return True, None
 
 

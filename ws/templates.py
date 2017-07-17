@@ -276,7 +276,8 @@ default_fields = {
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
         'predefined_extractor': 'none',
-        'glossaries': ['cities']
+        'glossaries': ['cities'],
+        'case_sensitive': False
     },
     'state': {
         'name': 'state',
@@ -296,7 +297,8 @@ default_fields = {
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
         'predefined_extractor': 'none',
-        'glossaries': ['states_usa_canada']
+        'glossaries': ['states_usa_canada'],
+        'case_sensitive': False
     },
     'states_usa_codes': {
         'name': 'states_usa_codes',
@@ -316,7 +318,8 @@ default_fields = {
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
         'predefined_extractor': 'none',
-        'glossaries': ['states_usa_codes']
+        'glossaries': ['states_usa_codes'],
+        'case_sensitive': False
     },
     'country': {
         'name': 'country',
@@ -336,7 +339,8 @@ default_fields = {
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
         'predefined_extractor': 'none',
-        'glossaries': ['countries']
+        'glossaries': ['countries'],
+        'case_sensitive': False
     },
     'address': {
         'name': 'address',
@@ -513,5 +517,6 @@ master_config = {
 #     'number_of_rules': integer,
 #     'predefined_extractor': 'enum (social_media | review_id | city | posting_date | phone | email | address |
 #      country | TLD | none)',
-#     'rule_extraction_target': enum('title_only', 'description_only', 'title_and_description')
+#     'rule_extraction_target': enum('title_only', 'description_only', 'title_and_description'),
+#     'case_sensitive': boolean
 # }
