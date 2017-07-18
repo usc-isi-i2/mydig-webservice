@@ -16,7 +16,7 @@ RUN mkdir -p /github
 RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /github/mydig-webservice
 #RUN mkdir /mydig-webservice/ws
 
-#COPY requirements.txt /mydig-webservice
+COPY ~/Github/mydyg-webserviceconfig.py /github/mydig-webservice
 #COPY run_backend.sh /mydig-webservice
 #COPY ws/* /mydig-webservice/ws/
 
@@ -28,5 +28,6 @@ RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /github/mydig-w
 WORKDIR /github/mydig-webservice
 
 RUN pip install -r requirements.txt
-RUN ["chmod", "+x", "/github/mydig-webservice/run_backend.sh”
+RUN ls /github/mydig-webservice
+RUN ["chmod", "+x", "/github/mydig-webservice/run_backend.sh"]
 CMD ["/github/mydig-webservice/run_backend.sh"]
