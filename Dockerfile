@@ -14,6 +14,9 @@ EXPOSE 9880
 
 RUN mkdir -p /github
 RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /github/mydig-webservice
+
+RUN mkdir -p /github/mydig-projects
+RUN mkdir -p /github/mydig-projects-landmark
 #RUN mkdir /mydig-webservice/ws
 
 RUN mv /github/mydig-webservice/ws/sample_config.py /github/mydig-webservice/ws/config.py

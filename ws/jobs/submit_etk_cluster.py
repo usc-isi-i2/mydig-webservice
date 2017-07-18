@@ -190,9 +190,9 @@ class SubmitEtk(object):
         property_dict["jobTracker"] = "memex-rm.xdata.data-tactics-corp.com:8032"
         property_dict["nameNode"] = "hdfs://memex"
         property_dict["oozie.use.system.libpath"] = "True"
-        property_dict['INPUT'] = '/user/worker/cdr3/domain4/es/full'
+        property_dict['INPUT'] = '/user/worker/cdr3/domain3/es/full'
         current_version = master_project_config['index']['version']
-        property_dict['OUTPUT'] = '/user/worker/cdr3/domain4/etk_out/{}/{}'.format(project_name, str(current_version))
+        property_dict['OUTPUT'] = '/user/worker/cdr3/domain3/etk_out/{}/{}'.format(project_name, str(current_version))
         oj = OozieJobs(oozie_url=self.oozie_url)
         return oj.submit_oozie_jobs(property_dict)
 
