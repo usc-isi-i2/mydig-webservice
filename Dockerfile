@@ -28,5 +28,5 @@ RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /github/mydig-w
 WORKDIR /github/mydig-webservice
 
 RUN pip install -r requirements.txt
-
-CMD ["run_backend.sh"]
+RUN ["chmod", "+x", "/github/mydig-webservice/run_backend.sh”
+CMD ["/github/mydig-webservice/run_backend.sh"]
