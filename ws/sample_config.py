@@ -9,7 +9,7 @@ config = {
     # add a mydig-admin user to the below to repos,
     # and set up user.name and user.email in git config
     'repo': {
-        'local_path': '../../mydig-projects-test',
+        'local_path': '/github/mydig-projects',
         'git': {
             'enable_sync': True,
             'remote_url': '<remote url>',
@@ -19,7 +19,7 @@ config = {
         }
     },
     'repo_landmark': {
-        'local_path': '../../mydig-projects-landmark',
+        'local_path': '/github/mydig-projects-landmark',
         'git': {
             'enable_sync': True,
             'remote_url': '<remote url>',

@@ -16,7 +16,7 @@ RUN mkdir -p /github
 RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /github/mydig-webservice
 #RUN mkdir /mydig-webservice/ws
 
-RUN mv /github/mydig-webservice/sample_config.py /github/mydig-webservice/config.py
+RUN mv /github/mydig-webservice/ws/sample_config.py /github/mydig-webservice/ws/config.py
 #COPY run_backend.sh /mydig-webservice
 #COPY ws/* /mydig-webservice/ws/
 
