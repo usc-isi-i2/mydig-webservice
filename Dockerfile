@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 RUN wget https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py
 
-EXPOSE 9880
+EXPOSE 9876
 
 RUN mkdir -p /github
 RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /github/mydig-webservice
@@ -31,6 +31,6 @@ RUN mv /github/mydig-webservice/ws/sample_config.py /github/mydig-webservice/ws/
 WORKDIR /github/mydig-webservice
 
 RUN pip install -r requirements.txt
-RUN ls /github/mydig-webservice
-RUN ["chmod", "+x", "/github/mydig-webservice/run_backend.sh"]
-CMD ["/github/mydig-webservice/run_backend.sh"]
+
+RUN ["chmod", "+x", "/github/mydig-webservice/ws/run_backend.sh"]
+CMD ./ws/run_backend.sh
