@@ -37,4 +37,6 @@ RUN pip install -r requirements.txt
 # RUN PATH="/github/mydig-webservice/ws:$PATH"
 
 RUN ["chmod", "+x", "/github/mydig-webservice/run_backend.sh"]
-CMD ./run_backend.sh
+RUN ["chmod", "+x", "/github/mydig-webservice/run_frontend.sh"]
+RUN ["chmod", "+x", "/github/mydig-webservice/run_docker.sh"]
+CMD ./run_docker.sh
