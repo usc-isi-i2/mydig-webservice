@@ -12,7 +12,7 @@ config = {
         'local_path': '/github/mydig-projects',
         'git': {
             'enable_sync': True,
-            'remote_url': '<remote url>',
+            'remote_url': 'https://github.com/usc-isi-i2/mydig-projects-public.git',
             # generate & deploy ssh key
             # https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
             # 'ssh_key_file_path': '<file path>'
@@ -22,7 +22,7 @@ config = {
         'local_path': '/github/mydig-projects-landmark',
         'git': {
             'enable_sync': True,
-            'remote_url': '<remote url>',
+            'remote_url': 'https://github.com/usc-isi-i2/mydig-projects-landmark-public.git',
             # 'ssh_key_file_path': '<file path>'
         }
     },
@@ -52,7 +52,7 @@ config = {
         'admin': '123' # basic
     },
     'default_source_credentials_path': './default_source_credentials.json',
-    'default_glossary_dicts_path': '/jpl/dig3-resources/builtin_resources',
+    'default_glossary_dicts_path': '/github/dig3-resources/builtin_resources',
     'default_glossaries_path': '/jpl/dig3-resources/glossaries',
     'default_spacy_rules_path': '/jpl/dig3-resources/custom_spacy_rules'
 }
