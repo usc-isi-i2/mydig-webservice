@@ -3,6 +3,6 @@ cd ws/
 python ws.py --dummy-this-is-mydig-backend
 cd ..
 
-cd frontend
+cd frontend/
 python service.py --dummy-this-is-mydig-frontend
 cd ..
