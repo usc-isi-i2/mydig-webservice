@@ -11,6 +11,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py
 
 EXPOSE 9876
+EXPOSE 9880
 
 RUN mkdir -p /github
 RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /github/mydig-webservice
