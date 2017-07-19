@@ -32,7 +32,8 @@ WORKDIR /github/mydig-webservice
 
 RUN pip install -r requirements.txt
 
-WORKDIR /github/mydig-webservice/ws
+# WORKDIR /github/mydig-webservice/ws
+# RUN PATH="/github/mydig-webservice/ws:$PATH"
 
 RUN ["chmod", "+x", "/github/mydig-webservice/ws/run_backend.sh"]
 CMD ./run_backend.sh
