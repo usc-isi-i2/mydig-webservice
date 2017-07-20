@@ -665,12 +665,10 @@ paths:
         name: "glossary_name"
         description: ""
         required: true
-        description: ""
       - in: "formData"
         name: "glossary_file"
         description: ""
         required: true
-        description: ""
         type : "file"
       responses:
         201:
@@ -1023,6 +1021,7 @@ paths:
       operationId: ""
       consumes:
       - "application/json"
+      - "multipart/form-data"
       produces:
       - "application/json"
       parameters:
@@ -1033,7 +1032,7 @@ paths:
       - in: "path"
         name: "action_name"
         required: true
-        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index", "extract_and_load_deployed_data", "update_to_new_index_deployed"]
+        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index", "extract_and_load_deployed_data", "update_to_new_index_deployed", "upload_sample_data"]
         description: ""
       - in: "query"
         name: "pages_per_tld"
@@ -1065,6 +1064,11 @@ paths:
         required: false
         description: "force start a new process for etk extraction (only works for extract_and_load_test_data)"
         type: "boolean"
+      - in: "formData"
+        name: "data_file"
+        required: false
+        description: "upload user's sample data (only works for upload_sample_data)"
+        type: "file"
       responses:
         202:
           description: "accepted (action started)"
