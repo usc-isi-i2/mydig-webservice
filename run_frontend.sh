@@ -1,2 +1,2 @@
 cd /github/mydig-webservice/frontend
-python service.py --dummy-this-is-mydig-frontend
+nohup python service.py --dummy-this-is-mydig-frontend > /dev/null 2>&1 &
