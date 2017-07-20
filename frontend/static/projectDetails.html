@@ -503,7 +503,7 @@
 		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt="">
 		 	<h4 style="padding-left:15em;text-align:center" class="projectNameValue"></h4>
 			   <script>document.querySelector('.projectNameValue').innerHTML = " Project : "+projectName[1];</script>
-			   <paper-button on-tap="getToHome" raised style="float:right;margin-left:auto;background-color:white">Home</paper-button>
+			   <paper-button on-tap="getToHome" raised style="float:right;margin-left:auto;background-color:white;text-transform:none">All Projects</paper-button>
 		 
 	    </paper-toolbar>
 			  <paper-header-panel>
@@ -643,7 +643,7 @@
 						</div>
 						<div style="float: right">
 						
-						<paper-button raised on-tap="etkDeployed" style="text-transform:none"
+						<paper-button raised on-tap="sureToContinueExtractionFunction" style="text-transform:none"
 						style="clear:left"> <strong>Start Extraction</strong></paper-button>
 						<a target="_blank" style="color:black;text-decoration: none;" href="{{digAppURI}}">
 						<paper-button raised style="text-transform:none"
@@ -795,7 +795,7 @@
 						<strong>Name:</strong> {{item.0}}
 						<div style="float: right">
 							<paper-button style="text-transform:none" on-tap="editGlossaryFunction" raised>
-							<strong>Edit</strong></paper-button>
+							<strong>Upload</strong></paper-button>
 							<paper-button style="text-transform:none" on-tap="downloadGlossaryFunction" raised> <strong>Download</strong></paper-button>
 							<paper-button style="text-transform:none" on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
 							
@@ -904,7 +904,7 @@
 				<div style="margin-top:0px;">
 					 <button style="float:right" onclick="addDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect" on-iron-select="_getColor" column-count=2 style="float:right" on-tap="_getColor"
-			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039be5&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
 			  	<paper-input readonly style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
@@ -1106,7 +1106,7 @@
 				<div style="margin-top:0px;">
 					 <button style="float:right" onclick="setDefaultColor()">X</button>
 				     <paper-swatch-picker id="colorSelect2" on-iron-select="_getEditColor" column-count=2 style="float:right" on-tap="_getEditColor" color="{{_getColorSelected(fieldForm.color)}}"
-			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039be5&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
 			  	<paper-input readonly id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
 				</div>
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
@@ -1256,6 +1256,14 @@
 			    <paper-button dialog-dismiss>Close</paper-button>
 			 </div>
 	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToContinueExtraction" modal>
+			 <paper-button autofocus style="text-transform:none"> This command will invoke the extraction pipeline on the full dataset, potentially taking 8 hours depending on the size of the dataset.</paper-button>
+	  		 <div class="buttons">
+	  		 	<paper-button on-tap="etkDeployed">Continue</paper-button>
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonSet" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
@@ -1400,7 +1408,8 @@
 	    			"#8e24aa":"purple",
 	    			"#e53935":"red",
 	    			"#00897b":"teal",
-	    			"#fdd835":"yellow"
+	    			"#fdd835":"yellow",
+	    			"#b71c1c":"dark-red"
 	    	};
 	    	
 	    	
@@ -1622,7 +1631,9 @@
 	    	 this.fieldName = e.model.item[0].name;
 	    	 sureToDeleteDialog.toggle();
 	     },
-	     
+	     sureToContinueExtractionFunction:function() {
+	    	 sureToContinueExtraction.toggle();
+	     },
 	     deleteFieldFunction:function() {
 	    	 sureToDeleteDialog.toggle();
 	    	 var obj = {};
@@ -1737,6 +1748,7 @@
 	         this.$.etk.generateRequest();
 	     },
 	     etkDeployed:function() {
+	    	 sureToContinueExtraction.toggle();
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
 	         this.$.etkDeployed.headers = obj;
@@ -1744,6 +1756,7 @@
 	          
 	         this.$.etkDeployed.generateRequest();
 	     },
+	    
 	     publish:function() {
 	    	 var obj = {};
 	         obj.Authorization = "Basic " + btoa(username+":"+password);
