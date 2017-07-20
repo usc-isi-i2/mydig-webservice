@@ -21,6 +21,7 @@ RUN git clone https://github.com/usc-isi-i2/mydig-projects-landmark-public.git /
 #RUN mkdir /mydig-webservice/ws
 
 RUN mv /github/mydig-webservice/ws/sample_config.py /github/mydig-webservice/ws/config.py
+RUN mv /github/mydig-webservice/frontend/sample_config.py /github/mydig-webservice/frontend/config.py
 #COPY run_backend.sh /mydig-webservice
 #COPY ws/* /mydig-webservice/ws/
 
