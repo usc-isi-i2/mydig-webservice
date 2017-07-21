@@ -478,7 +478,7 @@ def add_custom_spacy_extractors(etk_config, project_master_config, project_name,
         "*.content_relaxed.text.`parent`",
         "*.inferlink_extractions.title.text.`parent`",
         "*.inferlink_extractions.description.text.`parent`",
-        "*.inferlink_posts_special_text.text.`parent`"
+        "*.inferlink_posts_special_text.text.`parent`",
         "*.title.text.`parent`"
     ]
     de_obj['fields'] = dict()
