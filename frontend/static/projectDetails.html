@@ -130,6 +130,32 @@
 			
 		}
 		
+		function uploadSamplePagesFiles() {
+			var file =  document.getElementById("samplePagesFile").getElementsByTagName("input")[0].files[0];  	 
+		   	   	 
+		   	 
+		   	 var url=backend_url +"projects/"+projectName[1]+"/actions/upload_sample_data";
+		   	//------------ 
+		   	 var formData = new FormData();
+	
+		   	 formData.append("data_file", file); // number 123456 is immediately converted to a string "123456"
+		  	 
+		   	 var request = new XMLHttpRequest();
+		   	 request.open("POST", url);
+		   //	request.setRequestHeader("Content-type", "application/json");
+		   	request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+		   	request.onreadystatechange = function () {
+				    if (request.readyState === 4 && request.status === 201) {
+				    	 document.getElementById("uploadZipFileDialog").toggle();
+				    	
+				   }
+				};
+			
+			 request.send(formData);
+			
+		}
+		
 		function submitFormData() {
 		 
 		 var glossName = document.getElementById('glossary_nameInput').value;
@@ -550,6 +576,8 @@
 					
 							<paper-button raised id="get_sample_pages" on-tap="inferlink"
 						style="clear:left"> <strong>Go</strong></paper-button>
+						<paper-button raised on-tap="uploadSamplePages" 
+						style="clear:left;text-transform:none"> <strong>Upload Files</strong></paper-button>
 						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
 						style="clear:left;text-transform:none"> <span> <strong>Show TLDs Data</strong> </span></paper-button>
 						
@@ -1022,6 +1050,20 @@
 			</paper-dialog-scrollable>
 			
 			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="uploadZipFileDialog" style="width:50%;margin-left:auto;margin-right:auto">
+			<paper-dialog-scrollable>
+			<h4>Please upload gz File only</h4>
+			<form is="iron-form" content-type="multipart/form-data" method="POST">
+				<paper-input id="samplePagesFile" type="file" required accept="application/x-gzip,application/x-compressed"></paper-input>
+	      		<paper-button raised onclick="uploadSamplePagesFiles()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
+				</form>
+			</paper-dialog-scrollable>
+			
+			</paper-dialog>
+			
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" style="width:50%;margin-left:auto;margin-right:auto">
 				
@@ -2089,6 +2131,9 @@
    		checkLength:function(item) {
    			return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length>0;
    			
+   		},
+   		uploadSamplePages:function() {
+   			uploadZipFileDialog.toggle();
    		}
      });
 	</script>
