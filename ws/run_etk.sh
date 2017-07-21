@@ -43,7 +43,7 @@ rm ${working_dir}/tmp/output_chunk_*
 rm ${working_dir}/etk_progress
 
 # create progress file
-num_of_docs=$(wc -l ${working_dir}/consolidated_data.jl | awk '{print $1}')
+num_of_docs=$(wc -l ${data_file_path} | awk '{print $1}')
 while true; do sleep 5; \
     wc -l ${working_dir}/tmp/output_chunk_* | tail -n 1 | awk -v total=$num_of_docs '{print total" "$1}' \
      > ${working_dir}/etk_progress; \
