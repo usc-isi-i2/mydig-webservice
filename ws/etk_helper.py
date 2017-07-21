@@ -330,7 +330,7 @@ def add_default_field_extractors(project_master_config, etk_config):
     # the extraction efficiently
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
-        "*.inferlink_posts_special_text.text.`parent`"
+        "*.inferlink_posts_special_text.text.`parent`",
         "*.content_relaxed.text.`parent`",
         "*.title.text.`parent`",
         "*.inferlink_extractions.*.text.`parent`"
