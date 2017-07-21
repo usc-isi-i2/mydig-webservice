@@ -618,9 +618,12 @@
 						<br><br>
 						<div>
 						Number of Pages per TLD to run
-						<input type="number" value="20" class="projectInputStyle" id="etkTLD"></input> 
-						<span style="padding-left:80px">Number of Pages for Extra TLDs to run</span>
-						<input value="100" type="number" class="projectInputStyle" id="etkExtraTLD"></input> 
+						<input style="width:40px" type="number" value="20" class="projectInputStyle" id="etkTLD"></input> 
+						<span style="padding-left:60px">Number of Pages for Extra TLDs to run</span>
+						<input style="width:40px" value="100" type="number" class="projectInputStyle" id="etkExtraTLD"></input> 
+						<span style="padding-left:60px">User data to run</span>
+						<input style="width:40px" value="500" type="number" class="projectInputStyle" id="etkLineField"></input> 
+						
 						</div><br>
 						<strong>Status: </strong>{{etkFields.last_message}}
 						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
@@ -1785,7 +1788,8 @@
 	          this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data?force_start_new_extraction="+force;
 	          this.$.etk.body = JSON.stringify({
 	      		  "pages_per_tld_to_run": parseInt(this.$$("#etkTLD").value),
-	       		  "pages_extra_to_run": parseInt(this.$$("#etkExtraTLD").value)
+	       		  "pages_extra_to_run": parseInt(this.$$("#etkExtraTLD").value),
+	       		  "lines_user_data_to_run":parseInt(this.$$("#etkLineField").value)
 	          });
 	         this.$.etk.generateRequest();
 	     },
