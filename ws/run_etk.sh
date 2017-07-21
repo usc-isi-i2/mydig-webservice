@@ -11,11 +11,16 @@ pages_extra_to_run="$7"
 # prepare data source
 #data_file_path="${working_dir}/etk_input.jl"
 #if [ ! -f ${data_file_path} ]; then
+user_data_file_path="${working_dir}/user_data.jl"
+if [ -f ${user_data_file_path} ]; then
+    data_file_path="${user_data_file_path}"
+else
     data_file_path="${working_dir}/consolidated_data.jl"
     echo -n > ${data_file_path} # clean all
     ls ${page_path} | grep -v extra.jl | xargs -I {} head -q -n ${pages_per_tld_to_run} ${page_path}/{} \
         >> ${data_file_path}
     head -q -n ${pages_extra_to_run} ${page_path}/extra.jl >> ${data_file_path}
+fi
 #fi
 
 # initiate etk env

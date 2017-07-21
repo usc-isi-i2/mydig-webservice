@@ -1626,6 +1626,8 @@ class Actions(Resource):
 
         if action_name == 'get_sample_pages':
             return self._get_sample_pages(project_name)
+        if action_name == 'upload_sample_data':
+            return self._upload_sample_data(project_name)
         elif action_name == 'extract_and_load_test_data':
             return self._extract_and_load_test_data(project_name)
         elif action_name == 'extract_and_load_deployed_data':
@@ -2015,7 +2017,7 @@ class Actions(Resource):
             return
 
         # upload to sandpaper
-        Actions._update_status(project_name, 'uploading to sandpaper')
+        Actions._update_status(project_name, 'loading search index')
         # upload_to_sandpaper.sh sandpaper_url ws_url project_name index type working_dir
         sandpaper_cmd = '{} {} {} {} {} {} {}'.format(
             os.path.abspath('upload_to_sandpaper.sh'),
@@ -2106,6 +2108,28 @@ class Actions(Resource):
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to switch index in sandpaper')
         return rest.ok()
+
+    def _upload_sample_data(self, project_name):
+        parse = reqparse.RequestParser()
+        parse.add_argument('data_file', type=werkzeug.FileStorage, location='files')
+        args = parse.parse_args()
+
+        if args['data_file'] is None:
+            return rest.bad_request('Invalid data_file')
+        gzip_file_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/user_data.gz')
+        file_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/user_data.jl')
+        gzip_file = args['data_file']
+        gzip_file.save(gzip_file_path)
+
+        try:
+            with gzip.open(gzip_file_path, 'rb') as input:
+                with open(file_path, 'w') as output:
+                    output.write(input.read())
+        except Exception as e:
+            print e
+            return rest.bad_request('Invalid gzip format')
+
+        return rest.created()
 
 
 if __name__ == '__main__':
