@@ -1982,7 +1982,7 @@ class Actions(Resource):
             os.remove(lock_path)
 
     @staticmethod
-    def _extractor_worker(project_name, pages_per_tld_to_run, pages_extra_to_run):
+    def _extractor_worker(project_name, pages_per_tld_to_run, pages_extra_to_run, lines_user_data_to_run):
 
         # pull down rules
         Actions._update_status(project_name, 'pulling rules from github')
@@ -2000,7 +2000,7 @@ class Actions(Resource):
         # run etk
         Actions._update_status(project_name, 'etk running')
         # run_etk.sh page_path working_dir conda_bin_path etk_path num_processes
-        etk_cmd = '{} {} {} {} {} {} {} {}'.format(
+        etk_cmd = '{} {} {} {} {} {} {} {} {}'.format(
             os.path.abspath('run_etk.sh'),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'pages')),
             os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir')),
@@ -2008,7 +2008,8 @@ class Actions(Resource):
             os.path.abspath(config['etk']['path']),
             config['etk']['number_of_processes'],
             pages_per_tld_to_run,
-            pages_extra_to_run
+            pages_extra_to_run,
+            lines_user_data_to_run
         )
         print etk_cmd
         ret = subprocess.call(etk_cmd, shell=True)
@@ -2040,10 +2041,13 @@ class Actions(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('pages_per_tld_to_run', required=False, type=int)
         parser.add_argument('pages_extra_to_run', required=False, type=int)
+        parser.add_argument('num_lines_user_data_to_run', required=False, type=int)
         parser.add_argument('force_start_new_extraction', required=False, type=str)
         args = parser.parse_args()
         pages_per_tld_to_run = 20 if args['pages_per_tld_to_run'] is None else args['pages_per_tld_to_run']
         pages_extra_to_run = 100 if args['pages_extra_to_run'] is None else args['pages_extra_to_run']
+        lines_user_data_to_run = 500 if args['lines_user_data_to_run'] is None \
+            else args['lines_user_data_to_run']
         force_extraction = True if args['force_start_new_extraction'] is not None and \
             args['force_start_new_extraction'].lower() == 'true' else False
 
@@ -2064,7 +2068,7 @@ class Actions(Resource):
         # async
         p = multiprocessing.Process(
             target=self._extractor_worker,
-            args=(project_name, pages_per_tld_to_run, pages_extra_to_run))
+            args=(project_name, pages_per_tld_to_run, pages_extra_to_run, lines_user_data_to_run))
         p.start()
         return rest.accepted()
 
