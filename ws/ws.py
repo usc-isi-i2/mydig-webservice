@@ -2046,8 +2046,10 @@ class Actions(Resource):
         args = parser.parse_args()
         pages_per_tld_to_run = 20 if args['pages_per_tld_to_run'] is None else args['pages_per_tld_to_run']
         pages_extra_to_run = 100 if args['pages_extra_to_run'] is None else args['pages_extra_to_run']
-        lines_user_data_to_run = 500 if args['lines_user_data_to_run'] is None \
-            else args['lines_user_data_to_run']
+        # TODO fix this Yixiang
+        # lines_user_data_to_run = 500 if args['lines_user_data_to_run'] is None \
+        #     else args['lines_user_data_to_run']
+        lines_user_data_to_run = 79923
         force_extraction = True if args['force_start_new_extraction'] is not None and \
             args['force_start_new_extraction'].lower() == 'true' else False
 
