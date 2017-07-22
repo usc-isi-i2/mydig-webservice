@@ -18,6 +18,11 @@ default_etk_config_str = """{
                     "strict": "yes",
                     "extraction_policy": "keep_existing",
                     "field_name": "content_strict"
+                },
+                {
+                    "strict": "no",
+                    "extraction_policy": "keep_existing",
+                    "field_name": "content_relaxed"
                 }
             ],
             "title": {
@@ -288,7 +293,7 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
         "*.inferlink_posts_special_text.text.`parent`",
-        # "*.content_relaxed.text.`parent`",
+        "*.content_relaxed.text.`parent`",
         "*.title.text.`parent`",
         "*.inferlink_extractions.*.text.`parent`"
     ]
