@@ -1055,6 +1055,11 @@ paths:
         description: "number of pages for extra TLDs to run (only works for extract_and_load_test_data)"
         type: "integer"
       - in: "query"
+        name: "lines_user_data_to_run"
+        required: false
+        description: "number of lines of user data to run (only works for extract_and_load_test_data)"
+        type: "integer"
+      - in: "query"
         name: "force_getting_sample_pages"
         required: false
         description: "ignore lock and get sample pages (only works for get_sample_pages)"

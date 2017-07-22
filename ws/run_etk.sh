@@ -7,13 +7,15 @@ etk_path="$4"
 num_processes="$5"
 pages_per_tld_to_run="$6"
 pages_extra_to_run="$7"
+lines_user_data_to_run="$8"
 
 # prepare data source
 #data_file_path="${working_dir}/etk_input.jl"
 #if [ ! -f ${data_file_path} ]; then
 user_data_file_path="${working_dir}/user_data.jl"
 if [ -f ${user_data_file_path} ]; then
-    data_file_path="${user_data_file_path}"
+    data_file_path="${working_dir}/user_data_picked.jl"
+    shuf -n ${lines_user_data_to_run} ${user_data_file_path} > ${data_file_path}
 else
     data_file_path="${working_dir}/consolidated_data.jl"
     echo -n > ${data_file_path} # clean all
@@ -43,7 +45,7 @@ rm ${working_dir}/tmp/output_chunk_*
 rm ${working_dir}/etk_progress
 
 # create progress file
-num_of_docs=$(wc -l ${working_dir}/consolidated_data.jl | awk '{print $1}')
+num_of_docs=$(wc -l ${data_file_path} | awk '{print $1}')
 while true; do sleep 5; \
     wc -l ${working_dir}/tmp/output_chunk_* | tail -n 1 | awk -v total=$num_of_docs '{print total" "$1}' \
      > ${working_dir}/etk_progress; \
