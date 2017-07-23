@@ -2049,7 +2049,7 @@ class Actions(Resource):
         # TODO fix this Yixiang
         # lines_user_data_to_run = 500 if args['lines_user_data_to_run'] is None \
         #     else args['lines_user_data_to_run']
-        lines_user_data_to_run = 79923
+        lines_user_data_to_run = 514331
         force_extraction = True if args['force_start_new_extraction'] is not None and \
             args['force_start_new_extraction'].lower() == 'true' else False
 
