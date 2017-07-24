@@ -2044,12 +2044,20 @@ class Actions(Resource):
         parser.add_argument('num_lines_user_data_to_run', required=False, type=int)
         parser.add_argument('force_start_new_extraction', required=False, type=str)
         args = parser.parse_args()
-        pages_per_tld_to_run = 20 if args['pages_per_tld_to_run'] is None else args['pages_per_tld_to_run']
-        pages_extra_to_run = 100 if args['pages_extra_to_run'] is None else args['pages_extra_to_run']
-        lines_user_data_to_run = 500 if args['lines_user_data_to_run'] is None \
+        pages_per_tld_to_run = 20 \
+            if 'pages_per_tld_to_run' not in args or args['pages_per_tld_to_run'] is None \
+            else args['pages_per_tld_to_run']
+        pages_extra_to_run = 100 \
+            if 'pages_extra_to_run' not in args or args['pages_extra_to_run'] is None \
+            else args['pages_extra_to_run']
+        lines_user_data_to_run = 500 \
+            if 'lines_user_data_to_run' not in args or args['lines_user_data_to_run'] is None \
             else args['lines_user_data_to_run']
-        force_extraction = True if args['force_start_new_extraction'] is not None and \
-            args['force_start_new_extraction'].lower() == 'true' else False
+        force_extraction = True \
+            if 'force_start_new_extraction' not in args \
+               or args['force_start_new_extraction'] is not None \
+                  and args['force_start_new_extraction'].lower() == 'true' \
+            else False
 
         lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
         if force_extraction and os.path.exists(lock_path):
