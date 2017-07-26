@@ -320,8 +320,8 @@ class AllProjects(Resource):
             if 'username' in s:
                 s['credential_id'] = str(idx)
                 credentials[idx] = dict()
-                credentials[idx]['username'] = s['username']
-                credentials[idx]['password'] = s['password']
+                credentials[idx]['username'] = s['username'].strip()
+                credentials[idx]['password'] = s['password'].strip()
                 del s['username']
                 del s['password']
                 idx += 1
