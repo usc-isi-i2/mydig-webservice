@@ -512,6 +512,14 @@
 			id="updateSpacyRules" method="POST" content-type="application/json"
 			 on-error="done" on-response="updateDone"> </iron-ajax>
 			 
+			 <iron-ajax
+			id="editSpacyRulesNext" method="POST" content-type="application/json"
+			   on-error="done" on-response="updateDone"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateSpacyRulesNext" method="POST" content-type="application/json"
+			 on-error="done" on-response="updateDone"> </iron-ajax>
+			 
 			 
 			 <iron-ajax
 			id="tableAttributes" method="GET" content-type="application/json"
@@ -920,7 +928,9 @@
 			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" style="width:50%;margin-left:auto;margin-right:auto">
 				<paper-dialog-scrollable>
-			
+				
+				<span style="float:right;"> <strong>Rules can be added after creating this Field</strong></span>
+				
 				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
 				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldnameinput" >The name of a field, cannot be changed</paper-tooltip>
 				
@@ -1107,6 +1117,44 @@
 					</div>
 			</paper-dialog>
 			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesNextDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<div>
+					<textarea id="spacyRulesNextTextArea" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
+					</div>
+					</paper-material> 
+				</paper-dialog-scrollable>
+			
+					<div style="float:right">
+					<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					on-tap="editRulesNext" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					</div>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesNextDialogAdd" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<div>
+					<textarea id="spacyRulesNextTextAreaAdd" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
+					</div>
+					</paper-material> 
+				</paper-dialog-scrollable>
+			
+					<div style="float:right">
+					<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					on-tap="editRulesNextAdd" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					</div>
+			</paper-dialog>
+			
 			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:50%;margin-left:auto;margin-right:auto">
  
 				  <paper-dialog-scrollable>
@@ -1134,7 +1182,10 @@
 			
 				<div>
 				<paper-button style="float:right;"
-					on-tap="editRules" raised> <strong>Edit Rules</strong></paper-button>
+					on-tap="editRules" raised> <strong>Upload Rules</strong></paper-button>
+				<paper-button style="float:right;"
+					on-tap="editRulesNextDialog" raised> <strong>Edit Rules</strong></paper-button>
+				
 				<h4>Field : {{fieldForm.name}}</h4>
 				
 				</div>
@@ -2017,6 +2068,27 @@
 		     this.$.editSpacyRules.generateRequest();
 		     spacyRulesDialog.toggle();
    			
+   		},
+   		editRulesNextDialog:function(e) {
+   			var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/"+projectName[1]+"/"+this.fieldForm.name;
+   			window.open(url,'_blank');
+   		},
+   		editRulesAdd:function() {
+   			var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/"+projectName[1]+"/"+this.$$('#fieldnameinput').value;;
+   			window.open(url,'_blank');
+   		},
+   		
+   		editRulesNext:function(e) {
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.editSpacyRulesNext.headers = obj;
+	         this.$.editSpacyRulesNext.url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/"+projectName[1]+"/"+this.fieldForm.name;
+	         this.$.editSpacyRulesNext.body = (this.$$('#spacyRulesNextTextArea').value);
+		     
+	         this.$.editSpacyRulesNext.generateRequest();
+	         spacyRulesNextDialog.toggle();
+		    
    		},
    		fieldSpacyRules:function(data) {
    			this.spacyRules = [];
