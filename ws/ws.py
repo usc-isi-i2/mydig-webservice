@@ -1206,7 +1206,7 @@ class FieldAnnotations(Resource):
     @staticmethod
     def es_update_field_annotation(index_version, project_name, kg_id, field_name, key, human_annotation):
         try:
-            es = ES(config['es']['url'])
+            es = ES(config['es'][index_version + '_url'])
             index = data[project_name]['master_config']['index'][index_version]
             type = data[project_name]['master_config']['root_name']
             hits = es.retrieve_doc(index, type, kg_id)
@@ -1238,7 +1238,7 @@ class FieldAnnotations(Resource):
     @staticmethod
     def es_remove_field_annotation(index_version, project_name, kg_id, field_name, key=None):
         try:
-            es = ES(config['es']['url'])
+            es = ES(config['es'][index_version + '_url'])
             index = data[project_name]['master_config']['index'][index_version]
             type = data[project_name]['master_config']['root_name']
             hits = es.retrieve_doc(index, type, kg_id)
@@ -1442,7 +1442,7 @@ class TagAnnotationsForEntityType(Resource):
     @staticmethod
     def es_update_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
         try:
-            es = ES(config['es']['url'])
+            es = ES(config['es'][index_version + '_url'])
             index = data[project_name]['master_config']['index'][index_version]
             type = data[project_name]['master_config']['root_name']
             hits = es.retrieve_doc(index, type, kg_id)
@@ -1467,7 +1467,7 @@ class TagAnnotationsForEntityType(Resource):
     @staticmethod
     def es_remove_tag_annotation(index_version, project_name, kg_id, tag_name):
         try:
-            es = ES(config['es']['url'])
+            es = ES(config['es'][index_version + '_url'])
             index = data[project_name]['master_config']['index'][index_version]
             type = data[project_name]['master_config']['root_name']
             hits = es.retrieve_doc(index, type, kg_id)
@@ -1598,9 +1598,10 @@ class TagAnnotationsForEntity(Resource):
 
     @staticmethod
     def get_kg(project_name, kg_id, tag_name):
+        index_version = 'full'
         try:
-            es = ES(config['es']['url'])
-            index = data[project_name]['master_config']['index']['full']
+            es = ES(config['es'][index_version + '_url'])
+            index = data[project_name]['master_config']['index'][index_version]
             type = data[project_name]['master_config']['root_name']
             hits = es.retrieve_doc(index, type, kg_id)
             if hits:

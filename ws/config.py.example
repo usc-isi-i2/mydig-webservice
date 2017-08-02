@@ -33,7 +33,8 @@ config = {
     },
     'es': {
         # do not add / at the end
-        'url': 'http://localhost:9200'
+        'sample_url': 'http://localhost:9200',
+        'full_url': 'http://localhost:9200'
     },
     'etk': {
         'path': '...',
