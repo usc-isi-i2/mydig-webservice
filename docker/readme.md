@@ -14,5 +14,5 @@
 - `landmark/`: Inferlink Landmark. Git repo.
 - `resources/` Resources. Git repo. Can be cloned from `https://github.com/usc-isi-i2/dig3-resources.git`.
 - `config.py`: Config of web service.
-- `config_frontendpy`: Config of frontend.
+- `config_frontend.py`: Config of frontend.
 - `default_source_credentials.json`: Default credentials of `source` object.

@@ -27,14 +27,14 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
 #ENV PATH=/app/miniconda/bin:${PATH}
 #RUN conda update -y conda
 
-# download & config mydig-webservice & dig3-resources
+# download & config mydig-webservice
 RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /app/mydig-webservice
 RUN pip install -r /app/mydig-webservice/requirements.txt
 
 # persistent data
 VOLUME /user_data
-RUN ln -s /user_data/config.py /app/mydig-webservice/ws/config.py
-RUN ln -s /user_data/config_frontend.py /app/mydig-webservice/frontend/config.py
+RUN ln -s /user_data/config.py /app/mydig-webservice/ws/config.py & \
+    ln -s /user_data/config_frontend.py /app/mydig-webservice/frontend/config.py
 
 EXPOSE 9879
 EXPOSE 9880
