@@ -1,1 +1,4 @@
 user_data/*
+
+!user_data/config.py
+!user_data/config_frontend.py
