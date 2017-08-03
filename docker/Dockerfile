@@ -38,6 +38,7 @@ RUN pip install -r /app/mydig-webservice/requirements.txt
 # git clone https://github.com/usc-isi-i2/dig3-resources.git
 VOLUME /user_data
 RUN ln -s /user_data/config.py /app/mydig-webservice/ws/config.py
+RUN ln -s /user_data/config_frontend.py /app/mydig-webservice/frontend/config.py
 
 EXPOSE 9879
 EXPOSE 9880
