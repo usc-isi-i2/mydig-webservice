@@ -6,7 +6,7 @@
 
 ## Run container
 
-    docker run -p 9879:9879 -p 9880:9880 -v $(pwd)/user_data:/user_data -it mydig_ws
+    docker run -d -p 9879:9879 -p 9880:9880 -v $(pwd)/user_data:/user_data mydig_ws
     
 `/user_data` volume needs to be mounted while running. Make sure all following files & directories are there:
 
