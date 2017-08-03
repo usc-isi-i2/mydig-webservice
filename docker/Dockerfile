@@ -31,11 +31,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
 RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /app/mydig-webservice
 RUN pip install -r /app/mydig-webservice/requirements.txt
 
-# mydig-projects & mydig-projects-landmark should be mount to /repos
-# make sure that these two folders are git repos
-# git clone https://github.com/usc-isi-i2/mydig-projects-public.git
-# git clone https://github.com/usc-isi-i2/mydig-projects-landmark-public.git
-# git clone https://github.com/usc-isi-i2/dig3-resources.git
+# persistent data
 VOLUME /user_data
 RUN ln -s /user_data/config.py /app/mydig-webservice/ws/config.py
 RUN ln -s /user_data/config_frontend.py /app/mydig-webservice/frontend/config.py
