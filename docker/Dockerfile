@@ -7,7 +7,6 @@ WORKDIR /app
 
 # install required command utils
 RUN apt-get update && apt-get install -y \
-#RUN apt-get install -y \
     build-essential \
     python \
     python-dev \
@@ -29,7 +28,7 @@ ENV PATH=/app/miniconda/bin:${PATH}
 RUN conda update -y conda
 
 # download & config mydig-webservice
-RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git /app/mydig-webservice
+RUN git clone https://github.com/usc-isi-i2/mydig-webservice.git
 RUN pip install -r /app/mydig-webservice/requirements.txt
 
 # download etk
