@@ -2,6 +2,7 @@ from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
 
+sys.path.append(os.path.join('../ws'))
 from config import config
 
 
@@ -14,7 +15,7 @@ def home():
 
 @app.route('/constants')
 def constant():
-    return render_template('constants.html', backend_url=config['backend_url'])
+    return render_template('constants.html', backend_url=config['frontend']['backend_url'])
 
 
 @app.route('/login')
@@ -27,4 +28,4 @@ def pages():
     return render_template('projectDetailsUpdate.html')
 
 if __name__ == '__main__':
-    app.run(debug=config['debug'], host=config['host'], port=config['port'], threaded=True)
+    app.run(debug=config['debug'], host=config['frontend']['host'], port=config['frontend']['port'], threaded=True)

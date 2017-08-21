@@ -3,12 +3,11 @@
 restart=${1:-yes}
 
 echo "killing backend process (if exists)"
-ps -ef | grep "dummy-this-is-mydig-backend" | awk '{print $2}' | xargs kill -9
-ps -ef | grep "dummy-this-is-mydig-backend-etk-process" | awk '{print $2}' | xargs kill -9
+ps -ef | grep "tag-mydig-backend" | awk '{print $2}' | xargs kill -9
 
 if [ ${restart} != "no" ]; then
     echo "starting backend"
-    nohup python ws.py --dummy-this-is-mydig-backend &
+    nohup python ws.py --tag-mydig-backend &
 fi
 
 echo "done"
