@@ -20,7 +20,8 @@ chmod +x frontend.sh
 ./frontend.sh
 
 # open bash and wait
-cd /app
-/bin/bash
+#cd /app
+#/bin/bash
+while true; do sleep 1000; done
 
 

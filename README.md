@@ -1,4 +1,4 @@
-# mydig-webservice
+# myDIG Web Service
 
 ## Configuration File
 
@@ -34,3 +34,29 @@
 
 ### Get Sample Pages
 Downloads pages from the CDR corresponding to the TLDs entered in the `Edit Project` page. These pages will used to test all your extractors and will appear in the DIG GUI. In addition, these pages will be sent to the Inferlink tool to learn extractos. 
+
+
+## Docker image for myDIG
+
+There are two important directories:
+
+- `/app`: All packages and dependencies.
+- `/shared_data`: All persistent data. Need to be mounted by user's directory. Make sure all following files & directories are there:
+    - `projects/`: MyDIG Projects. Git repo.
+    - `dig3-resources/` Resources. Git repo. Can be cloned from `https://github.com/usc-isi-i2/dig3-resources.git`.
+    - `config.py`: Config of all web services.
+    - `default_source_credentials.json`: Default credentials of `source` object.
+
+### Build image
+
+    docker build -t mydig_ws .
+
+### Run container
+
+    docker run -p 9879:9879 -p 9880:9880 \
+    --network digetlengine_dig_net \
+    -v $(pwd)/ws/config_docker.py:/app/mydig-webservice/ws/config.py \
+    -v $(pwd)/../mydig-projects:/shared_data/projects \
+    -v $(pwd)/../dig3-resources:/shared_data/dig3-resources \
+    mydig_ws
+        
