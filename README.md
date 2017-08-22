@@ -54,9 +54,18 @@ There are two important directories:
 ### Run container
 
     docker run -p 9879:9879 -p 9880:9880 \
-    --network digetlengine_dig_net \
     -v $(pwd)/ws/config_docker.py:/app/mydig-webservice/ws/config.py \
     -v $(pwd)/../mydig-projects:/shared_data/projects \
     -v $(pwd)/../dig3-resources:/shared_data/dig3-resources \
     mydig_ws
+    
+### Run container (development)
+
+    docker run -it -p 9879:9879 -p 9880:9880 \
+    --network digetlengine_dig_net \
+    -v $(pwd):/app/mydig-webservice \
+    -v $(pwd)/ws/config_docker.py:/app/mydig-webservice/ws/config.py \
+    -v $(pwd)/../mydig-projects:/shared_data/projects \
+    -v $(pwd)/../dig3-resources:/shared_data/dig3-resources \
+    mydig_ws /bin/bash
         

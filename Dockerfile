@@ -51,10 +51,3 @@ RUN mkdir /app/mydig-webservice
 ADD . /app/mydig-webservice
 CMD chmod +x /app/mydig-webservice/docker_run_mydig.sh && \
     /bin/bash -c "/app/mydig-webservice/docker_run_mydig.sh"
-
-# docker build -t mydig_ws .
-# docker run -d -p 9879:9879 -p 9880:9880 \
-# -v $(pwd)/ws/config_docker.py:/app/mydig-webservice/ws/config.py \
-# -v $(pwd)/../mydig-projects:/shared_data/projects \
-# -v $(pwd)/../dig3-resources:/shared_data/dig3-resources \
-# mydig_ws
