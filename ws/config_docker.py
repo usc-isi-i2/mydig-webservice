@@ -36,6 +36,9 @@ config = {
         'url': 'http://dig_etl_engine:9999',
         'number_of_workers': 1
     },
+    'kafka': {
+        'servers': ['kafka:9092']
+    },
     'sandpaper': {
         'url': 'http://sandpaper:9878',
         'ws_url': 'http://admin:123@mydig_ws:9879'

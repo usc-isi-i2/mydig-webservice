@@ -21,6 +21,8 @@ from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api, reqparse
 
+from kafka import KafkaProducer, KafkaConsumer
+
 from config import config
 from elastic_manager.elastic_manager import ES
 import templates
@@ -99,7 +101,7 @@ def spec_file_path():
 
 @app.route('/')
 def home():
-    return 'MyDIG Web Service'
+    return 'MyDIG Web Service\n'
 
 
 @api.route('/authentication')
@@ -1562,7 +1564,6 @@ class TagAnnotationsForEntity(Resource):
                 project_name, kg_id, tag_name
             ))
 
-
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
     @requires_auth
@@ -1570,506 +1571,16 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        # if action_name == 'get_sample_pages': # deprecated
-        #     return self._get_sample_pages(project_name)
-        if action_name == 'upload_sample_data':
-            return self._upload_sample_data(project_name)
-        # elif action_name == 'extract_and_load_test_data': # deprecated
-        #     return self._extract_and_load_test_data(project_name)
-        # elif action_name == 'extract_and_load_deployed_data': # deprecated
-        #     return self._extract_and_load_deployed_data(project_name)
-        elif action_name == 'update_to_new_index':
-            return self._update_to_new_index(project_name)
-        # elif action_name == 'update_to_new_index_deployed': # deprecated
-        #     # TODO
-        #     return rest.accepted()
-        # elif action_name == 'publish': # deprecated
-        #     git_helper.push()
-        #     return rest.accepted()
-        elif action_name == 'run_etl':
-            return self._run_etk(project_name)
+        if action_name == 'get_data_from_file':
+            return self._upload_data_file(project_name)
+        elif action_name == 'get_data_from_es':
+            return rest.accepted()
+        elif action_name == 'extract':
+            return self._extract(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
-    # @requires_auth
-    # def get(self, project_name, action_name):
-    #     if project_name not in data:
-    #         return rest.not_found('project {} not found'.format(project_name))
-    #
-    #     last_message = ''
-    #     is_running = False
-    #     if action_name == 'extract_and_load_test_data':
-    #         path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status')
-    #         if os.path.exists(path):
-    #             with open(path, 'r') as f:
-    #                 last_message = f.read()
-    #
-    #         path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
-    #         if os.path.exists(path):
-    #             is_running = True
-    #
-    #         ret = {'last_message': last_message, 'is_running': is_running}
-    #
-    #         path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_progress')
-    #         if os.path.exists(path):
-    #             with open(path, 'r') as f:
-    #                 content = f.read()
-    #                 if len(content) > 0:
-    #                     content = content.split(' ')
-    #                 if len(content) == 2:
-    #                     total, current = map(int, content)
-    #                     ret['etk_progress'] = {
-    #                         'total': total,
-    #                         'current': current
-    #                     }
-    #         return ret
-    #
-    #     elif action_name == 'get_sample_pages':
-    #         return self._get_tlds_status(project_name)
-    #     else:
-    #         # return rest.not_found('action {} not found'.format(action_name))
-    #         return rest.ok()
-    #
-    # @staticmethod
-    # def _get_tlds_status(project_name):
-    #     content = dict()
-    #     path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
-    #     if os.path.exists(path):
-    #         with open(path, 'r') as f:
-    #             content = json.loads(f.read())
-    #     return content
-    #
-    # @staticmethod
-    # def _get_sample_pages_worker(project_name, sources, dir_path, pages_per_tld, pages_extra, force_getting_pages):
-    #     lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
-    #     write_to_file('', lock_path)
-    #
-    #     # assume there's only one source
-    #     s = sources[0]
-    #     cdr_ids = {}
-    #     tlds_status = Actions._get_tlds_status(project_name)
-    #     src_url = urlparse.urlparse(s['url'])
-    #     hg_domain = None if src_url.hostname.find('hyperiongray.com') == -1 else \
-    #         src_url.hostname.split('.')[0]
-    #
-    #     # retrieve from es
-    #     for tld in s['tlds']:
-    #
-    #         # if it's not in force mode and has already been retrieved, skip it
-    #         if not force_getting_pages and tld in tlds_status and tlds_status[tld] != 0:
-    #             continue
-    #
-    #         if pages_per_tld > 0:
-    #             if hg_domain is None:
-    #                 query = '''
-    #                 {
-    #                     "size": ''' + str(pages_per_tld) + ''',
-    #                     "query": {
-    #                         "filtered":{
-    #                             "query": {
-    #                                 "function_score": {
-    #                                     "query": {
-    #                                         "range": {
-    #                                             "timestamp": {
-    #                                                 "gte": "''' + s['start_date'] + '''",
-    #                                                 "lt": "''' + s['end_date'] + '''",
-    #                                                 "format": "yyyy-MM-dd"
-    #                                             }
-    #                                         }
-    #                                     },
-    #                                     "functions": [{"random_score":{}}]
-    #                                 }
-    #                             },
-    #                             "filter": {
-    #                                 "and": {
-    #                                     "filters": [
-    #                                         {"exists" : {"field": "raw_content"}},
-    #                                         {"exists" : {"field": "url"}},
-    #                                         {"exists" : {"field": "doc_id"}},
-    #                                         {"term": {"url.domain": "''' + tld + '''"}}
-    #                                     ]
-    #                                 }
-    #                             }
-    #                         }
-    #                     }
-    #                 }
-    #                 '''
-    #                 es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-    #                 hits = es.search(s['index'], s['type'], query)
-    #                 if hits:
-    #                     docs = hits['hits']['hits']
-    #                     tlds_status[tld] = len(docs)
-    #                     cdr_ids[tld] = list()
-    #                     file_path = os.path.join(dir_path, tld + '.jl')
-    #                     with open(file_path, 'w') as f:
-    #                         for d in docs:
-    #                             cdr_ids[tld].append(d['_source']['doc_id'])
-    #                             f.write(json.dumps(d['_source']))
-    #                             f.write('\n')
-    #             else: # HG domain
-    #                 query = '''
-    #                 {
-    #                     "size": ''' + str(pages_per_tld) + ''',
-    #                     "query": {
-    #                         "filtered":{
-    #                             "query": {
-    #                                 "function_score": {
-    #                                     "query": {
-    #                                         "range": {
-    #                                             "timestamp_crawl": {
-    #                                                 "gte": "''' + s['start_date'] + '''",
-    #                                                 "lt": "''' + s['end_date'] + '''",
-    #                                                 "format": "yyyy-MM-dd"
-    #                                             }
-    #                                         }
-    #                                     },
-    #                                     "functions": [{"random_score":{}}]
-    #                                 }
-    #                             },
-    #                             "filter": {
-    #                                 "and": {
-    #                                     "filters": [
-    #                                         {"exists" : {"field": "raw_content"}},
-    #                                         {"exists" : {"field": "url"}},
-    #                                         {"term": {"url.domain": "''' + tld + '''"}}
-    #                                     ]
-    #                                 }
-    #                             }
-    #                         }
-    #                     }
-    #                 }
-    #                 '''
-    #                 es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-    #                 hits = es.search(s['index'], s['type'], query)
-    #                 if hits:
-    #                     docs = hits['hits']['hits']
-    #                     tlds_status[tld] = len(docs)
-    #                     cdr_ids[tld] = list()
-    #                     file_path = os.path.join(dir_path, tld + '.jl')
-    #                     with open(file_path, 'w') as f:
-    #                         for d in docs:
-    #                             cdr_ids[tld].append(d['_id'])
-    #                             d['_source']['doc_id'] = d['_id']
-    #                             f.write(json.dumps(d['_source']))
-    #                             f.write('\n')
-    #
-    #     # update tlds status to file
-    #     tlds_status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/tlds_status.json')
-    #     write_to_file(json.dumps(tlds_status, indent=2), tlds_status_path)
-    #
-    #     # extra
-    #     if pages_extra > 0:
-    #         exclude_tlds_str = ','.join(['\"{}\"'.format(t) for t in s['tlds']])
-    #         if hg_domain is None:
-    #             query = '''
-    #             {
-    #                 "size": ''' + str(pages_extra) + ''',
-    #                 "query": {
-    #                     "filtered":{
-    #                         "query": {
-    #                             "function_score": {
-    #                                 "query": {
-    #                                     "range": {
-    #                                         "timestamp": {
-    #                                             "gte": "''' + s['start_date'] + '''",
-    #                                             "lt": "''' + s['end_date'] + '''",
-    #                                             "format": "yyyy-MM-dd"
-    #                                         }
-    #                                     }
-    #                                 },
-    #                                 "functions": [{"random_score":{}}]
-    #                             }
-    #                         },
-    #                         "filter": {
-    #                             "and": {
-    #                                 "filters": [
-    #                                     {"exists" : {"field": "raw_content"}},
-    #                                     {"exists" : {"field": "url"}},
-    #                                     {"exists" : {"field": "doc_id"}},
-    #                                     {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
-    #                                 ]
-    #                             }
-    #                         }
-    #                     }
-    #                 }
-    #             }
-    #             '''
-    #             es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-    #             hits = es.search(s['index'], s['type'], query)
-    #             if hits:
-    #                 docs = hits['hits']['hits']
-    #                 file_path = os.path.join(dir_path, 'extra.jl')
-    #                 with open(file_path, 'w') as f:
-    #                     for d in docs:
-    #                         f.write(json.dumps(d['_source']))
-    #                         f.write('\n')
-    #         else: # HG domain
-    #             query = '''
-    #             {
-    #                 "size": ''' + str(pages_extra) + ''',
-    #                 "query": {
-    #                     "filtered":{
-    #                         "query": {
-    #                             "function_score": {
-    #                                 "query": {
-    #                                     "range": {
-    #                                         "timestamp_crawl": {
-    #                                             "gte": "''' + s['start_date'] + '''",
-    #                                             "lt": "''' + s['end_date'] + '''",
-    #                                             "format": "yyyy-MM-dd"
-    #                                         }
-    #                                     }
-    #                                 },
-    #                                 "functions": [{"random_score":{}}]
-    #                             }
-    #                         },
-    #                         "filter": {
-    #                             "and": {
-    #                                 "filters": [
-    #                                     {"exists" : {"field": "raw_content"}},
-    #                                     {"exists" : {"field": "url"}},
-    #                                     {"not":{"terms": {"url.domain": [''' + exclude_tlds_str + ''']}}}
-    #                                 ]
-    #                             }
-    #                         }
-    #                     }
-    #                 }
-    #             }
-    #             '''
-    #             es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-    #             hits = es.search(s['index'], s['type'], query)
-    #             if hits:
-    #                 docs = hits['hits']['hits']
-    #                 file_path = os.path.join(dir_path, 'extra.jl')
-    #                 with open(file_path, 'w') as f:
-    #                     for d in docs:
-    #                         d['_source']['doc_id'] = d['_id']
-    #                         f.write(json.dumps(d['_source']))
-    #                         f.write('\n')
-    #
-    #     # invoke inferlink
-    #     if len(cdr_ids) != 0:
-    #         url = ''
-    #         payload = dict()
-    #         if hg_domain is None:
-    #             host = 'ec2-54-174-0-124.compute-1.amazonaws.com'
-    #             port = 5000
-    #             url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'\
-    #                 .format(host, port, s['type'], project_name)
-    #             payload = {
-    #                 'tlds': cdr_ids.keys(),
-    #                 'cdr_ids': cdr_ids
-    #             }
-    #         else:
-    #             host = 'isi-{}.inferlink.com'.format(hg_domain)
-    #             port = 5000
-    #             url = 'http://{}:{}/project/create_from_es/domain/{}/name/{}'.\
-    #                 format(host, port, s['index'], project_name)
-    #             payload = {
-    #                 # 'production': True,
-    #                 'tlds': cdr_ids.keys(),
-    #                 'cdr_ids': cdr_ids
-    #             }
-    #         print url
-    #         # logger.info('sent to inferlink: url: {} payload: {}'.format(url, json.dumps(payload)))
-    #         payload_dump_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/last_payload.json')
-    #         write_to_file(json.dumps(payload, indent=2), payload_dump_path)
-    #         try:
-    #             resp = requests.post(url, json.dumps(payload), timeout=10)
-    #             if resp.status_code // 100 != 2:
-    #                 logger.error('invoke inferlink server {}: {}'.format(url, resp.content))
-    #         except requests.exceptions.Timeout as e:
-    #             logger.error('inferlink server timeout: {}'.format(e.message))
-    #
-    #     if os.path.exists(lock_path):
-    #         os.remove(lock_path)
-    #     print 'action get_sample_pages is done'
-    #
-    # def _get_sample_pages(self, project_name):
-    #
-    #     parser = reqparse.RequestParser()
-    #     parser.add_argument('pages_per_tld', required=False, type=int)
-    #     parser.add_argument('pages_extra', required=False, type=int)
-    #     parser.add_argument('force_getting_sample_pages', required=False, type=str)
-    #     args = parser.parse_args()
-    #     pages_per_tld = 200 if args['pages_per_tld'] is None else args['pages_per_tld']
-    #     pages_extra = 1000 if args['pages_extra'] is None else args['pages_extra']
-    #     force_getting_pages = True if args['force_getting_sample_pages'] is not None and \
-    #         args['force_getting_sample_pages'].lower() == 'true' else False
-    #
-    #     lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_sample_pages.lock')
-    #     if force_getting_pages and os.path.exists(lock_path):
-    #         os.remove(lock_path)
-    #     if os.path.exists(lock_path):
-    #         return rest.exists('still running')
-    #
-    #     sources = AllProjects.get_authenticated_sources(project_name)
-    #     if len(sources) == 0:
-    #         return rest.bad_request('invalid sources')
-    #     for s in sources:
-    #         if 'tlds' not in s or len(s['tlds']) == 0:
-    #             return rest.bad_request('invalid tlds in sources')
-    #
-    #     # async
-    #     p = multiprocessing.Process(
-    #         target=self._get_sample_pages_worker,
-    #         args=(project_name, sources,
-    #               os.path.join(_get_project_dir_path(project_name), 'pages'),
-    #               pages_per_tld, pages_extra, force_getting_pages))
-    #     p.start()
-    #     return rest.accepted()
-    #
-    # @staticmethod
-    # def _update_status(project_name, content, done=False):
-    #     write_to_file(content, os.path.join(_get_project_dir_path(project_name), 'working_dir/status'))
-    #     # if not done, create a lock
-    #     lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
-    #     if not done and not os.path.exists(lock_path):
-    #         write_to_file('', lock_path)
-    #     elif done:
-    #         os.remove(lock_path)
-    #
-    # @staticmethod
-    # def _extractor_worker(project_name, pages_per_tld_to_run, pages_extra_to_run, lines_user_data_to_run):
-    #
-    #     # pull down rules
-    #     Actions._update_status(project_name, 'pulling rules from github')
-    #     git_resp = git_helper.pull_landmark()
-    #     if git_resp in ('ERROR', 'REJECTED'):
-    #         print 'git resp: {}'.format(git_resp)
-    #         return rest.internal_error('fail of pulling landmark data')
-    #
-    #     # generate etk config
-    #     Actions._update_status(project_name, 'generating etk config')
-    #     etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
-    #     write_to_file(json.dumps(etk_config, indent=2),
-    #                   os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
-    #
-    #     # run etk
-    #     Actions._update_status(project_name, 'etk running')
-    #     # run_etk.sh page_path working_dir conda_bin_path etk_path num_processes
-    #     etk_cmd = '{} {} {} {} {} {} {} {} {}'.format(
-    #         os.path.abspath('run_etk.sh'),
-    #         os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'pages')),
-    #         os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir')),
-    #         os.path.abspath(config['etk']['conda_path']),
-    #         os.path.abspath(config['etk']['path']),
-    #         config['etk']['number_of_processes'],
-    #         pages_per_tld_to_run,
-    #         pages_extra_to_run,
-    #         lines_user_data_to_run
-    #     )
-    #     print etk_cmd
-    #     ret = subprocess.call(etk_cmd, shell=True)
-    #     if ret != 0:
-    #         Actions._update_status(project_name, 'etk failed', done=True)
-    #         return
-    #
-    #     # upload to sandpaper
-    #     Actions._update_status(project_name, 'loading search index')
-    #     # upload_to_sandpaper.sh sandpaper_url ws_url project_name index type working_dir
-    #     sandpaper_cmd = '{} {} {} {} {} {} {}'.format(
-    #         os.path.abspath('upload_to_sandpaper.sh'),
-    #         data[project_name]['master_config']['configuration']['sandpaper_sample_url'],
-    #         config['sandpaper']['ws_url'],
-    #         project_name,
-    #         data[project_name]['master_config']['index']['sample'],
-    #         data[project_name]['master_config']['root_name'],
-    #         os.path.abspath(os.path.join(_get_project_dir_path(project_name), 'working_dir'))
-    #     )
-    #     print sandpaper_cmd
-    #     ret = subprocess.call(sandpaper_cmd, shell=True)
-    #     if ret // 100 != 2:
-    #         Actions._update_status(project_name, 'sandpaper failed', done=True)
-    #         return
-    #
-    #     Actions._update_status(project_name, 'done', done=True)
-    #
-    # def _extract_and_load_test_data(self, project_name):
-    #     parser = reqparse.RequestParser()
-    #     parser.add_argument('pages_per_tld_to_run', required=False, type=int)
-    #     parser.add_argument('pages_extra_to_run', required=False, type=int)
-    #     parser.add_argument('num_lines_user_data_to_run', required=False, type=int)
-    #     parser.add_argument('force_start_new_extraction', required=False, type=str)
-    #     args = parser.parse_args()
-    #     pages_per_tld_to_run = 20 \
-    #         if 'pages_per_tld_to_run' not in args or args['pages_per_tld_to_run'] is None \
-    #         else args['pages_per_tld_to_run']
-    #     pages_extra_to_run = 100 \
-    #         if 'pages_extra_to_run' not in args or args['pages_extra_to_run'] is None \
-    #         else args['pages_extra_to_run']
-    #     lines_user_data_to_run = 500 \
-    #         if 'lines_user_data_to_run' not in args or args['lines_user_data_to_run'] is None \
-    #         else args['lines_user_data_to_run']
-    #     force_extraction = True \
-    #         if 'force_start_new_extraction' not in args \
-    #            or args['force_start_new_extraction'] is not None \
-    #               and args['force_start_new_extraction'].lower() == 'true' \
-    #         else False
-    #
-    #     lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
-    #     if force_extraction and os.path.exists(lock_path):
-    #         os.remove(lock_path)
-    #     if os.path.exists(lock_path):
-    #         return rest.exists('still running')
-    #
-    #     # update version
-    #     if 'version' not in data[project_name]['master_config']['index']:
-    #         data[project_name]['master_config']['index']['version'] = 0
-    #     data[project_name]['master_config']['index']['version'] += 1
-    #     idx_version = data[project_name]['master_config']['index']['version']
-    #     data[project_name]['master_config']['index']['sample'] = project_name + '_' + str(idx_version)
-    #     update_master_config_file(project_name)
-    #
-    #     # async
-    #     p = multiprocessing.Process(
-    #         target=self._extractor_worker,
-    #         args=(project_name, pages_per_tld_to_run, pages_extra_to_run, lines_user_data_to_run))
-    #     p.start()
-    #     return rest.accepted()
-    #
-    # def _extract_and_load_deployed_data(self, project_name):
-    #     s = jobs.submit_etk_cluster.SubmitEtk()
-    #
-    #     etk_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json')
-    #     if not os.path.exists(etk_config_path):
-    #         return rest.bad_request('etk config doesn\'t exist')
-    #
-    #     with open(etk_config_path, 'r') as f:
-    #         etk_config = json.loads(f.read())
-    #
-    #     s.update_etk_lib_cluster(etk_config, project_name)
-    #     resp = s.submit_etk_cluster(data[project_name]['master_config'], project_name)
-    #
-    #     if resp.status_code // 100 != 2:
-    #         logger.error('extract_and_load_deployed_data: {}, {}'.format(resp.status_code, resp.content))
-    #         return rest.internal_error('failed in extract_and_load_deployed_data')
-    #
-    #     path = os.path.join(_get_project_dir_path(project_name), 'working_dir/cluster_job_resp.json')
-    #     with open(path, 'w') as f:
-    #         f.write(json.dumps(resp.json()))
-    #
-    #     return rest.accepted()
-
-    def _update_to_new_index(self, project_name):
-
-        lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/extract_and_load_test_data.lock')
-        if os.path.exists(lock_path):
-            return rest.bad_request('etk is still running')
-
-        url = '{}/config?url={}&project={}&index={}&type={}'.format(
-            data[project_name]['master_config']['configuration']['sandpaper_sample_url'],
-            config['sandpaper']['ws_url'],
-            project_name,
-            data[project_name]['master_config']['index']['sample'],
-            data[project_name]['master_config']['root_name']
-        )
-        resp = requests.post(url, timeout=5)
-        if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to switch index in sandpaper')
-        return rest.ok()
-
-    def _upload_sample_data(self, project_name):
+    def _upload_data_file(self, project_name):
         parse = reqparse.RequestParser()
         parse.add_argument('data_file', type=werkzeug.FileStorage, location='files')
         args = parse.parse_args()
@@ -2091,28 +1602,64 @@ class Actions(Resource):
 
         return rest.created()
 
-    def _run_etl(self, project_name):
+    def _extract(self, project_name):
+        # create new index
+        # url = '{}/config?url={}&project={}&index={}&type={}'.format(
+        #     config['sandpaper']['url'],
+        #     config['sandpaper']['ws_url'],
+        #     project_name,
+        #     data[project_name]['master_config']['index']['sample'],
+        #     data[project_name]['master_config']['root_name']
+        # )
+        # resp = requests.post(url, timeout=5)
+        # if resp.status_code // 100 != 2:
+        #     return rest.internal_error('failed to create index in sandpaper')
+
+        # run etk
         url = config['etl']['url'] + '/run_etk'
         payload = {
             'project_name': project_name,
             'number_of_workers': config['etl']['number_of_workers']
         }
-        resp = requests.post(url, json.dumps(payload))
+        print url
+        resp = requests.post(url, json.dumps(payload), timeout=5)
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to run_etk in ETL')
+
+        # upload file to kafka queue
+        file_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/user_data.jl')
+        if not os.path.exists(file_path):
+            return rest.not_found('No data')
+        try:
+            kafka_producer = KafkaProducer(
+                bootstrap_servers=config['kafka']['servers'],
+                # value_serializer=lambda v: json.dumps(v).encode('utf-8')
+            )
+            with codecs.open(file_path, 'r') as f:
+                count = 0
+                for line in f:
+                    r= kafka_producer.send(project_name + '_in', line)
+                    r.get(timeout=60)  # wait till sent
+                    count += 1
+                print 'sent {} docs for project {}'.format(count, project_name)
+        except Exception as e:
+            print e
+            return rest.internal_error('error in sending data to kafka queue')
+
         return rest.accepted()
 
 
 if __name__ == '__main__':
     try:
 
-        if git_helper.pull() == 'ERROR':
-            raise Exception('Git pull error')
+        # if git_helper.pull() == 'ERROR':
+        #     raise Exception('Git pull error')
 
         # init
         for project_name in os.listdir(config['repo']['local_path']):
             project_dir_path = _get_project_dir_path(project_name)
-            if os.path.isdir(project_dir_path) and not project_name.startswith('.'):
+            if os.path.isdir(project_dir_path) and \
+                    not (project_name.startswith('.') or project_name.startswith('_')):
                 data[project_name] = templates.get('project')
 
                 master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
