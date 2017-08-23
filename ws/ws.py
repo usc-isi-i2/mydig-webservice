@@ -152,7 +152,6 @@ class AllProjects(Resource):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
         project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
-        print 'projec ', re_project_name.match(project_name)
         if not re_project_name.match(project_name):
             return rest.bad_request('Invalid project name.')
         if project_name in data:
@@ -359,16 +358,17 @@ class Project(Resource):
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
-        # construct return structure
-        ret = copy.deepcopy(data[project_name]['master_config'])
-        ret['sources'] = AllProjects.get_authenticated_sources(project_name)
-        for s in ret['sources']:
-            if 'http_auth' in s:
-                s['username'] = s['http_auth'][0]
-                s['password'] = s['http_auth'][1]
-                del s['http_auth']
-                del s['credential_id']
-        return ret
+        # # construct return structure
+        # ret = copy.deepcopy(data[project_name]['master_config'])
+        # ret['sources'] = AllProjects.get_authenticated_sources(project_name)
+        # for s in ret['sources']:
+        #     if 'http_auth' in s:
+        #         s['username'] = s['http_auth'][0]
+        #         s['password'] = s['http_auth'][1]
+        #         del s['http_auth']
+        #         del s['credential_id']
+        # return ret
+        return data[project_name]['master_config']
 
     @requires_auth
     def delete(self, project_name):
@@ -1625,16 +1625,16 @@ class Actions(Resource):
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
         # create new index
-        # url = '{}/config?url={}&project={}&index={}&type={}'.format(
-        #     config['sandpaper']['url'],
-        #     config['sandpaper']['ws_url'],
-        #     project_name,
-        #     data[project_name]['master_config']['index']['sample'],
-        #     data[project_name]['master_config']['root_name']
-        # )
-        # resp = requests.post(url, timeout=5)
-        # if resp.status_code // 100 != 2:
-        #     return rest.internal_error('failed to create index in sandpaper')
+        url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'],
+            config['es']['sample_url']
+        )
+        resp = requests.put(url, timeout=5)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to create index in sandpaper')
 
         # run etk
         url = config['etl']['url'] + '/run_etk'

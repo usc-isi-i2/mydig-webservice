@@ -42,7 +42,7 @@ config = {
         'servers': ['kafka:9092']
     },
     'sandpaper': {
-        'url': 'http://sandpaper:9878',
+        'url': 'http://sandpaper:9876',
         'ws_url': 'http://admin:123@mydig_ws:9879'
     },
     'users': {
