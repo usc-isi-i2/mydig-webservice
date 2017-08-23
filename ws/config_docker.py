@@ -34,7 +34,8 @@ config = {
     },
     'etl': {
         'url': 'http://dig_etl_engine:9999',
-        'number_of_workers': 1
+        'number_of_workers': 1,
+        'timeout': 5
     },
     'kafka': {
         'servers': ['kafka:9092']
@@ -52,7 +53,7 @@ config = {
         'debug': True,
         'backend_url': 'http://localhost:5000/' # change to ip of host machine
     },
-    'default_source_credentials_path': './default_source_credentials.json',
+    # 'default_source_credentials_path': './default_source_credentials.json',
     'default_glossary_dicts_path': '/shared_data/dig3-resources/builtin_resources',
     'default_glossaries_path': '/shared_data/dig3-resources/glossaries',
     'default_spacy_rules_path': '/shared_data/dig3-resources/custom_spacy_rules'

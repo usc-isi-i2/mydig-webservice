@@ -456,12 +456,12 @@ default_fields = {
 }
 
 master_config = {
-    'configuration': {
-        'digapp_full_url': '',
-        'digapp_sample_url': '',
-        'sandpaper_full_url': '',
-        'sandpaper_sample_url': ''
-    },
+    # 'configuration': {
+    #     'digapp_full_url': '',
+    #     'digapp_sample_url': '',
+    #     'sandpaper_full_url': '',
+    #     'sandpaper_sample_url': ''
+    # },
     'table_attributes': {},
     'glossaries': copy.deepcopy(default_glossaries),
     'glossary_dicts': copy.deepcopy(default_glossary_dicts),

@@ -109,15 +109,12 @@ def create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
 
 def generate_etk_config(project_master_config, webservice_config, project_name, document_id='doc_id',
                         content_extraction_only=False):
-    if 'repo_landmark' not in webservice_config:
-        raise KeyError('landmark repository path not defined in the master config')
     default_etk_config = json.loads(default_etk_config_str)
     default_etk_config = add_default_glossaries(default_etk_config, project_master_config,
                                                 glossary_dir_path=webservice_config['default_glossary_dicts_path'])
     default_etk_config['document_id'] = document_id
-    landmark_repo_path = os.path.join(os.path.dirname(__file__), webservice_config['repo_landmark']['local_path'])
-    project_local_path = os.path.join(os.path.dirname(__file__), webservice_config['repo']['local_path'])
-    landmark_rules_path = os.path.join(landmark_repo_path, project_name + "/landmark")
+    project_local_path = webservice_config['repo']['local_path']
+    landmark_rules_path = os.path.join(project_local_path, project_name, 'landmark_rules')
     consolidated_rules = consolidate_landmark_rules(landmark_rules_path)
     if consolidated_rules:
         output_landmark_file_path = landmark_rules_path + "/consolidated_rules.json"

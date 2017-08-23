@@ -15,6 +15,7 @@ import requests
 import copy
 import gzip
 import urlparse
+import re
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -55,11 +56,14 @@ def api_route(self, *args, **kwargs):
 
     return wrapper
 
-
 api.route = types.MethodType(api_route, api)
 
 # in-memory data
 data = {}
+
+
+# regex precompile
+re_project_name = re.compile(r'^[a-z0-9_-]{1,255}$')
 
 
 def write_to_file(content, file_path):
@@ -147,18 +151,19 @@ class AllProjects(Resource):
     def post(self):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
-        if len(project_name) == 0 or len(project_name) >= 256:
-            return rest.bad_request('Invalid project name.')
         project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
+        print 'projec ', re_project_name.match(project_name)
+        if not re_project_name.match(project_name):
+            return rest.bad_request('Invalid project name.')
         if project_name in data:
             return rest.exists('Project name already exists.')
-        project_sources = input.get('sources', [])
-        if len(project_sources) == 0:
-            return rest.bad_request('Invalid sources.')
-        project_config = input.get('configuration', {})
-        for k, v in templates.default_configurations.iteritems():
-            if k not in project_config or len(project_config[k].strip()) == 0:
-                project_config[k] = v
+        # project_sources = input.get('sources', [])
+        # if len(project_sources) == 0:
+        #     return rest.bad_request('Invalid sources.')
+        # project_config = input.get('configuration', {})
+        # for k, v in templates.default_configurations.iteritems():
+        #     if k not in project_config or len(project_config[k].strip()) == 0:
+        #         project_config[k] = v
         image_prefix = input.get('image_prefix', '')
 
         # es_index = input.get('index', {})
@@ -166,17 +171,26 @@ class AllProjects(Resource):
         #     return rest.bad_request('Invalid index.')
 
         # add default credentials to source if it's not there
-        with open(config['default_source_credentials_path'], 'r') as f:
-            default_source_credentials = json.loads(f.read())
-        for s in project_sources:
-            if 'url' not in s or len(s['url']) == 0:
-                s['url'] = default_source_credentials['url']
-                s['username'] = default_source_credentials['username']
-                s['password'] = default_source_credentials['password']
-            if 'index' not in s or len(s['index']) == 0:
-                s['index'] = default_source_credentials['index']
-            if 'type' not in s or len(s['type']) == 0:
-                s['type'] = default_source_credentials['type']
+        # with open(config['default_source_credentials_path'], 'r') as f:
+        #     default_source_credentials = json.loads(f.read())
+        # for s in project_sources:
+        #     if 'url' not in s or len(s['url']) == 0:
+        #         s['url'] = default_source_credentials['url']
+        #         s['username'] = default_source_credentials['username']
+        #         s['password'] = default_source_credentials['password']
+        #     if 'index' not in s or len(s['index']) == 0:
+        #         s['index'] = default_source_credentials['index']
+        #     if 'type' not in s or len(s['type']) == 0:
+        #         s['type'] = default_source_credentials['type']
+
+        # create topics in etl engine
+        url = config['etl']['url'] + '/create_project'
+        payload = {
+            'project_name': project_name
+        }
+        resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
+        if resp.status_code // 100 != 2:
+            rest.internal_error('Error in ETL Engine when creating project {}'.format(project_name))
 
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
@@ -188,19 +202,19 @@ class AllProjects(Resource):
         write_to_file('credentials.json\n', os.path.join(project_dir_path, '.gitignore'))
 
         # extract credentials to a separated file
-        credentials = self.extract_credentials_from_sources(project_sources)
-        write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
+        # credentials = self.extract_credentials_from_sources(project_sources)
+        # write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
 
         # initialize data structure
         data[project_name] = templates.get('project')
         data[project_name]['master_config'] = templates.get('master_config')
-        data[project_name]['master_config']['sources'] = self.trim_empty_tld_in_sources(project_sources)
+        # data[project_name]['master_config']['sources'] = self.trim_empty_tld_in_sources(project_sources)
         data[project_name]['master_config']['index'] = {
             'sample': project_name,
             'full': project_name + '_deployed',
             'version': 0
         }
-        data[project_name]['master_config']['configuration'] = project_config
+        # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
         update_master_config_file(project_name)
 
@@ -231,6 +245,8 @@ class AllProjects(Resource):
         write_to_file('*\n', os.path.join(project_dir_path, 'pages/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir'))
         write_to_file('*\n', os.path.join(project_dir_path, 'working_dir/.gitignore'))
+        os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
+        write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
 
         git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
         logger.info('project %s created.' % project_name)
@@ -256,49 +272,49 @@ class AllProjects(Resource):
         git_helper.commit(message='delete all projects')
         return rest.deleted()
 
-    @staticmethod
-    def extract_credentials_from_sources(sources):
-        # add credential_id to source if there's username & password there
-        # store them to credentials dict
-        # and remove them from source
-        idx = 0
-        credentials = {}
-        for s in sources:
-            if 'username' in s:
-                s['credential_id'] = str(idx)
-                credentials[idx] = dict()
-                credentials[idx]['username'] = s['username'].strip()
-                credentials[idx]['password'] = s['password'].strip()
-                del s['username']
-                del s['password']
-                idx += 1
-        return credentials
+    # @staticmethod
+    # def extract_credentials_from_sources(sources):
+    #     # add credential_id to source if there's username & password there
+    #     # store them to credentials dict
+    #     # and remove them from source
+    #     idx = 0
+    #     credentials = {}
+    #     for s in sources:
+    #         if 'username' in s:
+    #             s['credential_id'] = str(idx)
+    #             credentials[idx] = dict()
+    #             credentials[idx]['username'] = s['username'].strip()
+    #             credentials[idx]['password'] = s['password'].strip()
+    #             del s['username']
+    #             del s['password']
+    #             idx += 1
+    #     return credentials
 
-    @staticmethod
-    def get_authenticated_sources(project_name):
-        """don't store authenticated source"""
-        sources = copy.deepcopy(data[project_name]['master_config']['sources'])
-        with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
-            j = json.loads(f.read())
-            for s in sources:
-                if 'credential_id' in s:
-                    id = s['credential_id']
-                    s['http_auth'] = (j[id]['username'], j[id]['password'])
-        return sources
-
-    @staticmethod
-    def trim_empty_tld_in_sources(sources):
-        for i in xrange(len(sources)):
-            s = sources[i]
-            tlds = []
-            if 'tlds' in s:
-                for tld in s['tlds']:
-                    tld = tld.strip()
-                    if len(tld) == 0:
-                        continue
-                    tlds.append(tld)
-            s['tlds'] = tlds
-        return sources
+    # @staticmethod
+    # def get_authenticated_sources(project_name):
+    #     """don't store authenticated source"""
+    #     sources = copy.deepcopy(data[project_name]['master_config']['sources'])
+    #     with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
+    #         j = json.loads(f.read())
+    #         for s in sources:
+    #             if 'credential_id' in s:
+    #                 id = s['credential_id']
+    #                 s['http_auth'] = (j[id]['username'], j[id]['password'])
+    #     return sources
+    #
+    # @staticmethod
+    # def trim_empty_tld_in_sources(sources):
+    #     for i in xrange(len(sources)):
+    #         s = sources[i]
+    #         tlds = []
+    #         if 'tlds' in s:
+    #             for tld in s['tlds']:
+    #                 tld = tld.strip()
+    #                 if len(tld) == 0:
+    #                     continue
+    #                 tlds.append(tld)
+    #         s['tlds'] = tlds
+    #     return sources
 
 
 @api.route('/projects/<project_name>')
@@ -308,25 +324,25 @@ class Project(Resource):
         if project_name not in data:
             return rest.not_found()
         input = request.get_json(force=True)
-        project_sources = input.get('sources', [])
-        if len(project_sources) == 0:
-            return rest.bad_request('Invalid sources.')
-        project_config = input.get('configuration', {})
-        for k, v in templates.default_configurations.iteritems():
-            if k not in project_config or len(project_config[k].strip()) == 0:
-                project_config[k] = v
+        # project_sources = input.get('sources', [])
+        # if len(project_sources) == 0:
+        #     return rest.bad_request('Invalid sources.')
+        # project_config = input.get('configuration', {})
+        # for k, v in templates.default_configurations.iteritems():
+        #     if k not in project_config or len(project_config[k].strip()) == 0:
+        #         project_config[k] = v
         image_prefix = input.get('image_prefix', '')
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
         #     return rest.bad_request('Invalid index.')
 
         # extract credentials to a separated file
-        credentials = AllProjects.extract_credentials_from_sources(project_sources)
-        write_to_file(json.dumps(credentials, indent=4),
-                      os.path.join(_get_project_dir_path(project_name), 'credentials.json'))
+        # credentials = AllProjects.extract_credentials_from_sources(project_sources)
+        # write_to_file(json.dumps(credentials, indent=4),
+        #               os.path.join(_get_project_dir_path(project_name), 'credentials.json'))
 
-        data[project_name]['master_config']['sources'] = AllProjects.trim_empty_tld_in_sources(project_sources)
-        data[project_name]['master_config']['configuration'] = project_config
+        # data[project_name]['master_config']['sources'] = AllProjects.trim_empty_tld_in_sources(project_sources)
+        # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
         # data[project_name]['master_config']['index'] = es_index
         # write to file
@@ -1603,6 +1619,11 @@ class Actions(Resource):
         return rest.created()
 
     def _extract(self, project_name):
+        # create etk config
+        etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
+        write_to_file(json.dumps(etk_config, indent=2),
+                      os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
+
         # create new index
         # url = '{}/config?url={}&project={}&index={}&type={}'.format(
         #     config['sandpaper']['url'],
@@ -1622,7 +1643,7 @@ class Actions(Resource):
             'number_of_workers': config['etl']['number_of_workers']
         }
         print url
-        resp = requests.post(url, json.dumps(payload), timeout=5)
+        resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to run_etk in ETL')
 
