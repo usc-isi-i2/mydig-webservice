@@ -3,6 +3,7 @@ from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
 
 import sys
+import os
 sys.path.append(os.path.join('../ws'))
 from config import config
 
