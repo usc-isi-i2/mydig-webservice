@@ -2,6 +2,7 @@ from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
 
+import sys
 sys.path.append(os.path.join('../ws'))
 from config import config
 
