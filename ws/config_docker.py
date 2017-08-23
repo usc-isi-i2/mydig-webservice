@@ -1,4 +1,5 @@
 import logging
+import os
 
 config = {
     'debug': True,
@@ -10,7 +11,7 @@ config = {
         'local_path': '/shared_data/projects',
         'git': {
             'enable_sync': False,
-            'remote_url': 'https://github.com/GreatYYX/mydig-project-test.git',
+            'remote_url': 'https://github.com/<user_name>/<repo_name>.git',
         }
     },
     'logging': {
@@ -20,8 +21,8 @@ config = {
     },
     'es': {
         # do not add / at the end
-        'sample_url': 'http://localhost:9200',
-        'full_url': 'http://localhost:9200'
+        'sample_url': 'http://elasticsearch:9200',
+        'full_url': 'http://elasticsearch:9200'
     },
     'etk': {
         'path': '/app/etk',
@@ -51,7 +52,7 @@ config = {
         'host': '0.0.0.0',
         'port': 9880,
         'debug': True,
-        'backend_url': 'http://localhost:5000/' # change to ip of host machine
+        'backend_url': os.getenv('MYDIG_BACKEND_URL', 'http://localhost:5000/')
     },
     # 'default_source_credentials_path': './default_source_credentials.json',
     'default_glossary_dicts_path': '/shared_data/dig3-resources/builtin_resources',
