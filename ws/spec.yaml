@@ -1032,47 +1032,17 @@ paths:
       - in: "path"
         name: "action_name"
         required: true
-        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index", "extract_and_load_deployed_data", "update_to_new_index_deployed", "upload_sample_data"]
+        enum: ["get_data_from_file", "get_data_from_es", "extract"]
         description: ""
-      - in: "query"
-        name: "pages_per_tld"
-        required: false
-        description: "number of pages for per TLD (only works for get_sample_pages)"
-        type: "integer"
-      - in: "query"
-        name: "pages_extra"
-        required: false
-        description: "number of pages for extra TLDs (only works for get_sample_pages)"
-        type: "integer"
-      - in: "query"
-        name: "pages_per_tld_to_run"
-        required: false
-        description: "number of pages for per TLD to run (only works for extract_and_load_test_data)"
-        type: "integer"
-      - in: "query"
-        name: "pages_extra_to_run"
-        required: false
-        description: "number of pages for extra TLDs to run (only works for extract_and_load_test_data)"
-        type: "integer"
-      - in: "query"
-        name: "lines_user_data_to_run"
-        required: false
-        description: "number of lines of user data to run (only works for extract_and_load_test_data)"
-        type: "integer"
-      - in: "query"
-        name: "force_getting_sample_pages"
-        required: false
-        description: "ignore lock and get sample pages (only works for get_sample_pages)"
-        type: "boolean"
-      - in: "query"
-        name: "force_start_new_extraction"
-        required: false
-        description: "force start a new process for etk extraction (only works for extract_and_load_test_data)"
-        type: "boolean"
+#      - in: "query"
+#        name: "pages_per_tld"
+#        required: false
+#        description: "number of pages for per TLD (only works for get_sample_pages)"
+#        type: "integer"
       - in: "formData"
         name: "data_file"
         required: false
-        description: "upload user's sample data (only works for upload_sample_data)"
+        description: "upload user's data (only works for get_data_from_file)"
         type: "file"
       responses:
         202:
@@ -1081,33 +1051,33 @@ paths:
           description: "bad request"
         404:
           description: "not found"
-    get:
-      tags:
-      - "actions"
-      summary: "Get status of actions"
-      description: ""
-      operationId: ""
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "project_name"
-        required: true
-        description: ""
-      - in: "path"
-        name: "action_name"
-        required: true
-        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index"]
-        description: ""
-      responses:
-        200:
-          description: "ok"
-        400:
-          description: "bad request"
-        404:
-          description: "not found"
+#    get:
+#      tags:
+#      - "actions"
+#      summary: "Get status of actions"
+#      description: ""
+#      operationId: ""
+#      consumes:
+#      - "application/json"
+#      produces:
+#      - "application/json"
+#      parameters:
+#      - in: "path"
+#        name: "project_name"
+#        required: true
+#        description: ""
+#      - in: "path"
+#        name: "action_name"
+#        required: true
+#        enum: ["publish", "get_sample_pages", "extract_and_load_test_data", "update_to_new_index"]
+#        description: ""
+#      responses:
+#        200:
+#          description: "ok"
+#        400:
+#          description: "bad request"
+#        404:
+#          description: "not found"
 
   # add tag to entity
 #  /projects/{project_name}/entities/{kg_id}/tags:

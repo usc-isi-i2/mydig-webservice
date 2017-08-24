@@ -97,7 +97,7 @@ def spec():
 
 @app.route('/spec.yaml')
 def spec_file_path():
-    with open('spec.yaml', 'r') as f:
+    with codecs.open('spec.yaml', 'r') as f:
         c = yaml.load(f)
         c['host'] = request.host
     return Response(yaml.dump(c), mimetype='text/x-yaml')
@@ -132,13 +132,13 @@ class Debug(Resource):
             }
             return debug_info
         elif mode == 'log':
-            with open(config['logging']['file_path'], 'r') as f:
+            with codecs.open(config['logging']['file_path'], 'r') as f:
                 content = f.read()
             return make_response(content)
         elif mode == 'nohup':
             nohup_file_path = 'nohup.out'
             if os.path.exists(nohup_file_path):
-                with open(nohup_file_path, 'r') as f:
+                with codecs.open(nohup_file_path, 'r') as f:
                     content = f.read()
                 return make_response(content)
 
@@ -712,7 +712,7 @@ class SpacyRulesOfAField(Resource):
         git_helper.commit(files=[path, project_name + '/master_config.json'],
             message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
 
-        with open(path, 'r') as f:
+        with codecs.open(path, 'r') as f:
             obj = json.loads(f.read())
         return rest.created(obj)
 
@@ -732,7 +732,7 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('no spacy rules')
 
         obj = dict()
-        with open(path, 'r') as f:
+        with codecs.open(path, 'r') as f:
             obj = json.loads(f.read())
 
         type = request.args.get('type', '')
@@ -830,7 +830,7 @@ class ProjectGlossaries(Resource):
     def compute_statistics(project_name, glossary_name, file_path):
         THRESHOLD = 5
         ngram = {}
-        with open(file_path, 'r') as f:
+        with codecs.open(file_path, 'r') as f:
             line_count = 0
             for line in f:
                 line = line.rstrip()
@@ -1234,7 +1234,7 @@ class FieldAnnotations(Resource):
     def write_to_field_file(project_name, field_name):
         file_path = os.path.join(_get_project_dir_path(project_name), 'field_annotations/' + field_name + '.csv')
         field_obj = data[project_name]['field_annotations']
-        with open(file_path, 'w') as csvfile:
+        with codecs.open(file_path, 'w') as csvfile:
             writer = csv.DictWriter(
                 csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
                 delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -1255,7 +1255,7 @@ class FieldAnnotations(Resource):
             if ext != '.csv':
                 continue
             file_path = os.path.join(dir_path, file_name)
-            with open(file_path, 'r') as csvfile:
+            with codecs.open(file_path, 'r') as csvfile:
                 reader = csv.DictReader(
                     csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -1466,7 +1466,7 @@ class TagAnnotationsForEntityType(Resource):
     def write_to_tag_file(project_name, tag_name):
         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/' + tag_name + '.csv')
         tag_obj = data[project_name]['entities']
-        with open(file_path, 'w') as csvfile:
+        with codecs.open(file_path, 'w') as csvfile:
             writer = csv.DictWriter(
                 csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                 delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -1487,7 +1487,7 @@ class TagAnnotationsForEntityType(Resource):
             if ext != '.csv':
                 continue
             file_path = os.path.join(dir_path, file_name)
-            with open(file_path, 'r') as csvfile:
+            with codecs.open(file_path, 'r') as csvfile:
                 reader = csv.DictReader(
                     csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -1610,7 +1610,7 @@ class Actions(Resource):
 
         try:
             with gzip.open(gzip_file_path, 'rb') as input:
-                with open(file_path, 'w') as output:
+                with codecs.open(file_path, 'w') as output:
                     output.write(input.read())
         except Exception as e:
             print e
@@ -1708,7 +1708,7 @@ if __name__ == '__main__':
                 master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
                 if not os.path.exists(master_config_file_path):
                     logger.error('Missing master_config.json file for ' + project_name)
-                with open(master_config_file_path, 'r') as f:
+                with codecs.open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
                     # if 'index' not in data[project_name]['master_config'] or \
                     #         any(k not in data[project_name]['master_config']['index'] for k in ('sample', 'full')):
