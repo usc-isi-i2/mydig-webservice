@@ -1670,6 +1670,28 @@ class Actions(Resource):
         return rest.accepted()
 
 
+@api.route('/projects/<project_name>/landmark_rules')
+class LandmarkRules(Resource):
+    @requires_auth
+    def post(self, project_name):
+        # input object
+        # {
+        #     "rules": [],
+        #     "metadata": {
+        #         "tld": "",
+        #         "task_name": ""
+        #     }
+        # }
+        input = request.get_json(force=True)
+        if 'metadata' not in input or 'task_name' not in input['metadata']:
+            return rest.bad_request('Invalid input')
+        path = os.path.join(_get_project_dir_path(project_name),
+                            'landmark_rules', input['metadata']['task_name'] + '.json')
+        with codecs.open(path, 'w') as f:
+            f.write(json.dumps(input, indent=4))
+        return rest.created()
+
+
 if __name__ == '__main__':
     try:
 
