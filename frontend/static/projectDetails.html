@@ -7,6 +7,7 @@
 	<link rel="import" href="../static/bower_components/paper-progress/paper-progress.html">
 	
 	<link rel="import" href="../static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+	<link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	<link rel="import" href="../static/bower_components/paper-input/paper-textarea.html">
 	<link rel="import" href="../static/bower_components/iron-form/iron-form.html">
@@ -45,7 +46,31 @@
 		$( document ).ready(function() {
 			showMenu();
 			});
-		
+
+
+		// Functions to show and hide the form elements under menu
+		function handleElasticSearchForm(){
+			console.log('ES form clicked')
+			console.log(document.getElementById('elasticSearchForm').opened)
+			if(document.getElementById('elasticSearchForm').opened == true){
+				document.getElementById('elasticSearchForm').opened = false
+			}
+			else{
+				document.getElementById('elasticSearchForm').opened = true
+			}
+		}
+
+		function handleUploadFileForm(){
+			console.log('Upload file form clicked')
+			console.log(document.getElementById('uploadFileForm').opened)
+			if(document.getElementById('uploadFileForm').opened == true){
+				document.getElementById('uploadFileForm').opened = false
+			}
+			else{
+				document.getElementById('uploadFileForm').opened = true
+			}
+		}
+
 		function showMenu() {
 			  document.getElementById('menuSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
 			  document.getElementById('fieldSelector').style.backgroundColor =null;
@@ -559,141 +584,80 @@
 			</paper-tabs>
 			
 			<iron-collapse id="menu" style="margin-left:20px;">
-			<br>
-			<a target="_blank" style="color:black;text-decoration: none;" href="{{digURI}}"><paper-button raised style="text-transform: none;" ><strong>Sample DigApp</strong></paper-button></a> 
-				<br>	<br>
-				<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-				    
-					<br><br>
-					<div>
-						 <a style="margin-right: 20px;color:blue;float:right" target="_blank" href="{{inferlinkLink}}"> Link to Inferlink Tool</a>
-						
-						<h4><strong>Get Sample Pages</strong></h4>
-						<br><br>
-						<span style="font-size: 18px;;font-family: 'Zilla Slab', serif;">Retrieve sample pages from the CDR for testing your extractions. The sample will contain pages from each of your specified TLDs as well as a random selection of pages from other TLDs</span>
-						<br><br>
-						<div>
-						Number of Pages per TLD
-						<input type="number" value="200" class="projectInputStyle" id="perPage"></input> 
-						<span style="padding-left:80px">Number of Pages for Extra TLDs</span>
-						<input value="1000" type="number" class="projectInputStyle" id="extraPage"></input> 
-						</div>
-						<br><br>
-						<div style="float: right">
-							<paper-checkbox id="samplePageForce">Force</paper-checkbox>
-					
-							<paper-button raised id="get_sample_pages" on-tap="inferlink"
-						style="clear:left"> <strong>Go</strong></paper-button>
-						<paper-button raised on-tap="uploadSamplePages" 
-						style="clear:left;text-transform:none"> <strong>Upload Files</strong></paper-button>
-						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
-						style="clear:left;text-transform:none"> <span> <strong>Show TLDs Data</strong> </span></paper-button>
-						
-						</div>
-						<br>
-					</div>
-					<br><br>
-					</paper-material>
-					<br>
-					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-					<br><br>
-					<div>
-						
-						<h4><strong>Publish Project Files</strong></h4>
-						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Upload all the project files to the myDIG protected GitHub repository, backing up your files to allow going to previous versions or preserving files in case of disk failure.</i></span>
-						<div>
-						
-						</div>
-						<div style="float: right">
-							<paper-button raised id="publish" on-tap="publish"
-						style="clear:left"> <strong>Go</strong></paper-button>
-						</div>
-						<br>
-					</div>
-					<br><br>
-					</paper-material>
-				
-					<br>
-					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-					<br><br>
-					<div>
-						
-						<h4><strong>Run Extractions and Load Index For Sample Pages</strong></h4>
-						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
-						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Sample Index</span>
-						<br><br>
-						<div>
-						Number of Pages per TLD to run
-						<input style="width:40px" type="number" value="20" class="projectInputStyle" id="etkTLD"></input> 
-						<span style="padding-left:60px">Number of Pages for Extra TLDs to run</span>
-						<input style="width:40px" value="100" type="number" class="projectInputStyle" id="etkExtraTLD"></input> 
-						<span style="padding-left:60px">User data to run</span>
-						<input style="width:40px" value="500" type="number" class="projectInputStyle" id="etkLineField"></input> 
-						
-						</div><br>
-						<strong>Status: </strong>{{etkFields.last_message}}
-						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
-						<paper-progress on-tap="etkStatus" id="progr" style="display: block;width: 80%;position: relative;padding-top: 10px;"
-						value="{{etkFields.etk_progress.current}}" min="0" max="{{etkFields.etk_progress.total}}" class="red"></paper-progress>
-						
-						
-						<div style="float: right">
-							<paper-checkbox id="etkForce">Force</paper-checkbox>
-							<paper-button raised on-tap="etk"
-						style="clear:left"> <strong>Go</strong></paper-button>
-						</div>
-						<br>
-					</div>
-					<br><br>
-					</paper-material>
-					<br>
-					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-					<br><br>
-					<div>
-						
-						<h4><strong>Update To New Sample Index</strong></h4>
-						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
-						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;"> Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</span>
-						<div>
-						
-						</div>
-						<div style="float: right">
-							<paper-button raised  on-tap="updateToNewIndex"
-						style="clear:left"> <strong>Go</strong></paper-button>
-						</div>
-						<br><br>
-					</div>
-					<br>
-					</paper-material>
-					<br>
-					
-					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-					<br><br>
-					<div>
-						
-						<h4><strong>Deployment On The Full Dataset</strong></h4>
-						<br>
-						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined on the full dataset and load the extracted data into a new ElasticSearch index. </span>
-						<div>
-						
-						</div>
-						<div style="float: right">
-						
-						<paper-button raised on-tap="sureToContinueExtractionFunction" style="text-transform:none"
-						style="clear:left"> <strong>Start Extraction</strong></paper-button>
-						<a target="_blank" style="color:black;text-decoration: none;" href="{{digAppURI}}">
-						<paper-button raised style="text-transform:none"
-						style="clear:left"> <strong>DIG App</strong></paper-button></a>
-						</div>
-						<br><br>
-					</div>
-					<br>
-					</paper-material>
-					
-					<br><br>
+				<br><br><br><br>
+				<center><paper-button onclick="getDataDialog.toggle()" raised><strong>GET DATA</strong></paper-button></center>
+			    <br><br>
+			    <center><paper-button onclick="" raised><strong>EXTRACT</strong></paper-button></center>
+			    <br><br><br><br>
+			    <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="getDataDialog" style="width:50%;margin-left:auto;margin-right:auto">
+			    		<paper-dialog-scrollable>
+			    			<center><paper-dropdown-menu label="From Elastic Search" id="handleElasticSearchForm" style="width:95%" onclick="handleElasticSearchForm()"></center>
+							</paper-dropdown-menu>
+			    			<iron-collapse id="elasticSearchForm">
+				    			<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Username:" id=fromES_UserName></paper-input>
+						        <paper-input  class="addProjClass" label="Password:" id=fromES_Password></paper-input>
+						        <paper-input class="addProjClass" label="Index:" id=fromES_Index></paper-input>
+						        <paper-input class="addProjClass" label="Doc type:" id=fromES_DocType></paper-input>
+						        <paper-input class="addProjClass" label="ES URL:" id=fromES_URL></paper-input>
+						        <div>
+						        <span>TLDs</span>
+						        <textarea id=fromES_ProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
+						        </div>
+						        <div>
+						        <span>Start Date:</span>
+						        <paper-date-picker-item class="projectInputStyle"
+								     date-format="YYYY-MM-DD"
+								    placeholder="Select:"
+								    id=fromES_Start_date>
+								</paper-date-picker-item>
+								</div>
+								<div>
+						        <span>End Date:</span>
+								<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
+								    placeholder="Select:"
+								    id=fromES_End_date>
+								</paper-date-picker-item>
+								</div>
+								<paper-input class="addProjClass" label="Number of pages" id=fromES_NoOfPages></paper-input>
+							</iron-collapse>
+
+							<br><br>
+							<center><paper-dropdown-menu label="Upload File" id="handleUploadFileForm" style="width:95%" onclick="handleUploadFileForm()"></center>
+							</paper-dropdown-menu>
+							<iron-collapse id="uploadFileForm">
+				    			<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Username:" id=uploadFile_UserName></paper-input>
+						        <paper-input  class="addProjClass" label="Password:" id=fromES_Password></paper-input>
+						        <paper-input class="addProjClass" label="Index:" id=uploadFile_Index></paper-input>
+						        <paper-input class="addProjClass" label="Doc type:" id=uploadFile_DocType></paper-input>
+						        <paper-input class="addProjClass" label="Upload File URL:" id=uploadFile_URL></paper-input>
+						        <div>
+						        <span>TLDs</span>
+						        <textarea id=uploadFile_ProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
+						        </div>
+						        <div>
+						        <span>Start Date:</span>
+						        <paper-date-picker-item class="projectInputStyle"
+								     date-format="YYYY-MM-DD"
+								    placeholder="Select:"
+								    id=uploadFile_Start_date>
+								</paper-date-picker-item>
+								</div>
+								<div>
+						        <span>End Date:</span>
+								<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
+								    placeholder="Select:"
+								    id=uploadFile_End_date>
+								</paper-date-picker-item>
+								</div>
+								<paper-input class="addProjClass" label="Number of pages" id=uploadFile_NoOfPages></paper-input>
+							</iron-collapse>
+					        
+					        
+				        </paper-dialog-scrollable>
+				        	<paper-button style="float:right;margin-top:20px;margin-right:20px" onclick="" raised><strong>Go</strong></paper-button>
+					        <paper-button style="float:right;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
+					        <paper-checkbox style="float:right;margin-top:30px;margin-right:20px" id="saveFlag">Save</paper-checkbox>
+				</paper-dialog>
 			</iron-collapse>
 			<iron-collapse id="field">
 			
