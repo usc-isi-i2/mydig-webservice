@@ -1,0 +1,2215 @@
+	<link rel="stylesheet" href="../static/styles/main.css">
+	<script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+	<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
+	<link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
+	<link href="https://fonts.googleapis.com/css?family=Zilla+Slab:500i" rel="stylesheet">
+	
+	<link rel="import" href="../static/bower_components/paper-progress/paper-progress.html">
+	
+	<link rel="import" href="../static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<link rel="import" href="../static/bower_components/paper-input/paper-textarea.html">
+	<link rel="import" href="../static/bower_components/iron-form/iron-form.html">
+	<link rel="import" href="../static/bower_components/paper-tabs/paper-tab.html">
+	<link rel="import" href="../static/bower_components/paper-checkbox/paper-checkbox.html">
+	<link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+	<link rel="import" href="../static/bower_components/paper-icon-button/paper-icon-button.html">
+	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
+	<link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
+	
+	
+	<link rel="import" href="../static/bower_components/paper-styles/color.html">
+	<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
+	<link rel="import" href="../static/bower_components/paper-card/paper-card.html">
+	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
+	<link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
+	
+	<link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
+	<link rel="import" href="../static/elements/elements.html">
+	<!-- <script src="../static/bower_components/moment/min/locales.js"></script>
+	<link rel="import" href="../static/bower_components/polymer/polymer.html">
+	 --><style is="custom-style" include="shared-styles"></style>
+	<style is="custom-style" include="search-styles"></style>
+	<link rel="import" href="theme.css">
+	<link rel="import" href="../static/technology.html">
+	
+	
+	<script>
+	
+		var projectName = window.location.href.split('?');
+		var dataText;
+		var glossariesNewField=[];
+		
+		
+		$( document ).ready(function() {
+			showMenu();
+			});
+		
+		function showMenu() {
+			  document.getElementById('menuSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+			  document.getElementById('fieldSelector').style.backgroundColor =null;
+			  document.getElementById('tagSelector').style.backgroundColor =null;
+			  document.getElementById('glossarySelector').style.backgroundColor =null;
+			  document.getElementById('tableSelector').style.backgroundColor =null;
+				 
+			  
+			  document.getElementById('entity').opened = false;
+		  	  document.getElementById('menu').opened = true;
+		  	  document.getElementById('glossary').opened = false;
+		  	  document.getElementById('field').opened = false;
+		  	  document.getElementById('tables').opened = false;
+		}
+		
+		function showField() {
+		  document.getElementById('menuSelector').style.backgroundColor =null;
+		  document.getElementById('fieldSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+		  document.getElementById('tagSelector').style.backgroundColor =null;
+		  document.getElementById('glossarySelector').style.backgroundColor =null;
+		  document.getElementById('tableSelector').style.backgroundColor =null;
+			
+			  
+	  	  document.getElementById('entity').opened = false;
+	  	  document.getElementById('glossary').opened = false;
+	  	  document.getElementById('field').opened = true;
+	  	  document.getElementById('menu').opened = false;
+	  	  document.getElementById('tables').opened = false;
+	    }
+		
+		function showTable() {
+			  document.getElementById('menuSelector').style.backgroundColor =null;
+			  document.getElementById('fieldSelector').style.backgroundColor =null;
+			  document.getElementById('tagSelector').style.backgroundColor =null;
+			  document.getElementById('glossarySelector').style.backgroundColor =null;
+			  document.getElementById('tableSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+				
+				  
+		  	  document.getElementById('entity').opened = false;
+		  	  document.getElementById('glossary').opened = false;
+		  	  document.getElementById('field').opened = false;
+		  	  document.getElementById('menu').opened = false;
+		  	  document.getElementById('tables').opened = true;
+		}
+		
+		var openFile = function (event) {
+		    var input = event.target;
+		    var reader = new FileReader();
+		    reader.onload = function () {
+		    	dataText = reader.result;
+		       
+		    };
+		    reader.readAsText(input.files[0]);
+		};
+		
+		function updateFormData() {
+			var glossName = document.getElementById('glossary_name').value;
+			var file =  document.getElementById("glossary_file").getElementsByTagName("input")[0].files[0];  	 
+		   	   	 
+		   	 
+		   	 var url=backend_url +"projects/"+projectName[1]+"/glossaries/"+glossName;
+		   	//------------ 
+		   	 var formData = new FormData();
+	
+		   	 formData.append("glossary_name", glossName);
+		   	 formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
+				console.log(formData);
+		   	 
+		   	 var request = new XMLHttpRequest();
+		   	 request.open("POST", url);
+		   //	request.setRequestHeader("Content-type", "application/json");
+		   	request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+		   	request.onreadystatechange = function () {
+				    if (request.readyState === 4 && request.status === 201) {
+				    	 document.getElementById("editGlossariesDialog").toggle();
+				    	 document.getElementById("getGlossary").generateRequest();
+				   }
+				};
+			
+			 request.send(formData);
+			
+		}
+		
+		function uploadSamplePagesFiles() {
+			var file =  document.getElementById("samplePagesFile").getElementsByTagName("input")[0].files[0];  	 
+		   	   	 
+		   	 
+		   	 var url=backend_url +"projects/"+projectName[1]+"/actions/upload_sample_data";
+		   	//------------ 
+		   	 var formData = new FormData();
+	
+		   	 formData.append("data_file", file); // number 123456 is immediately converted to a string "123456"
+		  	 
+		   	 var request = new XMLHttpRequest();
+		   	 request.open("POST", url);
+		   //	request.setRequestHeader("Content-type", "application/json");
+		   	request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+		   	request.onreadystatechange = function () {
+				    if (request.readyState === 4 && request.status === 201) {
+				    	 document.getElementById("uploadZipFileDialog").toggle();
+				    	
+				   }
+				};
+			
+			 request.send(formData);
+			
+		}
+		
+		function submitFormData() {
+		 
+		 var glossName = document.getElementById('glossary_nameInput').value;
+		 if (/\s/.test(glossName)) {return;}
+		 var file =  document.getElementById("glossary_fileInput").getElementsByTagName("input")[0].files[0];  	 
+	   	 
+	   	 var url=backend_url + "projects/"+projectName[1]+"/glossaries";
+	   	//------------ 
+	   	 var formData = new FormData();
+	
+	   	 formData.append("glossary_name", glossName);
+	   	 formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
+			console.log(formData);
+	   	 
+	   	 var request = new XMLHttpRequest();
+	   	 request.open("POST", url);
+	   //	request.setRequestHeader("Content-type", "application/json");
+	   	request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+		
+	   	request.onreadystatechange = function () {
+			    if (request.readyState === 4 && request.status === 201) {
+			    	
+			    	document.getElementById('glossary_nameInput').value="";
+			    	document.getElementById("addGlossaryDialog").toggle();
+			    	 document.getElementById("getGlossary").generateRequest();
+			    }
+			    
+			};
+		
+		 request.send(formData);
+		}
+	    function showEntity() {
+	    	
+	     document.getElementById('menuSelector').style.backgroundColor =null;
+	     document.getElementById('fieldSelector').style.backgroundColor =null;
+	     document.getElementById('tagSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+		 document.getElementById('glossarySelector').style.backgroundColor =null;
+		 document.getElementById('tableSelector').style.backgroundColor =null;
+			
+		
+	  	  document.getElementById('field').opened = false;
+	  	  document.getElementById('glossary').opened = false;
+	  	  document.getElementById('entity').opened = true;
+	  	  document.getElementById('menu').opened = false;
+	  	  document.getElementById('tables').opened = false;
+	    }
+	    
+	    function showGlossary() {
+	    	
+	      document.getElementById('menuSelector').style.backgroundColor =null;
+		  document.getElementById('fieldSelector').style.backgroundColor =null;
+		  document.getElementById('tagSelector').style.backgroundColor =null;
+		  document.getElementById('glossarySelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
+		  document.getElementById('tableSelector').style.backgroundColor =null;
+		  
+		  
+	  	  document.getElementById('field').opened = false;
+	  	  document.getElementById('entity').opened = false;
+	  	  document.getElementById('glossary').opened = true;
+	  	  document.getElementById('menu').opened = false;
+	  	  document.getElementById('tables').opened = false;
+	    }
+	    
+	    function addNewTag() {
+	    	var xhr = new XMLHttpRequest();
+	    	var url = backend_url +"projects/"+projectName[1]+"/tags";
+	   		var name=document.getElementById("tagNameInput").value;
+	   		if (/\s/.test(name)) {return;}
+	   		var description=document.getElementById("tagDescriptionInput").value;
+	   		var screenlabel=document.getElementById("tagSceenLabelInput").value;
+	   		var positiveprecision=document.getElementById("tagPositiveInput").value;
+	   		var negativeprecision=document.getElementById("tagNegativeInput").value;
+	   		var inmenu=document.getElementById("tagCheckBoxInput").checked;
+	   		
+	   		xhr.open("POST", url, true);
+	   		xhr.setRequestHeader("Content-type", "application/json");
+	   		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+	   		xhr.onreadystatechange = function () {
+	   		    if (xhr.readyState === 4 && xhr.status === 201) {
+	   		    	document.getElementById("addTagsDialog").toggle();
+	   		    	document.getElementById("getTags").generateRequest();
+	   		    	document.getElementById("tagNameInput").value = "";
+	   		   		document.getElementById("tagDescriptionInput").value="";
+	   		   		document.getElementById("tagSceenLabelInput").value="";
+	   		   		document.getElementById("tagPositiveInput").value="";
+	   		   		document.getElementById("tagNegativeInput").value=""
+	   		   		document.getElementById("tagCheckBoxInput").checked=false;
+	   		   		
+	   		   		
+	   		    }
+	   		};
+	   		
+	   		var data = JSON.stringify({
+	   		  "tag_name": name+"",
+	   		  "tag_object": {
+	   		    "description": description+"",
+	   		    "include_in_menu": inmenu,
+	   		    "name": name+"",
+	   		    "negative_class_precision": parseFloat(negativeprecision),
+	   		    "positive_class_precision": parseFloat(positiveprecision),
+	   		    "screen_label":screenlabel
+	   		  }
+	   		});
+	   		
+	   		xhr.send(data);
+	   		
+	      }
+	    
+	    function addNewTableValue() {
+	    	var xhr = new XMLHttpRequest();
+	    	var url = backend_url + "projects/"+projectName[1]+"/table_attributes";
+	    	var fieldName=document.getElementById("fieldInputDropDownInput").selectedItem.value;
+	   		var attribute=document.getElementById("tableAttributeInputValue").value;
+	   		var values = (document.getElementById("textAreaForTableAttribute").value).split("\n");
+			
+	   		xhr.open("POST", url, true);
+	   		xhr.setRequestHeader("Content-type", "application/json");
+	   		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+	   		xhr.onreadystatechange = function () {
+	   		    if (xhr.readyState === 4 && xhr.status === 201) {
+	   		    	AddNewTableAttributeDialog.toggle();
+	   		    	document.getElementById("fieldInputDropDownInput").selected="0";
+	   		    	document.getElementById("tableAttributeInputValue").value="";
+	   		    	document.getElementById("textAreaForTableAttribute").value="";
+	   		    	document.getElementById("tableAttributes").generateRequest();
+	   		    	
+	   		    }
+	   		}
+	   		var data = JSON.stringify({
+	   			"field_name": fieldName,
+	   		  "info": {},
+	   		  "name": attribute,
+	   		  "value": values
+	   		});
+	   		xhr.send(data);
+	   		
+	    }
+	     
+	    function addNewField() {
+	    	var xhr = new XMLHttpRequest();
+	    	var url = backend_url + "projects/"+projectName[1]+"/fields";
+	   		var name=document.getElementById("fieldnameinput").value;
+	   		if (/\s/.test(name)) {return;}
+	   		var description=document.getElementById("fielddescriptioninput").value;
+	   		var screenlabel=document.getElementById("fieldscreenlabelinput").value;
+	   		var screen_label_plural = document.getElementById("fieldscreenlabelPluralinput").value;
+	   		if(screenlabel == "")screenlabel=name;
+	   		if(screen_label_plural =="")screen_label_plural=screenlabel;
+	   		
+	   		
+	   		var color=document.getElementById("fieldcolorinput").value;
+	   		var type=document.getElementById("fieldtypeinput").selectedItem.value;
+	   		var predefinedExtractor="";
+	   		if(document.getElementById("fieldpredefinedExtractor").selectedItem) {
+	   			predefinedExtractor = document.getElementById("fieldpredefinedExtractor").selectedItem.value;
+	   		}
+	   		
+	   		var groupname = document.getElementById("fieldgroupnameinput").value;
+	   		var icon=document.getElementById("fieldiconinput").value;
+	   		var searchimp = parseInt(document.getElementById("fieldsearchinput").selectedItem.value);
+	   		var ruleExtractor = document.getElementById("fieldRuleExtractor").checked;
+	   		var combinefields=document.getElementById("fieldcombinedfieldsinput").checked;
+	   		var facet=document.getElementById("fieldfacetinput").checked;
+	   		var link=document.getElementById("fieldlinkinput").selectedItem.value;
+	   		var result=document.getElementById("fieldresultinput").selectedItem.value;
+	   		var search=document.getElementById("fieldsearchinput2").checked;
+	   		var networksearch=document.getElementById("fieldnetworkinput").checked;
+	   		var ruleextractTarget = document.getElementById("fieldRuleExtractorTarget").selectedItem.value;
+	   		var caseSense=document.getElementById("getCaseSenstive").checked;
+	   		xhr.open("POST", url, true);
+	   		xhr.setRequestHeader("Content-type", "application/json");
+	   		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			
+	   		xhr.onreadystatechange = function () {
+	   		    if (xhr.readyState === 4 && xhr.status === 201) {
+	   		    	addFieldDialog.toggle();
+	   		    	document.getElementById("getFields").generateRequest();
+	   		    	glossariesNewField=[];
+	   		    	document.getElementById("fieldnameinput").value="";
+	   		   		document.getElementById("fielddescriptioninput").value="";
+	   		   		document.getElementById("fieldscreenlabelinput").value="";
+	   		   	    document.getElementById("fieldscreenlabelPluralinput").value="";
+	   		   		document.getElementById("fieldcolorinput").value="amber";
+	   		     	document.getElementById("getCaseSenstive").checked="";
+	   		   		
+	   		   		
+	   		   		document.getElementById("fieldgroupnameinput").value="";
+	   		   		document.getElementById("fieldiconinput").value="icons:default";
+	   		   		document.getElementById("fieldsearchinput").selected="0";
+	   		    	document.getElementById("fieldtypeinput").selected="0";
+	   		    	document.getElementById("fieldRuleExtractor").checked=false;
+	   		    	document.getElementById("fieldpredefinedExtractor").selected="0";
+	   		   		
+	   		   		document.getElementById("fieldcombinedfieldsinput").checked=false;
+	   		   		document.getElementById("fieldfacetinput").checked=false;
+	   		   		document.getElementById("fieldlinkinput").selected="0";
+	   		   		document.getElementById("fieldresultinput").selected="0";
+	   		   		document.getElementById("fieldsearchinput2").checked=false;
+	   		   		document.getElementById("fieldnetworkinput").checked=false;
+	   		   	    document.getElementById("fieldRuleExtractorTarget").selected="2";
+	   		   		
+	   		    }
+	   		};
+	   		
+	   		var data = JSON.stringify({
+	   		  "field_name": name,
+	   		  "field_object": {
+	   		    "color": color,
+	   		    "case_sensitive":caseSense,
+	   		    "combine_fields": combinefields,
+	   		    "description": description,
+	   		    "glossaries":glossariesNewField,
+	   		    "group_name": groupname,
+	   		    "icon": icon,
+	   		    "name": name,
+	   		    "screen_label": screenlabel,
+	   		    "screen_label_plural": screen_label_plural,
+     		     "search_importance": searchimp,
+	   		    "show_as_link": link,
+	   		    "show_in_facets": facet,
+	   		    "show_in_result": result,
+	   		    "show_in_search": search,
+	   		    "type": type,
+	   		    "use_in_network_search": networksearch,
+	   		    "rule_extractor_enabled":ruleExtractor,
+	   		    "predefined_extractor":predefinedExtractor,
+	   		    "rule_extraction_target":ruleextractTarget
+	   		  }
+	   		});
+	   		
+	   		xhr.send(data);
+	   		
+	      }
+	    
+	    function setDefaultIcon() {
+	    	document.getElementById("iconField").value="icons:default";
+	    }
+	    
+	    function setDefaultColor() {
+	    	document.getElementById("colorField").value="amber";
+	    	
+	    }
+	    
+	    function addDefaultIcon() {
+	    	document.getElementById("fieldiconinput").value="icons:default";
+	    }
+	    
+	    function addDefaultColor() {
+	    	document.getElementById("fieldcolorinput").value="amber";
+	    	
+	    }
+	    
+	</script>
+	<dom-module id="project-details"> 
+	<link rel="import" href="../static/technology.css" type="css">
+	<template>
+	
+			<iron-ajax
+			id="inferlink" method="POST" content-type="application/json"
+			handle-as="json" on-error="done" on-response="successDone"> </iron-ajax> 
+			
+			<iron-ajax
+			id="etk" method="POST" content-type="application/json"
+			handle-as="json" on-error="done" on-response="etkStatus"> </iron-ajax> 
+			
+			<iron-ajax
+			id="etkDeployed" method="POST" content-type="application/json"
+			handle-as="json" on-error="done" > </iron-ajax> 
+			
+			<iron-ajax
+			id="etkGet" method="GET" content-type="application/json"
+			handle-as="json" on-response="etkdetails" on-error="done"> </iron-ajax> 
+			
+			<iron-ajax
+			id="publish" method="POST" content-type="application/json"
+			handle-as="json" on-error="done"> </iron-ajax> 
+			
+		  <iron-ajax
+			id="getTags" method="GET" content-type="application/json"
+			handle-as="json" on-response="fillTags" on-error="done"> </iron-ajax> 
+			
+			 <iron-ajax
+			id="deleteTags" method="DELETE" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="updateSavedTags" method="POST" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+		
+			<iron-ajax
+			id="getFields" method="GET" content-type="application/json"
+			handle-as="json" on-response="fillFields" on-error="done"> </iron-ajax> 
+			
+			
+			<iron-ajax
+			id="deleteFields" method="DELETE" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="deleteTableAttribute" method="DELETE" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="updateSavedFields" method="POST" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="getGlossary" method="GET" content-type="application/json"
+			handle-as="json" on-response="fillGlossary" on-error="done"> </iron-ajax> 
+			
+			<iron-ajax
+			id="deleteGlossaries" method="DELETE" content-type="application/json"
+			handle-as="json" on-response="deletedGlossary" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="updateSavedGlossary" method="POST" content-type="application/json"
+			handle-as="json" on-response="updateDone" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="getAction1" method="GET" content-type="application/json"
+			handle-as="json" on-response="getTLDInferlink" on-error="done"> </iron-ajax>
+			
+			
+			<iron-ajax
+			id="editTag" method="GET" content-type="application/json"
+			handle-as="json" last-response="{{tagForm}}" on-error="done"> </iron-ajax>
+			
+			
+			<iron-ajax
+			id="editField" method="GET" content-type="application/json"
+			handle-as="json" on-response="setEditFieldForm" on-error="done"> </iron-ajax>
+			
+			<iron-ajax
+			id="updateIndex" method="POST" content-type="application/json"
+			handle-as="json" on-error="done" on-response="successDoneIndex"> </iron-ajax>
+			
+			
+			<iron-ajax
+			id="updateIndexNew" method="POST" content-type="application/json"
+			handle-as="json" on-error="done" on-response="successDoneIndex"> </iron-ajax>
+			
+			<iron-ajax
+			id="downloadGlossary" method="GET" content-type="text/plain"
+			 on-error="done" on-response="downloadGlossaryCall"> </iron-ajax>
+		
+			<iron-ajax
+			id="editSpacyRules" method="GET" content-type="application/json"
+			 on-error="showSpacyRuleDummy" on-response="fieldSpacyRules"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateSpacyRules" method="POST" content-type="application/json"
+			 on-error="done" on-response="updateDone"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="editSpacyRulesNext" method="POST" content-type="application/json"
+			   on-error="done" on-response="updateDone"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateSpacyRulesNext" method="POST" content-type="application/json"
+			 on-error="done" on-response="updateDone"> </iron-ajax>
+			 
+			 
+			 <iron-ajax
+			id="tableAttributes" method="GET" content-type="application/json"
+			 on-error="done" on-response="setTableAttributes"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="updateTableAttribute" method="POST" content-type="application/json"
+			 on-error="done" on-response="updateDone"> </iron-ajax>
+			 
+			 <iron-ajax
+			id="digURI" method="GET" content-type="application/json"
+			on-response="setDigURI"> </iron-ajax>
+		    
+		
+		 <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt="">
+		 	<h4 style="padding-left:15em;text-align:center" class="projectNameValue"></h4>
+			   <script>document.querySelector('.projectNameValue').innerHTML = " Project : "+projectName[1];</script>
+			   <paper-button on-tap="getToHome" raised style="float:right;margin-left:auto;background-color:white;text-transform:none">All Projects</paper-button>
+		 
+	    </paper-toolbar>
+			  <paper-header-panel>
+			  
+	          <section class="adjustProjectSection">
+	            <div class="search-results-header">
+	              <div class="paper-font-title flex">DIG Projects</div>
+	            </div>
+	            <div class="h-divider"></div>
+	          </section>
+	          </paper-header-panel><br>
+	         <paper-material id="projectOpenDialog" class="paperMaterialStyle">
+			<paper-tabs selected="0" noink style="width: 100%;height: 3em !important;display: block;"> 
+			<paper-tab style="width:17%;height: 100%;" class="paperTabs" id="menuSelector" onclick="showMenu()">Actions</paper-tab>
+			<paper-tab style="width:17%;height: 100%;" class="paperTabs" id="tableSelector" onclick="showTable()">Tables</paper-tab>
+			<paper-tab style="width:19%;height: 100%;" class="paperTabs" id="fieldSelector" onclick="showField()">Fields</paper-tab> 
+			<paper-tab style="width:17%;height: 100%;" class="paperTabs" id="tagSelector" onclick="showEntity()">Tags</paper-tab>
+			<paper-tab style="width:19%;height: 100%;" class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
+			</paper-tabs>
+			
+			<iron-collapse id="menu" style="margin-left:20px;">
+			<br>
+			<a target="_blank" style="color:black;text-decoration: none;" href="{{digURI}}"><paper-button raised style="text-transform: none;" ><strong>Sample DigApp</strong></paper-button></a> 
+				<br>	<br>
+				<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+				    
+					<br><br>
+					<div>
+						 <a style="margin-right: 20px;color:blue;float:right" target="_blank" href="{{inferlinkLink}}"> Link to Inferlink Tool</a>
+						
+						<h4><strong>Get Sample Pages</strong></h4>
+						<br><br>
+						<span style="font-size: 18px;;font-family: 'Zilla Slab', serif;">Retrieve sample pages from the CDR for testing your extractions. The sample will contain pages from each of your specified TLDs as well as a random selection of pages from other TLDs</span>
+						<br><br>
+						<div>
+						Number of Pages per TLD
+						<input type="number" value="200" class="projectInputStyle" id="perPage"></input> 
+						<span style="padding-left:80px">Number of Pages for Extra TLDs</span>
+						<input value="1000" type="number" class="projectInputStyle" id="extraPage"></input> 
+						</div>
+						<br><br>
+						<div style="float: right">
+							<paper-checkbox id="samplePageForce">Force</paper-checkbox>
+					
+							<paper-button raised id="get_sample_pages" on-tap="inferlink"
+						style="clear:left"> <strong>Go</strong></paper-button>
+						<paper-button raised on-tap="uploadSamplePages" 
+						style="clear:left;text-transform:none"> <strong>Upload Files</strong></paper-button>
+						<paper-button raised id="sample_pages" on-tap="inferlinkGet"
+						style="clear:left;text-transform:none"> <span> <strong>Show TLDs Data</strong> </span></paper-button>
+						
+						</div>
+						<br>
+					</div>
+					<br><br>
+					</paper-material>
+					<br>
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<br><br>
+					<div>
+						
+						<h4><strong>Publish Project Files</strong></h4>
+						<br>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Upload all the project files to the myDIG protected GitHub repository, backing up your files to allow going to previous versions or preserving files in case of disk failure.</i></span>
+						<div>
+						
+						</div>
+						<div style="float: right">
+							<paper-button raised id="publish" on-tap="publish"
+						style="clear:left"> <strong>Go</strong></paper-button>
+						</div>
+						<br>
+					</div>
+					<br><br>
+					</paper-material>
+				
+					<br>
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<br><br>
+					<div>
+						
+						<h4><strong>Run Extractions and Load Index For Sample Pages</strong></h4>
+						<br>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined and load the extracted data into a new ElasticSearch index. You need to perform the Update To New Index command to replace your current index with the new index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Important: wait for this command to show Status:done before clicking Update To New Sample Index</span>
+						<br><br>
+						<div>
+						Number of Pages per TLD to run
+						<input style="width:40px" type="number" value="20" class="projectInputStyle" id="etkTLD"></input> 
+						<span style="padding-left:60px">Number of Pages for Extra TLDs to run</span>
+						<input style="width:40px" value="100" type="number" class="projectInputStyle" id="etkExtraTLD"></input> 
+						<span style="padding-left:60px">User data to run</span>
+						<input style="width:40px" value="500" type="number" class="projectInputStyle" id="etkLineField"></input> 
+						
+						</div><br>
+						<strong>Status: </strong>{{etkFields.last_message}}
+						<strong style="margin-left:20px">Processed: </strong>{{etkFields.etk_progress.current}}/{{etkFields.etk_progress.total}}
+						<paper-progress on-tap="etkStatus" id="progr" style="display: block;width: 80%;position: relative;padding-top: 10px;"
+						value="{{etkFields.etk_progress.current}}" min="0" max="{{etkFields.etk_progress.total}}" class="red"></paper-progress>
+						
+						
+						<div style="float: right">
+							<paper-checkbox id="etkForce">Force</paper-checkbox>
+							<paper-button raised on-tap="etk"
+						style="clear:left"> <strong>Go</strong></paper-button>
+						</div>
+						<br>
+					</div>
+					<br><br>
+					</paper-material>
+					<br>
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<br><br>
+					<div>
+						
+						<h4><strong>Update To New Sample Index</strong></h4>
+						<br>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Update the search engine to use the latest ElasticSearch index.</span>
+						<br><span style="font-size: 18px;font-family: 'Zilla Slab', serif;"> Important: you need to select the Reload the DIG Configuration in the DIG app to synchronize it to the latest index.</span>
+						<div>
+						
+						</div>
+						<div style="float: right">
+							<paper-button raised  on-tap="updateToNewIndex"
+						style="clear:left"> <strong>Go</strong></paper-button>
+						</div>
+						<br><br>
+					</div>
+					<br>
+					</paper-material>
+					<br>
+					
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<br><br>
+					<div>
+						
+						<h4><strong>Deployment On The Full Dataset</strong></h4>
+						<br>
+						<span style="font-size: 18px;font-family: 'Zilla Slab', serif;">Run all extractors currently defined on the full dataset and load the extracted data into a new ElasticSearch index. </span>
+						<div>
+						
+						</div>
+						<div style="float: right">
+						
+						<paper-button raised on-tap="sureToContinueExtractionFunction" style="text-transform:none"
+						style="clear:left"> <strong>Start Extraction</strong></paper-button>
+						<a target="_blank" style="color:black;text-decoration: none;" href="{{digAppURI}}">
+						<paper-button raised style="text-transform:none"
+						style="clear:left"> <strong>DIG App</strong></paper-button></a>
+						</div>
+						<br><br>
+					</div>
+					<br>
+					</paper-material>
+					
+					<br><br>
+			</iron-collapse>
+			<iron-collapse id="field">
+			
+			
+					<div style="margin-bottom: 2em;">
+					<br>
+					<paper-button on-tap="addNewFieldSetup" raised
+						style="float:right;text-transform:none"> <strong>Add Field</strong></paper-button>
+					<br> <br><br>
+					<template is="dom-repeat" items="{{fields}}">
+				<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+				<div style="padding: 8px;">
+					<paper-button on-tap="editFieldFunction" raised
+						style="float:right;text-transform:none"> <strong>Edit</strong></paper-button>
+					<paper-button on-tap="sureToDeleteDialogFunction" raised
+						style="float:right;text-transform:none"> <strong>Delete</strong></paper-button>
+					<h4><strong disabled="disabled"> {{item.0.name}}</strong></h4>
+				</div>
+				<div style="padding: 8px;">
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Label:</strong> {{item.0.screen_label}}</span>
+					<span style="width: 17em;display: inline-block;"><strong  disabled="disabled">Label Plural:</strong> {{item.0.screen_label_plural}}</span>
+					<span style="width: 25em;display: inline-block;"><strong disabled="disabled">Description:</strong> {{item.0.description}}</span>
+			
+				</div>
+				
+				<div style="padding: 8px;">
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Color:</strong> {{item.0.color}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Icon:</strong> {{item.0.icon}}</span>
+				</div>
+				
+				<div style="padding: 8px;">
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Number of Extraction Rules:</strong> {{item.0.number_of_rules}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong> {{item.0.rule_extraction_target}}</span>
+				</div>
+				
+				<div style="padding: 8px;">
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Type:</strong> {{item.0.type}}</span>
+					<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Group Name:</strong> {{item.0.group_name}}</span>
+			
+				</div>
+				<div style="padding: 8px;">
+					<span style="width: 15em;display: inline-block;"><strong disabled="disabled">Search Importance:</strong> {{item.0.search_importance}}</span>
+					<span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong> {{item.0.show_as_link}}</span>
+				</div>
+				
+				<div style="padding: 8px;">
+					<strong disabled="disabled">Predefined Extractor:</strong> {{item.0.predefined_extractor}}
+				</div>
+				
+				<div style="padding: 8px;">
+					<strong disabled="disabled">Show in Result:</strong> {{item.0.show_in_result}}
+				</div>
+				
+				<div style="padding: 8px;">
+					<paper-checkbox disabled="disabled" checked="{{item.0.combine_fields}}">Combine Fields</paper-checkbox>
+					<paper-checkbox disabled="disabled" checked="{{item.0.show_in_facets}}"
+						style="float:center;margin-left:53px;">Show in Facets</paper-checkbox>
+					<paper-checkbox disabled="disabled" style="float:center;margin-left:53px;" checked="{{item.0.rule_extractor_enabled}}"> Rule Extractor Enabled</paper-checkbox>
+					
+				</div>
+				<div style="padding: 8px;">
+					<paper-checkbox disabled="disabled" checked="{{item.0.show_in_search}}">Show in Search</paper-checkbox>
+					<paper-checkbox disabled="disabled" checked="{{item.0.use_in_network_search}}"
+						style="float:center;margin-left:53px;">Use in Network Search</paper-checkbox>
+				</div>
+				
+				<div style="padding: 8px;">
+					<strong disabled="disabled">Glossaries:</strong>
+					<template is="dom-repeat" items="{{item.0.glossaries}}" renderedItemCount="{{renderedCount}}">
+						{{item}} &nbsp;
+					</template>
+					&nbsp;
+					<template is="dom-if" if="{{checkLength(item)}}">
+						<paper-checkbox disabled="disabled" checked="{{item.0.case_sensitive}}"><span>Case Sensitive ?</span></paper-checkbox>
+					</template>
+				</div>
+				</paper-material> <br><br></template>
+			</div>
+					
+			
+			
+			</iron-collapse>
+			<iron-collapse id="entity">
+					<div style="margin-bottom: 2em;">
+					<br>
+					<paper-button onclick="addTagsDialog.toggle()" raised
+						style="float:right;text-transform:none"> <strong>Add Tag</strong></paper-button>
+					<br> <br><br>
+					<template is="dom-repeat" items="{{tags}}">
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<div>
+						<strong>Name:</strong> {{item.0.name}}
+						<div style="float: right">
+							<paper-button style="text-transform:none" on-tap="deleteTagsFunction" raised> <strong>Delete</strong></paper-button>
+							<paper-button style="text-transform:none" on-tap="editTagFunction" raised>
+							<strong>Edit</strong></paper-button>
+						</div>
+						<br>
+						<div>
+							<br> <strong style="clear: left">Label:</strong>
+							{{item.0.screen_label}}
+						</div>
+						<div>
+						
+							<br>	<strong style="clear: left">Description:</strong>
+							{{item.0.description}}
+						</div>
+						<div>
+							<br> <strong style="clear: left">Negative class precision:</strong>
+							{{item.0.negative_class_precision}}
+							<strong style="margin-left: 17em">Positive class precision:</strong>
+							{{item.0.positive_class_precision}}
+						</div>
+						<div>
+							<br>
+						<paper-checkbox disabled="disabled" checked="{{item.0.include_in_menu}}"><strong>Include in Menu</strong>
+						</paper-checkbox>
+						</div>
+						
+						<br>
+					</div>
+					</paper-material> <br><br>
+					</template>
+					</div>
+			</iron-collapse>
+			<iron-collapse id="glossary">
+			
+				<div style="margin-bottom: 2em;">
+					<br>
+					<paper-button onclick="addGlossaryDialog.toggle()" raised
+						style="float:right;text-transform:none"> <strong>Add Glossary</strong></paper-button>
+					<br> <br>
+					<template is="dom-repeat" items="{{glossaries}}">
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<br><br>
+					<div>
+						
+						<strong>Name:</strong> {{item.0}}
+						<div style="float: right">
+							<paper-button style="text-transform:none" on-tap="editGlossaryFunction" raised>
+							<strong>Upload</strong></paper-button>
+							<paper-button style="text-transform:none" on-tap="downloadGlossaryFunction" raised> <strong>Download</strong></paper-button>
+							<paper-button style="text-transform:none" on-tap="deleteGlossaryFunction" raised> <strong>Delete</strong></paper-button>
+							
+						</div>
+						
+					</div>
+					<br><br>
+					</paper-material> 
+					</template>
+				</div>
+			
+			</iron-collapse>
+			<iron-collapse id="tables">
+			<br>
+				<paper-button
+					style="text-transform:none;float:right;;margin-right:20px;"
+					on-tap="addNewAttribute" raised> <strong>Add</strong></paper-button>
+			<br><br>
+			<table class="paperDatableClass">
+				<tr>
+					<th style="width:20%;border: 1.5px solid black;">Attribute</th>
+					<th style="width:30%;border: 1.5px solid black;">Field</th>
+					<th style="width:30%;border: 1.5px solid black;">Values</th>
+					<th style="border: 1.5px solid black;">Action</th>
+				</tr>
+				<template is="dom-repeat" items="{{tableAttributes}}" as="item">
+		   		<tr>
+			        <td><paper-item  value={{item}}>{{item.0.name}}</paper-item></td>
+			        <td>
+			        	<paper-dropdown-menu style="margin:0px;margin-left: 2em;padding-bottom: 15px" class="projectInputStyle">
+					        <paper-menu id="tableFieldInput" on-iron-select="_itemSelected" class="dropdown-content" selected="{{_getTableDropDown(item.0.field_name)}}">
+					            <template is="dom-repeat" items="{{fieldNames}}" as="item">
+					                <paper-item  value={{item}}>{{item}}</paper-item>
+					            </template>
+					        </paper-menu>
+		       			</paper-dropdown-menu>
+			        
+			        </td>
+			        <td>
+				        <template is="dom-repeat" items="{{item.0.value}}" as="item">
+			                {{item}} &nbsp
+			            </template>
+			        
+			        </td>
+			        <td>
+				      <paper-button style="text-transform:none;margin-left:3em"on-tap="deleteAttribute" raised> <strong>Delete</strong></paper-button>
+				    </td>
+		     		
+				</tr>
+				</template>
+			  	
+			</table>
+			</iron-collapse>
+		
+		
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog" style="width:50%;margin-left:auto;margin-right:auto">
+			  <paper-dialog-scrollable>
+				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" required class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input> 
+				<paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input> 
+				<paper-input class="projectInputStyle" label="Description" id="tagDescriptionInput"></paper-input> 
+				<paper-input  type = "number"  class="projectInputStyle" label="Negative class precision" id="tagNegativeInput"></paper-input> 
+				<paper-input type = "number" minlength="0" maxlength="1" class="projectInputStyle" label="Positive class precision" id="tagPositiveInput"></paper-input> 
+				<paper-checkbox class="projectInputStyle" id="tagCheckBoxInput">Include in Menu</paper-checkbox> 
+					<br>
+				</paper-dialog-scrollable>
+					<paper-button
+					style="float:right;margin-top:20px;margin-left:10px;"
+					onclick="addNewTag()" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editTagsDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+				<h4>Tag : {{tagForm.name}}</h4>
+				<paper-input class="projectInputStyle" label="Screen Label:" value="{{tagForm.screen_label}}"></paper-input> 
+				<paper-input class="projectInputStyle" label="Description" value="{{tagForm.description}}"></paper-input> 
+				<paper-input class="projectInputStyle" label="Negative class precision" value="{{tagForm.negative_class_precision}}"></paper-input> 
+				<paper-input class="projectInputStyle" label="Positive class precision" value="{{tagForm.positive_class_precision}}"></paper-input> 
+				<paper-checkbox class="projectInputStyle" checked="{{tagForm.include_in_menu}}">Include in Menu</paper-checkbox> 
+					<br>
+				</paper-dialog-scrollable>
+			
+					<paper-button
+					style="float:right;margin-top:20px;margin-left:10px;"
+					on-tap="updateTag" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+			</paper-dialog> 
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addFieldDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+				
+				<span style="float:right;"> <strong>Rules can be added after creating this Field</strong></span>
+				
+				<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"  style="margin:0px;" required class="" label="Name:*" id="fieldnameinput"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldnameinput" >The name of a field, cannot be changed</paper-tooltip>
+				
+				<paper-input style="margin:0px;" class="projectInputStyle" label="Description:" id="fielddescriptioninput"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fielddescriptioninput" >A description of the field</paper-tooltip>
+				
+				<paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:" id="fieldscreenlabelinput"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelinput" >The text to display the field in DIG</paper-tooltip>
+				
+				<paper-input style="margin:0px;" required class="" label="Screen Label Plural:" id="fieldscreenlabelPluralinput"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput" >Label when a field contains multiple values</paper-tooltip>
+				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="addDefaultColor()">X</button>
+				     <paper-swatch-picker id="colorSelect" on-iron-select="_getColor" column-count=2 style="float:right" on-tap="_getColor"
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039be5&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			  	<paper-input readonly style="margin:0px;" label="Color:" id="fieldcolorinput" value="{{_getColor()}}"></paper-input> 
+				</div>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldcolorinput">The color used to display the field in DIG</paper-tooltip>
+				
+				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" id="fieldgroupnameinput"></paper-input> 
+				<div style="margin-top:0px;">
+						<button style="float:right" onclick="addDefaultIcon()">X</button>
+						<paper-button style="float:right" onclick="papericonSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
+						<paper-input readonly style="margin:0px;"  label="Icon:" id="fieldiconinput" value="icons:default"></paper-input>
+			
+				</div>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput" >The icon to decorate the field in DIG</paper-tooltip>
+				
+				<paper-dropdown-menu id="searchDropdown" style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
+		        <paper-menu id="fieldsearchinput"  class="dropdown-content" selected="0">
+		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="searchDropdown" >High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
+				
+				
+				<paper-dropdown-menu id="typeDropDown" style="margin:0px;" class="projectInputStyle" label="Type*:">
+		        <paper-menu id="fieldtypeinput"  class="dropdown-content" selected="0">
+		            <template is="dom-repeat" items="{{type}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="typeDropDown" >Affects the appearance as well as search behavior</paper-tooltip>
+				
+		       
+		       <paper-dropdown-menu id="linkDropDown" style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
+		        <paper-menu id="fieldlinkinput"  class="dropdown-content" selected="0">
+		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="linkDropDown" >Specifies the appearance of the field</paper-tooltip>
+				
+				
+				<paper-dropdown-menu id="resultDropDown" style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
+		        <paper-menu id="fieldresultinput"  class="dropdown-content" selected="0">
+		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="resultDropDown">Location where the field appears in the results page</paper-tooltip>
+				
+		       <paper-dropdown-menu id="predefinedExtractorDropDown" style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
+		        <paper-menu id="fieldpredefinedExtractor"  class="dropdown-content" selected="0">
+		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="predefinedExtractorDropDown" >Specifies a default extractor to use for a field</paper-tooltip>
+				
+		       <paper-dropdown-menu id="ruleExtractorDropDown" style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
+		        <paper-menu id="fieldRuleExtractorTarget"  class="dropdown-content" selected="2">
+		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorDropDown" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				
+		       <div>
+				<paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields</paper-checkbox> 
+				
+				<paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox> 
+				<paper-tooltip for="fieldfacetinput">When true, the field appears in the facets section</paper-tooltip>
+				
+				<paper-checkbox class="projectInputStyle" id="fieldnetworkinput">Show in Network Search</paper-checkbox> 
+				<paper-tooltip for="fieldnetworkinput" >Support network creation using the values from a field</paper-tooltip>
+				
+				
+				<paper-checkbox class="projectInputStyle" id="fieldsearchinput2">Show in Search</paper-checkbox> 
+				<paper-tooltip for="fieldsearchinput2">When true, the field appears in the query form</paper-tooltip>
+				
+				
+				<paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled</paper-checkbox> 
+				<paper-tooltip for="fieldRuleExtractor" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				
+				</div>
+				</paper-dialog-scrollable>
+			
+				<br>
+								<paper-button style="float:right;margin-top:20px;margin-right:20px"
+					on-tap="getFieldGlossariesForAdd"  raised> <strong>Glossaries</strong></paper-button>
+		
+					<paper-button
+					style="float:right;margin-top:20px;"
+					onclick="addNewField()" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					
+				</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editGlossariesDialog" style="width:50%;margin-left:auto;margin-right:auto">
+			<paper-dialog-scrollable>
+			
+			<form is="iron-form" content-type="multipart/form-data" id="formD" on-iron-form-presubmit="onPresubmit" method="POST">
+					<h4>Glossary : {{glossaryForm}}</h4>
+					<paper-input type="hidden" style="display:none" id="glossary_name" value="{{glossaryForm}}"></paper-input>
+	      	
+					<paper-input type="file" id="glossary_file" id="input" onchange='openFile(event)'></paper-input>
+	      		<paper-button raised onclick="updateFormData()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
+				</form>
+			</paper-dialog-scrollable>
+			
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="uploadZipFileDialog" style="width:50%;margin-left:auto;margin-right:auto">
+			<paper-dialog-scrollable>
+			<h4>Please upload gz File only</h4>
+			<form is="iron-form" content-type="multipart/form-data" method="POST">
+				<paper-input id="samplePagesFile" type="file" required accept="application/x-gzip,application/x-compressed"></paper-input>
+	      		<paper-button raised onclick="uploadSamplePagesFiles()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
+				</form>
+			</paper-dialog-scrollable>
+			
+			</paper-dialog>
+			
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldGlossaries" style="width:50%;margin-left:auto;margin-right:auto">
+				
+				<paper-button style="float:right;"
+					dialog-dismiss raised on-tap="saveTempGlossaries"> <strong>X</strong></paper-button>
+				<br><br><br>
+				<paper-dialog-scrollable>
+				<paper-checkbox id="getCaseSenstive" checked="{{fieldForm.case_sensitive}}"><span>Case Sensitive ?</span></paper-checkbox>
+				<br><br>
+				<template is="dom-repeat" items="{{glossaries}}">
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<div style="padding-bottom:0.5em">
+						<span><strong style="float:left">Name:</strong> {{item.0}}</span>
+						<paper-checkbox style="float:right;"  id="{{item.0}}" raised value=""> <strong>Use</strong></paper-checkbox>
+					</div>
+					</paper-material> 
+					</template>
+				</paper-dialog-scrollable>
+			
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<div>
+					<textarea id="spacyRulesTextArea" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
+					</div>
+					</paper-material> 
+				</paper-dialog-scrollable>
+			
+					<div style="float:right">
+					<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					on-tap="updateFieldSpacyRules" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					</div>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesNextDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<div>
+					<textarea id="spacyRulesNextTextArea" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
+					</div>
+					</paper-material> 
+				</paper-dialog-scrollable>
+			
+					<div style="float:right">
+					<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					on-tap="editRulesNext" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					</div>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="spacyRulesNextDialogAdd" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+					<paper-material class="addPaddingToSections" style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+					<div>
+					<textarea id="spacyRulesNextTextAreaAdd" style="margin: 0px;width:100%;height: 34em;resize:none"></textarea>
+					</div>
+					</paper-material> 
+				</paper-dialog-scrollable>
+			
+					<div style="float:right">
+					<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					on-tap="editRulesNextAdd" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+					</div>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="showTLDsDialog" style="width:50%;margin-left:auto;margin-right:auto">
+ 
+				  <paper-dialog-scrollable>
+				  	
+  					 <div>
+  					 <table style="width:100%"> 
+  					 <tr>
+					    <th>URL</th>
+					    <th>Pages</th>
+					  </tr>
+				   	<template is="dom-repeat" items="{{tldResponse}}">
+						<tr>
+						    <td style="text-align:center">{{item.0}}</td>
+						    <td style="text-align:center">{{item.1}}</td>
+						</tr>
+					</template>
+				   	 </table>
+				   	 </div>
+				  </paper-dialog-scrollable>
+				  
+				  </paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editFieldsDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+				<div>
+				<paper-button style="float:right;"
+					on-tap="editRules" raised> <strong>Upload Rules</strong></paper-button>
+				<paper-button style="float:right;"
+					on-tap="editRulesNextDialog" raised> <strong>Edit Rules</strong></paper-button>
+				
+				<h4>Field : {{fieldForm.name}}</h4>
+				
+				</div>
+				<paper-input id="descriptionField" style="margin:0px;" class="projectInputStyle" label="Description:" value="{{fieldForm.description}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="descriptionField" >A description of the field</paper-tooltip>
+				
+				
+				<paper-input id="screenLabelField" style="margin:0px;" class="projectInputStyle" label="Screen Label:" value="{{fieldForm.screen_label}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelField" >The text to display the field in DIG</paper-tooltip>
+				
+				<paper-input id="screenLabelPluralField" style="margin:0px;" required class="" label="Screen Label Plural:" value="{{fieldForm.screen_label_plural}}"></paper-input> 
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="screenLabelPluralField" >Label when a field contains multiple values</paper-tooltip>
+				
+				<div style="margin-top:0px;">
+					 <button style="float:right" onclick="setDefaultColor()">X</button>
+				     <paper-swatch-picker id="colorSelect2" on-iron-select="_getEditColor" column-count=2 style="float:right" on-tap="_getEditColor" color="{{_getColorSelected(fieldForm.color)}}"
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039be5&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			  	<paper-input readonly id="colorField" style="margin:0px;" class="projectInputStyle" label="Color:" value="{{fieldForm.color}}"></paper-input> 
+				</div>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="colorField" >The color used to display the field in DIG</paper-tooltip>
+				
+				
+				<paper-input style="margin:0px;" class="projectInputStyle" label="Group name:" value="{{fieldForm.group_name}}"></paper-input> 
+				<div style="margin-top:0px;">
+					<button style="float:right" onclick="setDefaultIcon()">X</button>
+					<paper-button style="float:right" onclick="papericonEditSet.toggle()" raised> <strong>Get Icon</strong></paper-button>
+					<paper-input readonly id="iconField" style="margin:0px;"  label="Icon:" value="{{fieldForm.icon}}"></paper-input> 
+				</div>
+				<paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField" >The icon to decorate the field in DIG</paper-tooltip>
+				
+				
+				<paper-dropdown-menu id="searchFieldEdit" style="margin:0px;" class="projectInputStyle" label="Search Importance*:">
+		        <paper-menu id="editSearchImpValue" selected="{{_getSearchImportance(fieldForm.search_importance)}}" class="dropdown-content" >
+		            <template is="dom-repeat" items="{{searchImportance}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="searchFieldEdit" >High numbers make results matching in a field push documents up in the ranking</paper-tooltip>
+				
+				
+				<paper-dropdown-menu id="typeFieldEdit" style="margin:0px;" class="projectInputStyle" label="Type*:">
+		        <paper-menu id="editTypeValue" selected="{{_getType(fieldForm.type)}}" class="dropdown-content" >
+		            <template is="dom-repeat" items="{{type}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="typeFieldEdit" >Affects the appearance as well as search behavior</paper-tooltip>
+				
+		       
+		       <paper-dropdown-menu id="linkFieldEdit" style="margin:0px;" class="projectInputStyle" label="Show as Links*:">
+		        <paper-menu id="editlinkValue" selected={{_getLink(fieldForm.show_as_link)}} class="dropdown-content" >
+		            <template is="dom-repeat" items="{{show_as_linkArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="linkFieldEdit" >Specifies the appearance of the field</paper-tooltip>
+				
+				
+				
+				<paper-dropdown-menu id="resultFieldEdit" style="margin:0px;" class="projectInputStyle" label="Show in Results*:">
+		        <paper-menu id="editResultValue" selected={{_getResult(fieldForm.show_in_result)}}  class="dropdown-content" >
+		            <template is="dom-repeat" items="{{show_in_resultArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="resultFieldEdit" >Location where the field appears in the results page</paper-tooltip>
+				
+		       
+		       <paper-dropdown-menu id="predefinedFieldEdit" style="margin:0px;" class="projectInputStyle" label="Predefined Extractor:">
+		        <paper-menu id="editfieldpredefinedExtractor"  selected={{_getPredefinedExtractor(fieldForm.predefined_extractor)}} class="dropdown-content" >
+		            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="predefinedFieldEdit" >Specifies a default extractor to use for a field</paper-tooltip>
+				
+		       
+		       <paper-dropdown-menu id="ruleExtractFieldEdit" style="margin:0px;" class="projectInputStyle" label="Rule Extraction Target:">
+		        <paper-menu id="editRuleExtractionTargetValue"  selected={{_getExtractorTarget(fieldForm.rule_extraction_target)}} class="dropdown-content" >
+		            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
+		                <paper-item  value={{item}}>{{item}}</paper-item>
+		            </template>
+		        </paper-menu>
+		       </paper-dropdown-menu>
+		       <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractFieldEdit" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				
+		       
+		       <div>
+				
+				
+				
+				<paper-checkbox id="combineEditField" class="projectInputStyle" checked="{{fieldForm.combine_fields}}">Combine Fields</paper-checkbox> 
+				
+				
+				<paper-checkbox id="facetFieldEdit" class="projectInputStyle" checked="{{fieldForm.show_in_facets}}">Show in Facets</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="facetFieldEdit" >When true, the field appears in the facets section</paper-tooltip>
+				
+				<paper-checkbox id="networkFieldEdit" class="projectInputStyle" checked="{{fieldForm.use_in_network_search}}">Show in Network Search</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="networkFieldEdit" >Support network creation using the values from a field</paper-tooltip>
+				
+				<paper-checkbox id="searcheditField2" class="projectInputStyle" checked="{{fieldForm.show_in_search}}">Show in Search</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="searcheditField2" >When true, the field appears in the query form</paper-tooltip>
+				
+				<paper-checkbox id="ruleExtractorEditField" class="projectInputStyle" checked="{{fieldForm.rule_extractor_enabled}}">Rule Extractor Enabled</paper-checkbox> 
+				<paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorEditField" >When true, use the custom rule extractor for this field, if one is defined</paper-tooltip>
+				
+				</div>
+				</paper-dialog-scrollable>
+			
+				<br>
+								<paper-button style="float:right;margin-top:20px;margin-right:20px"
+					on-tap="getFieldGlossary" raised> <strong>Glossaries</strong></paper-button>
+		
+					<paper-button
+					style="float:right;margin-top:20px;"
+					on-tap="updateField" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+			
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="addGlossaryDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+				
+					<paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" style="margin:0px;" id="glossary_nameInput" class="projectInputStyle" label="Glossary Name:*"></paper-input> 
+				    <paper-input type="file" id="glossary_fileInput"></paper-input>
+	      		<paper-button raised onclick="submitFormData()">Submit</paper-button>
+	      		<paper-button raised dialog-dismiss>Close</paper-button>
+	      		<br><br>
+				</paper-dialog-scrollable>
+				
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialog" modal>
+			 <paper-button dialog-confirm autofocus> Error.</paper-button>
+			 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccess" modal>
+			 <paper-button style="text-transform:none" dialog-confirm autofocus> Request Submitted  with Success</paper-button>
+	  		 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="modalDialogSuccessIndex" modal>
+			 <paper-button dialog-confirm autofocus style="text-transform:none" > Search Index switched to Newest Index</paper-button>
+	  		 <div class="buttons">
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToDeleteDialog" modal>
+			 <paper-button autofocus style="text-transform:none"> Deleting Field : {{fieldName}}. Cannot be undone!!</paper-button>
+	  		 <div class="buttons">
+	  		 	<paper-button on-tap="deleteFieldFunction">Delete</paper-button>
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
+	  		
+	  		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="sureToContinueExtraction" modal>
+			 <paper-button autofocus style="text-transform:none"> This command will invoke the extraction pipeline on the full dataset, potentially taking 8 hours depending on the size of the dataset.</paper-button>
+	  		 <div class="buttons">
+	  		 	<paper-button on-tap="etkDeployed">Continue</paper-button>
+			    <paper-button dialog-dismiss>Close</paper-button>
+			 </div>
+	  		</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonSet" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
+				
+				<template is="dom-repeat" items="{{iconsets}}">
+				<h4>{{item.name}}</h4>
+				<br>
+			      <div class="set">
+			        <template is="dom-repeat" items="{{getIconNames(item)}}">
+			          <span class="container">
+			            <iron-icon icon="{{item}}" on-tap="setIcon"></iron-icon>
+			          </span>
+			        </template>
+			      </div>
+			     <br>
+			    </template>
+			    </paper-dialog-scrollable>
+			
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papericonEditSet" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+			
+				<iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
+				
+				<template is="dom-repeat" items="{{iconsets}}">
+				<h4>{{item.name}}</h4>
+				<br>
+			      <div class="set">
+			        <template is="dom-repeat" items="{{getIconNames(item)}}">
+			          <span class="container">
+			            <iron-icon icon="{{item}}" on-tap="setEditIcon"></iron-icon>
+			          </span>
+			        </template>
+			      </div>
+			     <br>
+			    </template>
+			    </paper-dialog-scrollable>
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="papercolorSet" >
+				
+				  <div class="set">
+			       <paper-swatch-picker column-count=2 on-tap="setColor"
+			       color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039b35&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
+			      </div>
+			    
+				<paper-button style="float:right" dialog-dismiss>Close</paper-button>
+			</paper-dialog>
+			
+			<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="AddNewTableAttributeDialog" style="width:50%;margin-left:auto;margin-right:auto">
+				<paper-dialog-scrollable>
+						<paper-input auto-validate required style="margin:0px;" class="projectInputStyle" label="Attribute*" id="tableAttributeInputValue"></paper-input> 
+				
+						<paper-dropdown-menu id="fieldInputDropDown" style="margin:0px;" class="projectInputStyle" label="Field:">
+					        <paper-menu id="fieldInputDropDownInput"  class="dropdown-content" selected="0">
+					            <template is="dom-repeat" items="{{fieldNames}}" as="item">
+					                <paper-item  value={{item}}>{{item}}</paper-item>
+					            </template>
+					        </paper-menu>
+		       			</paper-dropdown-menu>
+		       			<div>
+				        <span>Values</span>
+				        <textarea id=textAreaForTableAttribute  style="height:4em;clear:left;width:100%;resize:none"></textarea>
+				        </div>
+		       
+				</paper-dialog-scrollable>
+				<paper-button
+					style="float:right;margin-top:20px;margin-right:20px;"
+					onclick="addNewTableValue()" raised> <strong>Save</strong></paper-button>
+				<paper-button style="float:right;margin-top:20px"
+					dialog-dismiss raised> <strong>Cancel</strong></paper-button>
+			</paper-dialog>
+			
+			</paper-material>
+	</template>
+	</dom-module>
+	<project-details></project-details>
+	<script>
+	
+	var username =localStorage.getItem("username");
+	var password =localStorage.getItem("password");
+	
+	Polymer({
+	    is: 'project-details',
+	    
+	    ready : function() {
+	    	this.fields=[];
+	    	this.tags = [];
+	    	this.glossaryFormField=[];
+	    	this.glossaries = [];
+	    	this.fieldFormGlossaries=[];
+	    	this.tagsData = [];
+	    	this.fieldsData = [];
+	    	this.tableAttributes=[];
+	    	this.fieldNames=[];
+	    	var obj = {};
+	        obj.Authorization = "Basic " + btoa(username+":"+password);
+	        this.$.getTags.headers = obj;
+	        this.$.getTags.url = backend_url + "projects/"+projectName[1]+"/tags";
+	    	this.$.getTags.generateRequest();
+	    	
+	    	
+	    	this.$.digURI.headers = obj;
+	        this.$.digURI.url = backend_url + "projects/"+projectName[1];
+	    	this.$.digURI.generateRequest();
+	    	
+	    	this.$.getFields.headers = obj;
+	        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
+	    	this.$.getFields.generateRequest();
+	    	
+	    	this.$.getGlossary.headers = obj;
+	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
+	    	this.$.getGlossary.generateRequest();
+	    	
+	    	this.$.tableAttributes.headers = obj;
+	    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+	    	this.$.tableAttributes.generateRequest();
+	    	
+	    	
+	    	this.colorSet={
+	    			"#ffb300":"amber",
+	    			"#1e88e5":"blue",
+	    			"#546e7a":"blue-grey",
+	    			"#6d4c41":"brown",
+	    			"#00acc1":"cyan",
+	    			"#f4511e":"deep-orange",
+	    			"#5e35b1":"deep-purple",
+	    			"#43a047":"green",
+	    			"#1b5e20":"green",
+	    			"#757575":"grey",
+	    			"#3949ab":"indigo",
+	    			"#039be5":"light-blue",
+	    			"#7cb342":"light-green",
+	    			"#c0ca33":"lime",
+	    			"#fb8c00":"orange",
+	    			"#d81b60":"pink",
+	    			"#8e24aa":"purple",
+	    			"#e53935":"red",
+	    			"#00897b":"teal",
+	    			"#fdd835":"yellow",
+	    			"#b71c1c":"dark-red"
+	    	};
+	    	
+	    	
+	    	this.searchImportance=["1","2","3","4","5","6","7","8","9","10"];
+	    	this.show_as_linkArray = ["text","entity"];
+	    	this.show_in_resultArray=["header","detail","description","no","title"];
+	    	this.type=["string","date","email","hyphenated","location","image","phone", "username"];
+	    	this.predefined_extractor_Array=["none","address","country","email","posting_date","phone","review_id","social_media","TLD"];
+	    	this.extractionTargetArray=["title_only","description_only","title_and_description"];
+	    	this.dataTableValues=[{"attribute":"abc","fieldValue":"country","values":["abc","xyz","pqr"]},
+	    	                      {"attribute":"pqr","fieldValue":"","values":["abc","xyz","pqr"]},
+	    	                      {"attribute":"xyz","fieldValue":"city","values":["abc","xyz","pqr"]}
+	    	                     ];
+	    	
+	    	
+		
+	     },
+	     _getColor:function() {
+	    	 if(this.$$('#colorSelect').color == undefined) return "amber";
+	    	 this.$$('#fieldcolorinput').value = this.colorSet[this.$$('#colorSelect').color];
+	    	 return this.colorSet[this.$$('#colorSelect').color];
+		    	
+	    	 
+	     },
+	     _getEditColor:function() {
+	    	 if(this.$$('#colorSelect2').color == undefined) return "amber";
+	    	 this.$$('#colorField').value = this.colorSet[this.$$('#colorSelect2').color];
+	    	 return this.colorSet[this.$$('#colorSelect2').color];
+		    	
+	    	 
+	     },
+	     _getColorSelected:function(color) {
+	    	 return Object.keys(this.colorSet).find(key => this.colorSet[key] === color);
+	     },
+	     _getTableDropDown:function(name) {
+	    	 if(name!=undefined && name!="") {
+	    	 	 return this.fieldNames.indexOf(name);
+	    	 }
+	    	 return this.fieldNames.indexOf("none");
+	     },
+	     _getPredefinedExtractor:function(name) {
+	    	 if(name!=undefined && name!="") return this.predefined_extractor_Array.indexOf(name);
+	    	 else return 0;
+	    	 
+	     },
+	     _getType:function(name) {
+	    	 if(name!=undefined && name!="") return this.type.indexOf(name);
+	    	 else 0;
+	     },
+	     _getExtractorTarget:function(name) {
+	    	 if(name!=undefined && name!="") return this.extractionTargetArray.indexOf(name);
+	    	 return 2;
+	     },
+	     _getSearchImportance:function(name){
+	    	 if(name!=undefined && name!="") return name-1;
+	    	 return 0;
+	     },
+	     _getResult:function(name) {
+	    	 if(name!=undefined && name!="") return this.show_in_resultArray.indexOf(name);
+	    	 else return 0;
+	     },
+	     _getLink:function(name) {
+	    	 if(name!=undefined && name!="" && name!="none") return this.show_as_linkArray.indexOf(name);
+	    	 else return 0;
+	     },
+	     convertFileInputToFormData: function(){
+	    	 var file = this.$.input.inputElement.files[0];
+	    	 this.text="";
+	    	 var reader = new FileReader();
+	    	    reader.onload = function () {
+	    	        this.text = reader.result;	
+	    	    };
+	    	    reader.readAsText(file);
+	     },
+	     _itemSelected(e){
+	    	 	var obj = {};
+		        obj.Authorization = "Basic " + btoa(username+":"+password);
+		        var selectedValue = this.$$('#tableFieldInput').selectedItem.value;
+		        if(selectedValue =="none") selectedValue="";
+	    	 	this.$.updateTableAttribute.headers = obj;
+		        this.$.updateTableAttribute.url = backend_url + "projects/"+projectName[1]+"/table_attributes/"+e.model.item[0].name;
+		        this.$.updateTableAttribute.body= JSON.stringify({
+		        	"field_name": selectedValue,
+		        	"info":e.model.item[0].info,
+		        	"name":e.model.item[0].name,
+		        	"value":e.model.item[0].value
+		     	});
+		        this.$.updateTableAttribute.generateRequest();
+		    	
+	    	    
+	     },
+	     onPresubmit:function(e){
+	    	 var form = this.$.form;
+	         this.convertFileInputToFormData();
+	    	 form.request.body = this.text;
+	     },
+	     saveFieldGlossaries:function() {
+	    	 this.fieldFormGlossaries=[];
+	    	 for(var i=0;i<this.glossaries.length;i++) {
+	    		 var gloss = this.glossaries[i];
+	    		 if(this.$$('#'+gloss).checked) {
+	    			 this.fieldFormGlossaries.push(gloss[0]);
+	    		 }
+	    	 }
+	    	 glossariesNewField = this.fieldFormGlossaries;
+	    	 EditFieldGlossaries.toggle();
+	     },
+	     
+	     setTableAttributes:function(data) {
+	    	 
+	    	 this.tableAttributes=[];
+	    	 if(Object.keys(data.detail.response).length != 0 ) {
+		    	 this.tableAttributes = Object.keys(data.detail.response).map(function(e) {
+		     		  return [data.detail.response[e]];
+		     		});
+		    	
+		     	this.push('tableAttributes',this.tableAttributes.pop());
+		     	
+	    	 }
+	     },
+	    
+	     fillTags : function(data) {
+	    	 if(data.detail.response.length!=0) {
+		    	 this.tags = Object.keys(data.detail.response).map(function(e) {
+		     		  return [data.detail.response[e]];
+		     		});
+		    	
+		     	this.push('tags',this.tags.pop());
+		     	
+	    	 }
+	     },
+	     fillFields : function(data) {
+	    	 if(data.detail.response.length!=0) {
+		    	 this.fields = Object.keys(data.detail.response).map(function(e) {
+		     		  return [data.detail.response[e]];
+		     		});
+		    	 
+		     	this.push('fields',this.fields.pop());
+		     	this.fieldNames = [];
+		    	 for(var i=0;i<this.fields.length;i++) {
+		    		 this.push('fieldNames',this.fields[i][0].name);
+		    	 }
+		    	 this.push('fieldNames',"none");
+		 	 }
+		    	 var obj = {};
+		         obj.Authorization = "Basic " + btoa(username+":"+password);
+	    	    this.$.tableAttributes.headers = obj;
+		    	this.$.tableAttributes.url = backend_url +"projects/"+projectName[1]+"/table_attributes";
+		    	this.$.tableAttributes.generateRequest();
+	     },
+	     fillGlossary : function(data) {
+	    	 
+	    	 if(data.detail.response.length!=0) {
+	    		 data.detail.response.sort();
+		    	 this.glossaries = Object.keys(data.detail.response).map(function(e) {
+		     		  return [data.detail.response[e]];
+		     		});
+		    	 this.push('glossaries',this.glossaries.pop());
+	    	 }
+	     	
+	     },
+	     deleteTagsFunction:function(e) {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.deleteTags.headers = obj;
+	         this.$.deleteTags.url = backend_url +"projects/"+projectName[1]+"/tags/"+(e.model.item[0].name).split(":")[0];
+	     	this.$.deleteTags.generateRequest();
+	    	 
+	     },
+	     editTagFunction:function(e){
+	    	 this.tagForm = {};
+	    	 var tagName = e.model.item[0].name;
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.editTag.headers = obj;
+	         this.$.editTag.url = backend_url + "projects/"+projectName[1]+"/tags/"+tagName;
+	         
+	         this.$.editTag.generateRequest();
+	    	 editTagsDialog.toggle();
+	     },
+	     updateTag:function(e) {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.updateSavedTags.headers = obj;
+	         this.$.updateSavedTags.url = backend_url + "projects/"+projectName[1]+"/tags/"+this.tagForm.name;
+	         this.$.updateSavedTags.body = JSON.stringify({
+	      		  "tag_name": this.tagForm.name+"",
+	       		  "tag_object": {
+	       		    "description": this.tagForm.description+"",
+	       		    "include_in_menu": this.tagForm.include_in_menu,
+	       		    "name": this.tagForm.name+"",
+	       		    "negative_class_precision": parseFloat(this.tagForm.negative_class_precision),
+	       		    "positive_class_precision": parseFloat(this.tagForm.positive_class_precision),
+	       		    "screen_label":this.tagForm.screen_label
+	       		  }
+	       		});
+	         this.$.updateSavedTags.generateRequest();
+	         editTagsDialog.toggle();
+	     },
+	     updateDone:function() {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.getFields.headers = obj;
+		        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
+		    	this.$.getFields.generateRequest();
+		    	
+	         
+	         this.$.getTags.headers = obj;
+	         this.$.getTags.url = backend_url + "projects/"+projectName[1]+"/tags";
+	     	this.$.getTags.generateRequest();
+	     	
+	     	
+	    	this.$.getGlossary.headers = obj;
+	    	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
+	    	this.$.getGlossary.generateRequest();
+	    	
+	     },
+	     sureToDeleteDialogFunction:function(e) {
+	    	 this.fieldName = e.model.item[0].name;
+	    	 sureToDeleteDialog.toggle();
+	     },
+	     sureToContinueExtractionFunction:function() {
+	    	 sureToContinueExtraction.toggle();
+	     },
+	     deleteFieldFunction:function() {
+	    	 sureToDeleteDialog.toggle();
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.deleteFields.headers = obj;
+	         this.$.deleteFields.url = backend_url + "projects/"+projectName[1]+"/fields/"+this.fieldName;
+	     	this.$.deleteFields.generateRequest();
+	    	 
+	     },
+	     deleteGlossaryFunction:function(e){
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.deleteGlossaries.headers = obj;
+	         this.$.deleteGlossaries.url = backend_url + "projects/"+projectName[1]+"/glossaries/"+(e.model.item[0]).split(":")[0];
+	     	this.$.deleteGlossaries.generateRequest();
+	     },
+	     editFieldFunction:function(e){
+	    	 var fieldFormName = e.model.item[0].name;
+	    	 
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.editField.headers = obj;
+	         this.$.editField.url = backend_url + "projects/"+projectName[1]+"/fields/"+fieldFormName;
+	         
+	         this.$.editField.generateRequest();
+	         
+	    	 editFieldsDialog.toggle();
+	    	 
+	     },
+	     editGlossaryFunction:function(e){
+	    	 this.glossaryForm = {};
+	    	 this.glossaryForm = e.model.item[0];
+	    	 editGlossariesDialog.toggle();
+	     },
+	     updateField:function(e) {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         var predefinedExtr = "";
+	         
+	         //Save Glossaries
+	         this.fieldFormGlossaries=[];
+	    	 for(var i=0;i<this.glossaries.length;i++) {
+	    		 var gloss = this.glossaries[i];
+	    		 if(this.$$('#'+gloss).checked) {
+	    			 this.fieldFormGlossaries.push(gloss[0]);
+	    		 }
+	    	 }
+	         
+	         
+	         
+	         if(this.$$('#editfieldpredefinedExtractor').selectedItem) {
+	        	 predefinedExtr = this.$$('#editfieldpredefinedExtractor').selectedItem.value;
+	         }
+	         this.$.updateSavedFields.headers = obj;
+	         this.$.updateSavedFields.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name;
+	         if(this.fieldForm.screen_label == "")this.fieldForm.screen_label = this.fieldForm.name;
+	         if(this.fieldForm.screen_label_plural == "")this.fieldForm.screen_label_plural = this.fieldForm.screen_label;
+	         if(!this.fieldForm.group_name)this.fieldForm.group_name="";
+	         this.$.updateSavedFields.body = JSON.stringify({
+	      		  "field_name": this.fieldForm.name,
+	       		  "field_object": {
+	       		    "color":this.fieldForm.color ,
+	       		    "case_sensitive":this.fieldFormGlossaries.length>0?this.fieldForm.case_sensitive:false,
+	       		    "combine_fields": this.fieldForm.combine_fields,
+	       		    "description": this.fieldForm.description,
+	       		    "glossaries": this.fieldFormGlossaries,
+	       		    "group_name": this.fieldForm.group_name,
+	       		    "icon": this.fieldForm.icon,
+	       		    "name": this.fieldForm.name,
+	       		    "screen_label": this.fieldForm.screen_label ,
+	       		    "screen_label_plural": this.fieldForm.screen_label_plural ,
+	       		    "search_importance":parseInt(this.$$('#editSearchImpValue').selectedItem.value),
+	       		    "show_as_link": this.$$('#editlinkValue').selectedItem.value,
+	       		    "show_in_facets": this.fieldForm.show_in_facets,
+	       		    "show_in_result": this.$$('#editResultValue').selectedItem.value,
+	       		    "rule_extraction_target":this.$$('#editRuleExtractionTargetValue').selectedItem.value,
+	       		    "show_in_search": this.fieldForm.show_in_search,
+	       			"rule_extractor_enabled":this.fieldForm.rule_extractor_enabled,
+	       		    "type": this.$$('#editTypeValue').selectedItem.value,
+	       		    "use_in_network_search": this.fieldForm.use_in_network_search,
+	       		    "predefined_extractor":predefinedExtr
+	       		  }
+	       		});
+	         this.$.updateSavedFields.generateRequest();
+	         editFieldsDialog.toggle();
+	         
+	     },
+	     inferlink:function() {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.inferlink.headers = obj;
+	         var perPage = 0;
+	         var extraPage=0;
+	         
+	         perPage = this.$$('#perPage').value;
+	         extraPage = this.$$('#extraPage').value;
+	         var force=this.$$('#samplePageForce').checked;
+	         this.$.inferlink.url = backend_url +"projects/"+projectName[1]+"/actions/get_sample_pages?pages_per_tld="+perPage+"&pages_extra="+extraPage+"&force_getting_sample_pages="+force;
+	     	 
+	         this.$.inferlink.generateRequest();
+	     },
+	     etk:function() {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.etk.headers = obj;
+	         var force=this.$$('#etkForce').checked;
+	          this.$.etk.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data?force_start_new_extraction="+force;
+	          this.$.etk.body = JSON.stringify({
+	      		  "pages_per_tld_to_run": parseInt(this.$$("#etkTLD").value),
+	       		  "pages_extra_to_run": parseInt(this.$$("#etkExtraTLD").value),
+	       		  "lines_user_data_to_run":parseInt(this.$$("#etkLineField").value)
+	          });
+	         this.$.etk.generateRequest();
+	     },
+	     etkDeployed:function() {
+	    	 sureToContinueExtraction.toggle();
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.etkDeployed.headers = obj;
+	          this.$.etkDeployed.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_deployed_data";
+	          
+	         this.$.etkDeployed.generateRequest();
+	     },
+	    
+	     publish:function() {
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.publish.headers = obj;
+	         
+	         this.$.publish.url = backend_url +"projects/"+projectName[1]+"/actions/publish";
+	     	 
+	         this.$.publish.generateRequest();
+	     },
+	     done:function(data) {
+	    	 this.$$('#samplePageForce').checked="";
+	    	 this.$$('#etkForce').checked="";
+	    	 modalDialog.open();
+	     },
+	     successDone:function() {
+	    	 this.$$('#samplePageForce').checked="";
+	    	 modalDialogSuccess.open();
+	     },
+	     successDoneIndex:function() {
+	    	 modalDialogSuccessIndex.open();
+	     },
+	     deletedGlossary:function() {
+	    	 this.glossaries = [];
+	    	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.getFields.headers = obj;
+		        this.$.getFields.url = backend_url +"projects/"+projectName[1]+"/fields";
+		    	this.$.getFields.generateRequest();
+		    	
+	        this.$.getGlossary.headers = obj;
+	     	this.$.getGlossary.url = backend_url +"projects/"+projectName[1]+"/glossaries";
+	     	this.$.getGlossary.generateRequest();
+	     },
+	     inferlinkGet:function() {
+	    	 	
+	    	 
+	     	 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.getAction1.headers = obj;
+	         this.$.getAction1.url = backend_url +"projects/"+projectName[1]+"/actions/get_sample_pages";
+		     this.$.getAction1.generateRequest();
+	         
+	     },
+	     getTLDInferlink:function(data) {
+	    	 this.tldResponse = [];
+	    	 this.tldResponse = Object.keys(data.detail.response).map(function(e) {
+	     		  return [e,data.detail.response[e]];
+	     		});
+	    	 if(this.tldResponse) showTLDsDialog.toggle();
+	     },
+	     etkStatus:function() {
+	    	 var obj = {};
+	    	 this.$$("#etkForce").checked="";
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+
+	         this.$.etkGet.headers = obj;
+	         this.$.etkGet.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+	         this.async(function() {
+	        	 this.$.etkGet.generateRequest();
+	           }, 2000);
+	         
+	         
+	     },
+	     etkdetails:function(data) {
+	    	 this.etkFields=[];
+	    	 this.etkFields = data.detail.response;
+	    	 	
+	    	 if(this.etkFields.is_running ==false && this.etkFields.last_message=="done") {
+	    		 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "green";
+	    	 }
+	    	 if(this.etkFields.is_running != false) {
+	    		 var obj = {};
+		         obj.Authorization = "Basic " + btoa(username+":"+password);
+		         
+
+		         this.$.etkGet.headers = obj;
+		         this.$.etkGet.url = backend_url +"projects/"+projectName[1]+"/actions/extract_and_load_test_data";
+		         this.async(function() {
+		        	 this.$.etkGet.generateRequest();
+		           }, 2000);
+		         this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "#641ba7";
+				   
+	    	 }
+	     },
+	     _disableDocumentScrolling: function() {
+	    	  document.body.style.overflow = 'hidden';
+	    	},
+   	_restoreDocumentScrolling: function() {
+   		  document.body.style.overflow = '';
+   		},
+		getFieldGlossary:function() {
+			EditFieldGlossaries.toggle();
+			 for(var j=0;j<this.glossaries.length;j++){
+  				 this.$$('#'+this.glossaries[j][0]).checked ="";
+  			 
+	  		 }
+	  			 if(this.fieldForm) {
+	  				 if(this.fieldForm.glossaries) {
+	  		    	 	for(var i=0;i<this.fieldForm.glossaries.length;i++){
+	  		    		 for(var j=0;j<this.glossaries.length;j++){
+	  		    			 if(this.fieldForm.glossaries[i] == this.glossaries[j][0]) {
+	  		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+	  		    				 break;
+	  		    			 } 
+	  		    		 }
+	  		    		 
+	  		    	 	}
+	  				 }
+  	    	      } 
+	  			 
+	  			if(this.fieldFormGlossaries) {
+	  				 	for(var i=0;i<this.fieldFormGlossaries.length;i++){
+	  		    		 for(var j=0;j<this.glossaries.length;j++){
+	  		    			 if(this.fieldFormGlossaries[i] == this.glossaries[j][0]) {
+	  		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+	  		    				 break;
+	  		    			 } 
+	  		    		 }
+	  		    		 
+	  		    	 	}
+	  				 
+ 	    	      } 
+		    	 
+	  			 
+  			 
+  		},
+   		
+   		getFieldGlossariesForAdd:function() {
+   			EditFieldGlossaries.toggle();
+   			 
+	    	 if(glossariesNewField) {
+				 	for(var i=0;i<glossariesNewField.length;i++){
+		    		 for(var j=0;j<this.glossaries.length;j++){
+		    			 if(glossariesNewField[i] == this.glossaries[j][0]) {
+		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+		    				 break;
+		    			 } 
+		    		 }
+		    		 
+		    	 	}
+				 
+  	         } else {
+  	        	glossariesNewField=[];
+  		    	for(var i=0;i<this.glossaries.length;i++) {
+  		    		 var gloss = this.glossaries[i];
+  		    		 if(this.$$('#'+gloss).checked) {
+  		    			 glossariesNewField.push(gloss[0]);
+  		    		 }
+  		    	 }
+  	         }
+   		},
+   		updateToNewIndex:function() {
+   			 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateIndex.headers = obj;
+	         this.$.updateIndex.url = backend_url +"projects/"+projectName[1]+"/actions/update_to_new_index";
+		     this.$.updateIndex.generateRequest();
+   		},
+   		updateToNewIndexNew:function() {
+  			 var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateIndexNew.headers = obj;
+	         this.$.updateIndexNew.url = backend_url +"projects/"+projectName[1]+"/actions/update_to_new_index_deployed";
+		     this.$.updateIndexNew.generateRequest();
+  		},
+   		
+   		getIconNames : function(iconset) {
+   	      return iconset.getIconNames();
+   		},
+   		downloadGlossaryFunction:function(e) {
+   			 
+	         var request = new XMLHttpRequest();
+		     var url = backend_url  +"projects/"+projectName[1]+"/glossaries/"+e.model.item[0];
+		   	
+		     request.open("GET", url);
+		     request.setRequestHeader("Content-type", "application/gzip");
+		     request.setRequestHeader("Content-Transfer-Encoding","binary");
+			 request.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+			 request.responseType = "blob";
+			   	request.onreadystatechange = function () {
+					    if (request.readyState === 4 && request.status === 200) {
+					    	 var element = document.createElement('a');
+					    	    blob = new Blob([request.response], {type: "application/gzip"}),
+					            url = window.URL.createObjectURL(blob);
+					   		  element.setAttribute('href',url);
+					   		  
+					   		  element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
+
+					   		  element.style.display = 'none';
+					   		  document.body.appendChild(element);
+					   		  element.click();
+
+					   		  document.body.removeChild(element);
+					   		window.URL.revokeObjectURL(url);
+					   }
+					};
+				 
+				 request.send();
+	         
+   		},
+   		editRules:function(e) {
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.editSpacyRules.headers = obj;
+	         this.$.editSpacyRules.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name+"/spacy_rules?type=all";
+		     this.$.editSpacyRules.generateRequest();
+		     spacyRulesDialog.toggle();
+   			
+   		},
+   		editRulesNextDialog:function(e) {
+   			var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/"+projectName[1]+"/"+this.fieldForm.name;
+   			window.open(url,'_blank');
+   		},
+   		editRulesAdd:function() {
+   			var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/"+projectName[1]+"/"+this.$$('#fieldnameinput').value;;
+   			window.open(url,'_blank');
+   		},
+   		
+   		editRulesNext:function(e) {
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.editSpacyRulesNext.headers = obj;
+	         this.$.editSpacyRulesNext.url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/"+projectName[1]+"/"+this.fieldForm.name;
+	         this.$.editSpacyRulesNext.body = (this.$$('#spacyRulesNextTextArea').value);
+		     
+	         this.$.editSpacyRulesNext.generateRequest();
+	         spacyRulesNextDialog.toggle();
+		    
+   		},
+   		fieldSpacyRules:function(data) {
+   			this.spacyRules = [];
+   			this.$$('#spacyRulesTextArea').value=JSON.stringify(data.detail.response);
+   		},
+   		updateFieldSpacyRules:function(){
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         
+	         this.$.updateSpacyRules.headers = obj;
+	         this.$.updateSpacyRules.url = backend_url +"projects/"+projectName[1]+"/fields/"+this.fieldForm.name+"/spacy_rules";
+	         
+	         this.$.updateSpacyRules.body = (this.$$('#spacyRulesTextArea').value);
+		     this.$.updateSpacyRules.generateRequest();
+		     spacyRulesDialog.toggle();
+   			
+   		},
+   		showSpacyRuleDummy:function(){
+   			this.$$('#spacyRulesTextArea').value='{"rules": [],"test_text": "string"}';
+   		},
+   		setIcon:function(e) {
+   			this.$$('#fieldiconinput').value = e.model.item;
+   			papericonSet.toggle();
+   			
+   		},
+   		setEditIcon:function(e) {
+   			this.$$('#iconField').value=e.model.item;
+   			papericonEditSet.toggle();
+   		},
+   		setEditFieldForm:function(data) {
+   			this.fieldFormGlossaries=[];
+   			this.fieldForm=[];
+   			this.fieldForm = data.detail.response;
+   			for(var j=0;j<this.glossaries.length;j++){
+ 				 this.$$('#'+this.glossaries[j][0]).checked ="";
+ 			 
+	  		 }
+	  			 if(this.fieldForm) {
+	  				 if(this.fieldForm.glossaries) {
+	  		    	 	for(var i=0;i<this.fieldForm.glossaries.length;i++){
+	  		    		 for(var j=0;j<this.glossaries.length;j++){
+	  		    			 if(this.fieldForm.glossaries[i] == this.glossaries[j][0]) {
+	  		    				 this.$$('#'+this.glossaries[j][0]).checked ="true";
+	  		    				 break;
+	  		    			 } 
+	  		    		 }
+	  		    		 
+	  		    	 	}
+	  				 }
+ 	    	      } 
+   			
+   		},
+   		addNewFieldSetup:function() {
+   			addFieldDialog.toggle();
+		    	glossariesNewField=[];
+		    	this.$$("#fieldnameinput").value="";
+		    	this.$$("#fielddescriptioninput").value="";
+		    	this.$$("#fieldscreenlabelinput").value="";
+		    	this.$$("#fieldscreenlabelPluralinput").value="";
+		    	this.$$("#fieldcolorinput").value="amber";
+		    	this.$$("#getCaseSenstive").checked="";
+		   		
+		   		
+		    	this.$$("#fieldgroupnameinput").value="";
+		    	this.$$("#fieldiconinput").value="icons:default";
+		    	this.$$("#fieldsearchinput").selected="0";
+		    	this.$$("#fieldtypeinput").selected="0";
+		    	this.$$("#fieldRuleExtractor").checked=false;
+		    	this.$$("#fieldpredefinedExtractor").selected="0";
+		   		
+		    	this.$$("#fieldcombinedfieldsinput").checked=false;
+		    	this.$$("#fieldfacetinput").checked=false;
+		    	this.$$("#fieldlinkinput").selected="0";
+		    	this.$$("#fieldresultinput").selected="0";
+		    	this.$$("#fieldsearchinput2").checked=false;
+		    	this.$$("#fieldnetworkinput").checked=false;
+		    	this.$$("#fieldRuleExtractorTarget").selected="2";
+   		},
+   		saveTempGlossaries:function() {
+   			this.fieldFormGlossaries=[];
+   			glossariesNewField=[];
+	    	 for(var i=0;i<this.glossaries.length;i++) {
+	    		 var gloss = this.glossaries[i];
+	    		 if(this.$$('#'+gloss).checked) {
+	    			 this.fieldFormGlossaries.push(gloss[0]);
+	    		 }
+	    	 }
+	    	 glossariesNewField = this.fieldFormGlossaries;
+   		},
+   		setDigURI:function(data) {
+   			this.digURI = data.detail.response.configuration.digapp_sample_url+"/?project="+projectName[1];
+   			var inferlinkURL = data.detail.response.sources[0].url;
+   			if(inferlinkURL.indexOf("hyperiongray")!=-1)this.inferlinkLink = "http://isi-"+inferlinkURL.substring(8,inferlinkURL.indexOf("hyperiongray"))+"inferlink.com:3333/";
+   			else this.inferlinkLink="http://ec2-54-174-0-124.compute-1.amazonaws.com:3333/";
+   			this.digAppURI = "http://52.36.12.77:8091/?project="+projectName[1];
+   		},
+   		addNewAttribute:function() {
+   			this.$$("#tableAttributeInputValue").value="";
+   			this.$$("#fieldInputDropDownInput").selected="";
+   			this.$$("#textAreaForTableAttribute").value="";
+   			
+   			AddNewTableAttributeDialog.toggle();
+   		},
+   		deleteAttribute:function(e) {
+   			
+   			var obj = {};
+	         obj.Authorization = "Basic " + btoa(username+":"+password);
+	         this.$.deleteTableAttribute.headers = obj;
+	         this.$.deleteTableAttribute.url = backend_url + "projects/"+projectName[1]+"/table_attributes/"+e.model.item[0].name;
+	     	this.$.deleteTableAttribute.generateRequest();
+	    	 
+   		},
+   		getToHome:function() {
+   			location.href = "/"
+   		},
+   		checkLength:function(item) {
+   			return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length>0;
+   			
+   		},
+   		uploadSamplePages:function() {
+   			uploadZipFileDialog.toggle();
+   		}
+     });
+	</script>
