@@ -52,7 +52,7 @@ config = {
         'host': '0.0.0.0',
         'port': 9880,
         'debug': True,
-        'backend_url': os.getenv('MYDIG_BACKEND_URL', 'http://localhost:5000/')
+        'backend_url': os.getenv('MYDIG_BACKEND_URL', 'http://localhost:9879/')
     },
     # 'default_source_credentials_path': './default_source_credentials.json',
     'default_glossary_dicts_path': '/shared_data/dig3-resources/builtin_resources',
