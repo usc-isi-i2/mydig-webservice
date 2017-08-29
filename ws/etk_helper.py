@@ -4,6 +4,15 @@ import codecs
 from config import config
 
 default_etk_config_str = """{
+    "etk_version" : "1.0",
+    "logging": {
+        "logstash": {
+            "host": "logstash",
+            "port": 5959,
+            "version": 2,
+            "level": 20
+        }
+    },
     "extraction_policy": "replace",
     "error_handling": "raise_error",
     "resources": {

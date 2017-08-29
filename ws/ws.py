@@ -63,7 +63,8 @@ data = {}
 
 
 # regex precompile
-re_project_name = re.compile(r'^[a-z0-9_-]{1,255}$')
+re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
+project_name_blacklist = ('logs')
 
 
 def write_to_file(content, file_path):
@@ -152,7 +153,7 @@ class AllProjects(Resource):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
         project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
-        if not re_project_name.match(project_name):
+        if not re_project_name.match(project_name) or project_name in project_name_blacklist:
             return rest.bad_request('Invalid project name.')
         if project_name in data:
             return rest.exists('Project name already exists.')
@@ -1590,7 +1591,7 @@ class Actions(Resource):
         if action_name == 'get_data_from_file':
             return self._upload_data_file(project_name)
         elif action_name == 'get_data_from_es':
-            return rest.accepted()
+            return self._get_data_from_es(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
         else:
@@ -1618,6 +1619,77 @@ class Actions(Resource):
 
         return rest.created()
 
+    def _get_data_from_es(self, project_name):
+        # input = request.get_json(force=True)
+        # pages_per_tld = input.get('pages_per_tld', 200)
+        #
+        # # check lock
+        # lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_data_from_es.lock')
+        # if os.path.exists(lock_path):
+        #     return rest.exists()
+        #
+        # # create lock
+        # write_to_file('', lock_path)
+        #
+        # # assume there's only one source
+        # s = data[project_name]['master_config']['sources'][0]
+        # cdr_ids = {}
+        #
+        # # retrieve from es
+        # for tld in s['tlds']:
+        #
+        #     if pages_per_tld > 0:
+        #         query = '''
+        #         {
+        #             "size": ''' + str(pages_per_tld) + ''',
+        #             "query": {
+        #                 "filtered":{
+        #                     "query": {
+        #                         "function_score": {
+        #                             "query": {
+        #                                 "range": {
+        #                                     "timestamp_crawl": {
+        #                                         "gte": "''' + s['start_date'] + '''",
+        #                                         "lt": "''' + s['end_date'] + '''",
+        #                                         "format": "yyyy-MM-dd"
+        #                                     }
+        #                                 }
+        #                             },
+        #                             "functions": [{"random_score":{}}]
+        #                         }
+        #                     },
+        #                     "filter": {
+        #                         "and": {
+        #                             "filters": [
+        #                                 {"exists" : {"field": "raw_content"}},
+        #                                 {"exists" : {"field": "url"}},
+        #                                 {"term": {"url.domain": "''' + tld + '''"}}
+        #                             ]
+        #                         }
+        #                     }
+        #                 }
+        #             }
+        #         }
+        #         '''
+        #         es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
+        #         hits = es.search(s['index'], s['type'], query)
+        #         if hits:
+        #             docs = hits['hits']['hits']
+        #             cdr_ids[tld] = list()
+        #             file_path = os.path.join(dir_path, tld + '.jl')
+        #             with open(file_path, 'w') as f:
+        #                 for d in docs:
+        #                     cdr_ids[tld].append(d['_id'])
+        #                     d['_source']['doc_id'] = d['_id']
+        #                     f.write(json.dumps(d['_source']))
+        #                     f.write('\n')
+        #
+        #
+        # # remove lock
+        # if os.path.exists(lock_path):
+        #     os.remove(lock_path)
+        return rest.created()
+
     def _extract(self, project_name):
         # create etk config
         etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
@@ -1625,6 +1697,11 @@ class Actions(Resource):
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
         # create new index
+        url = '{}/{}'.format(
+            config['es']['sample_url'],
+            project_name
+        )
+        resp = requests.delete(url, timeout=5)
         url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
             config['sandpaper']['url'],
             config['sandpaper']['ws_url'],
