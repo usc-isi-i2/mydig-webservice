@@ -1044,6 +1044,10 @@ paths:
         required: false
         description: "upload user's data (only works for get_data_from_file)"
         type: "file"
+      - in: "formData"
+        name: "file_name"
+        required: false
+        description: "file name of user's data (only works for get_data_from_file)"
       responses:
         202:
           description: "accepted (action started)"

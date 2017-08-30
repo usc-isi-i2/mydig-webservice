@@ -242,7 +242,7 @@ class AllProjects(Resource):
                 shutil.copy(full_file_name, dst_dir)
         write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'data'))
-        write_to_file('*\n', os.path.join(project_dir_path, 'data/.gitignore'))
+        # write_to_file('*\n', os.path.join(project_dir_path, 'data/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'data/es'))
         write_to_file('*\n', os.path.join(project_dir_path, 'data/es/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'data/upload'))
@@ -1720,12 +1720,14 @@ class Actions(Resource):
         write_to_file(json.dumps(etk_config, indent=2),
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
-        # 2. create new index
+        # 2. sandpaper
+        # 2.1 delete previous index
         url = '{}/{}'.format(
             config['es']['sample_url'],
             project_name
         )
         resp = requests.delete(url, timeout=5)
+        # 2.2 create new index
         url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
             config['sandpaper']['url'],
             config['sandpaper']['ws_url'],
@@ -1736,6 +1738,17 @@ class Actions(Resource):
         resp = requests.put(url, timeout=5)
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to create index in sandpaper')
+        # 2.3 switch index
+        url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'],
+            config['es']['sample_url']
+        )
+        resp = requests.post(url, timeout=5)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to switch index in sandpaper')
 
         # 3. run etk
         url = config['etl']['url'] + '/run_etk'
