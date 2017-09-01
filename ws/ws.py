@@ -242,11 +242,7 @@ class AllProjects(Resource):
                 shutil.copy(full_file_name, dst_dir)
         write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'data'))
-        # write_to_file('*\n', os.path.join(project_dir_path, 'data/.gitignore'))
-        os.makedirs(os.path.join(project_dir_path, 'data/es'))
-        write_to_file('*\n', os.path.join(project_dir_path, 'data/es/.gitignore'))
-        os.makedirs(os.path.join(project_dir_path, 'data/upload'))
-        write_to_file('*\n', os.path.join(project_dir_path, 'data/upload/.gitignore'))
+        write_to_file('*\n', os.path.join(project_dir_path, 'data/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir'))
         write_to_file('*\n', os.path.join(project_dir_path, 'working_dir/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
@@ -1585,6 +1581,7 @@ class TagAnnotationsForEntity(Resource):
                 project_name, kg_id, tag_name
             ))
 
+
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
     @requires_auth
@@ -1592,16 +1589,41 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        if action_name == 'get_data_from_file':
+        if action_name == 'file_data':
             return self._upload_data_file(project_name)
-        elif action_name == 'get_data_from_es':
+        elif action_name == 'es_data':
             return self._get_data_from_es(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
-    def _upload_data_file(self, project_name):
+    def get(self, project_name, action_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        if action_name == 'file_data':
+            return self._get_file_list(project_name)
+        elif action_name == 'es_data':
+            return rest.ok()
+        elif action_name == 'extract':
+            return rest.ok() # TODO: progressbar
+        else:
+            return rest.not_found('action {} not found'.format(action_name))
+
+    # def delete(self, project_name, action_name):
+    #     if project_name not in data:
+    #         return rest.not_found('project {} not found'.format(project_name))
+    #
+    #     if action_name == 'file_data':
+    #         return self._delete_file(project_name)
+    #     elif action_name == 'es_data':
+    #         return rest.deleted()
+    #     else:
+    #         return rest.not_found('action {} not found'.format(action_name))
+
+    @staticmethod
+    def _upload_data_file(project_name):
         parse = reqparse.RequestParser()
         parse.add_argument('data_file', type=werkzeug.FileStorage, location='files')
         parse.add_argument('file_name')
@@ -1617,9 +1639,9 @@ class Actions(Resource):
 
         # save file and unzip
         gzip_file_path = os.path.join(_get_project_dir_path(project_name),
-                                      'data/upload/{}.gz'.format(file_name))
+                                      'data/{}.gz'.format(file_name))
         file_path = os.path.join(_get_project_dir_path(project_name),
-                                 'data/upload/{}.jl'.format(file_name))
+                                 'data/{}.jl'.format(file_name))
         gzip_file = args['data_file']
         gzip_file.save(gzip_file_path)
 
@@ -1632,18 +1654,28 @@ class Actions(Resource):
             return rest.bad_request('Invalid gzip format')
 
         # record to db
-        db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/upload/_db.json')
+        db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
         db_obj = dict()
         if os.path.exists(db_file_path):
             with codecs.open(db_file_path, 'r') as f:
                 db_obj = json.loads(f.read())
-        db_obj[file_name] = {'file_path': file_path}
+        db_obj[file_name] = {'file_path': file_path, "from": "upload"}
         with codecs.open(db_file_path, 'w') as f:
             f.write(json.dumps(db_obj, indent=4))
 
         return rest.created()
 
-    def _get_data_from_es(self, project_name):
+    @staticmethod
+    def _get_file_list(project_name):
+        ret = dict()
+        uploaded_db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
+        if os.path.exists(uploaded_db_file_path):
+            with codecs.open(uploaded_db_file_path, 'r') as f:
+                ret = json.loads(f.read())
+        return ret
+
+    @staticmethod
+    def _get_data_from_es(project_name):
         # input = request.get_json(force=True)
         # pages_per_tld = input.get('pages_per_tld', 200)
         #
@@ -1714,14 +1746,28 @@ class Actions(Resource):
         #     os.remove(lock_path)
         return rest.created()
 
-    def _extract(self, project_name):
+    @staticmethod
+    def _extract(project_name):
+        # 0. check input
+        # {
+        #   "file": {
+        #       "file1": 30 # integer number of lines to run per file
+        #   }
+        # }
+        input = request.get_json(force=True)
+        file_list = input.get('file', {})
+        if len(file_list) == 0:
+            return rest.bad_request('Nothing to process')
+
         # 1. create etk config
+        print '{}: extract 1'.format(project_name)
         etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
         write_to_file(json.dumps(etk_config, indent=2),
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
 
         # 2. sandpaper
         # 2.1 delete previous index
+        print '{}: extract 2'.format(project_name)
         url = '{}/{}'.format(
             config['es']['sample_url'],
             project_name
@@ -1751,34 +1797,37 @@ class Actions(Resource):
             return rest.internal_error('failed to switch index in sandpaper')
 
         # 3. run etk
+        print '{}: extract 3'.format(project_name)
         url = config['etl']['url'] + '/run_etk'
         payload = {
             'project_name': project_name,
             'number_of_workers': config['etl']['number_of_workers']
         }
-        print url
         resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to run_etk in ETL')
 
         # 4. publish data to kafka queue
+        print '{}: extract 4'.format(project_name)
         input_topic = project_name + '_in'
         # 4.1 user uploaded data
-        uploaded_db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/upload/_db.json')
+        uploaded_db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
         if os.path.exists(uploaded_db_file_path):
             with codecs.open(uploaded_db_file_path, 'r') as f:
                 db_obj = json.loads(f.read())
                 for k, v in db_obj.iteritems():
-                    ret, msg = self._publish_to_kafka_input_queue(v['file_path'], input_topic)
-                    if not ret:
-                        return rest.internal_error(msg)
+                    if k in file_list:
+                        ret, msg = Actions._publish_to_kafka_input_queue(
+                            v['file_path'], file_list[k], input_topic)
+                        if not ret:
+                            return rest.internal_error(msg)
         # 4.2 es data
         # TODO
 
         return rest.accepted()
 
     @staticmethod
-    def _publish_to_kafka_input_queue(file_path, topic):
+    def _publish_to_kafka_input_queue(file_path, max_line_num, topic):
         if not os.path.exists(file_path):
             return False, 'data file is missing: {}'.format(file_path)
         try:
@@ -1789,9 +1838,11 @@ class Actions(Resource):
             with codecs.open(file_path, 'r') as f:
                 count = 0
                 for line in f:
-                    r= kafka_producer.send(topic, line)
+                    r = kafka_producer.send(topic, line)
                     r.get(timeout=60)  # wait till sent
                     count += 1
+                    if count >= max_line_num:
+                        break
                 print 'sent {} docs to topic {}'.format(count, topic)
         except Exception as e:
             print e

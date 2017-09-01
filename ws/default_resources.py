@@ -102,8 +102,8 @@ default_glossaries = {
 default_configuration = {
     'digapp_full_url': 'http://localhost:8090',
     'digapp_sample_url': 'http://localhost:8090',
-    'sandpaper_full_url': 'http://localhost:9876',
-    'sandpaper_sample_url': 'http://localhost:9876'
+    'sandpaper_full_url': 'http://sandpaper:9876',
+    'sandpaper_sample_url': 'http://sandpaper:9876'
 }
 
 default_tags = {
