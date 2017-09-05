@@ -1607,7 +1607,7 @@ class Actions(Resource):
         elif action_name == 'es_data':
             return rest.ok()
         elif action_name == 'extract':
-            return rest.ok() # TODO: progressbar
+            return self._get_progress(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
@@ -1747,6 +1747,23 @@ class Actions(Resource):
         return rest.created()
 
     @staticmethod
+    def _get_progress(project_name):
+        ret = dict()
+        url = '{}/{}/_count'.format(config['es']['sample_url'], project_name)
+        resp = requests.get(url)
+        if resp.status_code // 100 == 2:
+            current_count = json.loads(resp.content)['count']
+            progress_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/progress_total')
+            if os.path.exists(progress_path):
+                with open(progress_path, 'r') as f:
+                    total_count = int(f.read())
+                    ret['etk_progress'] = {
+                        'total': total_count,
+                        'current': current_count
+                    }
+        return ret
+
+    @staticmethod
     def _extract(project_name):
         # 0. check input
         # {
@@ -1810,6 +1827,10 @@ class Actions(Resource):
         # 4. publish data to kafka queue
         print '{}: extract 4'.format(project_name)
         input_topic = project_name + '_in'
+        progress_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/progress_total')
+        if os.path.exists(progress_path):
+            os.remove(progress_path)
+        total_doc_num = 0
         # 4.1 user uploaded data
         uploaded_db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
         if os.path.exists(uploaded_db_file_path):
@@ -1821,8 +1842,13 @@ class Actions(Resource):
                             v['file_path'], file_list[k], input_topic)
                         if not ret:
                             return rest.internal_error(msg)
+                        total_doc_num += msg # increase total count
         # 4.2 es data
         # TODO
+
+        # update progressbar
+        with open(progress_path, 'w') as f:
+            f.write('{}'.format(total_doc_num))
 
         return rest.accepted()
 
@@ -1835,8 +1861,8 @@ class Actions(Resource):
                 bootstrap_servers=config['kafka']['servers'],
                 # value_serializer=lambda v: json.dumps(v).encode('utf-8')
             )
+            count = 0
             with codecs.open(file_path, 'r') as f:
-                count = 0
                 for line in f:
                     r = kafka_producer.send(topic, line)
                     r.get(timeout=60)  # wait till sent
@@ -1848,7 +1874,7 @@ class Actions(Resource):
             print e
             return False, 'error in sending data to kafka queue'
 
-        return True, ''
+        return True, count
 
 
 @api.route('/projects/<project_name>/landmark_rules')
