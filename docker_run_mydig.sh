@@ -3,11 +3,11 @@
 export PS1="\u:\W\$ "
 
 # daemon
-source activate etk_env
+#source activate etk_env
 cd /app/mydig-webservice/daemon
 chmod +x daemon.sh
 ./daemon.sh
-source deactivate
+#source deactivate
 
 # backend
 cd /app/mydig-webservice/ws

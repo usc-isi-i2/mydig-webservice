@@ -49,7 +49,7 @@ There are two important directories:
 
 ### Build image
 
-    docker build -t mydig_ws .
+    docker build -t uscisii2/mydig_ws:1.0.0 .
 
 ### Run container
 
@@ -57,7 +57,7 @@ There are two important directories:
     -v $(pwd)/ws/config_docker.py:/app/mydig-webservice/ws/config.py \
     -v $(pwd)/../mydig-projects:/shared_data/projects \
     -v $(pwd)/../dig3-resources:/shared_data/dig3-resources \
-    mydig_ws
+    uscisii2/mydig_ws:1.0.0
     
 ### Run container (development)
 
@@ -67,5 +67,5 @@ There are two important directories:
     -v $(pwd)/ws/config_docker.py:/app/mydig-webservice/ws/config.py \
     -v $(pwd)/../mydig-projects:/shared_data/projects \
     -v $(pwd)/../dig3-resources:/shared_data/dig3-resources \
-    mydig_ws /bin/bash
+    uscisii2/mydig_ws:1.0.0 /bin/bash
         
