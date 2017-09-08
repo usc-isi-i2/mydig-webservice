@@ -16,6 +16,7 @@ import copy
 import gzip
 import urlparse
 import re
+import hashlib
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -1776,11 +1777,17 @@ class Actions(Resource):
         if len(file_list) == 0:
             return rest.bad_request('Nothing to process')
 
-        # 1. create etk config
+        # 1. create etk config and snapshot
         print '{}: extract 1'.format(project_name)
         etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
+        etk_config_version = hashlib.sha256(etk_config).hexdigest().upper()
+        etk_config['etk_version'] = etk_config_version
         write_to_file(json.dumps(etk_config, indent=2),
                       os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
+        write_to_file(json.dumps(etk_config, indent=2),
+                      os.path.join(_get_project_dir_path(project_name),
+                                   'working_dir/etk_config_{}.json'.format(etk_config_version)))
+
 
         # 2. sandpaper
         # 2.1 delete previous index

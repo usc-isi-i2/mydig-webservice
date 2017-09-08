@@ -4,7 +4,6 @@ import codecs
 from config import config
 
 default_etk_config_str = """{
-    "etk_version" : "1.0",
     "logging": {
         "logstash": {
             "host": "logstash",

@@ -27,15 +27,15 @@ default_glossary_dicts = {
 }
 
 default_glossaries = {
-    'adult_services': {
-        'path': 'adult_services.json.gz',
-        'entry_count': 151,
-        'ngram_distribution': {
-            '1': 119,
-            '2': 28,
-            '3': 4
-        }
-    },
+    # 'adult_services': {
+    #     'path': 'adult_services.json.gz',
+    #     'entry_count': 151,
+    #     'ngram_distribution': {
+    #         '1': 119,
+    #         '2': 28,
+    #         '3': 4
+    #     }
+    # },
     'cities': {
         'path': 'cities.json.gz',
         'entry_count': 13156,
