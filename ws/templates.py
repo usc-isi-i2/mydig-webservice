@@ -5,11 +5,16 @@ import default_resources
 def get(name):
     return copy.deepcopy(eval(name))
 
+status = {
+    'total_added_docs': 0
+}
+
 project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
     'field_annotations': {},
-    'data': {} # tlds -> meta data
+    'data': {}, # tlds -> meta data
+    'status': copy.deepcopy(status)
 }
 
 master_config = {
@@ -33,6 +38,16 @@ master_config = {
     },
     'image_prefix': ''
 }
+
+# data = {
+#     'tld1': {
+#         'doc_id1': 'raw_content_path_1',
+#         'doc_id2': 'raw_content_path_2',
+#     },
+#     'tld2': {
+#
+#     }
+# }
 
 # field_annotations = {
 #     kg_id: {

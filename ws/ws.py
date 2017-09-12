@@ -82,6 +82,11 @@ def update_master_config_file(project_name):
     write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
 
 
+def update_status_file(project_name):
+    file_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status.json')
+    write_to_file(json.dumps(data[project_name]['status'], indent=4), file_path)
+
+
 def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
 
@@ -221,6 +226,8 @@ class AllProjects(Resource):
         # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
         update_master_config_file(project_name)
+
+        update_status_file(project_name)
 
         # create other dirs and files
         # .gitignore file should be created for empty folder will not be show in commit
@@ -1678,10 +1685,8 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        if action_name == 'file_data':
-            return self._upload_data_file(project_name)
-        elif action_name == 'es_data':
-            return self._get_data_from_es(project_name)
+        if action_name == 'add_data':
+            return self._add_data(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
         else:
@@ -1691,221 +1696,108 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        if action_name == 'file_data':
-            return self._get_file_list(project_name)
-        elif action_name == 'es_data':
-            return rest.ok()
-        elif action_name == 'extract':
+        if action_name == 'extract':
             return self._get_progress(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
-
-    # def delete(self, project_name, action_name):
-    #     if project_name not in data:
-    #         return rest.not_found('project {} not found'.format(project_name))
-    #
-    #     if action_name == 'file_data':
-    #         return self._delete_file(project_name)
-    #     elif action_name == 'es_data':
-    #         return rest.deleted()
-    #     else:
-    #         return rest.not_found('action {} not found'.format(action_name))
-
-    @staticmethod
-    def _upload_data_file(project_name):
-        parse = reqparse.RequestParser()
-        parse.add_argument('data_file', type=werkzeug.FileStorage, location='files')
-        parse.add_argument('file_name')
-        args = parse.parse_args()
-
-        if args['file_name'] is None:
-            return rest.bad_request('Invalid file_name')
-        file_name = args['file_name'].strip()
-        if len(file_name) == 0:
-            return rest.bad_request('Invalid file_name')
-        if args['data_file'] is None:
-            return rest.bad_request('Invalid data_file')
-
-        # save file and unzip
-        gzip_file_path = os.path.join(_get_project_dir_path(project_name),
-                                      'data/{}.gz'.format(file_name))
-        file_path = os.path.join(_get_project_dir_path(project_name),
-                                 'data/{}.jl'.format(file_name))
-        gzip_file = args['data_file']
-        gzip_file.save(gzip_file_path)
-
-        try:
-            with gzip.open(gzip_file_path, 'rb') as input:
-                with codecs.open(file_path, 'w') as output:
-                    output.write(input.read())
-        except Exception as e:
-            print e
-            return rest.bad_request('Invalid gzip format')
-
-        # record to db
-        db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
-        db_obj = dict()
-        if os.path.exists(db_file_path):
-            with codecs.open(db_file_path, 'r') as f:
-                db_obj = json.loads(f.read())
-        db_obj[file_name] = {'file_path': file_path, "from": "upload"}
-        with codecs.open(db_file_path, 'w') as f:
-            f.write(json.dumps(db_obj, indent=4))
-
-        return rest.created()
-
-    @staticmethod
-    def _get_file_list(project_name):
-        ret = dict()
-        uploaded_db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
-        if os.path.exists(uploaded_db_file_path):
-            with codecs.open(uploaded_db_file_path, 'r') as f:
-                ret = json.loads(f.read())
-        return ret
-
-    @staticmethod
-    def _get_data_from_es(project_name):
-        # input = request.get_json(force=True)
-        # pages_per_tld = input.get('pages_per_tld', 200)
-        #
-        # # check lock
-        # lock_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/get_data_from_es.lock')
-        # if os.path.exists(lock_path):
-        #     return rest.exists()
-        #
-        # # create lock
-        # write_to_file('', lock_path)
-        #
-        # # assume there's only one source
-        # s = data[project_name]['master_config']['sources'][0]
-        # cdr_ids = {}
-        #
-        # # retrieve from es
-        # for tld in s['tlds']:
-        #
-        #     if pages_per_tld > 0:
-        #         query = '''
-        #         {
-        #             "size": ''' + str(pages_per_tld) + ''',
-        #             "query": {
-        #                 "filtered":{
-        #                     "query": {
-        #                         "function_score": {
-        #                             "query": {
-        #                                 "range": {
-        #                                     "timestamp_crawl": {
-        #                                         "gte": "''' + s['start_date'] + '''",
-        #                                         "lt": "''' + s['end_date'] + '''",
-        #                                         "format": "yyyy-MM-dd"
-        #                                     }
-        #                                 }
-        #                             },
-        #                             "functions": [{"random_score":{}}]
-        #                         }
-        #                     },
-        #                     "filter": {
-        #                         "and": {
-        #                             "filters": [
-        #                                 {"exists" : {"field": "raw_content"}},
-        #                                 {"exists" : {"field": "url"}},
-        #                                 {"term": {"url.domain": "''' + tld + '''"}}
-        #                             ]
-        #                         }
-        #                     }
-        #                 }
-        #             }
-        #         }
-        #         '''
-        #         es = ES(s['url']) if 'http_auth' not in s else ES(s['url'], http_auth=s['http_auth'])
-        #         hits = es.search(s['index'], s['type'], query)
-        #         if hits:
-        #             docs = hits['hits']['hits']
-        #             cdr_ids[tld] = list()
-        #             file_path = os.path.join(dir_path, tld + '.jl')
-        #             with open(file_path, 'w') as f:
-        #                 for d in docs:
-        #                     cdr_ids[tld].append(d['_id'])
-        #                     d['_source']['doc_id'] = d['_id']
-        #                     f.write(json.dumps(d['_source']))
-        #                     f.write('\n')
-        #
-        #
-        # # remove lock
-        # if os.path.exists(lock_path):
-        #     os.remove(lock_path)
-        return rest.created()
 
     @staticmethod
     def _get_progress(project_name):
         ret = dict()
         url = '{}/{}/_count'.format(config['es']['sample_url'], project_name)
         resp = requests.get(url)
-        if resp.status_code // 100 == 2:
-            current_count = json.loads(resp.content)['count']
-            progress_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/progress_total')
-            if os.path.exists(progress_path):
-                with open(progress_path, 'r') as f:
-                    total_count = int(f.read())
-                    ret['etk_progress'] = {
-                        'total': total_count,
-                        'current': current_count
-                    }
+        current_count = json.loads(resp.content)['count'] if resp.status_code // 100 == 2 else 0
+
+        ret['etk_progress'] = {
+            'total': data[project_name]['status']['total_added_docs'],
+            'current': current_count
+        }
         return ret
 
     @staticmethod
-    def _extract(project_name):
-        # 0. check input
+    def _add_data(project_name):
         # {
-        #   "file": {
-        #       "file1": 30 # integer number of lines to run per file
-        #   }
+        #     'tld1': 100,
+        #     'tld2': 200
         # }
         input = request.get_json(force=True)
-        file_list = input.get('file', {})
-        if len(file_list) == 0:
-            return rest.bad_request('Nothing to process')
+        tld_list = input.get('tlds', {})
+        for tld, num_to_run in tld_list.iteritems():
+            if tld in data[project_name]['data']:
+                num_added = 0
+                kafka_producer = KafkaProducer(
+                    bootstrap_servers=config['kafka']['servers'],
+                    # value_serializer=lambda v: json.dumps(v).encode('utf-8')
+                )
+                input_topic = project_name + '_in'
+
+                for doc_id, raw_path in data[project_name]['data'][tld].iteritems():
+                    ret, msg = Actions._publish_to_kafka_input_queue(
+                        doc_id, raw_path, kafka_producer, input_topic)
+                    if not ret:
+                        return rest.internal_error(msg)
+
+                    data[project_name]['status']['total_added_docs'] += 1
+                    num_added += 1
+                    if num_added >= num_to_run:
+                        break
+                update_status_file(project_name)
+        return rest.created()
+
+    @staticmethod
+    def _extract(project_name):
+        new_extraction = True
 
         # 1. create etk config and snapshot
         print '{}: extract 1'.format(project_name)
         etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
-        etk_config_version = hashlib.sha256(etk_config).hexdigest().upper()
+        etk_config_version = hashlib.sha256(json.dumps(etk_config)).hexdigest().upper()
         etk_config['etk_version'] = etk_config_version
-        write_to_file(json.dumps(etk_config, indent=2),
-                      os.path.join(_get_project_dir_path(project_name), 'working_dir/etk_config.json'))
-        write_to_file(json.dumps(etk_config, indent=2),
-                      os.path.join(_get_project_dir_path(project_name),
-                                   'working_dir/etk_config_{}.json'.format(etk_config_version)))
+        etk_config_file_path = os.path.join(
+            _get_project_dir_path(project_name), 'working_dir/etk_config.json')
+        etk_config_snapshot_file_path = os.path.join(
+            _get_project_dir_path(project_name), 'working_dir/etk_config_{}.json'.format(etk_config_version))
+        if not os.path.exists(etk_config_snapshot_file_path):
+            write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
+            write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
+        else:
+            new_extraction = False
+        print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
 
         # 2. sandpaper
-        # 2.1 delete previous index
-        print '{}: extract 2'.format(project_name)
-        url = '{}/{}'.format(
-            config['es']['sample_url'],
-            project_name
-        )
-        resp = requests.delete(url, timeout=5)
-        # 2.2 create new index
-        url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
-            config['sandpaper']['url'],
-            config['sandpaper']['ws_url'],
-            project_name,
-            data[project_name]['master_config']['index']['sample'],
-            config['es']['sample_url']
-        )
-        resp = requests.put(url, timeout=5)
-        if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to create index in sandpaper')
-        # 2.3 switch index
-        url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
-            config['sandpaper']['url'],
-            config['sandpaper']['ws_url'],
-            project_name,
-            data[project_name]['master_config']['index']['sample'],
-            config['es']['sample_url']
-        )
-        resp = requests.post(url, timeout=5)
-        if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to switch index in sandpaper')
+        if new_extraction:
+            # 2.1 delete previous index
+            print '{}: extract 2'.format(project_name)
+            url = '{}/{}'.format(
+                config['es']['sample_url'],
+                project_name
+            )
+            try:
+                resp = requests.delete(url, timeout=5)
+            except:
+                pass # ignore no index error
+            # 2.2 create new index
+            url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
+                config['sandpaper']['url'],
+                config['sandpaper']['ws_url'],
+                project_name,
+                data[project_name]['master_config']['index']['sample'],
+                config['es']['sample_url']
+            )
+            resp = requests.put(url, timeout=5)
+            if resp.status_code // 100 != 2:
+                return rest.internal_error('failed to create index in sandpaper')
+            # 2.3 switch index
+            url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
+                config['sandpaper']['url'],
+                config['sandpaper']['ws_url'],
+                project_name,
+                data[project_name]['master_config']['index']['sample'],
+                config['es']['sample_url']
+            )
+            resp = requests.post(url, timeout=5)
+            if resp.status_code // 100 != 2:
+                return rest.internal_error('failed to switch index in sandpaper')
 
         # 3. run etk
         print '{}: extract 3'.format(project_name)
@@ -1918,79 +1810,30 @@ class Actions(Resource):
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to run_etk in ETL')
 
-        # 4. publish data to kafka queue
-        print '{}: extract 4'.format(project_name)
-        input_topic = project_name + '_in'
-        progress_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/progress_total')
-        if os.path.exists(progress_path):
-            os.remove(progress_path)
-        total_doc_num = 0
-        # 4.1 user uploaded data
-        uploaded_db_file_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
-        if os.path.exists(uploaded_db_file_path):
-            with codecs.open(uploaded_db_file_path, 'r') as f:
-                db_obj = json.loads(f.read())
-                for k, v in db_obj.iteritems():
-                    if k in file_list:
-                        ret, msg = Actions._publish_to_kafka_input_queue(
-                            v['file_path'], file_list[k], input_topic)
-                        if not ret:
-                            return rest.internal_error(msg)
-                        total_doc_num += msg # increase total count
-        # 4.2 es data
-        # TODO
-
-        # update progressbar
-        with open(progress_path, 'w') as f:
-            f.write('{}'.format(total_doc_num))
+        # 4. clean up kafka queue and total count
+        if new_extraction:
+            # 4.1 clean up kafka queue
+            # TODO
+            # 4.2 clean up total count
+            data[project_name]['status']['total_added_docs'] = 0
+            update_status_file(project_name)
 
         return rest.accepted()
 
     @staticmethod
-    def _publish_to_kafka_input_queue(file_path, max_line_num, topic):
+    def _publish_to_kafka_input_queue(doc_id, file_path, kafka_producer, topic):
         if not os.path.exists(file_path):
             return False, 'data file is missing: {}'.format(file_path)
         try:
-            kafka_producer = KafkaProducer(
-                bootstrap_servers=config['kafka']['servers'],
-                # value_serializer=lambda v: json.dumps(v).encode('utf-8')
-            )
-            count = 0
             with codecs.open(file_path, 'r') as f:
-                for line in f:
-                    r = kafka_producer.send(topic, line)
-                    r.get(timeout=60)  # wait till sent
-                    count += 1
-                    if count >= max_line_num:
-                        break
-                print 'sent {} docs to topic {}'.format(count, topic)
+                r = kafka_producer.send(topic, f.read().decode('utf-8', 'ignore'))
+                r.get(timeout=60)  # wait till sent
+                print 'sent {} to topic {}'.format(doc_id, topic)
         except Exception as e:
             print e
             return False, 'error in sending data to kafka queue'
 
-        return True, count
-
-
-@api.route('/projects/<project_name>/landmark_rules')
-class LandmarkRules(Resource):
-    @requires_auth
-    def post(self, project_name):
-        # input object
-        # {
-        #     "rules": [],
-        #     "metadata": {
-        #         "tld": "",
-        #         "task_name": ""
-        #     }
-        # }
-        input = request.get_json(force=True)
-        if 'metadata' not in input or 'task_name' not in input['metadata']:
-            return rest.bad_request('Invalid input')
-        path = os.path.join(_get_project_dir_path(project_name),
-                            'landmark_rules', input['metadata']['task_name'] + '.json')
-        with codecs.open(path, 'w') as f:
-            f.write(json.dumps(input, indent=4))
-        return rest.created()
+        return True, ''
 
 
 if __name__ == '__main__':
@@ -2006,29 +1849,30 @@ if __name__ == '__main__':
                     not (project_name.startswith('.') or project_name.startswith('_')):
                 data[project_name] = templates.get('project')
 
+                # master config
                 master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
                 if not os.path.exists(master_config_file_path):
                     logger.error('Missing master_config.json file for ' + project_name)
                 with codecs.open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
-                    # if 'index' not in data[project_name]['master_config'] or \
-                    #         any(k not in data[project_name]['master_config']['index'] for k in ('sample', 'full')):
-                    #     raise Exception('Missing index in project {}'.format(project_name))
-                    # sys.exit()
 
+                # annotations
                 TagAnnotationsForEntityType.load_from_tag_file(project_name)
                 FieldAnnotations.load_from_field_file(project_name)
 
+                # data
                 data_db_path = os.path.join(project_dir_path, 'data/_db.json')
                 if os.path.exists(data_db_path):
                     with codecs.open(data_db_path, 'r') as f:
                         data[project_name]['data'] = json.loads(f.read())
 
-                # dir_path = os.path.join(project_dir_path, 'glossaries')
-                # for file_name in os.listdir(dir_path):
-                #     name, ext = os.path.splitext(file_name)
-                #     if ext == '.txt':
-                #         data[project_name]['glossaries'].append(name)
+                # status
+                status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status.json')
+                if not os.path.exists(status_path):
+                    update_status_file(project_name)
+                else:
+                    with codecs.open(status_path, 'r') as f:
+                        data[project_name]['status'] = json.loads(f.read())
 
         # print json.dumps(data, indent=4)
         # run app
