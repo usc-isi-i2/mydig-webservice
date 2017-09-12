@@ -8,7 +8,8 @@ def get(name):
 project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
-    'field_annotations': {}
+    'field_annotations': {},
+    'data': {} # tlds -> meta data
 }
 
 master_config = {

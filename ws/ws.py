@@ -17,6 +17,7 @@ import gzip
 import urlparse
 import re
 import hashlib
+import traceback
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -24,6 +25,7 @@ from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api, reqparse
 
 from kafka import KafkaProducer, KafkaConsumer
+from tldextract import tldextract
 
 from config import config
 from elastic_manager.elastic_manager import ES
@@ -66,6 +68,7 @@ data = {}
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
 project_name_blacklist = ('logs')
+re_url = re.compile(r'[^0-9a-z-_]+')
 
 
 def write_to_file(content, file_path):
@@ -1583,6 +1586,91 @@ class TagAnnotationsForEntity(Resource):
             ))
 
 
+@api.route('/projects/<project_name>/data')
+class Data(Resource):
+    @requires_auth
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        parse = reqparse.RequestParser()
+        parse.add_argument('file_data', type=werkzeug.FileStorage, location='files')
+        parse.add_argument('file_name')
+        parse.add_argument('file_type')
+        args = parse.parse_args()
+
+        if args['file_name'] is None:
+            return rest.bad_request('Invalid file_name')
+        file_name = args['file_name'].strip()
+        if len(file_name) == 0:
+            return rest.bad_request('Invalid file_name')
+        if args['file_data'] is None:
+            return rest.bad_request('Invalid file_data')
+        if args['file_type'] is None:
+            return rest.bad_request('Invalid file_type')
+
+        # make root dir and save temp file
+        src_file_path = os.path.join(_get_project_dir_path(project_name), 'data', '{}.tmp'.format(file_name))
+        args['file_data'].save(src_file_path)
+        desc_dir_path = os.path.join(_get_project_dir_path(project_name), 'data', args['file_name'])
+        if not os.path.exists(desc_dir_path):
+            os.mkdir(desc_dir_path)
+
+        # generate catalog
+        if args['file_type'] == 'json_lines':
+            with codecs.open(src_file_path, 'r') as f:
+                for line in f:
+                    obj = json.loads(line)
+                    # split raw_content and catalog
+                    output_raw_content_path = os.path.join(desc_dir_path, obj['doc_id'] + '.html')
+                    output_catalog_path = os.path.join(desc_dir_path, obj['doc_id'] + '.json')
+                    with codecs.open(output_raw_content_path, 'w') as output:
+                        output.write(obj['raw_content'].encode('utf-8'))
+                    with codecs.open(output_catalog_path, 'w') as output:
+                        del obj['raw_content']
+                        obj['raw_content_path'] = output_raw_content_path
+                        output.write(json.dumps(obj, indent=2))
+                    # update data db
+                    tld = self.extract_tld(obj['url'])
+                    data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
+                    data[project_name]['data'][tld][obj['doc_id']] = output_catalog_path
+
+            # update data db file
+            data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
+            write_to_file(json.dumps(data[project_name]['data'], indent=2), data_db_path)
+
+        elif args['file_type'] == 'html':
+            pass
+
+        # remove temp file
+        os.remove(src_file_path)
+
+        return rest.created()
+
+    @requires_auth
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        ret = dict()
+        for tld, obj in data[project_name]['data'].iteritems():
+            ret[tld] = len(obj)
+        return ret
+
+    @staticmethod
+    def generate_tld(file_name):
+        return 'www.{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
+
+    @staticmethod
+    def generate_doc_id(url, timestamp=None):
+        content = url if timestamp else '{}-{}'.format(url, timestamp)
+        return hashlib.sha256(content).hexdigest().upper()
+
+    @staticmethod
+    def extract_tld(url):
+        return tldextract.extract(url).domain + '.' + tldextract.extract(url).suffix
+
+
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
     @requires_auth
@@ -1788,7 +1876,6 @@ class Actions(Resource):
                       os.path.join(_get_project_dir_path(project_name),
                                    'working_dir/etk_config_{}.json'.format(etk_config_version)))
 
-
         # 2. sandpaper
         # 2.1 delete previous index
         print '{}: extract 2'.format(project_name)
@@ -1930,8 +2017,12 @@ if __name__ == '__main__':
                     # sys.exit()
 
                 TagAnnotationsForEntityType.load_from_tag_file(project_name)
-
                 FieldAnnotations.load_from_field_file(project_name)
+
+                data_db_path = os.path.join(project_dir_path, 'data/_db.json')
+                if os.path.exists(data_db_path):
+                    with codecs.open(data_db_path, 'r') as f:
+                        data[project_name]['data'] = json.loads(f.read())
 
                 # dir_path = os.path.join(project_dir_path, 'glossaries')
                 # for file_name in os.listdir(dir_path):
@@ -1944,5 +2035,9 @@ if __name__ == '__main__':
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
     except Exception as e:
-        print 'Exception:', e
+        # exc_type, exc_value, exc_traceback = sys.exc_info()
+        # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        # lines = ''.join(lines)
+        # print lines
+        print e
         logger.error(e.message)
