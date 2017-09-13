@@ -1,0 +1,5084 @@
+{
+  "rules": [
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX", 
+            "XXXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "-"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "NYSE", 
+            "NASDAQ", 
+            "OTCQB"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ":"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "NYSE", 
+            "NASDAQ", 
+            "OTCQB"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ":"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "NYSE", 
+            "NASDAQ", 
+            "OTCQB"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ":"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX", 
+            "XXXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "NYSE", 
+            "NASDAQ", 
+            "OTCQB"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ":"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "-"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "NYSE", 
+            "NASDAQ", 
+            "OTCQB"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ":"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "NYSE", 
+            "NASDAQ", 
+            "OTCQB"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ":"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "NYSE", 
+            "NASDAQ", 
+            "OTCQB"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ":"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "$"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "$"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "$"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX", 
+            "XXXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "$"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "-"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "$"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "$"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "$"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "("
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ")"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "("
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ")"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "("
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX", 
+            "XXXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ")"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "("
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "-"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ")"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "("
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ")"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "("
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ")"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "("
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            ")"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "is", 
+            "was", 
+            "has", 
+            "comes", 
+            "closed", 
+            "news", 
+            "price", 
+            "from", 
+            "stock", 
+            "may", 
+            ":", 
+            "-", 
+            "'"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "is", 
+            "was", 
+            "has", 
+            "comes", 
+            "closed", 
+            "news", 
+            "price", 
+            "from", 
+            "stock", 
+            "may", 
+            ":", 
+            "-", 
+            "'"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX", 
+            "XXXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "is", 
+            "was", 
+            "has", 
+            "comes", 
+            "closed", 
+            "news", 
+            "price", 
+            "from", 
+            "stock", 
+            "may", 
+            ":", 
+            "-", 
+            "'"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "-"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "is", 
+            "was", 
+            "has", 
+            "comes", 
+            "closed", 
+            "news", 
+            "price", 
+            "from", 
+            "stock", 
+            "may", 
+            ":", 
+            "-", 
+            "'"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "is", 
+            "was", 
+            "has", 
+            "comes", 
+            "closed", 
+            "news", 
+            "price", 
+            "from", 
+            "stock", 
+            "may", 
+            ":", 
+            "-", 
+            "'"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "is", 
+            "was", 
+            "has", 
+            "comes", 
+            "closed", 
+            "news", 
+            "price", 
+            "from", 
+            "stock", 
+            "may", 
+            ":", 
+            "-", 
+            "'"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "is", 
+            "was", 
+            "has", 
+            "comes", 
+            "closed", 
+            "news", 
+            "price", 
+            "from", 
+            "stock", 
+            "may", 
+            ":", 
+            "-", 
+            "'"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "word", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "false", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "^"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}{6}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX", 
+            "XXXX", 
+            "XXXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XX", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "-"
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX", 
+            "XXX", 
+            "XXXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }, 
+    {
+      "pattern": [
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X", 
+            "XXX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "XX"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "X"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "true"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "ddd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [], 
+          "token": [
+            "."
+          ], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "punctuation", 
+          "is_in_output": "false"
+        }, 
+        {
+          "prefix": "", 
+          "suffix": "", 
+          "capitalization": [], 
+          "part_of_speech": [], 
+          "length": [], 
+          "maximum": "", 
+          "shapes": [
+            "dd"
+          ], 
+          "token": [], 
+          "minimum": "", 
+          "numbers": [], 
+          "contain_digit": "", 
+          "is_in_vocabulary": "", 
+          "is_out_of_vocabulary": "", 
+          "is_required": "true", 
+          "type": "shape", 
+          "is_in_output": "false"
+        }
+      ], 
+      "output_format": "{1}{2}{3}{4}{5}", 
+      "identifier": "stock_symbol_rule_us", 
+      "is_active": "true", 
+      "description": "a description"
+    }
+  ], 
+  "results": [
+    {
+      "context": {
+        "end": 95, 
+        "tokens_left": [
+          "Alibaba", 
+          "Group", 
+          "Holding", 
+          "Ltd", 
+          "("
+        ], 
+        "text": "Alibaba Group Holding Ltd ( <etk 'attribute' = 'field02'>NYSE : BABA</etk> ) dealt another , ( ", 
+        "tokens_right": [
+          ")", 
+          "dealt", 
+          "another", 
+          ",", 
+          "("
+        ], 
+        "start": 92, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 9
+      }, 
+      "value": "BABA"
+    }, 
+    {
+      "context": {
+        "end": 103, 
+        "tokens_left": [
+          ")", 
+          "dealt", 
+          "another", 
+          ",", 
+          "("
+        ], 
+        "text": ") dealt another , ( <etk 'attribute' = 'field02'>NASDAQ : AMZN</etk> ) this week \n $ ", 
+        "tokens_right": [
+          ")", 
+          "this", 
+          "week", 
+          "\n", 
+          "$"
+        ], 
+        "start": 100, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 9
+      }, 
+      "value": "AMZN"
+    }, 
+    {
+      "context": {
+        "end": 109, 
+        "tokens_left": [
+          "AMZN", 
+          ")", 
+          "this", 
+          "week", 
+          "\n"
+        ], 
+        "text": "AMZN ) this week \n <etk 'attribute' = 'field02'>$ USCR</etk> , $ TSLA \n common ", 
+        "tokens_right": [
+          ",", 
+          "$", 
+          "TSLA", 
+          "\n", 
+          "common"
+        ], 
+        "start": 107, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 16
+      }, 
+      "value": "USCR"
+    }, 
+    {
+      "context": {
+        "end": 112, 
+        "tokens_left": [
+          "week", 
+          "\n", 
+          "$", 
+          "USCR", 
+          ","
+        ], 
+        "text": "week \n $ USCR , <etk 'attribute' = 'field02'>$ TSLA</etk> \n common Stock ( AAPL ", 
+        "tokens_right": [
+          "\n", 
+          "common", 
+          "Stock", 
+          "(", 
+          "AAPL"
+        ], 
+        "start": 110, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 16
+      }, 
+      "value": "TSLA"
+    }, 
+    {
+      "context": {
+        "end": 118, 
+        "tokens_left": [
+          "$", 
+          "TSLA", 
+          "\n", 
+          "common", 
+          "Stock"
+        ], 
+        "text": "$ TSLA \n common Stock <etk 'attribute' = 'field02'>( AAPL )</etk> , Apple Inc . ( ", 
+        "tokens_right": [
+          ",", 
+          "Apple", 
+          "Inc", 
+          ".", 
+          "("
+        ], 
+        "start": 115, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 23
+      }, 
+      "value": "AAPL"
+    }, 
+    {
+      "context": {
+        "end": 125, 
+        "tokens_left": [
+          ")", 
+          ",", 
+          "Apple", 
+          "Inc", 
+          "."
+        ], 
+        "text": ") , Apple Inc . <etk 'attribute' = 'field02'>( AAPL )</etk> . \n AAPL is looking ", 
+        "tokens_right": [
+          ".", 
+          "\n", 
+          "AAPL", 
+          "is", 
+          "looking"
+        ], 
+        "start": 122, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 23
+      }, 
+      "value": "AAPL"
+    }, 
+    {
+      "context": {
+        "end": 227, 
+        "tokens_left": [
+          "s", 
+          "stock", 
+          "sold", 
+          "off", 
+          "\n"
+        ], 
+        "text": "s stock sold off \n <etk 'attribute' = 'field02'>GOOGL 919 . 46</etk> - 10 . 22 - ", 
+        "tokens_right": [
+          "-", 
+          "10", 
+          ".", 
+          "22", 
+          "-"
+        ], 
+        "start": 223, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 37
+      }, 
+      "value": "GOOGL"
+    }, 
+    {
+      "context": {
+        "end": 241, 
+        "tokens_left": [
+          "1", 
+          ".", 
+          "10", 
+          "%", 
+          ","
+        ], 
+        "text": "1 . 10 % , <etk 'attribute' = 'field02'>AAPL 146 . 28</etk> 0 . 65 0 . ", 
+        "tokens_right": [
+          "0", 
+          ".", 
+          "65", 
+          "0", 
+          "."
+        ], 
+        "start": 237, 
+        "input": "tokens", 
+        "identifier": "stock_symbol_rule_us", 
+        "rule_id": 37
+      }, 
+      "value": "AAPL"
+    }, 
+    [
+      "BABA", 
+      "AMZN", 
+      "USCR", 
+      "TSLA", 
+      "AAPL", 
+      "AAPL", 
+      "GOOGL", 
+      "AAPL"
+    ]
+  ], 
+  "test_tokens": [
+    "A", 
+    ",", 
+    "BA", 
+    ",", 
+    "\n", 
+    "C", 
+    "^", 
+    "J", 
+    ",", 
+    "BAC", 
+    ",", 
+    "C", 
+    "-", 
+    "C", 
+    ",", 
+    "JW", 
+    ".", 
+    "B", 
+    ",", 
+    "\n", 
+    "BK", 
+    "^", 
+    "C", 
+    ",", 
+    "ABRN", 
+    ",", 
+    "NS", 
+    "-", 
+    "A", 
+    ",", 
+    "\n", 
+    "ADK", 
+    "^", 
+    "A", 
+    ",", 
+    "ABEOW", 
+    ",", 
+    "ABC", 
+    "-", 
+    "A", 
+    ",", 
+    "BAC", 
+    ".", 
+    "A", 
+    ",", 
+    "HK", 
+    ".", 
+    "WS", 
+    ",", 
+    "\n", 
+    "MITT", 
+    "^", 
+    "A", 
+    ",", 
+    "HCAC", 
+    ".", 
+    "U", 
+    ",", 
+    "BTX", 
+    ".", 
+    "WS", 
+    ",", 
+    ",", 
+    "C", 
+    ".", 
+    "WS", 
+    ".", 
+    "A", 
+    ",", 
+    "\n", 
+    "IMUC", 
+    ".", 
+    "WS", 
+    ",", 
+    "\n", 
+    "BAC", 
+    ".", 
+    "WS", 
+    ".", 
+    "A", 
+    "\n", 
+    "CHSP", 
+    "^", 
+    "A", 
+    ".", 
+    "CL", 
+    "\n", 
+    "Alibaba", 
+    "Group", 
+    "Holding", 
+    "Ltd", 
+    "(", 
+    "NYSE", 
+    ":", 
+    "BABA", 
+    ")", 
+    "dealt", 
+    "another", 
+    ",", 
+    "(", 
+    "NASDAQ", 
+    ":", 
+    "AMZN", 
+    ")", 
+    "this", 
+    "week", 
+    "\n", 
+    "$", 
+    "USCR", 
+    ",", 
+    "$", 
+    "TSLA", 
+    "\n", 
+    "common", 
+    "Stock", 
+    "(", 
+    "AAPL", 
+    ")", 
+    ",", 
+    "Apple", 
+    "Inc", 
+    ".", 
+    "(", 
+    "AAPL", 
+    ")", 
+    ".", 
+    "\n", 
+    "AAPL", 
+    "is", 
+    "looking", 
+    "to", 
+    ",", 
+    "|", 
+    "for", 
+    "AAPQ", 
+    "was", 
+    "8", 
+    ".", 
+    "31", 
+    "For", 
+    "the", 
+    "fiscal", 
+    "y", 
+    "|", 
+    ",", 
+    "AAPW", 
+    "has", 
+    "efficiently", 
+    "invested", 
+    ",", 
+    "|", 
+    "AAPE", 
+    "comes", 
+    "one", 
+    "wee", 
+    ",", 
+    ",", 
+    "AAPR", 
+    "may", 
+    "refer", 
+    "to", 
+    ":", 
+    "|", 
+    ",", 
+    "AAPl", 
+    "closed", 
+    "at", 
+    "ab", 
+    "|", 
+    "including", 
+    "AAPT", 
+    "news", 
+    ",", 
+    "historical", 
+    "|", 
+    "The", 
+    "bank", 
+    "lowered", 
+    "its", 
+    "AAPY", 
+    "price", 
+    "target", 
+    "to", 
+    "$", 
+    "150", 
+    ",", 
+    "|", 
+    "Earnings", 
+    "estimates", 
+    "for", 
+    "AAPU", 
+    "from", 
+    "thousands", 
+    "of", 
+    "|", 
+    "View", 
+    "the", 
+    "basic", 
+    "AAPO", 
+    "stock", 
+    "chart", 
+    "\n", 
+    "AAPA", 
+    ":", 
+    "Get", 
+    "the", 
+    "latest", 
+    "Apple", 
+    ",", 
+    "AMZA", 
+    "-", 
+    "Free", 
+    "Report", 
+    ",", 
+    "unveiled", 
+    ",", 
+    "AAPD", 
+    "'", 
+    "s", 
+    "stock", 
+    "sold", 
+    "off", 
+    "\n", 
+    "GOOGL", 
+    "919", 
+    ".", 
+    "46", 
+    "-", 
+    "10", 
+    ".", 
+    "22", 
+    "-", 
+    "1", 
+    ".", 
+    "10", 
+    "%", 
+    ",", 
+    "AAPL", 
+    "146", 
+    ".", 
+    "28", 
+    "0", 
+    ".", 
+    "65", 
+    "0", 
+    ".", 
+    "45", 
+    "%", 
+    ":"
+  ], 
+  "test_text": " A, BA,  \n C^J,        BAC,      C-C,         JW.B,    \n BK^C,       ABRN,     NS-A,  \n ADK^A,      ABEOW ,    ABC-A,      BAC.A,       HK.WS,  \n MITT^A,                             HCAC.U,     BTX.WS,     ,       C.WS.A,\n                                                 IMUC.WS,   \n                                                                   BAC.WS.A \n CHSP^A.CL \n Alibaba Group Holding Ltd (NYSE:BABA) dealt another ,  (NASDAQ:AMZN) this week \n $USCR, $TSLA \n common Stock (AAPL) , Apple Inc. (AAPL). \nAAPL is looking to, |  for AAPQ was 8.31 For the fiscal y  | ,AAPW has efficiently invested ,| AAPE comes one wee,,AAPR may refer to:  |,AAPl closed at ab|including AAPT news, historical|The bank lowered its AAPY price target to $150, |Earnings estimates for AAPU from thousands of | View the basic AAPO stock chart \nAAPA: Get the latest Apple, AMZA - Free Report, unveiled, AAPD's stock sold off\nGOOGL 919.46 -10.22 -1.10%,AAPL 146.28 0.65 0.45% :"
+}
