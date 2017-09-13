@@ -23,18 +23,6 @@
 | predefined_extractor | one of `social_media`, `review_id`, `posting_date`, `phone`, `email`, `address`, `TLD`, `none` | specifies a default extractor to use for a field |
 | rule_extractor_enabled | false, true | When true, use the custom rule extractor for this field, if one is defined |
 
-### Icons
-
-
-
-### Colors
-
-
-## Actions
-
-### Get Sample Pages
-Downloads pages from the CDR corresponding to the TLDs entered in the `Edit Project` page. These pages will used to test all your extractors and will appear in the DIG GUI. In addition, these pages will be sent to the Inferlink tool to learn extractos. 
-
 
 ## Docker image for myDIG
 
