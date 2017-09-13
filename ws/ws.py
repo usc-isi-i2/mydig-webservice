@@ -1689,6 +1689,8 @@ class Actions(Resource):
             return self._add_data(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
+        elif action_name == 'landmark_extract':
+            return self.landmark_extract(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
@@ -1731,18 +1733,64 @@ class Actions(Resource):
                 )
                 input_topic = project_name + '_in'
 
-                for doc_id, raw_path in data[project_name]['data'][tld].iteritems():
+                for doc_id, catalog_path in data[project_name]['data'][tld].iteritems():
+                    # get raw_content_path
+                    try:
+                        with codecs.open(catalog_path, 'r') as f:
+                            raw_content_path = json.loads(f.read()['raw_content_path'])
+                    except e:
+                        print 'invalid catalog file: {}'.format(catalog_path)
+                        continue
+
+                    # publish to kafka queue
                     ret, msg = Actions._publish_to_kafka_input_queue(
-                        doc_id, raw_path, kafka_producer, input_topic)
+                        doc_id, raw_content_path, kafka_producer, input_topic)
                     if not ret:
                         return rest.internal_error(msg)
 
+                    # update status
                     data[project_name]['status']['total_added_docs'] += 1
                     num_added += 1
                     if num_added >= num_to_run:
                         break
                 update_status_file(project_name)
+
         return rest.created()
+
+    @staticmethod
+    def landmark_extract(project_name):
+        # {
+        #     'tld1': 100,
+        #     'tld2': 200
+        # }
+        input = request.get_json(force=True)
+        tld_list = input.get('tlds', {})
+        payload = dict()
+
+        for tld, num_to_run in tld_list.iteritems():
+            if tld in data[project_name]['data']:
+                num_added = 0
+                for doc_id, catalog_path in data[project_name]['data'][tld].iteritems():
+                    with codecs.open(catalog_path, 'r') as f:
+                        catalog = json.loads(f.read())
+                        # payload format
+                        # {
+                        #     "tld1": {"documents": [{...}, {...}, ...]},
+                        # }
+                        payload[tld]= payload.get(tld, dict())
+                        payload[tld]['documents'] = payload[tld].get('documents', list())
+                        payload[tld]['documents'].append(catalog)
+                    num_added += 1
+                    if num_added >= num_to_run:
+                        break
+
+        url = ''
+        resp = requests.post(url, json.dumps(payload))
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('Landmark error: {}'.format(resp.status_code))
+
+        return rest.accepted()
+
 
     @staticmethod
     def _extract(project_name):
