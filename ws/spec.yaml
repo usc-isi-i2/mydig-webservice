@@ -1011,16 +1011,15 @@ paths:
           description: "bad request"
         404:
           description: "not found"
-  # actions
-  /projects/{project_name}/actions/{action_name}:
+  # data
+  /projects/{project_name}/data:
     post:
       tags:
-      - "actions"
-      summary: "Invoke an action"
+      - "data"
+      summary: "Import data"
       description: ""
       operationId: ""
       consumes:
-      - "application/json"
       - "multipart/form-data"
       produces:
       - "application/json"
@@ -1029,32 +1028,137 @@ paths:
         name: "project_name"
         required: true
         description: ""
-      - in: "path"
-        name: "action_name"
-        required: true
-        enum: ["get_data_from_file", "get_data_from_es", "extract"]
-        description: ""
-#      - in: "query"
-#        name: "pages_per_tld"
-#        required: false
-#        description: "number of pages for per TLD (only works for get_sample_pages)"
-#        type: "integer"
       - in: "formData"
-        name: "data_file"
-        required: false
-        description: "upload user's data (only works for get_data_from_file)"
+        name: "file_data"
+        required: true
         type: "file"
       - in: "formData"
         name: "file_name"
-        required: false
-        description: "file name of user's data (only works for get_data_from_file)"
+        required: true
+      - in: "formData"
+        name: "file_type"
+        required: true
+        enum: ["json_lines"]
       responses:
-        202:
-          description: "accepted (action started)"
+        201:
+          description: "created"
         400:
           description: "bad request"
         404:
           description: "not found"
+    get:
+      tags:
+      - "data"
+      summary: "Get TLD list"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  # actions
+  /projects/{project_name}/actions/add_data:
+    post:
+      tags:
+      - "actions"
+      summary: "Add data to queue"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/add_data"
+      responses:
+        201:
+          description: "created"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  /projects/{project_name}/actions/landmark_extract:
+    post:
+      tags:
+      - "actions"
+      summary: "Sent data to Landmark tool for extraction"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
+      - in: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/add_data"
+      responses:
+        202:
+          description: "accepted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+  /projects/{project_name}/actions/extract:
+    post:
+      tags:
+      - "actions"
+      summary: "Start ETL for extraction"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        202:
+          description: "accepted"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+    get:
+      tags:
+      - "actions"
+      summary: "ETL extraction status"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "ok"
+        400:
+          description: "bad request"
+        404:
+          description: "not found"
+
 #    get:
 #      tags:
 #      - "actions"
@@ -1812,6 +1916,11 @@ definitions:
         type: "array"
       info:
         type: "object"
+  add_data:
+    type: "object"
+    properties:
+      tld1:
+        type: "integer"
 
 securityDefinitions:
   basicAuth:

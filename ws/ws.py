@@ -1652,7 +1652,7 @@ class Data(Resource):
         # remove temp file
         os.remove(src_file_path)
 
-        return rest.created()
+        return rest.created(data=self.get(project_name))
 
     @requires_auth
     def get(self, project_name):
