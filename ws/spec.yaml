@@ -1086,6 +1086,7 @@ paths:
         required: true
         description: ""
       - in: "body"
+        name: "body"
         required: true
         schema:
           $ref: "#/definitions/add_data"
@@ -1113,6 +1114,7 @@ paths:
         required: true
         description: ""
       - in: "body"
+        name: "body"
         required: true
         schema:
           $ref: "#/definitions/add_data"
@@ -1929,8 +1931,11 @@ definitions:
   add_data:
     type: "object"
     properties:
-      tld1:
-        type: "integer"
+      tlds:
+        type: "object"
+        properties:
+          tld1:
+            type: "integer"
 
 securityDefinitions:
   basicAuth:

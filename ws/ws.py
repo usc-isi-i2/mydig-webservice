@@ -1719,8 +1719,10 @@ class Actions(Resource):
     @staticmethod
     def _add_data(project_name):
         # {
-        #     'tld1': 100,
-        #     'tld2': 200
+        #     "tlds": {
+        #         'tld1': 100,
+        #         'tld2': 200
+        #     }
         # }
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
@@ -1760,8 +1762,10 @@ class Actions(Resource):
     @staticmethod
     def landmark_extract(project_name):
         # {
-        #     'tld1': 100,
-        #     'tld2': 200
+        #     "tlds": {
+        #         'tld1': 100,
+        #         'tld2': 200
+        #     }
         # }
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
@@ -1784,8 +1788,8 @@ class Actions(Resource):
                     if num_added >= num_to_run:
                         break
 
-        url = ''
-        resp = requests.post(url, json.dumps(payload))
+        url = config['landmark']['url'].format(project_name=project_name)
+        resp = requests.post(url, json.dumps(payload), timeout=5)
         if resp.status_code // 100 != 2:
             return rest.internal_error('Landmark error: {}'.format(resp.status_code))
 
