@@ -1134,6 +1134,11 @@ paths:
       - "application/json"
       produces:
       - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
       responses:
         202:
           description: "accepted"
@@ -1151,6 +1156,11 @@ paths:
       - "application/json"
       produces:
       - "application/json"
+      parameters:
+      - in: "path"
+        name: "project_name"
+        required: true
+        description: ""
       responses:
         200:
           description: "ok"

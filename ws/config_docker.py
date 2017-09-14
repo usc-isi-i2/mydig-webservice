@@ -54,7 +54,9 @@ config = {
         'debug': True,
         'backend_url': os.getenv('MYDIG_BACKEND_URL', 'http://localhost:9879/')
     },
-    # 'default_source_credentials_path': './default_source_credentials.json',
+    'landmark': {
+        'url': 'http://landmark-rest:5000/project/create_from_dig/{project_name}'
+    },
     'default_glossary_dicts_path': '/shared_data/dig3-resources/builtin_resources',
     'default_glossaries_path': '/shared_data/dig3-resources/glossaries',
     'default_spacy_rules_path': '/shared_data/dig3-resources/custom_spacy_rules'
