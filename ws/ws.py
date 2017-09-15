@@ -1739,8 +1739,9 @@ class Actions(Resource):
                     # get raw_content_path
                     try:
                         with codecs.open(catalog_path, 'r') as f:
-                            raw_content_path = json.loads(f.read()['raw_content_path'])
-                    except e:
+                            raw_content_path = json.loads(f.read())['raw_content_path']
+                    except Exception as e:
+                        print e
                         print 'invalid catalog file: {}'.format(catalog_path)
                         continue
 
@@ -1801,7 +1802,6 @@ class Actions(Resource):
         new_extraction = True
 
         # 1. create etk config and snapshot
-        print '{}: extract 1'.format(project_name)
         etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
         etk_config_version = hashlib.sha256(json.dumps(etk_config)).hexdigest().upper()
         etk_config['etk_version'] = etk_config_version
@@ -1852,7 +1852,6 @@ class Actions(Resource):
                 return rest.internal_error('failed to switch index in sandpaper')
 
         # 3. run etk
-        print '{}: extract 3'.format(project_name)
         url = config['etl']['url'] + '/run_etk'
         payload = {
             'project_name': project_name,
@@ -1878,7 +1877,7 @@ class Actions(Resource):
             return False, 'data file is missing: {}'.format(file_path)
         try:
             with codecs.open(file_path, 'r') as f:
-                r = kafka_producer.send(topic, f.read().decode('utf-8', 'ignore'))
+                r = kafka_producer.send(topic, f.read()) # .decode('utf-8', 'ignore')
                 r.get(timeout=60)  # wait till sent
                 print 'sent {} to topic {}'.format(doc_id, topic)
         except Exception as e:
