@@ -227,8 +227,6 @@ class AllProjects(Resource):
         data[project_name]['master_config']['image_prefix'] = image_prefix
         update_master_config_file(project_name)
 
-        update_status_file(project_name)
-
         # create other dirs and files
         # .gitignore file should be created for empty folder will not be show in commit
         os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
@@ -258,6 +256,8 @@ class AllProjects(Resource):
         write_to_file('*\n', os.path.join(project_dir_path, 'working_dir/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
         write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
+
+        update_status_file(project_name) # create status file after creating the working_dir
 
         git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
         logger.info('project %s created.' % project_name)
