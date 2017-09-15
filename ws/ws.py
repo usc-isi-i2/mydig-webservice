@@ -1731,7 +1731,7 @@ class Actions(Resource):
                 num_added = 0
                 kafka_producer = KafkaProducer(
                     bootstrap_servers=config['kafka']['servers'],
-                    # value_serializer=lambda v: json.dumps(v).encode('utf-8')
+                    value_serializer=lambda v: json.dumps(v).encode('utf-8')
                 )
                 input_topic = project_name + '_in'
 
@@ -1739,15 +1739,18 @@ class Actions(Resource):
                     # get raw_content_path
                     try:
                         with codecs.open(catalog_path, 'r') as f:
-                            raw_content_path = json.loads(f.read())['raw_content_path']
+                            doc_obj = json.loads(f.read())
+                        with codecs.open(doc_obj['raw_content_path'], 'r') as f:
+                            doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
+                            del doc_obj['raw_content_path']
                     except Exception as e:
                         print e
-                        print 'invalid catalog file: {}'.format(catalog_path)
+                        print 'error in file: {}'.format(catalog_path)
                         continue
 
                     # publish to kafka queue
                     ret, msg = Actions._publish_to_kafka_input_queue(
-                        doc_id, raw_content_path, kafka_producer, input_topic)
+                        doc_id, doc_obj, kafka_producer, input_topic)
                     if not ret:
                         return rest.internal_error(msg)
 
@@ -1872,14 +1875,11 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _publish_to_kafka_input_queue(doc_id, file_path, kafka_producer, topic):
-        if not os.path.exists(file_path):
-            return False, 'data file is missing: {}'.format(file_path)
+    def _publish_to_kafka_input_queue(doc_id, doc, kafka_producer, topic):
         try:
-            with codecs.open(file_path, 'r') as f:
-                r = kafka_producer.send(topic, f.read()) # .decode('utf-8', 'ignore')
-                r.get(timeout=60)  # wait till sent
-                print 'sent {} to topic {}'.format(doc_id, topic)
+            r = kafka_producer.send(topic, doc)
+            r.get(timeout=60)  # wait till sent
+            print 'sent {} to topic {}'.format(doc_id, topic)
         except Exception as e:
             print e
             return False, 'error in sending data to kafka queue'
