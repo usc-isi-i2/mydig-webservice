@@ -112,19 +112,14 @@ function addProject(data)  {
 		 <br><br>
 	     <paper-material style="width:94%;margin-left:auto;margin-right:auto;height:10%">
               <section id = "projectSection" style="width:96%;margin-left:auto;margin-right:auto;" class="main-search-results">
-              <div style="margin-bottom:0.7em"><span><strong>Name : </strong>{{item.name}}</span></div>
-              <div>
-	              <span><strong>Index Name : </strong>{{item.value.sources.0.index}}</span>
+              <div style="margin-top:1.0em;float:left;"><span><h4><b>{{item.name}}</b></h4></span></div>
+              <div style="margin-bottom:2.0em">
 	              <a target="_blank" style="color:black" href="/details?{{item.name}}">
 	              <paper-button style="float:right;text-transform: none;" raised ><strong>Open</strong></paper-button>
 	              </a>
 	              
 	              <paper-button on-tap="editProjectData" style="float:right;color:black;text-transform: none;" raised><strong>Edit</strong></paper-button>
 	          </div>
-              <div style="margin-top:0.8em">
-                  <span><strong>Start Date : </strong>{{item.value.sources.0.start_date}}</span>
-	              <span style="text-align: center;margin-left:10em"><strong>End Date : </strong>{{item.value.sources.0.end_date}}</span>
-              </div>
               </section>
             </paper-material>
           

@@ -14,6 +14,7 @@
 	<link rel="import" href="../static/bower_components/paper-tabs/paper-tab.html">
 	<link rel="import" href="../static/bower_components/paper-checkbox/paper-checkbox.html">
 	<link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+	<link rel="import" href="../static/bower_components/paper-datatable/paper-datatable.html">
 	<link rel="import" href="../static/bower_components/paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 	<link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
@@ -35,17 +36,233 @@
 	<link rel="import" href="theme.css">
 	<link rel="import" href="../static/technology.html">
 	
+
+
 	
 	<script>
 	
 		var projectName = window.location.href.split('?');
 		var dataText;
 		var glossariesNewField=[];
-		
+		var mainEndPoint = "http://localhost:9879"
 		
 		$( document ).ready(function() {
 			showMenu();
+			var checkBoxFileNames={
+									"cat" : 1,
+									"dog" : 2,
+									"pikachu" : 3,
+									"charmander" : 4
+								};
+			// showCheckBoxList(checkBoxFileNames);
+			showTLDs();
+			
 			});
+
+		function showTLDs(){
+			getDataEndPoint = mainEndPoint + "/projects/" + projectName[1] + '/data'
+
+			$.ajax
+			({
+				type: "GET",
+				url: mainEndPoint + "/projects/" + projectName[1] + '/data',
+				dataType: 'json',
+				async: true,
+				headers: {
+					"Authorization": "Basic " + btoa("admin" + ":" + "123")
+				},
+				success: function (data){
+					$(".tlds_table_body").empty();
+					$.each(data, function(index, value){
+						var tr = "<tr id=" + index + "_row>"
+						tr += "<td>" + index + "</td>"
+						tr += "<td align=\"center\">" + value + "</td>"
+						tr += "<td align=\"center\" class=\"no_of_docs\" id=" + index + "_text_box_td\"><paper-input  required auto-validate pattern=\"[0-9]*\" maxlength=\"255\" class=\"addProjClass\" label=\"# Docs to extract\" id=" + index + "_text_box\" value=\"0\"></paper-input></td>"
+						tr += "<td align=\"center\"><paper-button style=\"width: 120px;\" onclick=\"add_tld_to_queue(this.id);\" id=" + index + "_button raised><strong>+Add</strong></paper-button></td>"
+						tr += "</tr>"
+						$(".tlds_table_body").append($(tr))
+					});
+				}
+			});
+		}
+
+		function submitImportFileForm(){
+			var importFileFormData = new FormData()
+			importFileFormData.append("file_data", document.getElementById("file_data").getElementsByTagName("input")[0].files[0] )
+			importFileFormData.append("file_name", $('#file_name').val())
+			importFileFormData.append("file_type", $('#file_type').val())
+			
+			$.ajax
+			({
+				type: "POST",
+				url: mainEndPoint + "/projects/" + projectName[1] + '/data',
+				dataType: 'json',
+				data:importFileFormData,
+				async: true,
+				processData: false,
+				contentType: false,
+				headers: {
+					"Authorization": "Basic " + btoa("admin" + ":" + "123")
+				},
+				success: function (data){
+					$(".tlds_table_body").empty();
+					$.each(data, function(index, value){
+						var tr = "<tr id=" + index + "_row>"
+						tr += "<td>" + index + "</td>"
+						tr += "<td align=\"center\">" + value + "</td>"
+						tr += "<td align=\"center\" class=\"no_of_docs\" id=" + index + "_text_box_td\"><paper-input  required auto-validate pattern=\"[0-9]*\" maxlength=\"255\" class=\"addProjClass\" label=\"# Docs to extract\" id=" + index + "_text_box\" value=\"0\"></paper-input></td>"
+						tr += "<td align=\"center\"><paper-button style=\"width: 120px;\" onclick=\"add_tld_to_queue(this.id);\" id=" + index + "_button raised><strong>+Add</strong></paper-button></td>"
+						tr += "</tr>"
+						$(".tlds_table_body").append($(tr))
+					});
+				}
+			});
+		}
+
+		function no_of_docs_from_all_change(){
+			var no_of_docs_from_all = $("#no_of_docs_from_all").val()
+			$('.tlds_table_body .no_of_docs').each(function()
+			{
+				$(this).find(':input').val(no_of_docs_from_all)
+			});
+		}
+
+		function add_all_tlds_to_queue(){
+			var post_data = {"tlds" : {}}
+
+			$('.tlds_table_body .no_of_docs').each(function()
+			{
+				var index = $(this).attr('id')
+				index = index.slice(0, index.length - ("_text_box_td".length + 1));
+				var value = $(this).find(':input').val()
+				post_data["tlds"][index] = parseInt(value)
+			});
+
+			$.ajax
+			({
+				type: "POST",
+				url: mainEndPoint + "/projects/" + projectName[1] + '/actions/add_data',
+				dataType: 'json',
+				data: JSON.stringify(post_data),
+				async: true,
+				contentType: 'application/json; charset=utf-8',
+				processData: false,
+				headers: {
+					"Authorization": "Basic " + btoa("admin" + ":" + "123")
+				},
+				success: function(msg) {
+			     	console.log(msg)  
+			    }
+			});
+		}
+
+		function add_tld_to_queue(id){
+			var post_data = {"tlds" : {}}
+
+			var tld = id.slice(0, id.length - "_button".length)
+			var value = null
+			$('.tlds_table_body .no_of_docs').each(function()
+			{
+				var index = $(this).attr('id')
+				index = index.slice(0, index.length - ("_text_box_td".length + 1));
+				if (index == tld){
+					value = $(this).find(':input').val();
+					post_data["tlds"][index] = parseInt(value);
+				}
+				
+			});
+			$.ajax
+			({
+				type: "POST",
+				url: mainEndPoint + "/projects/" + projectName[1] + '/actions/add_data',
+				dataType: 'json',
+				data: JSON.stringify(post_data),
+				async: true,
+				contentType: 'application/json; charset=utf-8',
+				processData: false,
+				headers: {
+					"Authorization": "Basic " + btoa("admin" + ":" + "123")
+				},
+				success: function(msg) {
+			        console.log(msg)
+			    }
+			});
+		}
+
+
+		function updateProgress(){
+			console.log('Updating progress')
+			$.ajax
+			({
+				type: "GET",
+				url: mainEndPoint + "/projects/" + projectName[1] + '/actions/extract',
+				dataType: 'json',
+				async: true,
+				headers: {
+					"Authorization": "Basic " + btoa("admin" + ":" + "123")
+				},
+				success: function(res) {
+					console.log(res)
+			        var res = JSON.parse(res);
+			        var progress = Math.floor((res["etk_progress"]["current"] / res["etk_progress"]["total"]) * 100)
+			        $('#extract_progress').attr('value', progress.toString())
+			        console.log('updating progress successful')
+			        
+			    }
+			});
+			 
+		}
+
+		function extractOnClick(){
+			// Set interval for refresh
+			// var progress_updater = setInterval(function(){updateProgress()}, 2000);
+			$.ajax
+			({
+				type: "POST",
+				url: mainEndPoint + "/projects/" + projectName[1] + '/actions/extract',
+				// dataType: 'json',
+				// data: JSON.stringify(post_data),
+				async: true,
+				contentType: false,
+				processData: false,
+				headers: {
+					"Authorization": "Basic " + btoa("admin" + ":" + "123")
+				},
+				success: function(msg) {
+			        console.log("Extract called")
+			        // clearInterval(progress_updater)
+			    }
+			});
+		}
+
+		function inferlinkExtractOnClick(){
+			var post_data = {"tlds" : {}}
+
+			$('.tlds_table_body .no_of_docs').each(function()
+			{
+				var index = $(this).attr('id')
+				index = index.slice(0, index.length - ("_text_box_td".length + 1));
+				var value = $(this).find(':input').val()
+				post_data["tlds"][index] = parseInt(value)
+			});
+
+			$.ajax
+			({
+				type: "POST",
+				url: mainEndPoint + "/projects/" + projectName[1] + '/actions/landmark_extract',
+				dataType: 'json',
+				data: JSON.stringify(post_data),
+				async: true,
+				contentType: 'application/json; charset=utf-8',
+				processData: false,
+				headers: {
+					"Authorization": "Basic " + btoa("admin" + ":" + "123")
+				},
+				success: function(msg) {
+			     	console.log(msg)  
+			    }
+			});
+		}
 
 
 		// Functions to show and hide the form elements under menu
@@ -71,6 +288,7 @@
 			}
 		}
 
+		
 		function showMenu() {
 			  document.getElementById('menuSelector').style.backgroundColor ="rgba(255, 255, 0, 0.22)";
 			  document.getElementById('fieldSelector').style.backgroundColor =null;
@@ -583,81 +801,69 @@
 			<paper-tab style="width:19%;height: 100%;" class="paperTabs" id="glossarySelector" onclick="showGlossary()">Glossaries</paper-tab>
 			</paper-tabs>
 			
-			<iron-collapse id="menu" style="margin-left:20px;">
-				<br><br><br><br>
-				<center><paper-button onclick="getDataDialog.toggle()" raised><strong>GET DATA</strong></paper-button></center>
-			    <br><br>
-			    <center><paper-button onclick="" raised><strong>EXTRACT</strong></paper-button></center>
-			    <br><br><br><br>
-			    <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="getDataDialog" style="width:50%;margin-left:auto;margin-right:auto">
-			    		<paper-dialog-scrollable>
-			    			<center><paper-dropdown-menu label="From Elastic Search" id="handleElasticSearchForm" style="width:95%" onclick="handleElasticSearchForm()"></center>
-							</paper-dropdown-menu>
-			    			<iron-collapse id="elasticSearchForm">
-				    			<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Username:" id=fromES_UserName></paper-input>
-						        <paper-input  class="addProjClass" label="Password:" id=fromES_Password></paper-input>
-						        <paper-input class="addProjClass" label="Index:" id=fromES_Index></paper-input>
-						        <paper-input class="addProjClass" label="Doc type:" id=fromES_DocType></paper-input>
-						        <paper-input class="addProjClass" label="ES URL:" id=fromES_URL></paper-input>
-						        <div>
-						        <span>TLDs</span>
-						        <textarea id=fromES_ProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
-						        </div>
-						        <div>
-						        <span>Start Date:</span>
-						        <paper-date-picker-item class="projectInputStyle"
-								     date-format="YYYY-MM-DD"
-								    placeholder="Select:"
-								    id=fromES_Start_date>
-								</paper-date-picker-item>
-								</div>
-								<div>
-						        <span>End Date:</span>
-								<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
-								    placeholder="Select:"
-								    id=fromES_End_date>
-								</paper-date-picker-item>
-								</div>
-								<paper-input class="addProjClass" label="Number of pages" id=fromES_NoOfPages></paper-input>
-							</iron-collapse>
+			<iron-collapse id="menu" style="margin-left:0px;">
+				<!-- <div style="float:left; margin-top:20px;margin-left:50px;width: 75%"">
+					<h3 >Top Level Domains</h3>
+					<div class="checkbox-list-of-files" style="overflow-y: auto;height:750px;margin-left: 20px;margin-top: 20px">			
+					</div>
+				</div> -->
+				<div class="tlds" style="float:left; margin-top:20px;margin-left:50px;width: 75%">
+					<table id="tlds_table" style="border-collapse:collapse;" cellpadding="10">
+						<col width="250">
+						<col width="200">
+						<col width="200">
+						<col width="100">
+						<thead>
+							<tr>
+							<th>Top Level Domain</th>
+							<th># Documents</th>
+							<th><paper-input  required auto-validate pattern="[0-9]*" maxlength="255" class="addProjClass" label="# Docs to extract(*)" id=no_of_docs_from_all onchange="no_of_docs_from_all_change()"></paper-input></th>
+							<th><paper-button style="width:120px;" onclick="add_all_tlds_to_queue()" raised><strong>+ADD ALL</strong></paper-button></th>
+						</tr>
+						</thead>
+						<tbody class='tlds_table_body'>
+							
+						</tbody>
+					</table>
+				</div>
 
-							<br><br>
-							<center><paper-dropdown-menu label="Upload File" id="handleUploadFileForm" style="width:95%" onclick="handleUploadFileForm()"></center>
-							</paper-dropdown-menu>
-							<iron-collapse id="uploadFileForm">
-				    			<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Username:" id=uploadFile_UserName></paper-input>
-						        <paper-input  class="addProjClass" label="Password:" id=fromES_Password></paper-input>
-						        <paper-input class="addProjClass" label="Index:" id=uploadFile_Index></paper-input>
-						        <paper-input class="addProjClass" label="Doc type:" id=uploadFile_DocType></paper-input>
-						        <paper-input class="addProjClass" label="Upload File URL:" id=uploadFile_URL></paper-input>
-						        <div>
-						        <span>TLDs</span>
-						        <textarea id=uploadFile_ProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
-						        </div>
-						        <div>
-						        <span>Start Date:</span>
-						        <paper-date-picker-item class="projectInputStyle"
-								     date-format="YYYY-MM-DD"
-								    placeholder="Select:"
-								    id=uploadFile_Start_date>
-								</paper-date-picker-item>
-								</div>
-								<div>
-						        <span>End Date:</span>
-								<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
-								    placeholder="Select:"
-								    id=uploadFile_End_date>
-								</paper-date-picker-item>
-								</div>
-								<paper-input class="addProjClass" label="Number of pages" id=uploadFile_NoOfPages></paper-input>
-							</iron-collapse>
-					        
-					        
-				        </paper-dialog-scrollable>
-				        	<paper-button style="float:right;margin-top:20px;margin-right:20px" onclick="" raised><strong>Go</strong></paper-button>
-					        <paper-button style="float:right;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
-					        <paper-checkbox style="float:right;margin-top:30px;margin-right:20px" id="saveFlag">Save</paper-checkbox>
-				</paper-dialog>
+
+				<div class="action-buttons" style="float:right;margin-top:20px;margin-right:20px">
+					<br><br><br>
+					<paper-button style="width: 200px;margin-right: 20px" onclick="importFileFormDialog.toggle();" raised><strong>Import JSON File</strong></paper-button>
+					<br><br><br>
+					<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="importFileFormDialog" style="width:50%;margin-left:auto;margin-right:auto">
+						<paper-dialog-scrollable>
+						
+						<form is="iron-form" content-type="multipart/form-data" id="importFileForm" on-iron-form-presubmit="onPresubmit" method="POST">
+								<h4>Import File</h4>
+								<!-- <paper-input type="hidden" style="display:none" id="upload_file_name"></paper-input> -->
+								<paper-input type="file" id=file_data onchange='openFile(event)'></paper-input>
+								<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="File Name" id=file_name></paper-input>
+								<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="File Type(json_lines)" id=file_type></paper-input>
+				      		<paper-button raised onclick="submitImportFileForm()" dialog-dismiss>Submit</paper-button>
+				      		<paper-button raised dialog-dismiss>Close</paper-button>
+				      		<br><br>
+							</form>
+						</paper-dialog-scrollable>
+					
+					</paper-dialog>
+
+					<paper-button style="width: 200px;margin-right: 20px" onclick="extractOnClick()" raised><strong>Extract</strong></paper-button>
+					<!-- <paper-progress style="width: 200px;margin-right: 20px" id=extract_progress value="0" secondary-progress="0"></paper-progress> -->
+					<br><br><br>
+
+					<paper-button style="width: 200px;margin-right: 20px" onclick="inferlinkExtractOnClick()" raised><strong>Inferlink Extract</strong></paper-button>
+				</div>
+				
+	
+				<!-- <div class="extract-form" style="position:fixed;bottom: 2%;width: 100%;background-color: #f9f9f9">
+					<paper-button style="width: 200px;float:right;margin-top:10px;margin-right:10%;" onclick="" raised><strong>Extract</strong></paper-button>
+					<paper-input class="addProjClass" label="Number of lines" id=number_of_lines style="float:right;margin-right:2%"></paper-input>
+			        <paper-button style="width: 200px;float:left;margin-top:10px;margin-left:5%;background-color: #d9534f" raised onclick="deleteCheckBoxList()"><strong>Delete</strong></paper-button>
+				</div> -->
+
+
 			</iron-collapse>
 			<iron-collapse id="field">
 			
