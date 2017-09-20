@@ -17,7 +17,10 @@ def home():
 
 @app.route('/constants')
 def constant():
-    return render_template('constants.html', backend_url=config['frontend']['backend_url'])
+    return render_template('constants.html',
+        backend_url=config['frontend']['backend_url'],
+        landmark_url=config['frontend']['landmark_url'],
+        digui_url=config['frontend']['digui_url'],)
 
 
 @app.route('/login')
