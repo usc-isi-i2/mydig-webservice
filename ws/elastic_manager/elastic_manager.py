@@ -73,12 +73,12 @@ class ES(object):
         print query
         try:
             return self.es.search(index=index, doc_type=doc_type, body=query,
-                                  filter_path=['hits.hits._source', 'hits.hits._id'])
+                                  filter_path=['hits.hits._source', 'hits.hits._id', 'aggregations'])
         except:
             # try once more
             try:
                 return self.es.search(index=index, doc_type=doc_type, body=query,
-                                      filter_path=['hits.hits._source', 'hits.hits._id'])
+                                      filter_path=['hits.hits._source', 'hits.hits._id', 'aggregations'])
             except Exception as e:
                 print e
                 return None

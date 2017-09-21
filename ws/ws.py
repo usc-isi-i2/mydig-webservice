@@ -1619,7 +1619,7 @@ class Data(Resource):
         # make root dir and save temp file
         src_file_path = os.path.join(_get_project_dir_path(project_name), 'data', '{}.tmp'.format(file_name))
         args['file_data'].save(src_file_path)
-        desc_dir_path = os.path.join(_get_project_dir_path(project_name), 'data', args['file_name'])
+        desc_dir_path = os.path.join(_get_project_dir_path(project_name), 'data', file_name)
         if not os.path.exists(desc_dir_path):
             os.mkdir(desc_dir_path)
 
@@ -1628,19 +1628,24 @@ class Data(Resource):
             with codecs.open(src_file_path, 'r') as f:
                 for line in f:
                     obj = json.loads(line)
-                    # split raw_content and catalog
-                    output_raw_content_path = os.path.join(desc_dir_path, obj['doc_id'] + '.html')
-                    output_catalog_path = os.path.join(desc_dir_path, obj['doc_id'] + '.json')
+                    # split raw_content and json
+                    output_path_prefix = os.path.join(desc_dir_path, obj['doc_id'])
+                    output_raw_content_path = output_path_prefix + '.html'
+                    output_json_path = output_path_prefix + '.json'
                     with codecs.open(output_raw_content_path, 'w') as output:
                         output.write(obj['raw_content'].encode('utf-8'))
-                    with codecs.open(output_catalog_path, 'w') as output:
+                    with codecs.open(output_json_path, 'w') as output:
                         del obj['raw_content']
-                        obj['raw_content_path'] = output_raw_content_path
                         output.write(json.dumps(obj, indent=2))
                     # update data db
                     tld = self.extract_tld(obj['url'])
                     data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
-                    data[project_name]['data'][tld][obj['doc_id']] = output_catalog_path
+                    data[project_name]['data'][tld][obj['doc_id']] = {
+                        'raw_content_path': output_raw_content_path,
+                        'json_path': output_json_path,
+                        'url': obj['url'],
+                        'add_to_queue': False
+                    }
 
             # update data db file
             data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
@@ -1689,6 +1694,8 @@ class Actions(Resource):
             return self._add_data(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
+        elif action_name == 'recreate_mapping':
+            return self._recreate_mapping(project_name)
         elif action_name == 'landmark_extract':
             return self.landmark_extract(project_name)
         else:
@@ -1699,22 +1706,50 @@ class Actions(Resource):
             return rest.not_found('project {} not found'.format(project_name))
 
         if action_name == 'extract':
-            return self._get_progress(project_name)
+            return self._get_extraction_status(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
     @staticmethod
-    def _get_progress(project_name):
+    def _get_extraction_status(project_name):
         ret = dict()
-        url = '{}/{}/_count'.format(config['es']['sample_url'], project_name)
-        resp = requests.get(url)
-        current_count = json.loads(resp.content)['count'] if resp.status_code // 100 == 2 else 0
+        ret['running'] = Actions._is_etk_running(project_name)
 
-        ret['etk_progress'] = {
-            'total': data[project_name]['status']['total_added_docs'],
-            'current': current_count
+        # query es count
+        query = """
+        {
+            "aggs": {
+                "group_by_tld": {
+                    "terms": {
+                        "field": "tld"
+                    }
+                }
+            },
+            "size":0
         }
+        """
+        es = ES(config['es']['sample_url'])
+        r = es.search(project_name, data[project_name]['master_config']['root_name'], query)
+
+        tld_array = []
+        for obj in r['aggregations']['group_by_tld']['buckets']:
+            # check if tld is in uploaded file
+            tld = obj['key']
+            if tld in data[project_name]['data']:
+                tld_obj = {
+                    'tld': tld,
+                    'total_num': len(data[project_name]['data'][tld]),
+                    'es_num': obj['doc_count'],
+                    'desired_num': 0
+                }
+                tld_array.append(tld_obj)
+        ret['tld_status'] = tld_array
+
         return ret
+
+    @staticmethod
+    def _is_etk_running(project_name):
+        return True
 
     @staticmethod
     def _add_data(project_name):
@@ -1735,17 +1770,15 @@ class Actions(Resource):
                 )
                 input_topic = project_name + '_in'
 
-                for doc_id, catalog_path in data[project_name]['data'][tld].iteritems():
+                for doc_id, catalog_obj in data[project_name]['data'][tld].iteritems():
                     # get raw_content_path
                     try:
-                        with codecs.open(catalog_path, 'r') as f:
+                        with codecs.open(catalog_obj['json_path'], 'r') as f:
                             doc_obj = json.loads(f.read())
-                        with codecs.open(doc_obj['raw_content_path'], 'r') as f:
+                        with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
                             doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
-                            del doc_obj['raw_content_path']
                     except Exception as e:
                         print e
-                        print 'error in file: {}'.format(catalog_path)
                         continue
 
                     # publish to kafka queue
@@ -1754,12 +1787,9 @@ class Actions(Resource):
                     if not ret:
                         return rest.internal_error(msg)
 
-                    # update status
-                    data[project_name]['status']['total_added_docs'] += 1
                     num_added += 1
                     if num_added >= num_to_run:
                         break
-                update_status_file(project_name)
 
         return rest.created()
 
@@ -1778,16 +1808,15 @@ class Actions(Resource):
         for tld, num_to_run in tld_list.iteritems():
             if tld in data[project_name]['data']:
                 num_added = 0
-                for doc_id, catalog_path in data[project_name]['data'][tld].iteritems():
-                    with codecs.open(catalog_path, 'r') as f:
-                        catalog = json.loads(f.read())
-                        # payload format
-                        # {
-                        #     "tld1": {"documents": [{...}, {...}, ...]},
-                        # }
-                        payload[tld]= payload.get(tld, dict())
-                        payload[tld]['documents'] = payload[tld].get('documents', list())
-                        payload[tld]['documents'].append(catalog)
+                for doc_id, catalog_obj in data[project_name]['data'][tld].iteritems():
+                    # payload format
+                    # {
+                    #     "tld1": {"documents": [{doc_id, raw_content_path, url}, {...}, ...]},
+                    # }
+                    payload[tld]= payload.get(tld, dict())
+                    payload[tld]['documents'] = payload[tld].get('documents', list())
+                    catalog_obj['doc_id'] = doc_id
+                    payload[tld]['documents'].append(catalog_obj)
                     num_added += 1
                     if num_added >= num_to_run:
                         break
@@ -1799,9 +1828,8 @@ class Actions(Resource):
 
         return rest.accepted()
 
-
     @staticmethod
-    def _extract(project_name):
+    def _recreate_mapping(project_name):
         new_extraction = True
 
         # 1. create etk config and snapshot
@@ -1816,45 +1844,54 @@ class Actions(Resource):
             write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
             write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
         else:
-            new_extraction = False
-        print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
+            new_extraction = False # currently not in use
+        # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
 
         # 2. sandpaper
-        if new_extraction:
-            # 2.1 delete previous index
-            print '{}: extract 2'.format(project_name)
-            url = '{}/{}'.format(
-                config['es']['sample_url'],
-                project_name
-            )
-            try:
-                resp = requests.delete(url, timeout=5)
-            except:
-                pass # ignore no index error
-            # 2.2 create new index
-            url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
-                config['sandpaper']['url'],
-                config['sandpaper']['ws_url'],
-                project_name,
-                data[project_name]['master_config']['index']['sample'],
-                config['es']['sample_url']
-            )
-            resp = requests.put(url, timeout=5)
-            if resp.status_code // 100 != 2:
-                return rest.internal_error('failed to create index in sandpaper')
-            # 2.3 switch index
-            url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
-                config['sandpaper']['url'],
-                config['sandpaper']['ws_url'],
-                project_name,
-                data[project_name]['master_config']['index']['sample'],
-                config['es']['sample_url']
-            )
-            resp = requests.post(url, timeout=5)
-            if resp.status_code // 100 != 2:
-                return rest.internal_error('failed to switch index in sandpaper')
+        # 2.1 delete previous index
+        print '{}: extract 2'.format(project_name)
+        url = '{}/{}'.format(
+            config['es']['sample_url'],
+            project_name
+        )
+        try:
+            resp = requests.delete(url, timeout=5)
+        except:
+            pass # ignore no index error
+        # 2.2 create new index
+        url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'],
+            config['es']['sample_url']
+        )
+        resp = requests.put(url, timeout=5)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to create index in sandpaper')
+        # 2.3 switch index
+        url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'],
+            config['es']['sample_url']
+        )
+        resp = requests.post(url, timeout=5)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to switch index in sandpaper')
 
-        # 3. run etk
+        # 3. re-add all data
+
+        # 4. restart extraction
+        return Actions._extract(project_name)
+
+
+    @staticmethod
+    def _extract(project_name):
+        if Actions._is_etk_running(project_name):
+            return rest.exists('already running')
+
         url = config['etl']['url'] + '/run_etk'
         payload = {
             'project_name': project_name,
@@ -1863,14 +1900,6 @@ class Actions(Resource):
         resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to run_etk in ETL')
-
-        # 4. clean up kafka queue and total count
-        if new_extraction:
-            # 4.1 clean up kafka queue
-            # TODO
-            # 4.2 clean up total count
-            data[project_name]['status']['total_added_docs'] = 0
-            update_status_file(project_name)
 
         return rest.accepted()
 

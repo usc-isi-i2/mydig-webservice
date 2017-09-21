@@ -6,7 +6,9 @@ def get(name):
     return copy.deepcopy(eval(name))
 
 status = {
-    'total_added_docs': 0
+    'desired_docs': {
+        # tld -> { doc_id -> {} }
+    }
 }
 
 project = {
@@ -41,8 +43,8 @@ master_config = {
 
 # data = {
 #     'tld1': {
-#         'doc_id1': 'raw_content_path_1',
-#         'doc_id2': 'raw_content_path_2',
+#         'doc_id1': {'path': 'raw_content_path_1', 'add_to_queue': bool},
+#         'doc_id2': ...,
 #     },
 #     'tld2': {
 #
