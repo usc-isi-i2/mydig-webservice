@@ -211,8 +211,10 @@
                     <paper-button style="width: 100%"
                                   on-tap="openLandmarkTool" raised>Landmark Tool</paper-button>
                     <br><br><br>
-                    <paper-button style="width: 100%" on-tap="turnOnPipeline" id="btnTurnOnPipeline" raised>Turn on
-                        Pipeline
+                    <paper-button style="width:100%;background-color:green"
+                                  on-tap="turnOnPipeline"
+                                  id="btnTurnOnPipeline"
+                                  raised>Turn on Pipeline
                     </paper-button>
                     <br><br><br>
                     <paper-button style="width: 100%; background-color:red" on-tap="recreateMapping" id="btnRecreateMapping" raised>Recreate ES Mapping
@@ -225,7 +227,7 @@
                     <div style="width:100%;vertical-align: middle;">
                         <paper-input id="globalDesiredNumber" label="Desired number of docs to run per TLD"
                                      type="number"></paper-input>
-                        <button style="float:right" onclick="updateDesiredNumber()">Update</button>
+                        <button style="float:right" on-tap="updateDesiredNumber">Update</button>
                     </div>
                 </div>
 

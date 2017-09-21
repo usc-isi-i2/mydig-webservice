@@ -5,6 +5,8 @@ var password = localStorage.getItem("password");
 var projectName = window.location.href.split('?')[1];
 var NAV_BG_COLOR = "rgba(255, 255, 0, 0.22)";
 var AUTH_HEADER = "Basic " + btoa(username + ":" + password);
+var REFRESH_TLD_TABLE_INTERVAL = 10000; // 10s
+var REFRESH_PIPELINE_STATUS_INTERVAL = 10000; // 10s
 
 // function showTLDs() {
 //     getDataEndPoint = mainEndPoint + "/projects/" + projectName + '/data'
@@ -442,12 +444,6 @@ function addDefaultColor() {
     document.getElementById("fieldcolorinput").value = "amber";
 }
 
-function updateDesiredNumber() {
-    var num = parseInt($("#globalDesiredNumber").val());
-    // console.log(num);
-    document.querySelector("project-details").updateDesiredNumber(num);
-}
-
 poly = Polymer({
     is: 'project-details',
 
@@ -482,8 +478,8 @@ poly = Polymer({
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
         this.navAction();
-        this.getPipelineStatus();
-        this.createTldTable();
+        this.refreshPipelineStatus(true);
+        this.refreshTldTable(true);
         this.tldTableData = [];
 
         $(document).on('tap', '.btnAddToLandmark', this.addToLandmark);
@@ -1192,32 +1188,60 @@ poly = Polymer({
 //	uploadSamplePages:function() {
 //		uploadZipFileDialog.toggle();
 //	}
-    createTldTable: function() {
+    refreshTldTable: function(useTimeout=false) {
+        if(useTimeout) {
+            setTimeout($.proxy(this.refreshTldTable, this), REFRESH_TLD_TABLE_INTERVAL);
+        }
         $.ajax({
             type: "GET",
-            url: backend_url + "projects/" + projectName + '/data',
+            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
             dataType: "json",
             context: this,
             async: true,
             processData: false,
-            contentType: false,
             headers: {
                 "Authorization": AUTH_HEADER
             },
             success: function (data) {
+                // console.log(data);
                 newTldTableData = [];
-                for(tld in data) {
+                data["tld_statistics"].forEach(function(obj) {
                     newObj = {
-                        "tld": tld,
-                        "total_num": data[tld],
-                        "es_num": 0,
-                        "desired_num": 0,
-                        "landmark": "<paper-button raised class=\"btnAddToLandmark\" data-tld=\""+tld+"\">Add</paper-button>"
+                        "tld": obj["tld"],
+                        "total_num": obj["total_num"],
+                        "es_num": obj["es_num"],
+                        "desired_num": obj["desired_num"],
+                        "landmark": "<paper-button raised class=\"btnAddToLandmark\" data-tld=\""
+                            +obj["tld"]+"\">Add</paper-button>"
                     };
                     newTldTableData.push(newObj);
-                }
+                });
                 this.tldTableData = newTldTableData;
                 this.$.tldTable.reload();
+            }
+        });
+    },
+    refreshPipelineStatus: function(useTimeout=false) {
+        if(useTimeout) {
+            setTimeout($.proxy(this.refreshPipelineStatus, this), REFRESH_PIPELINE_STATUS_INTERVAL);
+        }
+        $.ajax({
+            type: "GET",
+            url: backend_url + "projects/" + projectName + '/actions/extract?value=etk_status',
+            dataType: "json",
+            context: this,
+            async: true,
+            processData: false,
+            headers: {
+                "Authorization": AUTH_HEADER
+            },
+            success: function (data) {
+                // console.log(data);
+                if(data["etk_status"]) {
+                    this.togglePipelineBtn(true);
+                } else {
+                    this.togglePipelineBtn(false);
+                }
             }
         });
     },
@@ -1241,32 +1265,36 @@ poly = Polymer({
                 "Authorization": AUTH_HEADER
             },
             success: function (data) {
-                newTldTableData = [];
-                for(tld in data) {
-                    newObj = {
-                        "tld": tld,
-                        "total_num": data[tld],
-                        "es_num": 0,
-                        "desired_num": 0,
-                        "landmark": "<paper-button raised class=\"btnAddToLandmark\" data-tld=\""+tld+"\">Add</paper-button>"
-                    };
-                    // if in old array, update attributes
-                    for (oldObj in this.tldTableData) {
-                        if(oldObj["tld"] == tld) {
-                            newObj["es_num"] = oldObj["es_num"];
-                            newObj["desired_num"] = oldObj["desired_num"];
-                        }
-                    }
-                    newTldTableData.push(newObj);
-                }
-                this.tldTableData = newTldTableData;
-                this.$.tldTable.reload();
+                this.refreshTldTable();
             }
         });
     },
     addToLandmark: function(e) {
         var tld = $(e.target).attr("data-tld");
-        console.log(tld);
+        payload = {
+            "tlds": {
+               [tld] : 100
+            }
+        };
+        console.log(payload);
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/landmark_extract',
+            async: true,
+            dataType: "json",
+            contentType: false,
+            processData: false,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            headers: {
+                "Authorization": AUTH_HEADER
+            },
+            success: function (msg) {
+                // console.log(msg);
+                alert("Added")
+            }
+        });
+        // console.log(tld);
     },
     openDIGUI: function() {
         var url = digui_url + "?project=" + projectName;
@@ -1276,8 +1304,7 @@ poly = Polymer({
         var url = landmark_url;
         window.open(url, '_blank');
     },
-    getPipelineStatus: function() {
-        var pipeline_on = true;
+    togglePipelineBtn: function(pipeline_on) {
         if(pipeline_on) {
             this.$.btnTurnOnPipeline.disabled = true;
             this.$.btnTurnOnPipeline.textContent = "Pipeline is On";
@@ -1293,31 +1320,20 @@ poly = Polymer({
         // loadingDialog.toggle();
         console.log("123");
     },
-    updateDesiredNumber: function(num) {
-        newTldTableData = [];
-        this.tldTableData.forEach(function(obj){
-            obj["desired_num"] = num;
-            newTldTableData.push(obj);
-        });
-        this.tldTableData = newTldTableData;
-        this.$.tldTable.reload();
+    updateDesiredNumber: function() {
+        var num = parseInt(this.$.globalDesiredNumber.value);
+        // newTldTableData = [];
+        // this.tldTableData.forEach(function(obj){
+        //     obj["desired_num"] = num;
+        //     newTldTableData.push(obj);
+        // });
+        // this.tldTableData = newTldTableData;
+        // this.$.tldTable.reload();
+
+
+        this.refreshTldTable();
     },
     turnOnPipeline: function() {
-        // $.ajax({
-        //     type: "POST",
-        //     url: backend_url + "projects/" + projectName + '/actions/extract',
-        //     async: true,
-        //     contentType: false,
-        //     processData: false,
-        //     headers: {
-        //         "Authorization": AUTH_HEADER
-        //     },
-        //     success: function (msg) {
-        //         alert("Pipeline is On")
-        //     }
-        // });
-        this.$.btnTurnOnPipeline.disabled = true;
-        this.$.btnTurnOnPipeline.textContent = "Pipeline is On";
     },
 
 

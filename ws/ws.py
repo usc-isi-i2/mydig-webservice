@@ -1701,6 +1701,7 @@ class Actions(Resource):
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
+    @requires_auth
     def get(self, project_name, action_name):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
@@ -1713,43 +1714,54 @@ class Actions(Resource):
     @staticmethod
     def _get_extraction_status(project_name):
         ret = dict()
-        ret['running'] = Actions._is_etk_running(project_name)
 
-        # query es count
-        query = """
-        {
-            "aggs": {
-                "group_by_tld": {
-                    "terms": {
-                        "field": "tld"
+        parser = reqparse.RequestParser()
+        parser.add_argument('value', type=str)
+        args = parser.parse_args()
+        if args['value'] is None:
+            args['value'] = 'all'
+
+        if args['value'] in ('all', 'etk_status'):
+            ret['etk_status'] = Actions._is_etk_running(project_name)
+
+        elif args['value'] in ('all', 'tld_statistics'):
+            # query es count
+            query = """
+            {
+                "aggs": {
+                    "group_by_tld": {
+                        "terms": {
+                            "field": "tld"
+                        }
                     }
-                }
-            },
-            "size":0
-        }
-        """
-        es = ES(config['es']['sample_url'])
-        r = es.search(project_name, data[project_name]['master_config']['root_name'], query)
+                },
+                "size":0
+            }
+            """
+            es = ES(config['es']['sample_url'])
+            r = es.search(project_name, data[project_name]['master_config']['root_name'], query)
 
-        tld_array = []
-        for obj in r['aggregations']['group_by_tld']['buckets']:
-            # check if tld is in uploaded file
-            tld = obj['key']
-            if tld in data[project_name]['data']:
-                tld_obj = {
-                    'tld': tld,
-                    'total_num': len(data[project_name]['data'][tld]),
-                    'es_num': obj['doc_count'],
-                    'desired_num': 0
-                }
-                tld_array.append(tld_obj)
-        ret['tld_status'] = tld_array
+            tld_array = []
+            for obj in r['aggregations']['group_by_tld']['buckets']:
+                # check if tld is in uploaded file
+                tld = obj['key']
+                if tld not in data[project_name]['status']['desired_docs']:
+                    data[project_name]['status']['desired_docs'][tld] = dict()
+                if tld in data[project_name]['data']:
+                    tld_obj = {
+                        'tld': tld,
+                        'total_num': len(data[project_name]['data'][tld]),
+                        'es_num': obj['doc_count'],
+                        'desired_num': len(data[project_name]['status']['desired_docs'][tld])
+                    }
+                    tld_array.append(tld_obj)
+            ret['tld_statistics'] = tld_array
 
         return ret
 
     @staticmethod
     def _is_etk_running(project_name):
-        return True
+        return False
 
     @staticmethod
     def _add_data(project_name):
@@ -1761,35 +1773,71 @@ class Actions(Resource):
         # }
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
-        for tld, num_to_run in tld_list.iteritems():
-            if tld in data[project_name]['data']:
-                num_added = 0
-                kafka_producer = KafkaProducer(
-                    bootstrap_servers=config['kafka']['servers'],
-                    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-                )
-                input_topic = project_name + '_in'
 
+        kafka_producer = KafkaProducer(
+            bootstrap_servers=config['kafka']['servers'],
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        )
+        input_topic = project_name + '_in'
+
+        for tld, desired_num in tld_list.iteritems():
+            if desired_num < 0:
+                continue
+            if tld not in data[project_name]['data']:
+                continue
+            if tld not in data[project_name]['status']['desired_docs']:
+                data[project_name]['status']['desired_docs'][tld] = dict()
+
+            pre_desired_num = len(data[project_name]['status']['desired_docs'][tld])
+            total_num = len(data[project_name]['data'][tld])
+            desired_num = desired_num if desired_num <= total_num else total_num
+
+            # no need to update
+            if desired_num == pre_desired_num:
+                continue
+            # remove some docs, no need to add to queue
+            elif desired_num < pre_desired_num:
+                num_to_remove = pre_desired_num - desired_num
+                for doc_id in data[project_name]['status']['desired_docs'][tld].keys():
+                    if num_to_remove <= 0:
+                        break
+                    # delete from status
+                    del data[project_name]['status']['desired_docs'][tld][doc_id]
+                    # remove the mark
+                    data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+                    num_to_remove -= 1
+                continue
+            # update queue
+            else:
+                num_to_add = desired_num - pre_desired_num
                 for doc_id, catalog_obj in data[project_name]['data'][tld].iteritems():
-                    # get raw_content_path
-                    try:
-                        with codecs.open(catalog_obj['json_path'], 'r') as f:
-                            doc_obj = json.loads(f.read())
-                        with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
-                            doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
-                    except Exception as e:
-                        print e
+                    if num_to_add <= 0:
+                        break
+                    if catalog_obj['add_to_queue']: # already added
                         continue
 
-                    # publish to kafka queue
-                    ret, msg = Actions._publish_to_kafka_input_queue(
-                        doc_id, doc_obj, kafka_producer, input_topic)
-                    if not ret:
-                        return rest.internal_error(msg)
+                    # update
+                    catalog_obj['add_to_queue'] = True
+                    data[project_name]['status']['desired_docs'][tld][doc_id] = dict()
+                    num_to_add -= 1
 
-                    num_added += 1
-                    if num_added >= num_to_run:
-                        break
+
+                    # # get raw_content_path
+                    # try:
+                    #     with codecs.open(catalog_obj['json_path'], 'r') as f:
+                    #         doc_obj = json.loads(f.read())
+                    #     with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
+                    #         doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
+                    # except Exception as e:
+                    #     print e
+                    #     continue
+                    #
+                    # # publish to kafka queue
+                    # ret, msg = Actions._publish_to_kafka_input_queue(
+                    #     doc_id, doc_obj, kafka_producer, input_topic)
+                    # if not ret:
+                    #     return rest.internal_error(msg)
+            update_status_file(project_name)
 
         return rest.created()
 
