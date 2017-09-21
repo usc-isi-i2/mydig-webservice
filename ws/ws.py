@@ -1725,7 +1725,20 @@ class Actions(Resource):
             ret['etk_status'] = Actions._is_etk_running(project_name)
 
         elif args['value'] in ('all', 'tld_statistics'):
-            # query es count
+            tld_array = []
+            for tld, tld_obj in data[project_name]['data'].iteritems():
+                if tld not in data[project_name]['status']['desired_docs']:
+                    data[project_name]['status']['desired_docs'][tld] = dict()
+                if tld in data[project_name]['data']:
+                    tld_obj = {
+                        'tld': tld,
+                        'total_num': len(data[project_name]['data'][tld]),
+                        'es_num': 0,
+                        'desired_num': len(data[project_name]['status']['desired_docs'][tld])
+                    }
+                    tld_array.append(tld_obj)
+
+            # query es count if doc exists
             query = """
             {
                 "aggs": {
@@ -1741,20 +1754,13 @@ class Actions(Resource):
             es = ES(config['es']['sample_url'])
             r = es.search(project_name, data[project_name]['master_config']['root_name'], query)
 
-            tld_array = []
             for obj in r['aggregations']['group_by_tld']['buckets']:
                 # check if tld is in uploaded file
                 tld = obj['key']
-                if tld not in data[project_name]['status']['desired_docs']:
-                    data[project_name]['status']['desired_docs'][tld] = dict()
-                if tld in data[project_name]['data']:
-                    tld_obj = {
-                        'tld': tld,
-                        'total_num': len(data[project_name]['data'][tld]),
-                        'es_num': obj['doc_count'],
-                        'desired_num': len(data[project_name]['status']['desired_docs'][tld])
-                    }
-                    tld_array.append(tld_obj)
+                for tld_obj in tld_array:
+                    if tld_obj['tld'] == tld:
+                        tld_obj['es_num'] = obj['doc_count']
+
             ret['tld_statistics'] = tld_array
 
         return ret

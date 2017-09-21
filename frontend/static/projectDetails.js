@@ -1190,8 +1190,9 @@ poly = Polymer({
 //	}
     refreshTldTable: function(useTimeout=false) {
         if(useTimeout) {
-            setTimeout($.proxy(this.refreshTldTable, this), REFRESH_TLD_TABLE_INTERVAL);
+            setTimeout($.proxy(this.refreshTldTable, this, {useTimeout: true}), REFRESH_TLD_TABLE_INTERVAL);
         }
+        console.log("refresh tld table");
         $.ajax({
             type: "GET",
             url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
@@ -1223,8 +1224,9 @@ poly = Polymer({
     },
     refreshPipelineStatus: function(useTimeout=false) {
         if(useTimeout) {
-            setTimeout($.proxy(this.refreshPipelineStatus, this), REFRESH_PIPELINE_STATUS_INTERVAL);
+            setTimeout($.proxy(this.refreshPipelineStatus, this, {useTimeout: true}), REFRESH_PIPELINE_STATUS_INTERVAL);
         }
+        console.log("refresh pipeline status");
         $.ajax({
             type: "GET",
             url: backend_url + "projects/" + projectName + '/actions/extract?value=etk_status',
