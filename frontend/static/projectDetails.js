@@ -1330,8 +1330,30 @@ poly = Polymer({
         // this.tldTableData = newTldTableData;
         // this.$.tldTable.reload();
 
+        payload = {"tlds":{}};
+        this.tldTableData.forEach(function(obj){
+            payload["tlds"][[obj["tld"]]] = num;
+        });
+        // console.log(payload);
 
-        this.refreshTldTable();
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/add_data',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            headers: {
+                "Authorization": AUTH_HEADER
+            },
+            success: function (msg) {
+                // console.log(msg);
+                this.refreshTldTable();
+            }
+        });
+
     },
     turnOnPipeline: function() {
     },
