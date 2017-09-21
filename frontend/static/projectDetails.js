@@ -1318,7 +1318,22 @@ poly = Polymer({
             return;
         }
         // loadingDialog.toggle();
-        console.log("123");
+        console.log("recreate");
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/recreate_mapping',
+            async: true,
+            dataType: "json",
+            contentType: false,
+            processData: false,
+            headers: {
+                "Authorization": AUTH_HEADER
+            },
+            success: function (msg) {
+                // console.log(msg);
+                alert("Mapping recreated and data added.");
+            }
+        });
     },
     updateDesiredNumber: function() {
         var num = parseInt(this.$.globalDesiredNumber.value);
@@ -1356,6 +1371,20 @@ poly = Polymer({
 
     },
     turnOnPipeline: function() {
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/extract',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            headers: {
+                "Authorization": AUTH_HEADER
+            },
+            success: function (msg) {
+                this.togglePipelineBtn(true);
+            }
+        });
     },
 
 

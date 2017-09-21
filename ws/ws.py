@@ -1731,7 +1731,7 @@ class Actions(Resource):
                 "aggs": {
                     "group_by_tld": {
                         "terms": {
-                            "field": "tld"
+                            "field": "tld.raw"
                         }
                     }
                 },
@@ -1761,7 +1761,12 @@ class Actions(Resource):
 
     @staticmethod
     def _is_etk_running(project_name):
-        return False
+        url = config['etl']['url'] + '/etk_status/' + project_name
+        resp = requests.get(url)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('error in getting etk_staus')
+
+        return resp.json()['etk_processes'] > 0
 
     @staticmethod
     def _add_data(project_name):
@@ -1818,25 +1823,14 @@ class Actions(Resource):
 
                     # update
                     catalog_obj['add_to_queue'] = True
-                    data[project_name]['status']['desired_docs'][tld][doc_id] = dict()
+                    data[project_name]['status']['desired_docs'][tld][doc_id] = dict() # use dict as set
                     num_to_add -= 1
 
-
-                    # # get raw_content_path
-                    # try:
-                    #     with codecs.open(catalog_obj['json_path'], 'r') as f:
-                    #         doc_obj = json.loads(f.read())
-                    #     with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
-                    #         doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
-                    # except Exception as e:
-                    #     print e
-                    #     continue
-                    #
-                    # # publish to kafka queue
-                    # ret, msg = Actions._publish_to_kafka_input_queue(
-                    #     doc_id, doc_obj, kafka_producer, input_topic)
-                    # if not ret:
-                    #     return rest.internal_error(msg)
+                    # publish to kafka queue
+                    ret, msg = Actions._publish_to_kafka_input_queue(
+                        doc_id, catalog_obj, kafka_producer, input_topic)
+                    if not ret:
+                        return rest.internal_error(msg)
             update_status_file(project_name)
 
         return rest.created()
@@ -1895,6 +1889,15 @@ class Actions(Resource):
             new_extraction = False # currently not in use
         # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
 
+        # kill etk
+        url = config['etl']['url'] + '/kill_etk'
+        payload = {
+            'project_name': project_name
+        }
+        resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to kill_etk in ETL')
+
         # 2. sandpaper
         # 2.1 delete previous index
         print '{}: extract 2'.format(project_name)
@@ -1930,10 +1933,22 @@ class Actions(Resource):
             return rest.internal_error('failed to switch index in sandpaper')
 
         # 3. re-add all data
+        kafka_producer = KafkaProducer(
+            bootstrap_servers=config['kafka']['servers'],
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        )
+        input_topic = project_name + '_in'
+        for tld, doc_obj in data[project_name]['status']['desired_docs'].iteritems():
+            for doc_id in doc_obj.iterkeys():
+                catalog_obj = data[project_name]['data'][tld][doc_id]
+                # publish to kafka queue
+                ret, msg = Actions._publish_to_kafka_input_queue(
+                    doc_id, catalog_obj, kafka_producer, input_topic)
+                if not ret:
+                    return rest.internal_error(msg)
 
         # 4. restart extraction
         return Actions._extract(project_name)
-
 
     @staticmethod
     def _extract(project_name):
@@ -1952,9 +1967,17 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _publish_to_kafka_input_queue(doc_id, doc, kafka_producer, topic):
+    def _publish_to_kafka_input_queue(doc_id, catalog_obj, kafka_producer, topic):
         try:
-            r = kafka_producer.send(topic, doc)
+            with codecs.open(catalog_obj['json_path'], 'r') as f:
+                doc_obj = json.loads(f.read())
+            with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
+                doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
+        except Exception as e:
+            print e
+            return False, 'error in reading file from catalog'
+        try:
+            r = kafka_producer.send(topic, doc_obj)
             r.get(timeout=60)  # wait till sent
             print 'sent {} to topic {}'.format(doc_id, topic)
         except Exception as e:
