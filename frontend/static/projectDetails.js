@@ -1339,6 +1339,8 @@ poly = Polymer({
     },
     updateDesiredNumber: function() {
         var num = parseInt(this.$.globalDesiredNumber.value);
+        num = num <= 9999999999 ? num : 999999999;
+        num = num >= 0 ? num : 0;
         // newTldTableData = [];
         // this.tldTableData.forEach(function(obj){
         //     obj["desired_num"] = num;

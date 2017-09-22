@@ -226,7 +226,7 @@
 
                     <div style="width:100%;vertical-align: middle;">
                         <paper-input id="globalDesiredNumber" label="Desired number of docs to run per TLD"
-                                     type="number"></paper-input>
+                                     value="10" type="number" min="0" max="999999999" maxlength="10" auto-validate pattern="[0-9]{1,11}"></paper-input>
                         <button style="float:right" on-tap="updateDesiredNumber">Update</button>
                     </div>
                 </div>
