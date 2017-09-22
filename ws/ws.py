@@ -18,6 +18,7 @@ import urlparse
 import re
 import hashlib
 import traceback
+import time
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -1628,6 +1629,8 @@ class Data(Resource):
             with codecs.open(src_file_path, 'r') as f:
                 for line in f:
                     obj = json.loads(line)
+                    if 'timestamp_crawl' not in obj:
+                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # split raw_content and json
                     output_path_prefix = os.path.join(desc_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
@@ -1754,12 +1757,13 @@ class Actions(Resource):
             es = ES(config['es']['sample_url'])
             r = es.search(project_name, data[project_name]['master_config']['root_name'], query)
 
-            for obj in r['aggregations']['group_by_tld']['buckets']:
-                # check if tld is in uploaded file
-                tld = obj['key']
-                for tld_obj in tld_array:
-                    if tld_obj['tld'] == tld:
-                        tld_obj['es_num'] = obj['doc_count']
+            if r is not None:
+                for obj in r['aggregations']['group_by_tld']['buckets']:
+                    # check if tld is in uploaded file
+                    tld = obj['key']
+                    for tld_obj in tld_array:
+                        if tld_obj['tld'] == tld:
+                            tld_obj['es_num'] = obj['doc_count']
 
             ret['tld_statistics'] = tld_array
 
