@@ -1629,6 +1629,15 @@ class Data(Resource):
             with codecs.open(src_file_path, 'r') as f:
                 for line in f:
                     obj = json.loads(line)
+                    if 'url' not in obj:
+                        print 'missing url'
+                        continue
+                    if 'doc_id' not in obj:
+                        print 'missing doc_id'
+                        continue
+                    if 'raw_content' not in obj:
+                        print 'missing raw_content'
+                        continue
                     if 'timestamp_crawl' not in obj:
                         obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # split raw_content and json
