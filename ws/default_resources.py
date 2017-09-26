@@ -377,7 +377,7 @@ default_fields = {
         'icon': 'communication:contacts',
         'search_importance': 5,
         'use_in_network_search': False,
-        'rule_extractor_enabled': True,
+        'rule_extractor_enabled': False,
         'number_of_rules': 15,
         'predefined_extractor': 'none'
     },

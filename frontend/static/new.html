@@ -38,16 +38,16 @@ function addProject(data)  {
 		var xhr = new XMLHttpRequest();
 		var url = backend_url +"projects";
 		var name=document.getElementById("saveProjectFormName").value.toLowerCase();
-		if (/\s/.test(name)) {return;}
-		var userN = document.getElementById("saveProjectFormUserName").value;
-		var passWd = document.getElementById("saveProjectFormPassword").value ;
-		var imgPrefix = document.getElementById("saveProjectFormImagePrefix").value;
-		var Url = document.getElementById("saveProjectURL").value;
-		var type_name=document.getElementById("saveProjectFormType_name").value;
-		var index_name=document.getElementById("saveProjectFormIndex_name").value;
-		var tlds=(document.getElementById("saveProjectFormTLD_name").value).split("\n");
-		var start_date=document.getElementById("saveProjectFormStart_date").innerText;
-		var end_date=document.getElementById("saveProjectFormEnd_date").innerText;
+//		if (/\s/.test(name)) {return;}
+//		var userN = document.getElementById("saveProjectFormUserName").value;
+//		var passWd = document.getElementById("saveProjectFormPassword").value ;
+//		var imgPrefix = document.getElementById("saveProjectFormImagePrefix").value;
+//		var Url = document.getElementById("saveProjectURL").value;
+//		var type_name=document.getElementById("saveProjectFormType_name").value;
+//		var index_name=document.getElementById("saveProjectFormIndex_name").value;
+//		var tlds=(document.getElementById("saveProjectFormTLD_name").value).split("\n");
+//		var start_date=document.getElementById("saveProjectFormStart_date").innerText;
+//		var end_date=document.getElementById("saveProjectFormEnd_date").innerText;
 		xhr.open("POST", url, true);
 		xhr.setRequestHeader("Content-type", "application/json");
 		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
@@ -58,25 +58,25 @@ function addProject(data)  {
 		    }
 		};
 		
-		var data = JSON.stringify({"configuration": {
-		    "digapp_full_url": "",
-		    "digapp_sample_url": "",
-		    "sandpaper_full_url": "",
-		    "sandpaper_sample_url": ""
-		  },
-		  	"project_name":name,
-		  	"image_prefix":imgPrefix,
-		  	"sources": [{
-				"start_date":start_date,
-				"tlds":tlds,
-				"end_date":end_date,
-				"username":userN,
-				"password":passWd,
-				"url":Url,
-				"index":index_name,
-				"type":type_name}]
-		  });
-		
+//		var data = JSON.stringify({"configuration": {
+//		    "digapp_full_url": "",
+//		    "digapp_sample_url": "",
+//		    "sandpaper_full_url": "",
+//		    "sandpaper_sample_url": ""
+//		  },
+//		  	"project_name":name,
+//		  	"image_prefix":imgPrefix,
+//		  	"sources": [{
+//				"start_date":start_date,
+//				"tlds":tlds,
+//				"end_date":end_date,
+//				"username":userN,
+//				"password":passWd,
+//				"url":Url,
+//				"index":index_name,
+//				"type":type_name}]
+//		  });
+		var data = JSON.stringify({"project_name":name});
 		xhr.send(data);
 	
 }
@@ -118,7 +118,7 @@ function addProject(data)  {
 	              <paper-button style="float:right;text-transform: none;" raised ><strong>Open</strong></paper-button>
 	              </a>
 	              
-	              <paper-button on-tap="editProjectData" style="float:right;color:black;text-transform: none;" raised><strong>Edit</strong></paper-button>
+	              <!--<paper-button on-tap="editProjectData" style="float:right;color:black;text-transform: none;" raised><strong>Edit</strong></paper-button>-->
 	          </div>
               </section>
             </paper-material>
@@ -130,32 +130,32 @@ function addProject(data)  {
 	    <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="projectDialog" style="width:50%;margin-left:auto;margin-right:auto">
 	    		<paper-dialog-scrollable>
 	    			<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Name:" id=saveProjectFormName></paper-input>
-			        <paper-input  class="addProjClass"label="Type:" id=saveProjectFormType_name></paper-input>
-			        <paper-input class="addProjClass" label="Index Name:" id=saveProjectFormIndex_name></paper-input>
-			        <paper-input class="addProjClass" label="Image Prefix:" id=saveProjectFormImagePrefix></paper-input>
-			        
-			        <div>
-			        <span>TLDs</span>
-			        <textarea id=saveProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
-			        </div>
-			        <div>
-			        <span>Start Date:</span>
-			        <paper-date-picker-item class="projectInputStyle"
-					     date-format="YYYY-MM-DD"
-					    placeholder="Select:"
-					    id=saveProjectFormStart_date>
-					</paper-date-picker-item>
-					</div>
-					<div>
-			        <span>End Date:</span>
-					<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
-					    placeholder="Select:"
-					    id=saveProjectFormEnd_date>
-					</paper-date-picker-item>
-					</div>
-					<paper-input  class="addProjClass" label="UserName:" id=saveProjectFormUserName></paper-input>
-			        <paper-input  class="addProjClass" label="Password:" id=saveProjectFormPassword></paper-input>
-			        <paper-input  class="addProjClass" label="URL:" id=saveProjectURL></paper-input>
+			        <!--<paper-input  class="addProjClass"label="Type:" id=saveProjectFormType_name></paper-input>-->
+			        <!--<paper-input class="addProjClass" label="Index Name:" id=saveProjectFormIndex_name></paper-input>-->
+			        <!--<paper-input class="addProjClass" label="Image Prefix:" id=saveProjectFormImagePrefix></paper-input>-->
+			        <!---->
+			        <!--<div>-->
+			        <!--<span>TLDs</span>-->
+			        <!--<textarea id=saveProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>-->
+			        <!--</div>-->
+			        <!--<div>-->
+			        <!--<span>Start Date:</span>-->
+			        <!--<paper-date-picker-item class="projectInputStyle"-->
+					     <!--date-format="YYYY-MM-DD"-->
+					    <!--placeholder="Select:"-->
+					    <!--id=saveProjectFormStart_date>-->
+					<!--</paper-date-picker-item>-->
+					<!--</div>-->
+					<!--<div>-->
+			        <!--<span>End Date:</span>-->
+					<!--<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"-->
+					    <!--placeholder="Select:"-->
+					    <!--id=saveProjectFormEnd_date>-->
+					<!--</paper-date-picker-item>-->
+					<!--</div>-->
+					<!--<paper-input  class="addProjClass" label="UserName:" id=saveProjectFormUserName></paper-input>-->
+			        <!--<paper-input  class="addProjClass" label="Password:" id=saveProjectFormPassword></paper-input>-->
+			        <!--<paper-input  class="addProjClass" label="URL:" id=saveProjectURL></paper-input>-->
 			        
 			        
 		        </paper-dialog-scrollable>
