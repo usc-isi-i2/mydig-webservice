@@ -200,7 +200,7 @@ class AllProjects(Resource):
         }
         resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
         if resp.status_code // 100 != 2:
-            rest.internal_error('Error in ETL Engine when creating project {}'.format(project_name))
+            return rest.internal_error('Error in ETL Engine when creating project {}'.format(project_name))
 
         # create project data structure, folders & files
         project_dir_path = _get_project_dir_path(project_name)
@@ -244,7 +244,7 @@ class AllProjects(Resource):
                 shutil.copy(full_file_name, dst_dir)
         os.makedirs(os.path.join(project_dir_path, 'spacy_rules'))
         write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
-        dst_dir = os.path.join(_get_project_dir_path(project_name), 'spacy_rules')
+        dst_dir = os.path.join(project_dir_path, 'spacy_rules')
         src_dir = config['default_spacy_rules_path']
         for file_name in os.listdir(src_dir):
             full_file_name = os.path.join(src_dir, file_name)
@@ -1911,7 +1911,7 @@ class Actions(Resource):
 
         # add config for etl
         # when creating kafka container, group id is not there. set consumer to read from start.
-        etl_config_path = os.path.join(project_dir_path, 'working_dir/etl_config.json')
+        etl_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etl_config.json')
         etl_config = {
           "input_args": {
             "auto_offset_reset": "earliest"
