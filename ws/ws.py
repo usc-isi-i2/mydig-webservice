@@ -1974,6 +1974,19 @@ class Actions(Resource):
         if Actions._is_etk_running(project_name):
             return rest.exists('already running')
 
+        etk_config_file_path = os.path.join(
+            _get_project_dir_path(project_name), 'working_dir/etk_config.json')
+        if not os.path.exists(etk_config_file_path):
+            return rest.not_found('No etk config')
+
+        url = '{}/{}'.format(
+            config['es']['sample_url'],
+            project_name
+        )
+        resp = requests.get(url, timeout=5)
+        if resp.status_code // 100 != 2:
+            return rest.not_found('No es index')
+
         url = config['etl']['url'] + '/run_etk'
         payload = {
             'project_name': project_name,

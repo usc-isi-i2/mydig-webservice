@@ -1334,6 +1334,11 @@ poly = Polymer({
             success: function (msg) {
                 // console.log(msg);
                 alert("Mapping recreated and data added.");
+                this.togglePipelineBtn(true);
+            },
+            error: function(msg) {
+                alert('Can not recreate mapping');
+                console.log(msg);
             }
         });
     },
@@ -1387,6 +1392,10 @@ poly = Polymer({
             },
             success: function (msg) {
                 this.togglePipelineBtn(true);
+            },
+            error: function(msg) {
+                alert("Can not turn on pipeline (Make sure you've created config and mapping)");
+                console.log(msg);
             }
         });
     },
