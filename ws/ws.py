@@ -1891,6 +1891,7 @@ class Actions(Resource):
 
     @staticmethod
     def _recreate_mapping(project_name):
+        print 'create_mapping'
         new_extraction = True
 
         # 1. create etk config and snapshot
@@ -1908,6 +1909,16 @@ class Actions(Resource):
             new_extraction = False # currently not in use
         # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
 
+        # add config for etl
+        # when creating kafka container, group id is not there. set consumer to read from start.
+        etl_config_path = os.path.join(project_dir_path, 'working_dir/etl_config.json')
+        etl_config = {
+          "input_args": {
+            "auto_offset_reset": "earliest"
+          }
+        }
+        write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
+
         # kill etk
         url = config['etl']['url'] + '/kill_etk'
         payload = {
@@ -1919,7 +1930,6 @@ class Actions(Resource):
 
         # 2. sandpaper
         # 2.1 delete previous index
-        print '{}: extract 2'.format(project_name)
         url = '{}/{}'.format(
             config['es']['sample_url'],
             project_name
@@ -1952,6 +1962,7 @@ class Actions(Resource):
             return rest.internal_error('failed to switch index in sandpaper')
 
         # 3. re-add all data
+        print 're-add data'
         kafka_producer = KafkaProducer(
             bootstrap_servers=config['kafka']['servers'],
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
@@ -1983,8 +1994,11 @@ class Actions(Resource):
             config['es']['sample_url'],
             project_name
         )
-        resp = requests.get(url, timeout=5)
-        if resp.status_code // 100 != 2:
+        try:
+            resp = requests.get(url, timeout=5)
+            if resp.status_code // 100 != 2:
+                return rest.not_found('No es index')
+        except Exception as e:
             return rest.not_found('No es index')
 
         url = config['etl']['url'] + '/run_etk'
