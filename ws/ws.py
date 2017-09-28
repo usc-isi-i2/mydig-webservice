@@ -1638,6 +1638,9 @@ class Data(Resource):
                     if 'raw_content' not in obj:
                         print 'missing raw_content'
                         continue
+                    if 'type' in obj: # this type will conflict with the attribute in logstash
+                        obj['original_type'] = obj['type']
+                        del obj['type']
                     if 'timestamp_crawl' not in obj:
                         obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # split raw_content and json
