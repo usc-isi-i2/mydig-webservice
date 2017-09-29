@@ -1,4 +1,4 @@
-<link rel="import" href="/constants">
+<link rel="import" href="../constants">
 <link rel="stylesheet" href="../static/styles/main.css">
 <script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 <link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
@@ -15,7 +15,7 @@
 <link rel="import" href="../static/elements/elements.html">
 <link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
- <script src="../static/bower_components/moment/min/locales.js"></script>
+<script src="../static/bower_components/moment/min/locales.js"></script>
 <link rel="import" href="../static/bower_components/polymer/polymer.html">
 <style is="custom-style" include="shared-styles"></style>
 <style is="custom-style" include="search-styles"></style>
@@ -24,8 +24,8 @@
 <link href="https://fonts.googleapis.com/css?family=Kurale" rel="stylesheet">
 
 <script>
-var username =localStorage.getItem("username");
-var password =localStorage.getItem("password");
+//var username =localStorage.getItem("username");
+//var password =localStorage.getItem("password");
 
 
 
@@ -50,7 +50,7 @@ function addProject(data)  {
 //		var end_date=document.getElementById("saveProjectFormEnd_date").innerText;
 		xhr.open("POST", url, true);
 		xhr.setRequestHeader("Content-type", "application/json");
-		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+//		xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
 		xhr.onreadystatechange = function () {
 		    if (xhr.readyState === 4 && xhr.status === 201) {
 		        console.log("Success");
@@ -114,7 +114,7 @@ function addProject(data)  {
               <section id = "projectSection" style="width:96%;margin-left:auto;margin-right:auto;" class="main-search-results">
               <div style="margin-top:1.0em;float:left;"><span><h4><b>{{item.name}}</b></h4></span></div>
               <div style="margin-bottom:2.0em">
-	              <a style="color:black" href="/details?{{item.name}}">
+	              <a style="color:black" href="details?{{item.name}}">
 	              <paper-button style="float:right;text-transform: none;" raised ><strong>Open</strong></paper-button>
 	              </a>
 	              
@@ -245,7 +245,7 @@ Polymer({
    
     ready : function() {
     	var obj = {};
-        obj.Authorization = "Basic " + btoa(username+":"+password);
+//        obj.Authorization = "Basic " + btoa(username+":"+password);
     	this.$.ajaxCall.headers = obj;
     	this.$.ajaxCall.url=backend_url +"projects";
     	this.$.ajaxCall.generateRequest();
@@ -263,7 +263,7 @@ Polymer({
     	this.arrayData = (data.detail.response);
     	for(var i=0;i<this.arrayData.length;i++) {
     		var obj = {};
-    		obj.Authorization = "Basic " + btoa(username+":"+password);
+//    		obj.Authorization = "Basic " + btoa(username+":"+password);
         	this.$.projectData.headers = obj;
         	
         	this.$.projectData.url=backend_url +"projects/"+this.arrayData[i];
@@ -293,7 +293,7 @@ Polymer({
     	editprojectDialog.toggle();
     	var obj = {};
     	var tlds=[];
-		obj.Authorization = "Basic " + btoa(username+":"+password);
+//		obj.Authorization = "Basic " + btoa(username+":"+password);
     	this.$.updateEditDataRequest.headers = obj;
     	
     	this.$.updateEditDataRequest.url=backend_url +"projects/"+this.editProjectForm.name;
