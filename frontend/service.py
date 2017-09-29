@@ -23,9 +23,9 @@ def constant():
         digui_url=config['frontend']['digui_url'],)
 
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
+# @app.route('/login')
+# def login():
+#     return render_template('login.html')
 
 
 @app.route('/details')

@@ -178,7 +178,7 @@ function updateFormData() {
     var request = new XMLHttpRequest();
     request.open("POST", url);
     //	request.setRequestHeader("Content-type", "application/json");
-    request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+    // request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
 
     request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 201) {
@@ -236,7 +236,7 @@ function submitFormData() {
     var request = new XMLHttpRequest();
     request.open("POST", url);
 //	request.setRequestHeader("Content-type", "application/json");
-    request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+//     request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
 
     request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 201) {
@@ -266,7 +266,7 @@ function addNewTag() {
 
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
-    xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+    // xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 201) {
@@ -308,7 +308,7 @@ function addNewTableValue() {
 
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
-    xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+    // xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 201) {
@@ -365,7 +365,7 @@ function addNewField() {
     var caseSense = document.getElementById("getCaseSenstive").checked;
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
-    xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+    // xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 201) {
@@ -458,7 +458,7 @@ poly = Polymer({
         this.tableAttributes = [];
         this.fieldNames = [];
         var obj = {};
-        obj.Authorization = AUTH_HEADER;
+        // obj.Authorization = AUTH_HEADER;
         this.$.getTags.headers = obj;
         this.$.getTags.url = backend_url + "projects/" + projectName + "/tags";
         this.$.getTags.generateRequest();
@@ -572,7 +572,7 @@ poly = Polymer({
     },
     _itemSelected: function (e) {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         var selectedValue = this.$$('#tableFieldInput').selectedItem.value;
         if (selectedValue == "none") selectedValue = "";
         this.$.updateTableAttribute.headers = obj;
@@ -641,7 +641,7 @@ poly = Polymer({
             this.push('fieldNames', "none");
         }
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.tableAttributes.headers = obj;
         this.$.tableAttributes.url = backend_url + "projects/" + projectName + "/table_attributes";
         this.$.tableAttributes.generateRequest();
@@ -659,7 +659,7 @@ poly = Polymer({
     },
     deleteTagsFunction: function (e) {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteTags.headers = obj;
         this.$.deleteTags.url = backend_url + "projects/" + projectName + "/tags/" + (e.model.item[0].name).split(":")[0];
         this.$.deleteTags.generateRequest();
@@ -669,7 +669,7 @@ poly = Polymer({
         this.tagForm = {};
         var tagName = e.model.item[0].name;
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.editTag.headers = obj;
         this.$.editTag.url = backend_url + "projects/" + projectName + "/tags/" + tagName;
 
@@ -678,7 +678,7 @@ poly = Polymer({
     },
     updateTag: function (e) {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.updateSavedTags.headers = obj;
         this.$.updateSavedTags.url = backend_url + "projects/" + projectName + "/tags/" + this.tagForm.name;
         this.$.updateSavedTags.body = JSON.stringify({
@@ -697,7 +697,7 @@ poly = Polymer({
     },
     updateDone: function () {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.getFields.headers = obj;
         this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
         this.$.getFields.generateRequest();
@@ -723,7 +723,7 @@ poly = Polymer({
     deleteFieldFunction: function () {
         sureToDeleteDialog.toggle();
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteFields.headers = obj;
         this.$.deleteFields.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldName;
         this.$.deleteFields.generateRequest();
@@ -731,7 +731,7 @@ poly = Polymer({
     },
     deleteGlossaryFunction: function (e) {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteGlossaries.headers = obj;
         this.$.deleteGlossaries.url = backend_url + "projects/" + projectName + "/glossaries/" + (e.model.item[0]).split(":")[0];
         this.$.deleteGlossaries.generateRequest();
@@ -740,7 +740,7 @@ poly = Polymer({
         var fieldFormName = e.model.item[0].name;
 
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.editField.headers = obj;
         this.$.editField.url = backend_url + "projects/" + projectName + "/fields/" + fieldFormName;
 
@@ -756,7 +756,7 @@ poly = Polymer({
     },
     updateField: function (e) {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         var predefinedExtr = "";
 
         //Save Glossaries
@@ -866,7 +866,7 @@ poly = Polymer({
     deletedGlossary: function () {
         this.glossaries = [];
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.getFields.headers = obj;
         this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
@@ -1019,7 +1019,7 @@ poly = Polymer({
         request.open("GET", url);
         request.setRequestHeader("Content-type", "application/gzip");
         request.setRequestHeader("Content-Transfer-Encoding", "binary");
-        request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+        // request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
         request.responseType = "blob";
         request.onreadystatechange = function () {
             if (request.readyState === 4 && request.status === 200) {
@@ -1044,7 +1044,7 @@ poly = Polymer({
     },
     editRules: function (e) {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.editSpacyRules.headers = obj;
         this.$.editSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules?type=all";
@@ -1064,7 +1064,7 @@ poly = Polymer({
 
     editRulesNext: function (e) {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.editSpacyRulesNext.headers = obj;
         this.$.editSpacyRulesNext.url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.fieldForm.name;
@@ -1080,7 +1080,7 @@ poly = Polymer({
     },
     updateFieldSpacyRules: function () {
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.updateSpacyRules.headers = obj;
         this.$.updateSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules";
@@ -1172,7 +1172,7 @@ poly = Polymer({
     deleteAttribute: function (e) {
 
         var obj = {};
-        obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteTableAttribute.headers = obj;
         this.$.deleteTableAttribute.url = backend_url + "projects/" + projectName + "/table_attributes/" + e.model.item[0].name;
         this.$.deleteTableAttribute.generateRequest();
@@ -1200,9 +1200,9 @@ poly = Polymer({
             context: this,
             async: true,
             processData: false,
-            headers: {
-                "Authorization": AUTH_HEADER
-            },
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
             success: function (data) {
                 // console.log(data);
                 newTldTableData = [];
@@ -1234,9 +1234,9 @@ poly = Polymer({
             context: this,
             async: true,
             processData: false,
-            headers: {
-                "Authorization": AUTH_HEADER
-            },
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
             success: function (data) {
                 // console.log(data);
                 if(data["etk_status"]) {
@@ -1263,9 +1263,9 @@ poly = Polymer({
             async: true,
             processData: false,
             contentType: false,
-            headers: {
-                "Authorization": AUTH_HEADER
-            },
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
             success: function (data) {
                 this.refreshTldTable();
             }
@@ -1288,9 +1288,9 @@ poly = Polymer({
             processData: false,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
-            headers: {
-                "Authorization": AUTH_HEADER
-            },
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
             success: function (msg) {
                 // console.log(msg);
                 alert("Added")
@@ -1328,9 +1328,9 @@ poly = Polymer({
             dataType: "json",
             contentType: false,
             processData: false,
-            headers: {
-                "Authorization": AUTH_HEADER
-            },
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
             success: function (msg) {
                 // console.log(msg);
                 alert("Mapping recreated and data added.");
@@ -1362,9 +1362,9 @@ poly = Polymer({
             context: this,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
-            headers: {
-                "Authorization": AUTH_HEADER
-            },
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
             success: function (msg) {
                 // console.log(msg);
                 this.refreshTldTable();
@@ -1380,9 +1380,9 @@ poly = Polymer({
             dataType: "json",
             processData: false,
             context: this,
-            headers: {
-                "Authorization": AUTH_HEADER
-            },
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
             success: function (msg) {
                 this.togglePipelineBtn(true);
             },

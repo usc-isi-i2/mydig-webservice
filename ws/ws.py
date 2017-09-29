@@ -103,7 +103,7 @@ def _add_keys_to_dict(obj, keys): # dict, list
 
 @app.route('/spec')
 def spec():
-    return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='/spec.yaml')
+    return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='spec.yaml')
 
 
 @app.route('/spec.yaml')
