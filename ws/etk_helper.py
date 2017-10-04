@@ -1,6 +1,7 @@
 import os
 import json
 import codecs
+import shutil
 from config import config
 
 default_etk_config_str = """{
@@ -123,7 +124,12 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     default_etk_config['document_id'] = document_id
     project_local_path = webservice_config['repo']['local_path']
     landmark_rules_path = os.path.join(project_local_path, project_name, 'landmark_rules')
-    consolidated_rules = consolidate_landmark_rules(landmark_rules_path)
+    custom_landmark_rules_path = landmark_rules_path + "/custom_consolidated_rules.json"
+    output_landmark_file_path = landmark_rules_path + "/consolidated_rules.json"
+    if os.path.exists(custom_landmark_rules_path):
+        consolidated_rules = json.load(codecs.open(custom_landmark_rules_path, 'r'))
+    else:
+        consolidated_rules = consolidate_landmark_rules(landmark_rules_path)
     if consolidated_rules:
         output_landmark_file_path = landmark_rules_path + "/consolidated_rules.json"
         o_file = codecs.open(output_landmark_file_path, 'w')

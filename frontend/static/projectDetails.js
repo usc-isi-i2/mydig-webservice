@@ -1179,7 +1179,7 @@ poly = Polymer({
 
     },
     getToHome: function () {
-        location.href = "/"
+        location.href = ".";
     },
     checkLength: function (item) {
         return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length > 0;
@@ -1328,6 +1328,7 @@ poly = Polymer({
             dataType: "json",
             contentType: false,
             processData: false,
+            context: this,
             // headers: {
             //     "Authorization": AUTH_HEADER
             // },

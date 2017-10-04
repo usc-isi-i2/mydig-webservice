@@ -14,7 +14,6 @@ app = Flask(__name__)
 def home():
     return render_template('updateIndex.html')
 
-
 @app.route('/constants')
 def constant():
     return render_template('constants.html',

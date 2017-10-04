@@ -49,6 +49,7 @@ logger.setLevel(config['logging']['level'])
 
 # flask app
 app = Flask(__name__)
+app.config.update(MAX_CONTENT_LENGTH=1024*1024*1024*10)
 cors = CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
 api = Api(app)
 
@@ -1898,29 +1899,35 @@ class Actions(Resource):
         new_extraction = True
 
         # 1. create etk config and snapshot
-        etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
-        etk_config_version = hashlib.sha256(json.dumps(etk_config)).hexdigest().upper()
-        etk_config['etk_version'] = etk_config_version
+        custom_etk_config_file_path = os.path.join(
+            _get_project_dir_path(project_name), 'working_dir/custom_etk_config.json')
         etk_config_file_path = os.path.join(
             _get_project_dir_path(project_name), 'working_dir/etk_config.json')
-        etk_config_snapshot_file_path = os.path.join(
-            _get_project_dir_path(project_name), 'working_dir/etk_config_{}.json'.format(etk_config_version))
-        if not os.path.exists(etk_config_snapshot_file_path):
-            write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
-            write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
+        if os.path.exists(custom_etk_config_file_path):
+            shutil.copy(custom_etk_config_file_path, etk_config_file_path)
         else:
-            new_extraction = False # currently not in use
-        # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
+            etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
+            etk_config_version = hashlib.sha256(json.dumps(etk_config)).hexdigest().upper()
+            etk_config['etk_version'] = etk_config_version
+            etk_config_snapshot_file_path = os.path.join(
+                _get_project_dir_path(project_name), 'working_dir/etk_config_{}.json'.format(etk_config_version))
+            if not os.path.exists(etk_config_snapshot_file_path):
+                write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
+                write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
+            else:
+                new_extraction = False # currently not in use
+            # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
 
         # add config for etl
         # when creating kafka container, group id is not there. set consumer to read from start.
         etl_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etl_config.json')
-        etl_config = {
-          "input_args": {
-            "auto_offset_reset": "earliest"
-          }
-        }
-        write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
+        if not os.path.exists(etl_config_path):
+            etl_config = {
+              "input_args": {
+                "auto_offset_reset": "earliest"
+              }
+            }
+            write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
 
         # kill etk
         url = config['etl']['url'] + '/kill_etk'
