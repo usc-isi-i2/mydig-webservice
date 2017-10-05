@@ -1760,7 +1760,8 @@ class Actions(Resource):
                 "aggs": {
                     "group_by_tld": {
                         "terms": {
-                            "field": "tld.raw"
+                            "field": "tld.raw",
+                            "size": 0
                         }
                     }
                 },
