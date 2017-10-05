@@ -1303,7 +1303,11 @@ poly = Polymer({
         window.open(url, '_blank');
     },
     openLandmarkTool: function() {
-        var url = landmark_url;
+        var url = landmark_url + "#/project/select?prefix=" + projectName;
+        window.open(url, '_blank');
+    },
+    openKibana: function() {
+        var url = kibana_url;
         window.open(url, '_blank');
     },
     togglePipelineBtn: function(pipeline_on) {
