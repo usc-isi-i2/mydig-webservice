@@ -1805,6 +1805,7 @@ class Actions(Resource):
 
         kafka_producer = KafkaProducer(
             bootstrap_servers=config['kafka']['servers'],
+            max_request_size=10485760,
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
         )
         input_topic = project_name + '_in'
@@ -1924,9 +1925,15 @@ class Actions(Resource):
         etl_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etl_config.json')
         if not os.path.exists(etl_config_path):
             etl_config = {
-              "input_args": {
-                "auto_offset_reset": "earliest"
-              }
+                "input_args": {
+                    "auto_offset_reset": "earliest",
+                    "fetch_max_bytes": 52428800,
+                    "max_partition_fetch_bytes": 10485760,
+                    "max_poll_records": 10
+                },
+                "output_args": {
+                    "max_request_size": 10485760
+                }
             }
             write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
 
@@ -1976,6 +1983,7 @@ class Actions(Resource):
         print 're-add data'
         kafka_producer = KafkaProducer(
             bootstrap_servers=config['kafka']['servers'],
+            max_request_size=10485760,
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
         )
         input_topic = project_name + '_in'
@@ -2044,6 +2052,30 @@ class Actions(Resource):
         return True, ''
 
 
+# def re_config_sandpaper(project_name):
+#     try:
+#         url = '{}/{}'.format(
+#             config['es']['sample_url'],
+#             project_name
+#         )
+#         resp = requests.get(url)
+#         if resp.status_code // 100 == 2:
+#             url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
+#                 config['sandpaper']['url'],
+#                 config['sandpaper']['ws_url'],
+#                 project_name,
+#                 data[project_name]['master_config']['index']['sample'],
+#                 config['es']['sample_url']
+#             )
+#             resp = requests.post(url, timeout=5)
+#             if resp.status_code // 100 != 2:
+#                 print 'fail to re configure sandapper for {}'.format(project_name)
+#     except requests.exceptions.ConnectionError:
+#         # es if not online, retry
+#         time.sleep(5)
+#         re_config_sandpaper(project_name)
+
+
 if __name__ == '__main__':
     try:
 
@@ -2081,6 +2113,9 @@ if __name__ == '__main__':
                 else:
                     with codecs.open(status_path, 'r') as f:
                         data[project_name]['status'] = json.loads(f.read())
+
+                # re-config sandpaper
+                # re_config_sandpaper(project_name)
 
         # print json.dumps(data, indent=4)
         # run app
