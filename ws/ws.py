@@ -2052,28 +2052,20 @@ class Actions(Resource):
         return True, ''
 
 
-# def re_config_sandpaper(project_name):
-#     try:
-#         url = '{}/{}'.format(
-#             config['es']['sample_url'],
-#             project_name
-#         )
-#         resp = requests.get(url)
-#         if resp.status_code // 100 == 2:
-#             url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
-#                 config['sandpaper']['url'],
-#                 config['sandpaper']['ws_url'],
-#                 project_name,
-#                 data[project_name]['master_config']['index']['sample'],
-#                 config['es']['sample_url']
-#             )
-#             resp = requests.post(url, timeout=5)
-#             if resp.status_code // 100 != 2:
-#                 print 'fail to re configure sandapper for {}'.format(project_name)
-#     except requests.exceptions.ConnectionError:
-#         # es if not online, retry
-#         time.sleep(5)
-#         re_config_sandpaper(project_name)
+def ensure_sandpaper_is_on():
+    try:
+        # make sure es in on
+        url = config['es']['sample_url']
+        resp = requests.get(url)
+
+        # make sure sandpaper is on
+        url = config['sandpaper']['url']
+        resp = requests.get(url)
+
+    except requests.exceptions.ConnectionError:
+        # es if not online, retry
+        time.sleep(5)
+        ensure_sandpaper_is_on()
 
 
 if __name__ == '__main__':
@@ -2081,6 +2073,9 @@ if __name__ == '__main__':
 
         # if git_helper.pull() == 'ERROR':
         #     raise Exception('Git pull error')
+
+        # prerequisites
+        ensure_sandpaper_is_on()
 
         # init
         for project_name in os.listdir(config['repo']['local_path']):
@@ -2115,7 +2110,16 @@ if __name__ == '__main__':
                         data[project_name]['status'] = json.loads(f.read())
 
                 # re-config sandpaper
-                # re_config_sandpaper(project_name)
+                url = '{}/config?project={}&index={}&endpoint={}'.format(
+                    config['sandpaper']['url'],
+                    project_name,
+                    data[project_name]['master_config']['index']['sample'],
+                    config['es']['sample_url']
+                )
+                resp = requests.post(url, json=data[project_name]['master_config'], timeout=5)
+                if resp.status_code // 100 != 2:
+                    print 'failed to re-config sandpaper for {}'.format(project_name)
+
 
         # print json.dumps(data, indent=4)
         # run app

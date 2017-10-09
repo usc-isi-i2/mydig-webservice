@@ -481,6 +481,7 @@ poly = Polymer({
         this.refreshPipelineStatus(true);
         this.refreshTldTable(true);
         this.tldTableData = [];
+        // this.$.tldTable.sort = this.sortCaseInsensitive;
 
         $(document).on('tap', '.btnAddToLandmark', this.addToLandmark);
 
@@ -1207,8 +1208,11 @@ poly = Polymer({
                 // console.log(data);
                 newTldTableData = [];
                 data["tld_statistics"].forEach(function(obj) {
+                    // if(obj["tld"] == "asexyservice.com") {
+                    //     obj["tld"] = "ddd.com";
+                    // }
                     newObj = {
-                        "tld": obj["tld"],
+                        "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
                         "desired_num": obj["desired_num"],
@@ -1217,10 +1221,14 @@ poly = Polymer({
                     };
                     newTldTableData.push(newObj);
                 });
+
                 this.tldTableData = newTldTableData;
                 this.$.tldTable.reload();
             }
         });
+    },
+    sortCaseInsensitive: function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
     },
     refreshPipelineStatus: function(useTimeout=false) {
         if(useTimeout) {
