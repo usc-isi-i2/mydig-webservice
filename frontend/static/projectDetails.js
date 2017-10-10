@@ -457,26 +457,10 @@ poly = Polymer({
         this.fieldsData = [];
         this.tableAttributes = [];
         this.fieldNames = [];
-        var obj = {};
-        // obj.Authorization = AUTH_HEADER;
-        this.$.getTags.headers = obj;
-        this.$.getTags.url = backend_url + "projects/" + projectName + "/tags";
-        this.$.getTags.generateRequest();
-
-        this.$.getFields.headers = obj;
-        this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
-        this.$.getFields.generateRequest();
-
-        this.$.getGlossary.headers = obj;
-        this.$.getGlossary.url = backend_url + "projects/" + projectName + "/glossaries";
-        this.$.getGlossary.generateRequest();
-
-        this.$.tableAttributes.headers = obj;
-        this.$.tableAttributes.url = backend_url + "projects/" + projectName + "/table_attributes";
-        this.$.tableAttributes.generateRequest();
 
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
+        this.updateDone(); // update all tabs
         this.navAction();
         // this.refreshPipelineStatus(true);
         // this.refreshTldTable(true);
@@ -703,15 +687,17 @@ poly = Polymer({
         this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
         this.$.getFields.generateRequest();
 
-
         this.$.getTags.headers = obj;
         this.$.getTags.url = backend_url + "projects/" + projectName + "/tags";
         this.$.getTags.generateRequest();
 
-
         this.$.getGlossary.headers = obj;
         this.$.getGlossary.url = backend_url + "projects/" + projectName + "/glossaries";
         this.$.getGlossary.generateRequest();
+
+        this.$.tableAttributes.headers = obj;
+        this.$.tableAttributes.url = backend_url + "projects/" + projectName + "/table_attributes";
+        this.$.tableAttributes.generateRequest();
 
     },
     sureToDeleteDialogFunction: function (e) {
@@ -1206,6 +1192,8 @@ poly = Polymer({
             contentType: false,
             success: function (data) {
                 alert("master_config uploaded");
+                // update ui
+                this.updateDone();
             },
             error: function() {
                 alert("fail to upload master_config");
