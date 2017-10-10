@@ -478,8 +478,8 @@ poly = Polymer({
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
         this.navAction();
-        this.refreshPipelineStatus(true);
-        this.refreshTldTable(true);
+        // this.refreshPipelineStatus(true);
+        // this.refreshTldTable(true);
         this.tldTableData = [];
         // this.$.tldTable.sort = this.sortCaseInsensitive;
 
@@ -1186,6 +1186,50 @@ poly = Polymer({
         return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length > 0;
 
     },
+    submitImportMasterConfigForm: function() {
+        if(window.confirm("Are you sure to upload and overwrite current master config?") == false) {
+            return;
+        }
+
+        var importFileFormData = new FormData();
+        var file = $("#importMasterConfigDialog paper-input[type=file] input")[0].files[0];
+        importFileFormData.append("file_data", file);
+
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/master_config',
+            dataType: "json",
+            context: this,
+            data: importFileFormData,
+            async: true,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                alert("master_config uploaded");
+            },
+            error: function() {
+                alert("fail to upload master_config");
+            }
+        });
+    },
+    downloadMasterConfig: function() {
+        $.ajax({
+            type: "GET",
+            url: backend_url + "projects/" + projectName + '/actions/master_config',
+            dataType: "json",
+            context: this,
+            async: true,
+            processData: false,
+            success: function (data) {
+                $("<a />", {
+                    "download": "master_config.json",
+                    "href" : "data:application/json," + encodeURIComponent(JSON.stringify(data, null, 2))
+                }).appendTo("body").click(function() {
+                    $(this).remove();
+                })[0].click()
+            }
+        });
+    },
 //	uploadSamplePages:function() {
 //		uploadZipFileDialog.toggle();
 //	}
@@ -1257,7 +1301,7 @@ poly = Polymer({
     },
     submitImportFileForm: function() {
         var importFileFormData = new FormData();
-        var file = document.getElementById("file_data").getElementsByTagName("input")[0].files[0];
+        var file = $("#importFileFormDialog paper-input[type=file] input")[0].files[0];
         importFileFormData.append("file_data", file);
         importFileFormData.append("file_name", file.name);
         importFileFormData.append("file_type", "json_lines");

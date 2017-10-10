@@ -130,7 +130,7 @@ class authentication(Resource):
         return rest.ok()
 
 
-@api.route('/debug/<mode>')
+@api.route('/s<mode>')
 class Debug(Resource):
     @requires_auth
     def get(self, mode):
@@ -1697,6 +1697,37 @@ class Data(Resource):
     @staticmethod
     def extract_tld(url):
         return tldextract.extract(url).domain + '.' + tldextract.extract(url).suffix
+
+
+@api.route('/projects/<project_name>/actions/master_config')
+class ActionMasterConfig(Resource):
+    @requires_auth
+    def post(self, project_name): # frontend needs to get all configs again
+        try:
+            parse = reqparse.RequestParser()
+            parse.add_argument('file_data', type=werkzeug.FileStorage, location='files')
+            args = parse.parse_args()
+
+            # save to tmp path and test
+            tmp_master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
+            args['file_data'].save(tmp_master_config_file_path)
+            with codecs.open(tmp_master_config_file_path, 'r') as f:
+                new_master_config = json.loads(f.read())
+            # TODO: validation
+
+            # overwrite previous master config
+            data[project_name]['master_config'] = new_master_config
+            update_master_config_file(project_name)
+
+            return rest.created()
+        except Exception as e:
+            print e
+            return rest.internal_error('fail of upload master_config')
+
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+        return data[project_name]['master_config']
 
 
 @api.route('/projects/<project_name>/actions/<action_name>')

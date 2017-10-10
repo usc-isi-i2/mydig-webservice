@@ -104,11 +104,9 @@
                 id="getAction1" method="GET" content-type="application/json"
                 handle-as="json" on-response="getTLDInferlink" on-error="done"></iron-ajax>
 
-
         <iron-ajax
                 id="editTag" method="GET" content-type="application/json"
                 handle-as="json" last-response="{{tagForm}}" on-error="done"></iron-ajax>
-
 
         <iron-ajax
                 id="editField" method="GET" content-type="application/json"
@@ -232,6 +230,19 @@
                                      value="10" type="number" min="0" max="999999999" maxlength="10" auto-validate pattern="[0-9]{1,11}"></paper-input>
                         <button style="float:right" on-tap="updateDesiredNumber">Update</button>
                     </div>
+
+                    <br><br><br>
+                    <paper-button style="width:100%"
+                                  on-tap="downloadMasterConfig"
+                                  id="btnDownloadMasterConfig"
+                                  raised>Download master config
+                    </paper-button>
+                    <br><br><br>
+                    <paper-button style="width:100%"
+                                  onclick="importMasterConfigDialog.toggle()"
+                                  id="btnUploadMasterConfig"
+                                  raised>Upload master config
+                    </paper-button>
                 </div>
 
 
@@ -474,10 +485,27 @@
                     <form is="iron-form" content-type="multipart/form-data" id="importFileForm"
                           on-iron-form-presubmit="onPresubmit" method="POST">
                         <h4>Import File</h4>
-                        <paper-input type="file" id=file_data ></paper-input>
+                        <paper-input type="file"></paper-input>
                         <!--<paper-input required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"-->
                                      <!--class="addProjClass" label="File Name" id=file_name></paper-input>-->
                         <paper-button raised on-tap="submitImportFileForm" dialog-dismiss>Submit
+                        </paper-button>
+                        <paper-button raised dialog-dismiss>Close</paper-button>
+                        <br><br>
+                    </form>
+                </paper-dialog-scrollable>
+
+            </paper-dialog>
+
+            <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
+                          on-iron-overlay-closed="_restoreDocumentScrolling" id="importMasterConfigDialog"
+                          style="width:50%;margin-left:auto;margin-right:auto">
+                <paper-dialog-scrollable>
+                    <form is="iron-form" content-type="multipart/form-data" id="importMasterConfigForm"
+                          on-iron-form-presubmit="onPresubmit" method="POST">
+                        <h4>Upload Master Config File</h4>
+                        <paper-input type="file"></paper-input>
+                        <paper-button raised on-tap="submitImportMasterConfigForm" dialog-dismiss>Submit
                         </paper-button>
                         <paper-button raised dialog-dismiss>Close</paper-button>
                         <br><br>
