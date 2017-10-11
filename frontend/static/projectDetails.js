@@ -462,8 +462,8 @@ poly = Polymer({
 
         this.updateDone(); // update all tabs
         this.navAction();
-        // this.refreshPipelineStatus(true);
-        // this.refreshTldTable(true);
+        this.refreshPipelineStatus(true);
+        this.refreshTldTable(true);
         this.tldTableData = [];
         // this.$.tldTable.sort = this.sortCaseInsensitive;
 
