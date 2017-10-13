@@ -168,7 +168,8 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     etk_config = add_custom_spacy_extractors(
         add_glossary_extraction(default_etk_config, project_master_config, glossary_dir_path),
         project_master_config, project_name, project_local_path)
-    etk_config = add_default_field_extractors(project_master_config, etk_config)
+    # etk_config = add_default_field_extractors(project_master_config, etk_config)
+    etk_config = add_field_extractors(project_master_config, etk_config)
     etk_config = add_kg_enhancement(etk_config)
     return etk_config
 
@@ -338,6 +339,45 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
                         create_dictionary_data_extractor_for_field(ngram, glossary, case_sensitive))
     etk_config['data_extraction'].append(de_obj)
     return etk_config
+
+
+def add_field_extractors(project_master_config, etk_config):
+    if 'data_extraction' not in etk_config:
+        etk_config['data_extraction'] = list()
+
+    fields = project_master_config['fields']
+    for field_name, field_obj in fields.iteritems():
+        if 'segments' not in field_obj:
+            continue
+
+        # segment
+        for seg_name in field_obj['segments'].iterkeys():
+            de_obj = dict()
+            de_obj['fields'] = dict()
+            de_obj['fields'][field_name] = dict()
+            de_obj['fields'][field_name]['extractors'] = get_extractors(field_obj['segments'][seg_name])
+
+            if seg_name == 'title':
+                de_obj['input_path'] = ["*.title.text.`parent`"]
+            elif seg_name == 'url':
+                de_obj['input_path'] = ["*.url.text.`parent`"]
+            elif seg_name == 'description':
+                de_obj['input_path'] = [
+                    "*.content_strict.text.`parent`",
+                    "*.content_relaxed.text.`parent`",
+                    "*.inferlink_extractions.*.text.`parent`"
+                ]
+
+            etk_config['data_extraction'].append(de_obj)
+
+    return etk_config
+
+
+def get_extractors(segment):
+    ret = {}
+    for ext in segment['extractors']:
+        ret[ext] = {"config": {}}
+    return ret
 
 
 def add_default_field_extractors(project_master_config, etk_config):
@@ -524,11 +564,12 @@ if __name__ == '__main__':
     webservice_config = config
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
-    project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
+    project_master_config = json.load(codecs.open('/Users/yixiang/Projects/ISI/mydig-projects/test/master_config.json'))
     x = json.dumps(
-        generate_etk_config(project_master_config, webservice_config, 'domain1_test_04', document_id='gtufhf',
-                            content_extraction_only=False),
-        indent=2)
+        generate_etk_config(
+            project_master_config, webservice_config, 'test',
+            document_id='doc_id', content_extraction_only=False), indent=2)
+    print x
     print 'done'
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
     # ngram_dist = {

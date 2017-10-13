@@ -104,9 +104,11 @@
                 id="getAction1" method="GET" content-type="application/json"
                 handle-as="json" on-response="getTLDInferlink" on-error="done"></iron-ajax>
 
+
         <iron-ajax
                 id="editTag" method="GET" content-type="application/json"
                 handle-as="json" last-response="{{tagForm}}" on-error="done"></iron-ajax>
+
 
         <iron-ajax
                 id="editField" method="GET" content-type="application/json"
@@ -239,7 +241,7 @@
                     </paper-button>
                     <br><br><br>
                     <paper-button style="width:100%"
-                                  onclick="importMasterConfigDialog.toggle()"
+                                  on-tap="importMasterConfigDialog.to"
                                   id="btnUploadMasterConfig"
                                   raised>Upload master config
                     </paper-button>
@@ -485,7 +487,7 @@
                     <form is="iron-form" content-type="multipart/form-data" id="importFileForm"
                           on-iron-form-presubmit="onPresubmit" method="POST">
                         <h4>Import File</h4>
-                        <paper-input type="file"></paper-input>
+                        <paper-input type="file" id=file_data ></paper-input>
                         <!--<paper-input required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255"-->
                                      <!--class="addProjClass" label="File Name" id=file_name></paper-input>-->
                         <paper-button raised on-tap="submitImportFileForm" dialog-dismiss>Submit
@@ -503,8 +505,8 @@
                 <paper-dialog-scrollable>
                     <form is="iron-form" content-type="multipart/form-data" id="importMasterConfigForm"
                           on-iron-form-presubmit="onPresubmit" method="POST">
-                        <h4>Upload Master Config File</h4>
-                        <paper-input type="file"></paper-input>
+                        <h4>Import File</h4>
+                        <paper-input type="file" id="masterConfigFileData" ></paper-input>
                         <paper-button raised on-tap="submitImportMasterConfigForm" dialog-dismiss>Submit
                         </paper-button>
                         <paper-button raised dialog-dismiss>Close</paper-button>

@@ -21,6 +21,7 @@ def constant():
         landmark_url=config['frontend']['landmark_url'],
         digui_url=config['frontend']['digui_url'],
         kibana_url=config['frontend']['kibana_url'],
+        spacy_ui_url=config['frontend']['spacy_ui_url'],
     )
 
 

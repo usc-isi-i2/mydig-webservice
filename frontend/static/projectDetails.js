@@ -1040,12 +1040,11 @@ poly = Polymer({
 
     },
     editRulesNextDialog: function (e) {
-        var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.fieldForm.name;
+        var url = spacy_ui_url + "#/" + backend_url + "/" + projectName + "/" + this.fieldForm.name;
         window.open(url, '_blank');
     },
     editRulesAdd: function () {
-        var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.$$('#fieldnameinput').value;
-        ;
+        var url = spacy_ui_url + "#/" + backend_url + projectName + this.$$('#fieldnameinput').value;
         window.open(url, '_blank');
     },
 
@@ -1054,7 +1053,7 @@ poly = Polymer({
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.editSpacyRulesNext.headers = obj;
-        this.$.editSpacyRulesNext.url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.fieldForm.name;
+        this.$.editSpacyRulesNext.url = spacy_ui_url + "#/" + backend_url + projectName + "/" + this.fieldForm.name;
         this.$.editSpacyRulesNext.body = (this.$$('#spacyRulesNextTextArea').value);
 
         this.$.editSpacyRulesNext.generateRequest();

@@ -629,6 +629,8 @@ class ProjectFields(Resource):
                 not isinstance(field_obj['case_sensitive'], bool) or \
                 len(field_obj['glossaries']) == 0:
             field_obj['case_sensitive'] = False
+        if 'segments' not in field_obj:
+            field_obj['segments'] = templates.get('field_segments')
         return True, None
 
 

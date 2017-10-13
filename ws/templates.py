@@ -41,6 +41,12 @@ master_config = {
     'image_prefix': ''
 }
 
+field_segments = {
+    'title': {'extractors':{}},
+    'url': {'extractors': {}},
+    'description': {'extractors':{}}
+}
+
 # data = {
 #     'tld1': {
 #         'doc_id1': {'path': 'raw_content_path_1', 'add_to_queue': bool},

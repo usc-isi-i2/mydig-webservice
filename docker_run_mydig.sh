@@ -19,6 +19,10 @@ cd /app/mydig-webservice/frontend
 chmod +x frontend.sh
 ./frontend.sh
 
+# spacy ui
+#cd /app/spacy-ui
+#npm start &
+
 # open bash and wait
 #cd /app
 #/bin/bash
