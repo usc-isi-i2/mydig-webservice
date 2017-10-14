@@ -323,9 +323,9 @@
                                 <paper-checkbox disabled="disabled" checked="{{item.0.show_in_facets}}"
                                                 style="float:center;margin-left:53px;">Show in Facets
                                 </paper-checkbox>
-                                <paper-checkbox disabled="disabled" style="float:center;margin-left:53px;"
-                                                checked="{{item.0.rule_extractor_enabled}}"> Rule Extractor Enabled
-                                </paper-checkbox>
+                                <!--<paper-checkbox disabled="disabled" style="float:center;margin-left:53px;"-->
+                                                <!--checked="{{item.0.rule_extractor_enabled}}"> Rule Extractor Enabled-->
+                                <!--</paper-checkbox>-->
 
                             </div>
                             <div style="padding: 8px;">
@@ -349,7 +349,7 @@
                                 </template>
                             </div>
 
-                            <div style="padding: 8px;">
+                            <div style="padding: 8px; width:50%">
                                 <strong>Segments:</strong>
                                 <table class="segments">
                                     <tr><th>Name</th><th>Extractors</th></tr>
@@ -735,8 +735,8 @@
                         </paper-tooltip>
 
 
-                        <paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled
-                        </paper-checkbox>
+                        <!--<paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled-->
+                        <!--</paper-checkbox>-->
                         <paper-tooltip for="fieldRuleExtractor">When true, use the custom rule extractor for this field,
                             if one is defined
                         </paper-tooltip>
@@ -1094,8 +1094,8 @@
                         <div style="margin-top:1em;">
                             <strong>Segments:</strong>
                             <table class="segments">
-                                <tr><th>Name</th><th>Extractors
-                                </th><th><paper-button raised>Add</paper-button></th></tr>
+                                <tr><th>Name</th><th>Extractors</th>
+                                    <th style="width:1em;"><paper-button raised>Add</paper-button></th></tr>
 
                                 <template is="dom-repeat" items="{{parseObjToArray(fieldForm.segments)}}"
                                           as="seg_item">
@@ -1109,6 +1109,7 @@
                                     </td>
                                     <td>
                                         <paper-button raised>Edit</paper-button>
+                                        <paper-button raised>Delete</paper-button>
                                     </td>
                                 </tr>
                                 </template>

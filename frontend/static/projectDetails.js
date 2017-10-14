@@ -1121,7 +1121,6 @@ poly = Polymer({
                 }
             }
         }
-        console.log(this.fieldForm);
 
     },
     addNewFieldSetup: function () {
