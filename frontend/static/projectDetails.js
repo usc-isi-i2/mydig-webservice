@@ -461,9 +461,10 @@ poly = Polymer({
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
         this.updateDone(); // update all tabs
-        this.navAction();
-        this.refreshPipelineStatus(true);
-        this.refreshTldTable(true);
+        // this.navAction();
+        this.navField();
+        // this.refreshPipelineStatus(true);
+        // this.refreshTldTable(true);
         this.tldTableData = [];
         // this.$.tldTable.sort = this.sortCaseInsensitive;
 
@@ -612,6 +613,14 @@ poly = Polymer({
 
         }
     },
+    parseObjToArray: function(obj) {
+        return _.map(obj, function(value, key) {
+            return {
+                key: key,
+                value: value
+            };
+        });
+    },
     fillFields: function (data) {
         if (data.detail.response.length != 0) {
             this.fields = Object.keys(data.detail.response).map(function (e) {
@@ -625,6 +634,9 @@ poly = Polymer({
             }
             this.push('fieldNames', "none");
         }
+
+
+        //update table attributes
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.tableAttributes.headers = obj;
@@ -1109,6 +1121,7 @@ poly = Polymer({
                 }
             }
         }
+        console.log(this.fieldForm);
 
     },
     addNewFieldSetup: function () {

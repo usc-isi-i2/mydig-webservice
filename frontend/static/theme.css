@@ -17,13 +17,13 @@
         }
       }
 
-      @media all and (min-height: 401px) and (max-height: 500px) { 
+      @media all and (min-height: 401px) and (max-height: 500px) {
         .main-search-results {
            height: 65px;
         }
       }
 
-      @media all and (min-height: 501px) and (max-height: 600px) { 
+      @media all and (min-height: 501px) and (max-height: 600px) {
         .main-search-results {
           height: 65px;
         }
@@ -35,19 +35,19 @@
         }
       }
 
-      @media all and (min-height: 701px) and (max-height: 800px) { 
+      @media all and (min-height: 701px) and (max-height: 800px) {
         .main-search-results {
           height: 450px;
         }
       }
 
-      @media all and (min-height: 801px) and (max-height: 900px) { 
+      @media all and (min-height: 801px) and (max-height: 900px) {
         .main-search-results {
           height: 550px;
         }
       }
 
-      @media all and (min-height: 901px) and (max-height: 1000px) { 
+      @media all and (min-height: 901px) and (max-height: 1000px) {
         .main-search-results {
           height: 650px;
         }
@@ -64,15 +64,15 @@
           height: 850px;
         }
       }
-      
+
       /* .paperMaterialStyle {
       	margin-bottom: 2em;
       }
-      
+
       .adjustProjectSection{
       	padding: 12px;
       }
-      
+
       .projectDialogStyles{
       	    outline: none;
 		    height: 48em;
@@ -82,9 +82,9 @@
 		    box-sizing: border-box;
 		    background-color: #cccccc;
       }
-      
-      
-      
+
+
+
       .toggleProperties {
       	font-size: 20px;
       	height: 40px;
@@ -94,7 +94,7 @@
       	padding-top: 6px;
       	padding-left:20px;
       }
-      
+
       .buttonProperties {
       	float: right;
 	    height: 10px;
@@ -106,12 +106,12 @@
    		 height: 3.1em;
 		}
       }
-      
+
       paper-button {
  		 text-transform: none;
 		}
       .glossaryProperties{
-      	
+
       	font-size: 20px;
       	height: 40px;
 	    width: 80%;
@@ -121,29 +121,29 @@
       	padding-left:20px;
       	margin-left: 20px;
       }
-      
-      
-    
+
+
+
        .glossaryButtonProperties{
           border: 1px solid;
           height:40px;
-       	
+
        }
-       
+
        .glossaryOtherButtonProperties{
        		border: 1px solid;
       		height:10px;
       		margin-left: 20em;
        }
-       
+
        .tagsOtherButtonProperties {
        		border: 1px solid;
       		height:10px;
        }
        paper-tooltip {
-       
+
        }
-       
+
        .OtherDialogStyles{
       	    outline: none;
 		    height: 45em;
@@ -155,7 +155,7 @@
       }
       .paper-icon-item.content-icon.paper-icon-item{
       width:8px;}
-      
+
       .FieldDialogStyles{
       	outline: none;
 		    height:60em;
@@ -166,7 +166,7 @@
 		    background-color: #cccccc;
             overflow:scroll;
       }
-      
+
       .GlossaryDialogStyles{
       	outline: none;
 		    height: 15em;
@@ -184,17 +184,17 @@
 		    border: 2px solid black;
 		    padding-left: 30px;
       }
-      
+
       .addPaddingToSections {
       	padding:10px;
       	margin-top:1em;
       }
-      
+
      .paper-input-container.input-content.paper-input-container input {
      		 margin:0px;
 			 color:blue;
       }
-      
+
       .paper-input-container.input-content.paper-input-container label {
 			 color:black;
       }
@@ -210,28 +210,40 @@
      .paperDatableClass tr {
      	    width: 100%;
     		height: 2em;
-    		
+
      }
      .paperDatableClass th {
      	height:2em;
      }
-     
+
      .disabledClass {
      	pointer-events: none;
         opacity: 0.4;
      }
-     
+
      .paperDatableClass td {
      	height:2em;
-     	
+
      }
-     
+
      .paperDatableClass tr:nth-child(even) {background: #CCC}
-       
+
       html {
       	font-family: 'Kurale', serif;
       }
-      
+
+    table.segments {
+        background-color: #dedede;
+        border-collapse: collapse;
+        width: 50%;
+    }
+
+    table.segments th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
       /*table, th, td {*/
     		/*border: 1px solid black;*/
 		/*}	*/

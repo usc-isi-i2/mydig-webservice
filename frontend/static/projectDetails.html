@@ -293,7 +293,7 @@
 
                             <div style="padding: 8px;">
                                 <span style="width: 15em;display: inline-block;"><strong disabled="disabled">Number of Extraction Rules:</strong> {{item.0.number_of_rules}}</span>
-                                <span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong> {{item.0.rule_extraction_target}}</span>
+                                <!--<span style="width: 27em;display: inline-block;"><strong disabled="disabled">Rule Extraction Target:</strong> {{item.0.rule_extraction_target}}</span>-->
                             </div>
 
                             <div style="padding: 8px;">
@@ -308,10 +308,10 @@
                                 <span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong> {{item.0.show_as_link}}</span>
                             </div>
 
-                            <div style="padding: 8px;">
-                                <strong disabled="disabled">Predefined Extractor:</strong>
-                                {{item.0.predefined_extractor}}
-                            </div>
+                            <!--<div style="padding: 8px;">-->
+                                <!--<strong disabled="disabled">Predefined Extractor:</strong>-->
+                                <!--{{item.0.predefined_extractor}}-->
+                            <!--</div>-->
 
                             <div style="padding: 8px;">
                                 <strong disabled="disabled">Show in Result:</strong> {{item.0.show_in_result}}
@@ -348,6 +348,28 @@
                                     </paper-checkbox>
                                 </template>
                             </div>
+
+                            <div style="padding: 8px;">
+                                <strong>Segments:</strong>
+                                <table class="segments">
+                                    <tr><th>Name</th><th>Extractors</th></tr>
+
+                                    <template is="dom-repeat" items="{{parseObjToArray(item.0.segments)}}"
+                                              as="seg_item">
+                                    <tr>
+                                        <td>{{seg_item.key}}</td>
+                                        <td>
+                                            <template is="dom-repeat" items="{{seg_item.value.extractors}}"
+                                                      as="extractor">
+                                            {{extractor.0}}
+                                            </template>
+                                        </td>
+                                    </tr>
+                                    </template>
+
+                                </table>
+                            </div>
+
                         </paper-material>
                         <br><br></template>
                 </div>
@@ -934,9 +956,6 @@
                         display the field in DIG
                     </paper-tooltip>
 
-
-                    <paper-input style="margin:0px;" class="projectInputStyle" label="Group name:"
-                                 value="{{fieldForm.group_name}}"></paper-input>
                     <div style="margin-top:0px;">
                         <button style="float:right" onclick="setDefaultIcon()">X</button>
                         <paper-button style="float:right" onclick="papericonEditSet.toggle()" raised><strong>Get
@@ -947,6 +966,10 @@
                     <paper-tooltip fit-to-visible-bounds="true" position="left" for="iconField">The icon to decorate the
                         field in DIG
                     </paper-tooltip>
+
+
+                    <paper-input style="margin:0px;" class="projectInputStyle" label="Group name:"
+                                 value="{{fieldForm.group_name}}"></paper-input>
 
 
                     <paper-dropdown-menu id="searchFieldEdit" style="margin:0px;" class="projectInputStyle"
@@ -1005,39 +1028,35 @@
                     </paper-tooltip>
 
 
-                    <paper-dropdown-menu id="predefinedFieldEdit" style="margin:0px;" class="projectInputStyle"
-                                         label="Predefined Extractor:">
-                        <paper-menu id="editfieldpredefinedExtractor"
-                                    selected={{_getPredefinedExtractor(fieldForm.predefined_extractor)}}
-                                    class="dropdown-content">
-                            <template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">
-                                <paper-item value={{item}}>{{item}}</paper-item>
-                            </template>
-                        </paper-menu>
-                    </paper-dropdown-menu>
-                    <paper-tooltip fit-to-visible-bounds="true" position="top" for="predefinedFieldEdit">Specifies a
-                        default extractor to use for a field
-                    </paper-tooltip>
+                    <!--<paper-dropdown-menu id="predefinedFieldEdit" style="margin:0px;" class="projectInputStyle"-->
+                                         <!--label="Predefined Extractor:">-->
+                        <!--<paper-menu id="editfieldpredefinedExtractor"-->
+                                    <!--selected={{_getPredefinedExtractor(fieldForm.predefined_extractor)}}-->
+                                    <!--class="dropdown-content">-->
+                            <!--<template is="dom-repeat" items="{{predefined_extractor_Array}}" as="item">-->
+                                <!--<paper-item value={{item}}>{{item}}</paper-item>-->
+                            <!--</template>-->
+                        <!--</paper-menu>-->
+                    <!--</paper-dropdown-menu>-->
+                    <!--<paper-tooltip fit-to-visible-bounds="true" position="top" for="predefinedFieldEdit">Specifies a-->
+                        <!--default extractor to use for a field-->
+                    <!--</paper-tooltip>-->
 
 
-                    <paper-dropdown-menu id="ruleExtractFieldEdit" style="margin:0px;" class="projectInputStyle"
-                                         label="Rule Extraction Target:">
-                        <paper-menu id="editRuleExtractionTargetValue"
-                                    selected={{_getExtractorTarget(fieldForm.rule_extraction_target)}}
-                                    class="dropdown-content">
-                            <template is="dom-repeat" items="{{extractionTargetArray}}" as="item">
-                                <paper-item value={{item}}>{{item}}</paper-item>
-                            </template>
-                        </paper-menu>
-                    </paper-dropdown-menu>
-                    <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractFieldEdit">When true, use
-                        the custom rule extractor for this field, if one is defined
-                    </paper-tooltip>
-
-
-                    <div>
-
-
+                    <!--<paper-dropdown-menu id="ruleExtractFieldEdit" style="margin:0px;" class="projectInputStyle"-->
+                                         <!--label="Rule Extraction Target:">-->
+                        <!--<paper-menu id="editRuleExtractionTargetValue"-->
+                                    <!--selected={{_getExtractorTarget(fieldForm.rule_extraction_target)}}-->
+                                    <!--class="dropdown-content">-->
+                            <!--<template is="dom-repeat" items="{{extractionTargetArray}}" as="item">-->
+                                <!--<paper-item value={{item}}>{{item}}</paper-item>-->
+                            <!--</template>-->
+                        <!--</paper-menu>-->
+                    <!--</paper-dropdown-menu>-->
+                    <!--<paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractFieldEdit">When true, use-->
+                        <!--the custom rule extractor for this field, if one is defined-->
+                    <!--</paper-tooltip>-->
+                        <br>
                         <paper-checkbox id="combineEditField" class="projectInputStyle"
                                         checked="{{fieldForm.combine_fields}}">Combine Fields
                         </paper-checkbox>
@@ -1070,6 +1089,32 @@
                         <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorEditField">When
                             true, use the custom rule extractor for this field, if one is defined
                         </paper-tooltip>
+
+
+                        <div style="margin-top:1em;">
+                            <strong>Segments:</strong>
+                            <table class="segments">
+                                <tr><th>Name</th><th>Extractors
+                                </th><th><paper-button raised>Add</paper-button></th></tr>
+
+                                <template is="dom-repeat" items="{{parseObjToArray(fieldForm.segments)}}"
+                                          as="seg_item">
+                                <tr>
+                                    <td>{{seg_item.key}}</td>
+                                    <td>
+                                        <template is="dom-repeat" items="{{seg_item.value.extractors}}"
+                                                  as="extractor">
+                                        {{extractor.0}}
+                                        </template>
+                                    </td>
+                                    <td>
+                                        <paper-button raised>Edit</paper-button>
+                                    </td>
+                                </tr>
+                                </template>
+                            </table>
+                        </div>
+
 
                     </div>
                 </paper-dialog-scrollable>
@@ -1248,5 +1293,5 @@
 
     </template>
 </dom-module>
-<project-details></project-details>
+<!--<project-details></project-details>-->
 <script type="text/javascript" src="projectDetails.js"></script>
