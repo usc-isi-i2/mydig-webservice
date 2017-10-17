@@ -147,20 +147,20 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         defined_fields = project_master_config['fields']
         mapping = create_fields_to_landmark_fields_mapping(defined_fields, consolidated_rules)
 
-        if 'data_extraction' not in default_etk_config:
-            default_etk_config['data_extraction'] = list()
-        data_e_object = dict()
-        inferlink_field_name = 'inferlink_extractions'
-        try:
-            inferlink_field_name = default_etk_config['content_extraction']['extractors']['landmark']['field_name']
-        except:
-            pass
-        data_e_object['input_path'] = ["*.{}.*.text.`parent`".format(inferlink_field_name)]
-        data_e_object['fields'] = dict()
-        for field_name in mapping.keys():
-            data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name],
-                                                                                           field_name)
-        default_etk_config['data_extraction'].append(data_e_object)
+        # if 'data_extraction' not in default_etk_config:
+        #     default_etk_config['data_extraction'] = list()
+        # data_e_object = dict()
+        # inferlink_field_name = 'inferlink_extractions'
+        # try:
+        #     inferlink_field_name = default_etk_config['content_extraction']['extractors']['landmark']['field_name']
+        # except:
+        #     pass
+        # data_e_object['input_path'] = ["*.{}.*.text.`parent`".format(inferlink_field_name)]
+        # data_e_object['fields'] = dict()
+        # for field_name in mapping.keys():
+        #     data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name],
+        #                                                                                    field_name)
+        # default_etk_config['data_extraction'].append(data_e_object)
 
     if content_extraction_only:
         return default_etk_config

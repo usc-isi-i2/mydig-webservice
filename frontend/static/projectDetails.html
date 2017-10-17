@@ -361,7 +361,7 @@
                                         <td>
                                             <template is="dom-repeat" items="{{seg_item.value.extractors}}"
                                                       as="extractor">
-                                            {{extractor.0}}
+                                            {{extractor}}
                                             </template>
                                         </td>
                                     </tr>
@@ -921,7 +921,7 @@
                         <!--<paper-button style="float:right;"-->
                                       <!--on-tap="editRulesNextDialog" raised><strong>Edit Rules</strong></paper-button>-->
 
-                        <h4>Field : {{fieldForm.name}}</h4>
+                        <h4>Field: {{fieldForm.name}}</h4>
 
                     </div>
                     <paper-input id="descriptionField" style="margin:0px;" class="projectInputStyle"
@@ -1083,9 +1083,9 @@
                             field appears in the query form
                         </paper-tooltip>
 
-                        <paper-checkbox id="ruleExtractorEditField" class="projectInputStyle"
-                                        checked="{{fieldForm.rule_extractor_enabled}}">Rule Extractor Enabled
-                        </paper-checkbox>
+                        <!--<paper-checkbox id="ruleExtractorEditField" class="projectInputStyle"-->
+                                        <!--checked="{{fieldForm.rule_extractor_enabled}}">Rule Extractor Enabled-->
+                        <!--</paper-checkbox>-->
                         <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorEditField">When
                             true, use the custom rule extractor for this field, if one is defined
                         </paper-tooltip>
@@ -1104,12 +1104,13 @@
                                     <td>
                                         <template is="dom-repeat" items="{{seg_item.value.extractors}}"
                                                   as="extractor">
-                                        {{extractor.0}}
+                                        {{extractor}}
                                         </template>
                                     </td>
                                     <td>
-                                        <paper-button raised>Edit</paper-button>
-                                        <paper-button raised>Delete</paper-button>
+                                        <iron-icon icon="editor:mode-edit"
+                                                   onclick="editSegmentDialog.toggle();"></iron-icon>
+                                        <iron-icon icon="icons:delete-forever"></iron-icon>
                                     </td>
                                 </tr>
                                 </template>
@@ -1287,6 +1288,35 @@
             <paper-dialog alwaysOnTop with-backdrop modal id="loadingDialog" sizingTarget="p"
                           style="margin-left:auto;margin-right:auto;padding:1em;">
                 <p><paper-spinner-lite active class="green thick" sytle="float:left"></paper-spinner-lite>Loading...</p>
+            </paper-dialog>
+
+            <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
+                          on-iron-overlay-closed="_restoreDocumentScrolling" id="editSegmentDialog"
+                          style="width:50%;margin-left:auto;margin-right:auto">
+                <paper-dialog-scrollable>
+                    <div><h4>Edit Segment</h4></div>
+                    <paper-input id="" style="margin:0px;" class="projectInputStyle"
+                                 label="Segment Name:" value=""></paper-input>
+                    <div>Extractors:</div>
+                        <paper-checkbox id="" class="projectInputStyle"
+                                        checked="">A
+                        </paper-checkbox>&nbsp;
+                        <paper-checkbox id="" class="projectInputStyle"
+                                        checked="">B
+                        </paper-checkbox>&nbsp;
+                        <paper-checkbox id="" class="projectInputStyle"
+                                        checked="">C
+                        </paper-checkbox>&nbsp;
+                        <paper-checkbox id="" class="projectInputStyle"
+                                        checked="">Spacy rules
+                        </paper-checkbox>&nbsp;
+
+
+                </paper-dialog-scrollable>
+                <paper-button
+                        style="float:right;margin-top:20px;margin-right:20px;" raised><strong>Save</strong></paper-button>
+                <paper-button style="float:right;margin-top:20px"
+                              dialog-dismiss raised><strong>Cancel</strong></paper-button>
             </paper-dialog>
 
 

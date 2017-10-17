@@ -450,6 +450,7 @@ poly = Polymer({
     ready: function () {
         this.fields = [];
         this.tags = [];
+        this.fieldSegment = [];
         this.glossaryFormField = [];
         this.glossaries = [];
         this.fieldFormGlossaries = [];
@@ -767,9 +768,9 @@ poly = Polymer({
             }
         }
 
-        if (this.$$('#editfieldpredefinedExtractor').selectedItem) {
-            predefinedExtr = this.$$('#editfieldpredefinedExtractor').selectedItem.value;
-        }
+        // if (this.$$('#editfieldpredefinedExtractor').selectedItem) {
+        //     predefinedExtr = this.$$('#editfieldpredefinedExtractor').selectedItem.value;
+        // }
         this.$.updateSavedFields.headers = obj;
         this.$.updateSavedFields.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name;
         if (this.fieldForm.screen_label == "") this.fieldForm.screen_label = this.fieldForm.name;
@@ -792,7 +793,7 @@ poly = Polymer({
                 "show_as_link": this.$$('#editlinkValue').selectedItem.value,
                 "show_in_facets": this.fieldForm.show_in_facets,
                 "show_in_result": this.$$('#editResultValue').selectedItem.value,
-                "rule_extraction_target": this.$$('#editRuleExtractionTargetValue').selectedItem.value,
+                // "rule_extraction_target": this.$$('#editRuleExtractionTargetValue').selectedItem.value,
                 "show_in_search": this.fieldForm.show_in_search,
                 "rule_extractor_enabled": this.fieldForm.rule_extractor_enabled,
                 "type": this.$$('#editTypeValue').selectedItem.value,
@@ -1121,7 +1122,7 @@ poly = Polymer({
                 }
             }
         }
-
+        console.log(this.fieldForm);
     },
     addNewFieldSetup: function () {
         addFieldDialog.toggle();
@@ -1259,8 +1260,8 @@ poly = Polymer({
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
                         "desired_num": obj["desired_num"],
-                        "landmark": "<paper-button raised class=\"btnAddToLandmark\" data-tld=\""
-                            +obj["tld"]+"\">Add</paper-button>"
+                        "landmark": "<iron-icon icon=\"icons:add-box\" class=\"btnAddToLandmark\" data-tld=\""
+                            +obj["tld"]+"\"></iron-icon>"
                     };
                     newTldTableData.push(newObj);
                 });
