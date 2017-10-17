@@ -1034,17 +1034,17 @@ poly = Polymer({
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.editSpacyRules.headers = obj;
-        this.$.editSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules?type=all";
+        this.$.editSpacyRules.url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules?type=all";
         this.$.editSpacyRules.generateRequest();
         spacyRulesDialog.toggle();
 
     },
     editRulesNextDialog: function (e) {
-        var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.fieldForm.name;
+        var url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/" + this.fieldForm.name;
         window.open(url, '_blank');
     },
     editRulesAdd: function () {
-        var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.$$('#fieldnameinput').value;
+        var url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/" + this.$$('#fieldnameinput').value;
         ;
         window.open(url, '_blank');
     },
@@ -1054,7 +1054,7 @@ poly = Polymer({
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.editSpacyRulesNext.headers = obj;
-        this.$.editSpacyRulesNext.url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.fieldForm.name;
+        this.$.editSpacyRulesNext.url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/" + this.fieldForm.name;
         this.$.editSpacyRulesNext.body = (this.$$('#spacyRulesNextTextArea').value);
 
         this.$.editSpacyRulesNext.generateRequest();
@@ -1070,7 +1070,7 @@ poly = Polymer({
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.updateSpacyRules.headers = obj;
-        this.$.updateSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules";
+        this.$.updateSpacyRules.url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules";
 
         this.$.updateSpacyRules.body = (this.$$('#spacyRulesTextArea').value);
         this.$.updateSpacyRules.generateRequest();
