@@ -1,5 +1,5 @@
 # mydig-webservice
-FROM uscisii2/etk:1.0.2
+FROM uscisii2/etk:1.0.3
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 RUN apt-get install -y nodejs
@@ -15,7 +15,7 @@ RUN pip install -r /app/mydig-webservice/requirements.txt
 
 RUN git clone https://github.com/usc-isi-i2/spacy-ui.git && \
     cd spacy-ui && \
-    git checkout tags/1.0.4
+    git checkout tags/1.0.5
 
 # persistent data
 #VOLUME /shared_data
