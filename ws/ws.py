@@ -19,6 +19,7 @@ import re
 import hashlib
 import traceback
 import time
+import random
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -1903,10 +1904,24 @@ class Actions(Resource):
         tld_list = input.get('tlds', {})
         payload = dict()
 
+
         for tld, num_to_run in tld_list.iteritems():
             if tld in data[project_name]['data']:
-                num_added = 0
+
+                # because the catalog can be huge, can not use a simple pythonic random here
+                num_to_select = min(num_to_run, len(data[project_name]['data'][tld]))
+                selected = set()
+                while len(selected) < num_to_select:
+                    cand_num = random.randint(0, num_to_select - 1)
+                    if cand_num not in selected:
+                        selected.add(cand_num)
+
+                # construct payload
+                idx = 0
                 for doc_id, catalog_obj in data[project_name]['data'][tld].iteritems():
+                    if idx not in selected:
+                        idx += 1
+                        continue
                     # payload format
                     # {
                     #     "tld1": {"documents": [{doc_id, raw_content_path, url}, {...}, ...]},
@@ -1915,9 +1930,7 @@ class Actions(Resource):
                     payload[tld]['documents'] = payload[tld].get('documents', list())
                     catalog_obj['doc_id'] = doc_id
                     payload[tld]['documents'].append(catalog_obj)
-                    num_added += 1
-                    if num_added >= num_to_run:
-                        break
+                    idx += 1
 
         url = config['landmark']['url'].format(project_name=project_name)
         resp = requests.post(url, json.dumps(payload), timeout=5)
