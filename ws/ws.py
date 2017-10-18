@@ -1714,7 +1714,13 @@ class ActionMasterConfig(Resource):
             args['file_data'].save(tmp_master_config_file_path)
             with codecs.open(tmp_master_config_file_path, 'r') as f:
                 new_master_config = json.loads(f.read())
-            # TODO: validation
+            # TODO: validation and sanitizing
+            # overwrite indices
+            new_master_config['index'] = {
+                'sample': project_name,
+                'full': project_name + '_deployed',
+                'version': 0
+            }
 
             # overwrite previous master config
             data[project_name]['master_config'] = new_master_config
