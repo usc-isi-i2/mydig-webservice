@@ -1632,15 +1632,13 @@ class Data(Resource):
                 for line in f:
                     obj = json.loads(line)
                     if 'url' not in obj:
-                        print 'missing url'
-                        continue
-                    if 'doc_id' not in obj:
-                        print 'missing doc_id'
-                        continue
-                    if 'raw_content' not in obj:
-                        print 'missing raw_content'
-                        continue
-                    if 'type' in obj: # this type will conflict with the attribute in logstash
+                        return rest.bad_request('Invalid URL')
+                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
+                        return rest.bad_request('Invalid doc_id')
+                    if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
+                        return rest.bad_request('Invalid raw_content')
+                    # this type will conflict with the attribute in logstash
+                    if 'type' in obj:
                         obj['original_type'] = obj['type']
                         del obj['type']
                     if 'timestamp_crawl' not in obj:
@@ -1746,6 +1744,8 @@ class Actions(Resource):
 
         if action_name == 'add_data':
             return self._add_data(project_name)
+        elif action_name == 'desired_num':
+            return self._update_desired_num(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
         elif action_name == 'recreate_mapping':
@@ -1782,13 +1782,13 @@ class Actions(Resource):
             tld_array = []
             for tld, tld_obj in data[project_name]['data'].iteritems():
                 if tld not in data[project_name]['status']['desired_docs']:
-                    data[project_name]['status']['desired_docs'][tld] = dict()
+                    data[project_name]['status']['desired_docs'][tld] = 0
                 if tld in data[project_name]['data']:
                     tld_obj = {
                         'tld': tld,
                         'total_num': len(data[project_name]['data'][tld]),
                         'es_num': 0,
-                        'desired_num': len(data[project_name]['status']['desired_docs'][tld])
+                        'desired_num': data[project_name]['status']['desired_docs'][tld]
                     }
                     tld_array.append(tld_obj)
 
@@ -1831,7 +1831,7 @@ class Actions(Resource):
         return resp.json()['etk_processes'] > 0
 
     @staticmethod
-    def _add_data(project_name):
+    def _update_desired_num(project_name):
         # {
         #     "tlds": {
         #         'tld1': 100,
@@ -1840,6 +1840,20 @@ class Actions(Resource):
         # }
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
+
+        for tld, desired_num in tld_list.iteritems():
+            desired_num = max(desired_num, 0)
+            desired_num = min(desired_num, 999999999)
+            if tld not in data[project_name]['status']['desired_docs']:
+                data[project_name]['status']['desired_docs'][tld] = dict()
+            data[project_name]['status']['desired_docs'][tld] = desired_num
+
+        return rest.created()
+
+
+    @staticmethod
+    def _add_data(project_name):
+        tld_list = data[project_name]['status']['desired_docs']
 
         kafka_producer = KafkaProducer(
             bootstrap_servers=config['kafka']['servers'],

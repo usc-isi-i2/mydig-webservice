@@ -7,7 +7,7 @@ def get(name):
 
 status = {
     'desired_docs': {
-        # tld -> { doc_id -> {} }
+        # tld:num
     }
 }
 
