@@ -1,6 +1,7 @@
 # this file is from mydig-webservice/ws/config_docker.py
 import logging
 import os
+import base64
 
 config = {
     'debug': True,
@@ -44,7 +45,7 @@ config = {
     },
     'sandpaper': {
         'url': 'http://sandpaper:9876',
-        'ws_url': 'http://admin:123@mydig_ws:9879'
+        'ws_url': 'http://mydig_ws:9879'
     },
     'users': {
         'admin': '123' # basic YWRtaW46MTIz
@@ -59,8 +60,14 @@ config = {
             os.getenv('DOMAIN', 'localhost'), os.getenv('PORT', '12497')),  # add slash at the end
         'digui_url': 'http://{}:{}'.format(
             os.getenv('DOMAIN', 'localhost'), os.getenv('PORT', '12497')),
-        'kibana_url': 'http://{}:{}/app/kibana/'.format(
-            os.getenv('DOMAIN', 'localhost'), os.getenv('PORT', '12497'))
+        'kibana_url': 'http://{}:{}/kibana/'.format(
+            os.getenv('DOMAIN', 'localhost'), os.getenv('PORT', '12497')),
+        'spacy_ui_url': 'http://{}:{}/mydig/spacy_ui/'.format(
+            os.getenv('DOMAIN', 'localhost'), os.getenv('PORT', '12497')),
+        'spacy_backend_sever_name_base64': base64.b64encode('{}:{}/mydig'.format(
+            os.getenv('DOMAIN', 'localhost'), os.getenv('PORT', '12497'))),
+        'spacy_backend_auth_base64': base64.b64encode('{}:{}'.format(
+            os.getenv('DIG_AUTH_USER', ''), os.getenv('DIG_AUTH_PASSWORD', '')))
     },
     'landmark': {
         'url': 'http://landmark-rest:5000/project/create_from_dig/{project_name}'

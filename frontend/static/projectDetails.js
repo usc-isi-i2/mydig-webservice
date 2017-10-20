@@ -130,16 +130,16 @@ var REFRESH_PIPELINE_STATUS_INTERVAL = 10000; // 10s
 
 
 // Functions to show and hide the form elements under menu
-function handleElasticSearchForm() {
-    console.log('ES form clicked')
-    console.log(document.getElementById('elasticSearchForm').opened)
-    if (document.getElementById('elasticSearchForm').opened == true) {
-        document.getElementById('elasticSearchForm').opened = false
-    }
-    else {
-        document.getElementById('elasticSearchForm').opened = true
-    }
-}
+// function handleElasticSearchForm() {
+//     console.log('ES form clicked')
+//     console.log(document.getElementById('elasticSearchForm').opened)
+//     if (document.getElementById('elasticSearchForm').opened == true) {
+//         document.getElementById('elasticSearchForm').opened = false
+//     }
+//     else {
+//         document.getElementById('elasticSearchForm').opened = true
+//     }
+// }
 
 function handleUploadFileForm() {
     console.log('Upload file form clicked')
@@ -173,7 +173,7 @@ function updateFormData() {
 
     formData.append("glossary_name", glossName);
     formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
-    console.log(formData);
+    // console.log(formData);
 
     var request = new XMLHttpRequest();
     request.open("POST", url);
@@ -231,7 +231,7 @@ function submitFormData() {
 
     formData.append("glossary_name", glossName);
     formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
-    console.log(formData);
+    // console.log(formData);
 
     var request = new XMLHttpRequest();
     request.open("POST", url);
@@ -1030,52 +1030,48 @@ poly = Polymer({
 
     },
     editRules: function (e) {
-        var obj = {};
+        // var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // this.$.editSpacyRules.headers = obj;
 
-        this.$.editSpacyRules.headers = obj;
         this.$.editSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules?type=all";
         this.$.editSpacyRules.generateRequest();
         spacyRulesDialog.toggle();
 
     },
     editRulesNextDialog: function (e) {
-        var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.fieldForm.name;
+        var url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/" + this.fieldForm.name;
         window.open(url, '_blank');
     },
     editRulesAdd: function () {
-        var url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.$$('#fieldnameinput').value;
-        ;
+        var url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/" + this.$$('#fieldnameinput').value;
         window.open(url, '_blank');
     },
-
     editRulesNext: function (e) {
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // this.$.editSpacyRulesNext.headers = obj;
 
-        this.$.editSpacyRulesNext.headers = obj;
-        this.$.editSpacyRulesNext.url = "http://xnet.nextcentury.com/wiser/spacy/#/35.160.106.225:9879/" + projectName + "/" + this.fieldForm.name;
+        this.$.editSpacyRulesNext.url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/" + this.fieldForm.name;
         this.$.editSpacyRulesNext.body = (this.$$('#spacyRulesNextTextArea').value);
 
         this.$.editSpacyRulesNext.generateRequest();
         spacyRulesNextDialog.toggle();
-
     },
     fieldSpacyRules: function (data) {
         this.spacyRules = [];
         this.$$('#spacyRulesTextArea').value = JSON.stringify(data.detail.response);
     },
     updateFieldSpacyRules: function () {
-        var obj = {};
+        // var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
+        // this.$.updateSpacyRules.headers = obj;
 
-        this.$.updateSpacyRules.headers = obj;
         this.$.updateSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules";
 
         this.$.updateSpacyRules.body = (this.$$('#spacyRulesTextArea').value);
         this.$.updateSpacyRules.generateRequest();
         spacyRulesDialog.toggle();
-
     },
     showSpacyRuleDummy: function () {
         this.$$('#spacyRulesTextArea').value = '{"rules": [],"test_text": "string"}';
@@ -1083,7 +1079,6 @@ poly = Polymer({
     setIcon: function (e) {
         this.$$('#fieldiconinput').value = e.model.item;
         papericonSet.toggle();
-
     },
     setEditIcon: function (e) {
         this.$$('#iconField').value = e.model.item;
@@ -1110,7 +1105,6 @@ poly = Polymer({
                 }
             }
         }
-
     },
     addNewFieldSetup: function () {
         addFieldDialog.toggle();
@@ -1157,10 +1151,10 @@ poly = Polymer({
         AddNewTableAttributeDialog.toggle();
     },
     deleteAttribute: function (e) {
-
-        var obj = {};
+        // var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
-        this.$.deleteTableAttribute.headers = obj;
+        // this.$.deleteTableAttribute.headers = obj;
+
         this.$.deleteTableAttribute.url = backend_url + "projects/" + projectName + "/table_attributes/" + e.model.item[0].name;
         this.$.deleteTableAttribute.generateRequest();
 
@@ -1248,8 +1242,8 @@ poly = Polymer({
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
                         "desired_num": obj["desired_num"],
-                        "landmark": "<paper-button raised class=\"btnAddToLandmark\" data-tld=\""
-                            +obj["tld"]+"\">Add</paper-button>"
+                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""
+                            +obj["tld"]+"\">Add</paper-icon-button>"
                     };
                     newTldTableData.push(newObj);
                 });
@@ -1318,7 +1312,7 @@ poly = Polymer({
                [tld] : 100
             }
         };
-        console.log(payload);
+        // console.log(payload);
         $.ajax({
             type: "POST",
             url: backend_url + "projects/" + projectName + '/actions/landmark_extract',
@@ -1364,7 +1358,7 @@ poly = Polymer({
             return;
         }
         // loadingDialog.toggle();
-        console.log("recreate");
+        // console.log("recreate");
         $.ajax({
             type: "POST",
             url: backend_url + "projects/" + projectName + '/actions/recreate_mapping',
@@ -1396,11 +1390,10 @@ poly = Polymer({
         this.tldTableData.forEach(function(obj){
             payload["tlds"][[obj["tld"]]] = num;
         });
-        // console.log(payload);
 
         $.ajax({
             type: "POST",
-            url: backend_url + "projects/" + projectName + '/actions/add_data',
+            url: backend_url + "projects/" + projectName + '/actions/desired_num',
             async: true,
             dataType: "json",
             processData: false,
@@ -1415,7 +1408,24 @@ poly = Polymer({
                 this.refreshTldTable();
             }
         });
+    },
+    addDataToQueue: function() {
 
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/add_data',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            contentType: 'application/json; charset=utf-8',
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
+            success: function (msg) {
+                alert("Added");
+            }
+        });
     },
     turnOnPipeline: function() {
         $.ajax({

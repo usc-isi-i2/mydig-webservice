@@ -19,6 +19,7 @@ import re
 import hashlib
 import traceback
 import time
+import random
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -88,6 +89,10 @@ def update_status_file(project_name):
     file_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status.json')
     write_to_file(json.dumps(data[project_name]['status'], indent=4), file_path)
 
+def update_data_db_file(project_name):
+    data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
+    write_to_file(json.dumps(data[project_name]['data'], indent=2), data_db_path)
+
 
 def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
@@ -130,7 +135,7 @@ class authentication(Resource):
         return rest.ok()
 
 
-@api.route('/s<mode>')
+@api.route('/debug/<mode>')
 class Debug(Resource):
     @requires_auth
     def get(self, mode):
@@ -709,7 +714,7 @@ class SpacyRulesOfAField(Resource):
 
         url = 'http://{}:{}/test_spacy_rules'.format(
             config['etk']['daemon']['host'], config['etk']['daemon']['port'])
-        resp = requests.post(url, data=json.dumps(obj), timeout=5)
+        resp = requests.post(url, data=json.dumps(obj), timeout=10)
         if resp.status_code // 100 != 2:
             if resp.status_code // 100 == 4:
                 j = json.loads(resp.content)
@@ -1631,15 +1636,13 @@ class Data(Resource):
                 for line in f:
                     obj = json.loads(line)
                     if 'url' not in obj:
-                        print 'missing url'
-                        continue
-                    if 'doc_id' not in obj:
-                        print 'missing doc_id'
-                        continue
-                    if 'raw_content' not in obj:
-                        print 'missing raw_content'
-                        continue
-                    if 'type' in obj: # this type will conflict with the attribute in logstash
+                        return rest.bad_request('Invalid URL')
+                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
+                        return rest.bad_request('Invalid doc_id')
+                    if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
+                        return rest.bad_request('Invalid raw_content')
+                    # this type will conflict with the attribute in logstash
+                    if 'type' in obj:
                         obj['original_type'] = obj['type']
                         del obj['type']
                     if 'timestamp_crawl' not in obj:
@@ -1664,8 +1667,7 @@ class Data(Resource):
                     }
 
             # update data db file
-            data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
-            write_to_file(json.dumps(data[project_name]['data'], indent=2), data_db_path)
+            update_data_db_file(project_name)
 
         elif args['file_type'] == 'html':
             pass
@@ -1713,7 +1715,13 @@ class ActionMasterConfig(Resource):
             args['file_data'].save(tmp_master_config_file_path)
             with codecs.open(tmp_master_config_file_path, 'r') as f:
                 new_master_config = json.loads(f.read())
-            # TODO: validation
+            # TODO: validation and sanitizing
+            # overwrite indices
+            new_master_config['index'] = {
+                'sample': project_name,
+                'full': project_name + '_deployed',
+                'version': 0
+            }
 
             # overwrite previous master config
             data[project_name]['master_config'] = new_master_config
@@ -1739,6 +1747,8 @@ class Actions(Resource):
 
         if action_name == 'add_data':
             return self._add_data(project_name)
+        elif action_name == 'desired_num':
+            return self._update_desired_num(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
         elif action_name == 'recreate_mapping':
@@ -1775,13 +1785,13 @@ class Actions(Resource):
             tld_array = []
             for tld, tld_obj in data[project_name]['data'].iteritems():
                 if tld not in data[project_name]['status']['desired_docs']:
-                    data[project_name]['status']['desired_docs'][tld] = dict()
+                    data[project_name]['status']['desired_docs'][tld] = 0
                 if tld in data[project_name]['data']:
                     tld_obj = {
                         'tld': tld,
                         'total_num': len(data[project_name]['data'][tld]),
                         'es_num': 0,
-                        'desired_num': len(data[project_name]['status']['desired_docs'][tld])
+                        'desired_num': data[project_name]['status']['desired_docs'][tld]
                     }
                     tld_array.append(tld_obj)
 
@@ -1824,7 +1834,7 @@ class Actions(Resource):
         return resp.json()['etk_processes'] > 0
 
     @staticmethod
-    def _add_data(project_name):
+    def _update_desired_num(project_name):
         # {
         #     "tlds": {
         #         'tld1': 100,
@@ -1834,6 +1844,20 @@ class Actions(Resource):
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
 
+        for tld, desired_num in tld_list.iteritems():
+            desired_num = max(desired_num, 0)
+            desired_num = min(desired_num, 999999999)
+            if tld not in data[project_name]['status']['desired_docs']:
+                data[project_name]['status']['desired_docs'][tld] = dict()
+            data[project_name]['status']['desired_docs'][tld] = desired_num
+
+        return rest.created()
+
+
+    @staticmethod
+    def _add_data(project_name):
+
+        # set up input kafka
         kafka_producer = KafkaProducer(
             bootstrap_servers=config['kafka']['servers'],
             max_request_size=10485760,
@@ -1841,53 +1865,44 @@ class Actions(Resource):
         )
         input_topic = project_name + '_in'
 
+        if 'desired_docs' not in data[project_name]['status']:
+            data[project_name]['status']['desired_docs'] = dict()
+        tld_list = data[project_name]['status']['desired_docs']
         for tld, desired_num in tld_list.iteritems():
-            if desired_num < 0:
-                continue
-            if tld not in data[project_name]['data']:
-                continue
-            if tld not in data[project_name]['status']['desired_docs']:
-                data[project_name]['status']['desired_docs'][tld] = dict()
 
-            pre_desired_num = len(data[project_name]['status']['desired_docs'][tld])
-            total_num = len(data[project_name]['data'][tld])
-            desired_num = desired_num if desired_num <= total_num else total_num
+            if tld not in data[project_name]['status']['added_docs']:
+                data[project_name]['status']['added_docs'][tld] = 0
+            desired_num = data[project_name]['status']['desired_docs'][tld]
+            added_num = data[project_name]['status']['added_docs'][tld]
 
-            # no need to update
-            if desired_num == pre_desired_num:
-                continue
-            # remove some docs, no need to add to queue
-            elif desired_num < pre_desired_num:
-                num_to_remove = pre_desired_num - desired_num
-                for doc_id in data[project_name]['status']['desired_docs'][tld].keys():
-                    if num_to_remove <= 0:
-                        break
-                    # delete from status
-                    del data[project_name]['status']['desired_docs'][tld][doc_id]
-                    # remove the mark
-                    data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
-                    num_to_remove -= 1
-                continue
-            # update queue
-            else:
-                num_to_add = desired_num - pre_desired_num
-                for doc_id, catalog_obj in data[project_name]['data'][tld].iteritems():
+            # only add docs to queue if desired num is larger than added num
+            if desired_num > added_num:
+
+                # update mark in catalog
+                num_to_add = desired_num - added_num
+                for doc_id in data[project_name]['data'][tld].iterkeys():
+
+                    # finished
                     if num_to_add <= 0:
                         break
-                    if catalog_obj['add_to_queue']: # already added
+
+                    # already added
+                    if data[project_name]['data'][tld][doc_id]['add_to_queue']:
                         continue
 
-                    # update
-                    catalog_obj['add_to_queue'] = True
-                    data[project_name]['status']['desired_docs'][tld][doc_id] = dict() # use dict as set
+                    # mark data
+                    data[project_name]['data'][tld][doc_id]['add_to_queue'] = True
                     num_to_add -= 1
 
                     # publish to kafka queue
                     ret, msg = Actions._publish_to_kafka_input_queue(
-                        doc_id, catalog_obj, kafka_producer, input_topic)
+                        doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
                     if not ret:
                         return rest.internal_error(msg)
-            update_status_file(project_name)
+
+                data[project_name]['status']['added_docs'][tld] = desired_num
+                update_data_db_file(project_name)
+                update_status_file(project_name)
 
         return rest.created()
 
@@ -1903,10 +1918,24 @@ class Actions(Resource):
         tld_list = input.get('tlds', {})
         payload = dict()
 
+
         for tld, num_to_run in tld_list.iteritems():
             if tld in data[project_name]['data']:
-                num_added = 0
+
+                # because the catalog can be huge, can not use a simple pythonic random here
+                num_to_select = min(num_to_run, len(data[project_name]['data'][tld]))
+                selected = set()
+                while len(selected) < num_to_select:
+                    cand_num = random.randint(0, num_to_select - 1)
+                    if cand_num not in selected:
+                        selected.add(cand_num)
+
+                # construct payload
+                idx = 0
                 for doc_id, catalog_obj in data[project_name]['data'][tld].iteritems():
+                    if idx not in selected:
+                        idx += 1
+                        continue
                     # payload format
                     # {
                     #     "tld1": {"documents": [{doc_id, raw_content_path, url}, {...}, ...]},
@@ -1915,12 +1944,10 @@ class Actions(Resource):
                     payload[tld]['documents'] = payload[tld].get('documents', list())
                     catalog_obj['doc_id'] = doc_id
                     payload[tld]['documents'].append(catalog_obj)
-                    num_added += 1
-                    if num_added >= num_to_run:
-                        break
+                    idx += 1
 
         url = config['landmark']['url'].format(project_name=project_name)
-        resp = requests.post(url, json.dumps(payload), timeout=5)
+        resp = requests.post(url, json.dumps(payload), timeout=10)
         if resp.status_code // 100 != 2:
             return rest.internal_error('Landmark error: {}'.format(resp.status_code))
 
@@ -1984,7 +2011,7 @@ class Actions(Resource):
             project_name
         )
         try:
-            resp = requests.delete(url, timeout=5)
+            resp = requests.delete(url, timeout=10)
         except:
             pass # ignore no index error
         # 2.2 create new index
@@ -1995,7 +2022,7 @@ class Actions(Resource):
             data[project_name]['master_config']['index']['sample'],
             config['es']['sample_url']
         )
-        resp = requests.put(url, timeout=5)
+        resp = requests.put(url, timeout=10)
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to create index in sandpaper')
         # 2.3 switch index
@@ -2006,26 +2033,23 @@ class Actions(Resource):
             data[project_name]['master_config']['index']['sample'],
             config['es']['sample_url']
         )
-        resp = requests.post(url, timeout=5)
+        resp = requests.post(url, timeout=10)
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to switch index in sandpaper')
 
         # 3. re-add all data
         print 're-add data'
-        kafka_producer = KafkaProducer(
-            bootstrap_servers=config['kafka']['servers'],
-            max_request_size=10485760,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
-        )
-        input_topic = project_name + '_in'
-        for tld, doc_obj in data[project_name]['status']['desired_docs'].iteritems():
-            for doc_id in doc_obj.iterkeys():
-                catalog_obj = data[project_name]['data'][tld][doc_id]
-                # publish to kafka queue
-                ret, msg = Actions._publish_to_kafka_input_queue(
-                    doc_id, catalog_obj, kafka_producer, input_topic)
-                if not ret:
-                    return rest.internal_error(msg)
+        # 3.1 clean up mark and added num
+        if 'added_docs' not in data[project_name]['status']:
+            data[project_name]['status']['added_docs'] = dict()
+        for tld in data[project_name]['status']['added_docs'].iterkeys():
+            data[project_name]['status']['added_docs'][tld] = 0
+        for tld in data[project_name]['data'].iterkeys():
+            for doc_id in data[project_name]['data'][tld]:
+                data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+        update_status_file(project_name)
+        # 3.2 add data
+        Actions._add_data(project_name)
 
         # 4. restart extraction
         return Actions._extract(project_name)
@@ -2045,7 +2069,7 @@ class Actions(Resource):
             project_name
         )
         try:
-            resp = requests.get(url, timeout=5)
+            resp = requests.get(url, timeout=10)
             if resp.status_code // 100 != 2:
                 return rest.not_found('No es index')
         except Exception as e:
@@ -2147,7 +2171,7 @@ if __name__ == '__main__':
                     data[project_name]['master_config']['index']['sample'],
                     config['es']['sample_url']
                 )
-                resp = requests.post(url, json=data[project_name]['master_config'], timeout=5)
+                resp = requests.post(url, json=data[project_name]['master_config'], timeout=10)
                 if resp.status_code // 100 != 2:
                     print 'failed to re-config sandpaper for {}'.format(project_name)
 
