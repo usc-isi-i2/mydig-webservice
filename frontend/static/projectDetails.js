@@ -1242,8 +1242,8 @@ poly = Polymer({
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
                         "desired_num": obj["desired_num"],
-                        "landmark": "<paper-button raised class=\"btnAddToLandmark\" data-tld=\""
-                            +obj["tld"]+"\">Add</paper-button>"
+                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""
+                            +obj["tld"]+"\">Add</paper-icon-button>"
                     };
                     newTldTableData.push(newObj);
                 });
@@ -1390,11 +1390,10 @@ poly = Polymer({
         this.tldTableData.forEach(function(obj){
             payload["tlds"][[obj["tld"]]] = num;
         });
-        // console.log(payload);
 
         $.ajax({
             type: "POST",
-            url: backend_url + "projects/" + projectName + '/actions/add_data',
+            url: backend_url + "projects/" + projectName + '/actions/desired_num',
             async: true,
             dataType: "json",
             processData: false,
@@ -1409,7 +1408,24 @@ poly = Polymer({
                 this.refreshTldTable();
             }
         });
+    },
+    addDataToQueue: function() {
 
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/add_data',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            contentType: 'application/json; charset=utf-8',
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
+            success: function (msg) {
+                alert("Added");
+            }
+        });
     },
     turnOnPipeline: function() {
         $.ajax({

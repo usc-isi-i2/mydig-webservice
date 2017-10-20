@@ -191,15 +191,17 @@
 
                 <div style="margin: 1em; width:75%; float: left">
                     <paper-datatable id="tldTable" data="{{tldTableData}}" multi-selection>
-                        <paper-datatable-column header="TLD" property="tld" sortable sorted>
+                        <paper-datatable-column header="TLD" property="tld" sortable sorted style="width:15%;"
+                                                align="left">
                         </paper-datatable-column>
-                        <paper-datatable-column header="Total" property="total_num" sortable>
+                        <paper-datatable-column header="Total" property="total_num" sortable style="width:10%;" align="right">
                         </paper-datatable-column>
-                        <paper-datatable-column header="ES" property="es_num" sortable>
+                        <paper-datatable-column header="ES" property="es_num" sortable style="width:10%;" align="right">
                         </paper-datatable-column>
-                        <paper-datatable-column header="Desired" property="desired_num" sortable>
+                        <paper-datatable-column header="Desired" property="desired_num" sortable
+                                                type="Number" style="width:10%;" align="right">
                         </paper-datatable-column>
-                        <paper-datatable-column header="Landmark" property="landmark">
+                        <paper-datatable-column header="Landmark" property="landmark" style="width:10%;" align="center">
                         </paper-datatable-column>
                     </paper-datatable>
                 </div>
@@ -230,6 +232,10 @@
                                      value="10" type="number" min="0" max="999999999" maxlength="10" auto-validate pattern="[0-9]{1,11}"></paper-input>
                         <button style="float:right" on-tap="updateDesiredNumber">Update</button>
                     </div>
+                    <paper-button style="width:100%"
+                                  on-tap="addDataToQueue"
+                                  raised>Add data to queue
+                    </paper-button>
 
                     <br><br><br>
                     <paper-button style="width:100%"

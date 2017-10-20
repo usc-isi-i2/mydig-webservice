@@ -7,6 +7,11 @@ def get(name):
 
 status = {
     'desired_docs': {
+        # number of docs to run set by user
+        # tld:num
+    },
+    'added_docs': {
+        # number of marked docs (increment only)
         # tld:num
     }
 }
