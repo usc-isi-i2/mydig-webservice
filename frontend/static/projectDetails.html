@@ -1,11 +1,10 @@
 <link rel="stylesheet" href="../static/styles/main.css">
 <script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-<link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
+
 <link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
 <link href="https://fonts.googleapis.com/css?family=Zilla+Slab:500i" rel="stylesheet">
 
 <link rel="import" href="../static/bower_components/paper-progress/paper-progress.html">
-
 <link rel="import" href="../static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -18,9 +17,7 @@
 <link rel="import" href="../static/bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../static/bower_components/paper-swatch-picker/paper-swatch-picker.html">
-
 <link rel="import" href="../static/bower_components/paper-styles/color.html">
-<link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../static/bower_components/paper-card/paper-card.html">
 <link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
@@ -587,17 +584,18 @@
                         description of the field
                     </paper-tooltip>
 
-                    <paper-input style="margin:0px;float:left" class="projectInputStyle" label="Screen Label:"
+                    <paper-input style="margin:0px;float:left;width:50%" class="projectInputStyle" label="Screen Label:"
                                  id="fieldscreenlabelinput"></paper-input>
                     <paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelinput">The text to
                         display the field in DIG
                     </paper-tooltip>
 
-                    <paper-input style="margin:0px;" required class="" label="Screen Label Plural:"
+                    <paper-input style="margin:0px;float:right;width:50%" required class="projectInputStyle" label="Screen Label Plural:"
                                  id="fieldscreenlabelPluralinput"></paper-input>
                     <paper-tooltip fit-to-visible-bounds="true" position="top" for="fieldscreenlabelPluralinput">Label
                         when a field contains multiple values
                     </paper-tooltip>
+
                     <div style="margin-top:0px;">
                         <button style="float:right" onclick="addDefaultColor()">X</button>
                         <paper-swatch-picker id="colorSelect" on-iron-select="_getColor" column-count=2
