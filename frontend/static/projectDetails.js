@@ -1242,8 +1242,7 @@ poly = Polymer({
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
                         "desired_num": obj["desired_num"],
-                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""
-                            +obj["tld"]+"\">Add</paper-icon-button>"
+                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\">Add</paper-icon-button>"
                     };
                     newTldTableData.push(newObj);
                 });
@@ -1306,7 +1305,7 @@ poly = Polymer({
         });
     },
     addToLandmark: function(e) {
-        var tld = $(e.target).attr("data-tld");
+        var tld = $(e.currentTarget).attr("data-tld");
         payload = {
             "tlds": {
                [tld] : 100
