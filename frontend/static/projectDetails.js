@@ -1371,7 +1371,7 @@ poly = Polymer({
             // },
             success: function (msg) {
                 // console.log(msg);
-                alert("Mapping recreated and data added.");
+                alert("Mapping recreated and data is adding in the backend.");
                 this.togglePipelineBtn(true);
             },
             error: function(msg) {
@@ -1422,7 +1422,7 @@ poly = Polymer({
             //     "Authorization": AUTH_HEADER
             // },
             success: function (msg) {
-                alert("Added");
+                alert("Adding data to queue in the backend");
             }
         });
     },

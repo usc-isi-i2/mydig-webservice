@@ -10,6 +10,7 @@ import werkzeug
 import codecs
 import csv
 import multiprocessing
+import thread
 import subprocess
 import requests
 import copy
@@ -1861,19 +1862,7 @@ class Actions(Resource):
         return rest.created()
 
     @staticmethod
-    def _add_data_worker(project_name):
-        pass
-
-    @staticmethod
-    def _add_data(project_name):
-
-        # set up input kafka
-        kafka_producer = KafkaProducer(
-            bootstrap_servers=config['kafka']['servers'],
-            max_request_size=10485760,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
-        )
-        input_topic = project_name + '_in'
+    def _add_data_worker(project_name, kafka_producer, input_topic):
 
         if 'desired_docs' not in data[project_name]['status']:
             data[project_name]['status']['desired_docs'] = dict()
@@ -1885,8 +1874,6 @@ class Actions(Resource):
             desired_num = data[project_name]['status']['desired_docs'][tld]
             added_num = data[project_name]['status']['added_docs'][tld]
 
-            print desired_num, added_num
-            print data[project_name]['data']
             # only add docs to queue if desired num is larger than added num
             if desired_num > added_num:
 
@@ -1912,13 +1899,30 @@ class Actions(Resource):
                     ret, msg = Actions._publish_to_kafka_input_queue(
                         doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
                     if not ret:
-                        return rest.internal_error(msg)
+                        print 'Error of pushing data to Kafka: {}'.format(msg)
+                    #     return rest.internal_error(msg)
 
                 data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
                 update_data_db_file(project_name)
                 update_status_file(project_name)
 
-        return rest.created()
+    @staticmethod
+    def _add_data(project_name):
+        try:
+            # set up input kafka
+            kafka_producer = KafkaProducer(
+                bootstrap_servers=config['kafka']['servers'],
+                max_request_size=10485760,
+                value_serializer=lambda v: json.dumps(v).encode('utf-8')
+            )
+            input_topic = project_name + '_in'
+
+            thread.start_new_thread(Actions._add_data_worker, (project_name, kafka_producer,input_topic))
+            return rest.accepted()
+        except Exception as e:
+            print e
+            return rest.internal_error('Can not start thread for adding data')
+
 
     @staticmethod
     def landmark_extract(project_name):
