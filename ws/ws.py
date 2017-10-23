@@ -1659,6 +1659,10 @@ class Data(Resource):
                     # update data db
                     tld = self.extract_tld(obj['url'])
                     data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
+                    # if doc has the same tld, skip
+                    # overwrite will cause the problem in the number of docs loaded to es
+                    if obj['doc_id'] in data[project_name]['data'][tld]:
+                        continue
                     data[project_name]['data'][tld][obj['doc_id']] = {
                         'raw_content_path': output_raw_content_path,
                         'json_path': output_json_path,
@@ -1674,6 +1678,9 @@ class Data(Resource):
 
         # remove temp file
         os.remove(src_file_path)
+
+        # notify action add data if needed
+        Actions._add_data(project_name)
 
         return rest.created(data=self.get(project_name))
 
@@ -1853,6 +1860,9 @@ class Actions(Resource):
 
         return rest.created()
 
+    @staticmethod
+    def _add_data_worker(project_name):
+        pass
 
     @staticmethod
     def _add_data(project_name):
@@ -1875,11 +1885,14 @@ class Actions(Resource):
             desired_num = data[project_name]['status']['desired_docs'][tld]
             added_num = data[project_name]['status']['added_docs'][tld]
 
+            print desired_num, added_num
+            print data[project_name]['data']
             # only add docs to queue if desired num is larger than added num
             if desired_num > added_num:
 
                 # update mark in catalog
                 num_to_add = desired_num - added_num
+                added_num_this_round = 0
                 for doc_id in data[project_name]['data'][tld].iterkeys():
 
                     # finished
@@ -1893,6 +1906,7 @@ class Actions(Resource):
                     # mark data
                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = True
                     num_to_add -= 1
+                    added_num_this_round += 1
 
                     # publish to kafka queue
                     ret, msg = Actions._publish_to_kafka_input_queue(
@@ -1900,7 +1914,7 @@ class Actions(Resource):
                     if not ret:
                         return rest.internal_error(msg)
 
-                data[project_name]['status']['added_docs'][tld] = desired_num
+                data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
                 update_data_db_file(project_name)
                 update_status_file(project_name)
 
