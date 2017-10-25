@@ -25,6 +25,7 @@
 <link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../static/bower_components/paper-spinner/paper-spinner-lite.html">
+<!--<link rel="import" href="../static/bower_components/paper-toast/paper-toast.html">-->
 
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
@@ -189,6 +190,10 @@
 
             <iron-collapse id="tabAction" style="margin-left:0px;">
 
+                <!--<paper-toast opened id="toast1" duration="0" text="This toast will stay opened until you close it, or open another toast.">-->
+                  <!--<paper-button onclick="toast1.toggle()" class="yellow-button">X</paper-button>-->
+                <!--</paper-toast>-->
+
                 <div style="margin: 1em; width:75%; float: left">
                     <paper-datatable id="tldTable" data="{{tldTableData}}" multi-selection>
                         <paper-datatable-column header="TLD" property="tld" sortable sorted style="width:15%;"
@@ -209,23 +214,27 @@
                 <div class="action-buttons" style="float:left; margin:1em; width: 20%">
                     <paper-button style="width: 100%" raised
                                   on-tap="openDIGUI">DIG UI</paper-button>
-                    <br><br><br>
+                    <br><br>
                     <paper-button style="width: 100%"
                                   on-tap="openLandmarkTool" raised>Landmark Tool</paper-button>
-                    <br><br><br>
+                    <br><br>
+
                     <paper-button style="width:100%;background-color:green"
                                   on-tap="turnOnPipeline"
                                   id="btnTurnOnPipeline"
                                   raised>Turn on Pipeline
                     </paper-button>
-                    <br><br><br>
+                    <br><br>
                     <paper-button style="width: 100%; background-color:red" on-tap="recreateMapping" id="btnRecreateMapping" raised>Recreate
                         Knowledge Graph
                     </paper-button>
-                    <br><br><br>
+                    <br><br>
+
                     <paper-button style="width: 100%" onclick="importFileFormDialog.toggle();"
                                   raised>Import JSON Lines File</paper-button>
-                    <br><br><br>
+                    <br>
+                    <a><paper-button style="width: 100%; color:grey" on-tap="fetchCatalogError">Log of last imported file</paper-button></a>
+                    <br><br>
 
                     <div style="width:100%;vertical-align: middle;">
                         <paper-input id="globalDesiredNumber" label="Desired number of docs to run per TLD"
@@ -236,14 +245,14 @@
                                   on-tap="addDataToQueue"
                                   raised>Add data to queue
                     </paper-button>
+                    <br><br>
 
-                    <br><br><br>
                     <paper-button style="width:100%"
                                   on-tap="downloadMasterConfig"
                                   id="btnDownloadMasterConfig"
                                   raised>Download master config
                     </paper-button>
-                    <br><br><br>
+                    <br><br>
                     <paper-button style="width:100%"
                                   onclick="importMasterConfigDialog.toggle()"
                                   id="btnUploadMasterConfig"
@@ -1246,6 +1255,15 @@
                           style="margin-left:auto;margin-right:auto;padding:1em;">
                 <h4>File uploading...</h4>
                 <paper-progress value="40" class="green"></paper-progress>
+            </paper-dialog>
+
+            <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
+                      on-iron-overlay-closed="_restoreDocumentScrolling" id="logDialog"
+                      style="width:50%;margin-left:auto;margin-right:auto">
+                <h4>Log of last imported file</h4>
+                <paper-dialog-scrollable>
+                    <div class="logDialogContent"></div>
+                </paper-dialog-scrollable>
             </paper-dialog>
 
 

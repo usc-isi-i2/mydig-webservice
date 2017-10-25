@@ -1475,6 +1475,27 @@ poly = Polymer({
             }
         });
     },
+    fetchCatalogError: function() {
+        $.ajax({
+            ttype: "GET",
+            url: backend_url + "projects/" + projectName + '/data?type=error_log',
+            dataType: "json",
+            context: this,
+            async: true,
+            processData: false,
+            // headers: {
+            //     "Authorization": AUTH_HEADER
+            // },
+            success: function (msg) {
+                // console.log(msg["error_log"]);
+                $("#logDialog .logDialogContent:first").empty();
+                msg["error_log"].forEach(function(ele) {
+                    $("<p>"+ele+"</p>").appendTo("#logDialog .logDialogContent:first");
+                });
+                this.$.logDialog.toggle();
+            }
+        });
+    },
 
 
     /*

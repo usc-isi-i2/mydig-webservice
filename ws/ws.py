@@ -108,7 +108,6 @@ def _add_keys_to_dict(obj, keys): # dict, list
         curr_obj = curr_obj[key]
     return obj
 
-
 @app.route('/spec')
 def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='spec.yaml')
@@ -1641,19 +1640,25 @@ class Data(Resource):
     @staticmethod
     def _data_catalog_worker(project_name, file_type, src_file_path, dest_dir_path):
 
+        log_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/catalog_error.log')
+        log_file = codecs.open(log_path, 'w')
+
         # generate catalog
         if file_type == 'json_lines':
             with codecs.open(src_file_path, 'r') as f:
                 for line in f:
                     obj = json.loads(line)
-                    if 'url' not in obj:
-                        return rest.bad_request('Invalid URL')
                     if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
                         obj['doc_id'] = obj['_id']
                     if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
-                        return rest.bad_request('Invalid doc_id')
+                        log_file.write('Unknown doc_id: Invalid doc_id\n')
+                        continue
+                    if 'url' not in obj:
+                        log_file.write('{}: Invalid URL\n'.format(obj['doc_id']))
+                        continue
                     if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
-                        return rest.bad_request('Invalid raw_content')
+                        log_file.write('{}: Invalid raw_content\n'.format(obj['doc_id']))
+                        continue
                     # this type will conflict with the attribute in logstash
                     if 'type' in obj:
                         obj['original_type'] = obj['type']
@@ -1689,6 +1694,8 @@ class Data(Resource):
         elif file_type == 'html':
             pass
 
+        log_file.close()
+
         # remove temp file
         os.remove(src_file_path)
 
@@ -1701,9 +1708,24 @@ class Data(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
+        parser = reqparse.RequestParser()
+        parser.add_argument('type', type=str)
+        args = parser.parse_args()
         ret = dict()
-        for tld, obj in data[project_name]['data'].iteritems():
-            ret[tld] = len(obj)
+        log_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/catalog_error.log')
+
+        if args['type'] == 'has_error':
+            ret['has_error'] = os.path.getsize(log_path) > 0
+        elif args['type'] == 'error_log':
+            ret['error_log'] = list()
+            with codecs.open(log_path, 'r') as f:
+                for line in f:
+                    ret['error_log'].append(line)
+            # with codecs.open(log_path, 'r') as f:
+            #     ret['error_log'] = f.read()
+        else:
+            for tld, obj in data[project_name]['data'].iteritems():
+                ret[tld] = len(obj)
         return ret
 
     @staticmethod
@@ -1800,7 +1822,7 @@ class Actions(Resource):
         if args['value'] in ('all', 'etk_status'):
             ret['etk_status'] = Actions._is_etk_running(project_name)
 
-        elif args['value'] in ('all', 'tld_statistics'):
+        if args['value'] in ('all', 'tld_statistics'):
             tld_array = []
             for tld, tld_obj in data[project_name]['data'].iteritems():
                 if tld not in data[project_name]['status']['desired_docs']:
