@@ -1288,6 +1288,9 @@ poly = Polymer({
         importFileFormData.append("file_name", file.name);
         importFileFormData.append("file_type", "json_lines");
 
+        this.updateProgressBar(0);
+        this.$.progressDialog.toggle();
+
         $.ajax({
             type: "POST",
             url: backend_url + "projects/" + projectName + '/data',
@@ -1300,10 +1303,35 @@ poly = Polymer({
             // headers: {
             //     "Authorization": AUTH_HEADER
             // },
+            xhr: function() {
+                // console.log(this.context);
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.context = this.context;
+                xhr.upload.addEventListener("progress", function(evt) {
+                    // console.log(evt.target.context);
+                    if (evt.lengthComputable) {
+                        var percentComplete = evt.loaded / evt.total;
+                        percentComplete = parseInt(percentComplete * 100);
+                        // console.log(percentComplete);
+                        evt.target.context.updateProgressBar(percentComplete);
+
+                        if (percentComplete === 100) {
+                        }
+                    }
+                }, false);
+
+                return xhr;
+            },
             success: function (data) {
                 this.refreshTldTable();
+            },
+            complete: function() {
+                this.$.progressDialog.toggle();
             }
         });
+    },
+    updateProgressBar: function(percentage) {
+        $("#progressDialog paper-progress").first().attr("value", percentage)
     },
     addToLandmark: function(e) {
         var tld = $(e.currentTarget).attr("data-tld");
