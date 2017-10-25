@@ -48,6 +48,7 @@ log_file = logging.FileHandler(config['logging']['file_path'])
 logger.addHandler(log_file)
 log_file.setFormatter(logging.Formatter(config['logging']['format']))
 logger.setLevel(config['logging']['level'])
+# logging.getLogger('werkzeug').setLevel(logging.ERROR) # turn off werkzeug logger for normal info
 
 # flask app
 app = Flask(__name__)
@@ -1627,17 +1628,28 @@ class Data(Resource):
         # make root dir and save temp file
         src_file_path = os.path.join(_get_project_dir_path(project_name), 'data', '{}.tmp'.format(file_name))
         args['file_data'].save(src_file_path)
-        desc_dir_path = os.path.join(_get_project_dir_path(project_name), 'data', file_name)
-        if not os.path.exists(desc_dir_path):
-            os.mkdir(desc_dir_path)
+        dest_dir_path = os.path.join(_get_project_dir_path(project_name), 'data', file_name)
+        if not os.path.exists(dest_dir_path):
+            os.mkdir(dest_dir_path)
+
+        thread.start_new_thread(Data._data_catalog_worker,
+            (project_name, args['file_type'], src_file_path, dest_dir_path, ))
+
+        # return rest.created(data=self.get(project_name))
+        return rest.accepted()
+
+    @staticmethod
+    def _data_catalog_worker(project_name, file_type, src_file_path, dest_dir_path):
 
         # generate catalog
-        if args['file_type'] == 'json_lines':
+        if file_type == 'json_lines':
             with codecs.open(src_file_path, 'r') as f:
                 for line in f:
                     obj = json.loads(line)
                     if 'url' not in obj:
                         return rest.bad_request('Invalid URL')
+                    if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
+                        obj['doc_id'] = obj['_id']
                     if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
                         return rest.bad_request('Invalid doc_id')
                     if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
@@ -1649,7 +1661,7 @@ class Data(Resource):
                     if 'timestamp_crawl' not in obj:
                         obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # split raw_content and json
-                    output_path_prefix = os.path.join(desc_dir_path, obj['doc_id'])
+                    output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
                     output_json_path = output_path_prefix + '.json'
                     with codecs.open(output_raw_content_path, 'w') as output:
@@ -1658,7 +1670,7 @@ class Data(Resource):
                         del obj['raw_content']
                         output.write(json.dumps(obj, indent=2))
                     # update data db
-                    tld = self.extract_tld(obj['url'])
+                    tld = Data.extract_tld(obj['url'])
                     data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
                     # if doc has the same tld, skip
                     # overwrite will cause the problem in the number of docs loaded to es
@@ -1674,7 +1686,7 @@ class Data(Resource):
             # update data db file
             update_data_db_file(project_name)
 
-        elif args['file_type'] == 'html':
+        elif file_type == 'html':
             pass
 
         # remove temp file
@@ -1683,7 +1695,6 @@ class Data(Resource):
         # notify action add data if needed
         Actions._add_data(project_name)
 
-        return rest.created(data=self.get(project_name))
 
     @requires_auth
     def get(self, project_name):
