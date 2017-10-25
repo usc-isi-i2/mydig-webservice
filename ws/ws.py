@@ -2022,8 +2022,10 @@ class Actions(Resource):
             etk_config['etk_version'] = etk_config_version
             etk_config_snapshot_file_path = os.path.join(
                 _get_project_dir_path(project_name), 'working_dir/etk_config_{}.json'.format(etk_config_version))
+            # etk_config needs to be rewrite every time
+            # since hash of the config can be the same to one of the previous versions
+            write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
             if not os.path.exists(etk_config_snapshot_file_path):
-                write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
                 write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
             else:
                 new_extraction = False # currently not in use
