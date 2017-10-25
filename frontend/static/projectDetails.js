@@ -1237,12 +1237,13 @@ poly = Polymer({
                     // if(obj["tld"] == "asexyservice.com") {
                     //     obj["tld"] = "ddd.com";
                     // }
+                    var disable_landmark_btn = obj["total_num"] < 10 ? " disabled" : "";
                     newObj = {
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
                         "desired_num": obj["desired_num"],
-                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\">Add</paper-icon-button>"
+                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\"" + disable_landmark_btn + ">Add</paper-icon-button>"
                     };
                     newTldTableData.push(newObj);
                 });
