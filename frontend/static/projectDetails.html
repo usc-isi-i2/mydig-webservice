@@ -1254,7 +1254,10 @@
             <paper-dialog alwaysOnTop with-backdrop modal id="progressDialog" sizingTarget="p"
                           style="margin-left:auto;margin-right:auto;padding:1em;">
                 <h4>File uploading...</h4>
-                <paper-progress value="40" class="green"></paper-progress>
+                <div><paper-progress value="0" class="green" style="width:100%"></paper-progress></div>
+
+                <p>After this step, data will be processed on the backend, you can click "log of last
+                    imported file" to fetch the status.</p>
             </paper-dialog>
 
             <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"

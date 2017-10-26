@@ -1632,16 +1632,18 @@ class Data(Resource):
             os.mkdir(dest_dir_path)
 
         thread.start_new_thread(Data._data_catalog_worker,
-            (project_name, args['file_type'], src_file_path, dest_dir_path, ))
+            (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, ))
 
         # return rest.created(data=self.get(project_name))
         return rest.accepted()
 
     @staticmethod
-    def _data_catalog_worker(project_name, file_type, src_file_path, dest_dir_path):
+    def _data_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path):
 
         log_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/catalog_error.log')
         log_file = codecs.open(log_path, 'w')
+        log_file.write('Start processing file {} (Thread #{})\n'.format(file_name, thread.get_ident()))
+        log_file.write('======================================================\n')
 
         # generate catalog
         if file_type == 'json_lines':
@@ -1694,6 +1696,9 @@ class Data(Resource):
         elif file_type == 'html':
             pass
 
+        # stop logging
+        log_file.write('======================================================\n')
+        log_file.write('Done!')
         log_file.close()
 
         # remove temp file
@@ -1714,15 +1719,14 @@ class Data(Resource):
         ret = dict()
         log_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/catalog_error.log')
 
-        if args['type'] == 'has_error':
-            ret['has_error'] = os.path.getsize(log_path) > 0
-        elif args['type'] == 'error_log':
+        # if args['type'] == 'has_error':
+        #     ret['has_error'] = os.path.getsize(log_path) > 0
+        if args['type'] == 'error_log':
             ret['error_log'] = list()
-            with codecs.open(log_path, 'r') as f:
-                for line in f:
-                    ret['error_log'].append(line)
-            # with codecs.open(log_path, 'r') as f:
-            #     ret['error_log'] = f.read()
+            if os.path.exists(log_path):
+                with codecs.open(log_path, 'r') as f:
+                    for line in f:
+                        ret['error_log'].append(line)
         else:
             for tld, obj in data[project_name]['data'].iteritems():
                 ret[tld] = len(obj)
