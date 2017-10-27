@@ -1653,12 +1653,10 @@ class Data(Resource):
         log_file.write('======================================================\n')
 
         # generate catalog
-        f = None
         if file_type == 'json_lines':
-            f = codecs.open(src_file_path, 'r')
-        if file_type == 'gzip':
-            f = gzip.open(src_file_path, 'r')
-        if f:
+            suffix = os.path.splitext(file_name)[-1]
+            f = gzip.open(src_file_path, 'r') if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
+
             for line in f:
                 obj = json.loads(line)
                 if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
@@ -1701,10 +1699,11 @@ class Data(Resource):
                     'add_to_queue': False
                 }
 
+            f.close()
             # update data db file
             update_data_db_file(project_name)
 
-        if file_type == 'html':
+        elif file_type == 'html':
             pass
 
         # stop logging
