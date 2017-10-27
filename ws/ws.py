@@ -72,7 +72,6 @@ data = {}
 
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
-project_name_blacklist = ('logs')
 re_url = re.compile(r'[^0-9a-z-_]+')
 
 
@@ -170,7 +169,7 @@ class AllProjects(Resource):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
         project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
-        if not re_project_name.match(project_name) or project_name in project_name_blacklist:
+        if not re_project_name.match(project_name) or project_name in config['project_name_blacklist']:
             return rest.bad_request('Invalid project name.')
         if project_name in data:
             return rest.exists('Project name already exists.')
@@ -1612,6 +1611,8 @@ class Data(Resource):
         parse.add_argument('file_data', type=werkzeug.FileStorage, location='files')
         parse.add_argument('file_name')
         parse.add_argument('file_type')
+        parse.add_argument('sync')
+        parse.add_argument('log')
         args = parse.parse_args()
 
         if args['file_name'] is None:
@@ -1623,6 +1624,8 @@ class Data(Resource):
             return rest.bad_request('Invalid file_data')
         if args['file_type'] is None:
             return rest.bad_request('Invalid file_type')
+        args['sync'] = False if args['sync'] is None or args['sync'].lower() != 'true' else True
+        args['log'] = True if args['log'] is None or args['log'].lower() != 'false' else False
 
         # make root dir and save temp file
         src_file_path = os.path.join(_get_project_dir_path(project_name), 'data', '{}.tmp'.format(file_name))
@@ -1631,16 +1634,20 @@ class Data(Resource):
         if not os.path.exists(dest_dir_path):
             os.mkdir(dest_dir_path)
 
-        thread.start_new_thread(Data._data_catalog_worker,
-            (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, ))
-
-        # return rest.created(data=self.get(project_name))
-        return rest.accepted()
+        if not args['sync']:
+            thread.start_new_thread(Data._data_catalog_worker,
+                (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'], ))
+            return rest.accepted()
+        else:
+            Data._data_catalog_worker(project_name, file_name, args['file_type'],
+                                      src_file_path, dest_dir_path, args['log'])
+            return rest.created()
 
     @staticmethod
-    def _data_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path):
+    def _data_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
 
-        log_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/catalog_error.log')
+        log_path = os.path.join(_get_project_dir_path(project_name),
+                                'working_dir/catalog_error.log') if log_on else os.devnull
         log_file = codecs.open(log_path, 'w')
         log_file.write('Start processing file {} (Thread #{})\n'.format(file_name, thread.get_ident()))
         log_file.write('======================================================\n')
