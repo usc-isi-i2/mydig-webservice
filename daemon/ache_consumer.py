@@ -2,6 +2,7 @@ import os
 import json
 import sys
 import codecs
+import time
 
 import requests
 from kafka import KafkaProducer, KafkaConsumer
@@ -11,33 +12,39 @@ from config import config
 
 if __name__ == '__main__':
 
-    consumer = KafkaConsumer(
-        'ache',
-        bootstrap_servers=config['kafka']['servers'],
-        group_id=config['ache']['group_id'],
-        value_deserializer=lambda v: json.loads(v.decode('utf-8')),
-    )
-    consumer.subscribe(config['ache']['kafka_topic'])
-
-    print 'consumer started'
-
-    for msg in consumer:
+    while True:
         try:
-            data = msg.value
-            url = config['ache']['upload']['endpoint'].format(project_name=data['project'])
-            del data['project']
-            payload = {
-                'file_name': config['ache']['upload']['file_name'],
-                'file_type': 'json_lines'
-            }
-            files = {
-                'file_data': ('', json.dumps(data), 'application/octet-stream')
-            }
-            # print url, payload
-            resp = requests.post(url, data=payload, files=files, timeout=10)
+            consumer = KafkaConsumer(
+                'ache',
+                bootstrap_servers=config['kafka']['servers'],
+                group_id=config['ache']['group_id'],
+                value_deserializer=lambda v: json.loads(v.decode('utf-8')),
+            )
+            consumer.subscribe(config['ache']['kafka_topic'])
+
+            print 'consumer started'
+
+            for msg in consumer:
+                try:
+                    data = msg.value
+                    url = config['ache']['upload']['endpoint'].format(project_name=data['project'])
+                    del data['project']
+                    payload = {
+                        'file_name': config['ache']['upload']['file_name'],
+                        'file_type': 'json_lines'
+                    }
+                    files = {
+                        'file_data': ('', json.dumps(data), 'application/octet-stream')
+                    }
+                    # print url, payload
+                    resp = requests.post(url, data=payload, files=files, timeout=10)
+
+                except Exception as e:
+                    print e
 
         except Exception as e:
             print e
+            time.sleep(5)
 
 
 
