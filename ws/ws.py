@@ -799,7 +799,9 @@ class ProjectGlossaries(Resource):
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
         if args['glossary_name'] is None or args['glossary_file'] is None:
             return rest.bad_request('Invalid glossary_name or glossary_file')
-        name = args['glossary_name']
+        name = args['glossary_name'].strip()
+        if len(name) == 0:
+            return rest.bad_request('Invalid glossary_name')
         if name in data[project_name]['master_config']['glossaries']:
             return rest.exists('Glossary {} exists'.format(name))
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
@@ -1652,70 +1654,78 @@ class Data(Resource):
         log_file.write('Start processing file {} (Thread #{})\n'.format(file_name, thread.get_ident()))
         log_file.write('======================================================\n')
 
-        # generate catalog
-        if file_type == 'json_lines':
-            suffix = os.path.splitext(file_name)[-1]
-            f = gzip.open(src_file_path, 'r') if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
+        try:
 
-            for line in f:
-                obj = json.loads(line)
-                if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
-                    obj['doc_id'] = obj['_id']
-                if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
-                    log_file.write('Unknown doc_id: Invalid doc_id\n')
-                    continue
-                if 'url' not in obj:
-                    log_file.write('{}: Invalid URL\n'.format(obj['doc_id']))
-                    continue
-                if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
-                    log_file.write('{}: Invalid raw_content\n'.format(obj['doc_id']))
-                    continue
-                # this type will conflict with the attribute in logstash
-                if 'type' in obj:
-                    obj['original_type'] = obj['type']
-                    del obj['type']
-                if 'timestamp_crawl' not in obj:
-                    obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                # split raw_content and json
-                output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
-                output_raw_content_path = output_path_prefix + '.html'
-                output_json_path = output_path_prefix + '.json'
-                with codecs.open(output_raw_content_path, 'w') as output:
-                    output.write(obj['raw_content'].encode('utf-8'))
-                with codecs.open(output_json_path, 'w') as output:
-                    del obj['raw_content']
-                    output.write(json.dumps(obj, indent=2))
-                # update data db
-                tld = Data.extract_tld(obj['url'])
-                data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
-                # if doc has the same tld, skip
-                # overwrite will cause the problem in the number of docs loaded to es
-                if obj['doc_id'] in data[project_name]['data'][tld]:
-                    continue
-                data[project_name]['data'][tld][obj['doc_id']] = {
-                    'raw_content_path': output_raw_content_path,
-                    'json_path': output_json_path,
-                    'url': obj['url'],
-                    'add_to_queue': False
-                }
+            # generate catalog
+            if file_type == 'json_lines':
+                suffix = os.path.splitext(file_name)[-1]
+                f = gzip.open(src_file_path, 'r') if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
 
-            f.close()
-            # update data db file
-            update_data_db_file(project_name)
+                for line in f:
+                    obj = json.loads(line)
+                    if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
+                        obj['doc_id'] = obj['_id']
+                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
+                        log_file.write('Unknown doc_id: Invalid doc_id\n')
+                        continue
+                    if 'url' not in obj:
+                        log_file.write('{}: Invalid URL\n'.format(obj['doc_id']))
+                        continue
+                    if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
+                        log_file.write('{}: Invalid raw_content\n'.format(obj['doc_id']))
+                        continue
+                    # this type will conflict with the attribute in logstash
+                    if 'type' in obj:
+                        obj['original_type'] = obj['type']
+                        del obj['type']
+                    if 'timestamp_crawl' not in obj:
+                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                    # split raw_content and json
+                    output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
+                    output_raw_content_path = output_path_prefix + '.html'
+                    output_json_path = output_path_prefix + '.json'
+                    with codecs.open(output_raw_content_path, 'w') as output:
+                        output.write(obj['raw_content'].encode('utf-8'))
+                    with codecs.open(output_json_path, 'w') as output:
+                        del obj['raw_content']
+                        output.write(json.dumps(obj, indent=2))
+                    # update data db
+                    tld = Data.extract_tld(obj['url'])
+                    data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
+                    # if doc has the same tld, skip
+                    # overwrite will cause the problem in the number of docs loaded to es
+                    if obj['doc_id'] in data[project_name]['data'][tld]:
+                        continue
+                    data[project_name]['data'][tld][obj['doc_id']] = {
+                        'raw_content_path': output_raw_content_path,
+                        'json_path': output_json_path,
+                        'url': obj['url'],
+                        'add_to_queue': False
+                    }
 
-        elif file_type == 'html':
-            pass
+                f.close()
+                # update data db file
+                update_data_db_file(project_name)
 
-        # stop logging
-        log_file.write('======================================================\n')
-        log_file.write('Done!')
-        log_file.close()
+            elif file_type == 'html':
+                pass
 
-        # remove temp file
-        os.remove(src_file_path)
+            # notify action add data if needed
+            Actions._add_data(project_name)
 
-        # notify action add data if needed
-        Actions._add_data(project_name)
+        except Exception as e:
+            print e
+            log_file.write('Invalid file format\n')
+
+        finally:
+
+            # stop logging
+            log_file.write('======================================================\n')
+            log_file.write('Done!')
+            log_file.close()
+
+            # remove temp file
+            os.remove(src_file_path)
 
 
     @requires_auth
