@@ -1777,6 +1777,13 @@ class ActionMasterConfig(Resource):
                 'full': project_name + '_deployed',
                 'version': 0
             }
+            # overwrite configuration
+            if 'configuration' not in new_master_config:
+                new_master_config['configuration'] = dict()
+            new_master_config['configuration']['sandpaper_sample_url'] \
+                = data[project_name]['master_config']['configuration']['sandpaper_sample_url']
+            new_master_config['configuration']['sandpaper_full_url'] \
+                = data[project_name]['master_config']['configuration']['sandpaper_full_url']
 
             # overwrite previous master config
             data[project_name]['master_config'] = new_master_config
