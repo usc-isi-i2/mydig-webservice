@@ -11,6 +11,7 @@ import codecs
 import csv
 import multiprocessing
 import thread
+import threading
 import subprocess
 import requests
 import copy
@@ -1639,6 +1640,7 @@ class Data(Resource):
         if not args['sync']:
             thread.start_new_thread(Data._data_catalog_worker,
                 (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'], ))
+
             return rest.accepted()
         else:
             Data._data_catalog_worker(project_name, file_name, args['file_type'],
@@ -1659,7 +1661,8 @@ class Data(Resource):
             # generate catalog
             if file_type == 'json_lines':
                 suffix = os.path.splitext(file_name)[-1]
-                f = gzip.open(src_file_path, 'r') if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
+                f = gzip.open(src_file_path, 'r') \
+                    if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
 
                 for line in f:
                     obj = json.loads(line)
@@ -1691,21 +1694,35 @@ class Data(Resource):
                         output.write(json.dumps(obj, indent=2))
                     # update data db
                     tld = Data.extract_tld(obj['url'])
-                    data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
-                    # if doc has the same tld, skip
-                    # overwrite will cause the problem in the number of docs loaded to es
-                    if obj['doc_id'] in data[project_name]['data'][tld]:
-                        continue
-                    data[project_name]['data'][tld][obj['doc_id']] = {
-                        'raw_content_path': output_raw_content_path,
-                        'json_path': output_json_path,
-                        'url': obj['url'],
-                        'add_to_queue': False
-                    }
+                    try:
+                        data[project_name]['locks']['data'].acquire()
+                        data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
+                        # if doc has the same tld, skip
+                        # overwrite will cause the problem in the number of docs loaded to es
+                        if obj['doc_id'] in data[project_name]['data'][tld]:
+                            continue
+                        data[project_name]['data'][tld][obj['doc_id']] = {
+                            'raw_content_path': output_raw_content_path,
+                            'json_path': output_json_path,
+                            'url': obj['url'],
+                            'add_to_queue': False
+                        }
+                    finally:
+                        data[project_name]['locks']['data'].release()
+                    # update status
+                    try:
+                        data[project_name]['locks']['status'].acquire()
+                        data[project_name]['status']['total_docs'][tld] =\
+                            data[project_name]['status']['total_docs'].get(tld, 0) + 1
+                    finally:
+                        data[project_name]['locks']['data'].release()
+
 
                 f.close()
-                # update data db file
+
+                # update data db & status file
                 update_data_db_file(project_name)
+                update_status_file(project_name)
 
             elif file_type == 'html':
                 pass
@@ -1748,8 +1765,12 @@ class Data(Resource):
                     for line in f:
                         ret['error_log'].append(line)
         else:
-            for tld, obj in data[project_name]['data'].iteritems():
-                ret[tld] = len(obj)
+            try:
+                data[project_name]['locks']['status'].acquire()
+                for tld, num in data[project_name]['status']['total_docs'].iteritems():
+                    ret[tld] = num
+            finally:
+                data[project_name]['locks']['status'].release()
         return ret
 
     @staticmethod
@@ -1855,17 +1876,22 @@ class Actions(Resource):
 
         if args['value'] in ('all', 'tld_statistics'):
             tld_array = []
-            for tld, tld_obj in data[project_name]['data'].iteritems():
-                if tld not in data[project_name]['status']['desired_docs']:
-                    data[project_name]['status']['desired_docs'][tld] = 0
-                if tld in data[project_name]['data']:
-                    tld_obj = {
-                        'tld': tld,
-                        'total_num': len(data[project_name]['data'][tld]),
-                        'es_num': 0,
-                        'desired_num': data[project_name]['status']['desired_docs'][tld]
-                    }
-                    tld_array.append(tld_obj)
+
+            try:
+                data[project_name]['locks']['status'].acquire()
+                for tld in data[project_name]['status']['total_docs'].iterkeys():
+                    if tld not in data[project_name]['status']['desired_docs']:
+                        data[project_name]['status']['desired_docs'][tld] = 0
+                    if tld in data[project_name]['status']['total_docs']:
+                        tld_obj = {
+                            'tld': tld,
+                            'total_num': data[project_name]['status']['total_docs'][tld],
+                            'es_num': 0,
+                            'desired_num': data[project_name]['status']['desired_docs'][tld]
+                        }
+                        tld_array.append(tld_obj)
+            finally:
+                data[project_name]['locks']['status'].release()
 
             # query es count if doc exists
             query = """
@@ -1919,56 +1945,80 @@ class Actions(Resource):
         for tld, desired_num in tld_list.iteritems():
             desired_num = max(desired_num, 0)
             desired_num = min(desired_num, 999999999)
-            if tld not in data[project_name]['status']['desired_docs']:
-                data[project_name]['status']['desired_docs'][tld] = dict()
-            data[project_name]['status']['desired_docs'][tld] = desired_num
+            try:
+                data[project_name]['locks']['status'].acquire()
+                if tld not in data[project_name]['status']['desired_docs']:
+                    data[project_name]['status']['desired_docs'][tld] = dict()
+                data[project_name]['status']['desired_docs'][tld] = desired_num
+            finally:
+                data[project_name]['locks']['status'].release()
 
+        update_status_file(project_name)
         return rest.created()
 
     @staticmethod
     def _add_data_worker(project_name, kafka_producer, input_topic):
 
-        if 'desired_docs' not in data[project_name]['status']:
-            data[project_name]['status']['desired_docs'] = dict()
-        tld_list = data[project_name]['status']['desired_docs']
-        for tld, desired_num in tld_list.iteritems():
+        try:
+            data[project_name]['locks']['add_data_worker'].acquire()
 
-            if tld not in data[project_name]['status']['added_docs']:
-                data[project_name]['status']['added_docs'][tld] = 0
-            desired_num = data[project_name]['status']['desired_docs'][tld]
-            added_num = data[project_name]['status']['added_docs'][tld]
+            try:
+                data[project_name]['locks']['status'].acquire()
+                if 'desired_docs' not in data[project_name]['status']:
+                    data[project_name]['status']['desired_docs'] = dict()
+            finally:
+                data[project_name]['locks']['status'].release()
 
-            # only add docs to queue if desired num is larger than added num
-            if desired_num > added_num:
+            # copy tld list here for iteration (not that much tld)
+            for tld in data[project_name]['status']['desired_docs'].keys():
 
-                # update mark in catalog
-                num_to_add = desired_num - added_num
-                added_num_this_round = 0
-                for doc_id in data[project_name]['data'][tld].iterkeys():
+                try:
+                    data[project_name]['locks']['status'].acquire()
+                    if tld not in data[project_name]['status']['added_docs']:
+                        data[project_name]['status']['added_docs'][tld] = 0
+                    desired_num = data[project_name]['status']['desired_docs'][tld]
+                    added_num = data[project_name]['status']['added_docs'][tld]
+                finally:
+                    data[project_name]['locks']['status'].release()
 
-                    # finished
-                    if num_to_add <= 0:
-                        break
+                # only add docs to queue if desired num is larger than added num
+                if desired_num > added_num:
 
-                    # already added
-                    if data[project_name]['data'][tld][doc_id]['add_to_queue']:
-                        continue
+                    # update mark in catalog
+                    num_to_add = desired_num - added_num
+                    added_num_this_round = 0
+                    for doc_id in data[project_name]['data'][tld].iterkeys(): # TODO: not thread safe
 
-                    # mark data
-                    data[project_name]['data'][tld][doc_id]['add_to_queue'] = True
-                    num_to_add -= 1
-                    added_num_this_round += 1
+                        # finished
+                        if num_to_add <= 0:
+                            break
 
-                    # publish to kafka queue
-                    ret, msg = Actions._publish_to_kafka_input_queue(
-                        doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
-                    if not ret:
-                        print 'Error of pushing data to Kafka: {}'.format(msg)
-                    #     return rest.internal_error(msg)
+                        # already added
+                        if data[project_name]['data'][tld][doc_id]['add_to_queue']:
+                            continue
 
-                data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
-                update_data_db_file(project_name)
-                update_status_file(project_name)
+                        # mark data
+                        data[project_name]['data'][tld][doc_id]['add_to_queue'] = True
+                        num_to_add -= 1
+                        added_num_this_round += 1
+
+                        # publish to kafka queue
+                        ret, msg = Actions._publish_to_kafka_input_queue(
+                            doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
+                        if not ret:
+                            print 'Error of pushing data to Kafka: {}'.format(msg)
+                            # roll back
+                            data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+                            num_to_add += 1
+                            added_num_this_round -= 1
+
+                    data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
+                    update_data_db_file(project_name)
+                    update_status_file(project_name)
+
+        finally:
+            data[project_name]['locks']['add_data_worker'].release()
+
 
     @staticmethod
     def _add_data(project_name):
@@ -2088,8 +2138,17 @@ class Actions(Resource):
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to kill_etk in ETL')
 
-        # 2. sandpaper
-        # 2.1 delete previous index
+        # # 2. delete topics
+        # url = config['etl']['url'] + '/delete_topics'
+        # payload = {
+        #     'project_name': project_name
+        # }
+        # resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
+        # if resp.status_code // 100 != 2:
+        #     return rest.internal_error('failed to delete_topics in ETL')
+
+        # 3. sandpaper
+        # 3.1 delete previous index
         url = '{}/{}'.format(
             config['es']['sample_url'],
             project_name
@@ -2098,7 +2157,7 @@ class Actions(Resource):
             resp = requests.delete(url, timeout=10)
         except:
             pass # ignore no index error
-        # 2.2 create new index
+        # 3.2 create new index
         url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
             config['sandpaper']['url'],
             config['sandpaper']['ws_url'],
@@ -2109,7 +2168,7 @@ class Actions(Resource):
         resp = requests.put(url, timeout=10)
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to create index in sandpaper')
-        # 2.3 switch index
+        # 3.3 switch index
         url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
             config['sandpaper']['url'],
             config['sandpaper']['ws_url'],
@@ -2121,9 +2180,9 @@ class Actions(Resource):
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to switch index in sandpaper')
 
-        # 3. re-add all data
+        # 4. re-add all data
         print 're-add data'
-        # 3.1 clean up mark and added num
+        # 4.1 clean up mark and added num
         if 'added_docs' not in data[project_name]['status']:
             data[project_name]['status']['added_docs'] = dict()
         for tld in data[project_name]['status']['added_docs'].iterkeys():
@@ -2132,10 +2191,10 @@ class Actions(Resource):
             for doc_id in data[project_name]['data'][tld]:
                 data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
         update_status_file(project_name)
-        # 3.2 add data
+        # 4.2 add data
         Actions._add_data(project_name)
 
-        # 4. restart extraction
+        # 5. restart extraction
         return Actions._extract(project_name)
 
     @staticmethod
@@ -2214,6 +2273,7 @@ if __name__ == '__main__':
         #     raise Exception('Git pull error')
 
         # prerequisites
+        print 'ensure sandpaper is on...'
         ensure_sandpaper_is_on()
 
         # init
@@ -2222,6 +2282,7 @@ if __name__ == '__main__':
             if os.path.isdir(project_dir_path) and \
                     not (project_name.startswith('.') or project_name.startswith('_')):
                 data[project_name] = templates.get('project')
+                print 'loading project {}...'.format(project_name)
 
                 # master config
                 master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
@@ -2247,6 +2308,12 @@ if __name__ == '__main__':
                 else:
                     with codecs.open(status_path, 'r') as f:
                         data[project_name]['status'] = json.loads(f.read())
+                # initialize total docs status every time
+                if 'total_docs' not in data[project_name]['status']:
+                    data[project_name]['status']['total_docs'] = dict()
+                for tld in data[project_name]['data'].iterkeys():
+                    data[project_name]['status']['total_docs'][tld] = len(data[project_name]['data'][tld])
+                update_status_file(project_name)
 
                 # re-config sandpaper
                 url = '{}/config?project={}&index={}&endpoint={}'.format(
@@ -2262,12 +2329,13 @@ if __name__ == '__main__':
 
         # print json.dumps(data, indent=4)
         # run app
+        print 'starting web service...'
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
     except Exception as e:
-        # exc_type, exc_value, exc_traceback = sys.exc_info()
-        # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-        # lines = ''.join(lines)
-        # print lines
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        lines = ''.join(lines)
+        print lines
         print e
         logger.error(e.message)

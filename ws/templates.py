@@ -1,4 +1,5 @@
 import copy
+import threading
 import default_resources
 
 
@@ -13,6 +14,10 @@ status = {
     'added_docs': {
         # number of marked docs (increment only)
         # tld:num
+    },
+    'total_docs': {
+        # will be modified if there's an update in catalog
+        # tld:num
     }
 }
 
@@ -20,8 +25,13 @@ project = {
     'master_config': {}, # master_config
     'entities': {}, # 'kg-id': entity
     'field_annotations': {},
-    'data': {}, # tlds -> meta data
-    'status': copy.deepcopy(status)
+    'data': {}, # tlds -> meta data, protected by catalog lock
+    'status': copy.deepcopy(status),
+    'locks': {
+        'data': threading.Lock(),
+        'status': threading.Lock(),
+        'add_data_worker': threading.Lock() # only one add_data_work can work at one time
+    }
 }
 
 master_config = {
