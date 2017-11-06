@@ -173,9 +173,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     etk_config = add_default_field_extractors(project_master_config, etk_config)
     etk_config = add_kg_enhancement(etk_config)
 
-    # Add the additional etk configs here
-    # /shared_data/projects/<>/workding_dir/
-    # additional_etk_config_path = '/home/ashish/ISI/DIG/mydig-projects/test2/working_dir/additional_etk_config/'
+    # Adding additional etk configs
     additional_etk_config_path = os.path.join(project_local_path, project_name, 'working_dir/additional_etk_config/')
     if os.path.isdir(additional_etk_config_path):
         etk_config_ = copy.deepcopy(etk_config)
