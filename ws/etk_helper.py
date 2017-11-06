@@ -3,6 +3,8 @@ import json
 import codecs
 import shutil
 from config import config
+import copy
+import glob
 
 default_etk_config_str = """{
     "logging": {
@@ -170,6 +172,47 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         project_master_config, project_name, project_local_path)
     etk_config = add_default_field_extractors(project_master_config, etk_config)
     etk_config = add_kg_enhancement(etk_config)
+
+    # Add the additional etk configs here
+    # /shared_data/projects/<>/workding_dir/
+    # additional_etk_config_path = '/home/ashish/ISI/DIG/mydig-projects/test2/working_dir/additional_etk_config/'
+    additional_etk_config_path = os.path.join(project_local_path, project_name, 'working_dir/additional_etk_config/')
+    if os.path.isdir(additional_etk_config_path):
+        etk_config_ = copy.deepcopy(etk_config)
+
+        _CONTENT_EXTRACTION = 'content_extraction'
+        _DATA_EXTRACTION = 'data_extraction'
+
+        try:
+            additional_etk_config_file_paths = glob.glob(additional_etk_config_path + '*.json')
+
+            for additional_etk_config_file_path in additional_etk_config_file_paths:
+                additional_etk_config = json.load(open(additional_etk_config_file_path, 'r'))
+
+                # Handle content_extraction
+                if _CONTENT_EXTRACTION in additional_etk_config:
+                    for key, val in additional_etk_config[_CONTENT_EXTRACTION].iteritems():
+                        if key in etk_config_[_CONTENT_EXTRACTION] and \
+                        isinstance(val, list) and \
+                        isinstance(etk_config_[_CONTENT_EXTRACTION][key], list):
+                            etk_config_[_CONTENT_EXTRACTION][key].extend(val)
+
+                        elif key in etk_config_[_CONTENT_EXTRACTION] and \
+                        isinstance(val, dict) and \
+                        isinstance(etk_config_[_CONTENT_EXTRACTION][key], dict):
+                            etk_config_[_CONTENT_EXTRACTION][key].update(val)
+
+                        elif key not in etk_config_[_CONTENT_EXTRACTION]:
+                            etk_config_[_CONTENT_EXTRACTION][key] = val
+
+                if _DATA_EXTRACTION in additional_etk_config:
+                    etk_config_[_DATA_EXTRACTION].extend(additional_etk_config[_DATA_EXTRACTION])
+
+            etk_config = etk_config_
+        except:
+            print 'Error in merging additional ETK configs'
+
+
     return etk_config
 
 
@@ -524,11 +567,12 @@ if __name__ == '__main__':
     webservice_config = config
     # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
     # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
-    project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/dig3-ht/master_config.json'))
+    project_master_config = json.load(codecs.open('/home/ashish/ISI/DIG/mydig-projects/test2/master_config.json'))
     x = json.dumps(
-        generate_etk_config(project_master_config, webservice_config, 'domain1_test_04', document_id='gtufhf',
+        generate_etk_config(project_master_config, webservice_config, 'domain1_test_04', document_id='doc_id',
                             content_extraction_only=False),
         indent=2)
+    print x
     print 'done'
     # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
     # ngram_dist = {
