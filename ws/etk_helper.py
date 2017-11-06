@@ -180,6 +180,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
 
         _CONTENT_EXTRACTION = 'content_extraction'
         _DATA_EXTRACTION = 'data_extraction'
+        _RESOURCES = 'resources'
 
         try:
             additional_etk_config_file_paths = glob.glob(additional_etk_config_path + '*.json')
@@ -203,8 +204,25 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
                         elif key not in etk_config_[_CONTENT_EXTRACTION]:
                             etk_config_[_CONTENT_EXTRACTION][key] = val
 
+                # Hancle data extraction
                 if _DATA_EXTRACTION in additional_etk_config:
                     etk_config_[_DATA_EXTRACTION].extend(additional_etk_config[_DATA_EXTRACTION])
+
+                # Handle resources
+                if _RESOURCES in additional_etk_config:
+                    for key, val in additional_etk_config[_RESOURCES].iteritems():
+                        if key in etk_config_[_RESOURCES] and \
+                        isinstance(val, list) and \
+                        isinstance(etk_config_[_RESOURCES][key], list):
+                            etk_config_[_RESOURCES][key].extend(val)
+
+                        elif key in etk_config_[_RESOURCES] and \
+                        isinstance(val, dict) and \
+                        isinstance(etk_config_[_RESOURCES][key], dict):
+                            etk_config_[_RESOURCES][key].update(val)
+
+                        elif key not in etk_config_[_RESOURCES]:
+                            etk_config_[_RESOURCES][key] = val
 
             etk_config = etk_config_
         except:
