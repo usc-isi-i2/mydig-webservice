@@ -72,7 +72,6 @@ data = {}
 
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
-project_name_blacklist = ('logs')
 re_url = re.compile(r'[^0-9a-z-_]+')
 
 
@@ -170,7 +169,7 @@ class AllProjects(Resource):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
         project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
-        if not re_project_name.match(project_name) or project_name in project_name_blacklist:
+        if not re_project_name.match(project_name) or project_name in config['project_name_blacklist']:
             return rest.bad_request('Invalid project name.')
         if project_name in data:
             return rest.exists('Project name already exists.')
@@ -800,7 +799,9 @@ class ProjectGlossaries(Resource):
         # http://werkzeug.pocoo.org/docs/0.12/datastructures/#werkzeug.datastructures.FileStorage
         if args['glossary_name'] is None or args['glossary_file'] is None:
             return rest.bad_request('Invalid glossary_name or glossary_file')
-        name = args['glossary_name']
+        name = args['glossary_name'].strip()
+        if len(name) == 0:
+            return rest.bad_request('Invalid glossary_name')
         if name in data[project_name]['master_config']['glossaries']:
             return rest.exists('Glossary {} exists'.format(name))
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + name + '.txt')
@@ -1612,6 +1613,8 @@ class Data(Resource):
         parse.add_argument('file_data', type=werkzeug.FileStorage, location='files')
         parse.add_argument('file_name')
         parse.add_argument('file_type')
+        parse.add_argument('sync')
+        parse.add_argument('log')
         args = parse.parse_args()
 
         if args['file_name'] is None:
@@ -1623,6 +1626,8 @@ class Data(Resource):
             return rest.bad_request('Invalid file_data')
         if args['file_type'] is None:
             return rest.bad_request('Invalid file_type')
+        args['sync'] = False if args['sync'] is None or args['sync'].lower() != 'true' else True
+        args['log'] = True if args['log'] is None or args['log'].lower() != 'false' else False
 
         # make root dir and save temp file
         src_file_path = os.path.join(_get_project_dir_path(project_name), 'data', '{}.tmp'.format(file_name))
@@ -1631,21 +1636,31 @@ class Data(Resource):
         if not os.path.exists(dest_dir_path):
             os.mkdir(dest_dir_path)
 
-        thread.start_new_thread(Data._data_catalog_worker,
-            (project_name, args['file_type'], src_file_path, dest_dir_path, ))
-
-        # return rest.created(data=self.get(project_name))
-        return rest.accepted()
+        if not args['sync']:
+            thread.start_new_thread(Data._data_catalog_worker,
+                (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'], ))
+            return rest.accepted()
+        else:
+            Data._data_catalog_worker(project_name, file_name, args['file_type'],
+                                      src_file_path, dest_dir_path, args['log'])
+            return rest.created()
 
     @staticmethod
-    def _data_catalog_worker(project_name, file_type, src_file_path, dest_dir_path):
+    def _data_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
 
-        log_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/catalog_error.log')
+        log_path = os.path.join(_get_project_dir_path(project_name),
+                                'working_dir/catalog_error.log') if log_on else os.devnull
         log_file = codecs.open(log_path, 'w')
+        log_file.write('Start processing file {} (Thread #{})\n'.format(file_name, thread.get_ident()))
+        log_file.write('======================================================\n')
 
-        # generate catalog
-        if file_type == 'json_lines':
-            with codecs.open(src_file_path, 'r') as f:
+        try:
+
+            # generate catalog
+            if file_type == 'json_lines':
+                suffix = os.path.splitext(file_name)[-1]
+                f = gzip.open(src_file_path, 'r') if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
+
                 for line in f:
                     obj = json.loads(line)
                     if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
@@ -1688,19 +1703,29 @@ class Data(Resource):
                         'add_to_queue': False
                     }
 
-            # update data db file
-            update_data_db_file(project_name)
+                f.close()
+                # update data db file
+                update_data_db_file(project_name)
 
-        elif file_type == 'html':
-            pass
+            elif file_type == 'html':
+                pass
 
-        log_file.close()
+            # notify action add data if needed
+            Actions._add_data(project_name)
 
-        # remove temp file
-        os.remove(src_file_path)
+        except Exception as e:
+            print e
+            log_file.write('Invalid file format\n')
 
-        # notify action add data if needed
-        Actions._add_data(project_name)
+        finally:
+
+            # stop logging
+            log_file.write('======================================================\n')
+            log_file.write('Done!')
+            log_file.close()
+
+            # remove temp file
+            os.remove(src_file_path)
 
 
     @requires_auth
@@ -1714,15 +1739,14 @@ class Data(Resource):
         ret = dict()
         log_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/catalog_error.log')
 
-        if args['type'] == 'has_error':
-            ret['has_error'] = os.path.getsize(log_path) > 0
-        elif args['type'] == 'error_log':
+        # if args['type'] == 'has_error':
+        #     ret['has_error'] = os.path.getsize(log_path) > 0
+        if args['type'] == 'error_log':
             ret['error_log'] = list()
-            with codecs.open(log_path, 'r') as f:
-                for line in f:
-                    ret['error_log'].append(line)
-            # with codecs.open(log_path, 'r') as f:
-            #     ret['error_log'] = f.read()
+            if os.path.exists(log_path):
+                with codecs.open(log_path, 'r') as f:
+                    for line in f:
+                        ret['error_log'].append(line)
         else:
             for tld, obj in data[project_name]['data'].iteritems():
                 ret[tld] = len(obj)
@@ -1763,6 +1787,13 @@ class ActionMasterConfig(Resource):
                 'full': project_name + '_deployed',
                 'version': 0
             }
+            # overwrite configuration
+            if 'configuration' not in new_master_config:
+                new_master_config['configuration'] = dict()
+            new_master_config['configuration']['sandpaper_sample_url'] \
+                = data[project_name]['master_config']['configuration']['sandpaper_sample_url']
+            new_master_config['configuration']['sandpaper_full_url'] \
+                = data[project_name]['master_config']['configuration']['sandpaper_full_url']
 
             # overwrite previous master config
             data[project_name]['master_config'] = new_master_config
@@ -2022,8 +2053,10 @@ class Actions(Resource):
             etk_config['etk_version'] = etk_config_version
             etk_config_snapshot_file_path = os.path.join(
                 _get_project_dir_path(project_name), 'working_dir/etk_config_{}.json'.format(etk_config_version))
+            # etk_config needs to be rewrite every time
+            # since hash of the config can be the same to one of the previous versions
+            write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
             if not os.path.exists(etk_config_snapshot_file_path):
-                write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
                 write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
             else:
                 new_extraction = False # currently not in use

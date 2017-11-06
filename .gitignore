@@ -96,7 +96,7 @@ frontend/*.out
 daemon/*.out
 
 # config file
-ws/config.py
+#ws/config.py
 ws/config.py.*
 !ws/config.py.example
 
