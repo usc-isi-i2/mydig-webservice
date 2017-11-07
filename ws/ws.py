@@ -1966,7 +1966,8 @@ class Actions(Resource):
         # this method is used by CatelogWorker in daemon thread
         got_lock = None
         try:
-            got_lock = data[project_name]['locks']['data'].acquire(blocking=False)
+            got_lock = data[project_name]['locks']['data'].acquire(False)
+            print 'lock', got_lock
             if not got_lock:
                 return
 
@@ -1983,9 +1984,11 @@ class Actions(Resource):
             for tld in data[project_name]['data'].iterkeys():
 
                 # one more if-clause to to avoid unnecessary lock acquirement
-                if 'desired_docs' not in data[project_name]['status']:
+                if 'added_docs' not in data[project_name]['status']:
                     try:
                         data[project_name]['locks']['status'].acquire()
+                        if 'added_docs' not in data[project_name]['status']:
+                            data[project_name]['status']['added_docs'] = dict()
                         if tld not in data[project_name]['status']['added_docs']:
                             data[project_name]['status']['added_docs'][tld] = 0
                     finally:
@@ -2029,7 +2032,7 @@ class Actions(Resource):
                     update_data_db_file(project_name)
                     update_status_file(project_name)
         except Exception as e:
-            pass
+            print '_add_data_worker exception', e
         finally:
             if got_lock:
                 data[project_name]['locks']['data'].release()
@@ -2312,8 +2315,8 @@ def ensure_sandpaper_is_on():
         ensure_sandpaper_is_on()
 
 
-def graceful_kill(signum, frame):
-    print 'notifying threads to exit...'
+def graceful_killer(signum, frame):
+    print 'SIGNAL #{} received, notifying threads to exit...'.format(signum)
     for project_name in data.iterkeys():
         try:
             data[project_name]['data_pushing_worker'].exit_signal = True
@@ -2336,12 +2339,14 @@ if __name__ == '__main__':
         ensure_sandpaper_is_on()
 
         print 'register thread killer...'
-        signal.signal(signal.SIGINT, graceful_kill)
-        signal.signal(signal.SIGTERM, graceful_kill)
+        signal.signal(signal.SIGINT, graceful_killer)
+        signal.signal(signal.SIGTERM, graceful_killer)
 
         # init
         for project_name in os.listdir(config['repo']['local_path']):
             project_dir_path = _get_project_dir_path(project_name)
+            if project_name != 'test':
+                continue
             if os.path.isdir(project_dir_path) and \
                     not (project_name.startswith('.') or project_name.startswith('_')):
                 data[project_name] = templates.get('project')
@@ -2402,7 +2407,7 @@ if __name__ == '__main__':
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
     except KeyboardInterrupt:
-        graceful_kill()
+        graceful_killer()
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
