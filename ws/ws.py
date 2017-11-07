@@ -2354,8 +2354,7 @@ if __name__ == '__main__':
         # init
         for project_name in os.listdir(config['repo']['local_path']):
             project_dir_path = _get_project_dir_path(project_name)
-            if project_name != 'test':
-                continue
+            
             if os.path.isdir(project_dir_path) and \
                     not (project_name.startswith('.') or project_name.startswith('_')):
                 data[project_name] = templates.get('project')
