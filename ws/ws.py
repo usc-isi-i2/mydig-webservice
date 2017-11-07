@@ -22,6 +22,7 @@ import hashlib
 import traceback
 import time
 import random
+import signal
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -2311,6 +2312,19 @@ def ensure_sandpaper_is_on():
         ensure_sandpaper_is_on()
 
 
+def graceful_kill(signum, frame):
+    print 'notifying threads to exit...'
+    for project_name in data.iterkeys():
+        try:
+            data[project_name]['data_pushing_worker'].exit_signal = True
+            print data[project_name]['data_pushing_worker'].exit_signal
+            data[project_name]['data_pushing_worker'].join()
+        except:
+            pass
+    print 'threads exited, exiting main thread...'
+    sys.exit()
+
+
 if __name__ == '__main__':
     try:
 
@@ -2320,6 +2334,10 @@ if __name__ == '__main__':
         # prerequisites
         print 'ensure sandpaper is on...'
         ensure_sandpaper_is_on()
+
+        print 'register thread killer...'
+        signal.signal(signal.SIGINT, graceful_kill)
+        signal.signal(signal.SIGTERM, graceful_kill)
 
         # init
         for project_name in os.listdir(config['repo']['local_path']):
@@ -2383,14 +2401,8 @@ if __name__ == '__main__':
         print 'starting web service...'
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
-    except (KeyboardInterrupt, SystemExit) as e_exit:
-        print 'notify threads to exit'
-        for project_name in data.iterkeys():
-            data[project_name]['data_pushing_worker'].exit_signal = True
-            print data[project_name]['data_pushing_worker'].exit_signal
-            data[project_name]['data_pushing_worker'].join()
-        print 'threads exited, exiting main thread...'
-        sys.exit()
+    except KeyboardInterrupt:
+        graceful_kill()
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
