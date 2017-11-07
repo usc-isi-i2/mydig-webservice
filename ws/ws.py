@@ -1709,6 +1709,7 @@ class Data(Resource):
                             'add_to_queue': False
                         }
                     except Exception as e:
+                        print 'exception in Data._update_catalog_worker() data lock', e
                         continue
                     finally:
                         data[project_name]['locks']['data'].release()
@@ -1718,9 +1719,10 @@ class Data(Resource):
                         data[project_name]['status']['total_docs'][tld] =\
                             data[project_name]['status']['total_docs'].get(tld, 0) + 1
                     except Exception as e:
+                        print 'exception in Data._update_catalog_worker() status lock', e
                         continue
                     finally:
-                        data[project_name]['locks']['data'].release()
+                        data[project_name]['locks']['status'].release()
 
 
                 f.close()
@@ -1736,7 +1738,7 @@ class Data(Resource):
             # Actions._add_data(project_name)
 
         except Exception as e:
-            print e
+            print 'exception in _update_catalog_worker', e
             log_file.write('Invalid file format\n')
 
         finally:
@@ -1774,6 +1776,8 @@ class Data(Resource):
                 data[project_name]['locks']['status'].acquire()
                 for tld, num in data[project_name]['status']['total_docs'].iteritems():
                     ret[tld] = num
+            except Exception as e:
+                print 'exception in status Data.get() status lock', e
             finally:
                 data[project_name]['locks']['status'].release()
         return ret
@@ -1895,6 +1899,8 @@ class Actions(Resource):
                             'desired_num': data[project_name]['status']['desired_docs'][tld]
                         }
                         tld_array.append(tld_obj)
+            except Exception as e:
+                print 'exception in Actions._get_extraction_status() status lock', e
             finally:
                 data[project_name]['locks']['status'].release()
 
@@ -1955,6 +1961,8 @@ class Actions(Resource):
                 if tld not in data[project_name]['status']['desired_docs']:
                     data[project_name]['status']['desired_docs'][tld] = dict()
                 data[project_name]['status']['desired_docs'][tld] = desired_num
+            except Exception as e:
+                print 'exception in Actions._update_desired_num() status lock', e
             finally:
                 data[project_name]['locks']['status'].release()
 
@@ -1971,26 +1979,16 @@ class Actions(Resource):
             if not got_lock:
                 return
 
-            # one more if-clause to to avoid unnecessary lock acquirement
-            if 'desired_docs' not in data[project_name]['status']:
-                try:
-                    data[project_name]['locks']['status'].acquire()
-                    if 'desired_docs' not in data[project_name]['status']:
-                        data[project_name]['status']['desired_docs'] = dict()
-                finally:
-                    data[project_name]['locks']['status'].release()
-
-
             for tld in data[project_name]['data'].iterkeys():
 
                 # one more if-clause to to avoid unnecessary lock acquirement
-                if 'added_docs' not in data[project_name]['status']:
+                if tld not in data[project_name]['status']['added_docs']:
                     try:
                         data[project_name]['locks']['status'].acquire()
-                        if 'added_docs' not in data[project_name]['status']:
-                            data[project_name]['status']['added_docs'] = dict()
                         if tld not in data[project_name]['status']['added_docs']:
                             data[project_name]['status']['added_docs'][tld] = 0
+                    except Exception as e:
+                        print 'exception in Actions._add_data_worker() status lock', e
                     finally:
                         data[project_name]['locks']['status'].release()
 
@@ -2032,7 +2030,11 @@ class Actions(Resource):
                     update_data_db_file(project_name)
                     update_status_file(project_name)
         except Exception as e:
-            print '_add_data_worker exception', e
+            print 'exception in Actions._add_data_worker() data lock'
+            # exc_type, exc_value, exc_traceback = sys.exc_info()
+            # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            # lines = ''.join(lines)
+            # print lines
         finally:
             if got_lock:
                 data[project_name]['locks']['data'].release()
@@ -2207,6 +2209,8 @@ class Actions(Resource):
                 data[project_name]['status']['added_docs'] = dict()
             for tld in data[project_name]['status']['added_docs'].iterkeys():
                 data[project_name]['status']['added_docs'][tld] = 0
+        except Exception as e:
+            print 'exception in Actions._recreate_mapping() status lock', e
         finally:
             data[project_name]['locks']['status'].release()
         try:
@@ -2214,6 +2218,8 @@ class Actions(Resource):
             for tld in data[project_name]['data'].iterkeys():
                 for doc_id in data[project_name]['data'][tld]:
                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+        except Exception as e:
+            print 'exception in Actions._recreate_mapping() data lock', e
         finally:
             data[project_name]['locks']['data'].release()
         update_status_file(project_name)
@@ -2376,9 +2382,13 @@ if __name__ == '__main__':
                 else:
                     with codecs.open(status_path, 'r') as f:
                         data[project_name]['status'] = json.loads(f.read())
+                        if 'added_docs' not in data[project_name]['status']:
+                            data[project_name]['status']['added_docs'] = dict()
+                        if 'desired_docs' not in data[project_name]['status']:
+                            data[project_name]['status']['desired_docs'] = dict()
+                        if 'total_docs' not in data[project_name]['status']:
+                            data[project_name]['status']['total_docs'] = dict()
                 # initialize total docs status every time
-                if 'total_docs' not in data[project_name]['status']:
-                    data[project_name]['status']['total_docs'] = dict()
                 for tld in data[project_name]['data'].iterkeys():
                     data[project_name]['status']['total_docs'][tld] = len(data[project_name]['data'][tld])
                 update_status_file(project_name)
