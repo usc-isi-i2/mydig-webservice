@@ -1232,6 +1232,10 @@ poly = Polymer({
             // },
             success: function (data) {
                 // console.log(data);
+                var total_tld = 0;
+                var total_total_num = 0;
+                var total_es_num = 0;
+                var total_desired_num = 0;
                 newTldTableData = [];
                 data["tld_statistics"].forEach(function(obj) {
                     // if(obj["tld"] == "asexyservice.com") {
@@ -1245,11 +1249,34 @@ poly = Polymer({
                         "desired_num": obj["desired_num"],
                         "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\"" + disable_landmark_btn + ">Add</paper-icon-button>"
                     };
+                    total_tld += 1;
+                    total_total_num += obj["total_num"];
+                    total_es_num += obj["es_num"];
+                    total_desired_num += obj["desired_num"];
                     newTldTableData.push(newObj);
                 });
 
                 this.tldTableData = newTldTableData;
                 this.$.tldTable.reload();
+
+                // because default paper-datatable doesn't support dynamic header
+                // this is a hacking, need to change if there's a good way
+                // console.log(this.$.tldTableTLD.header);
+                // this.$.tldTableTLD.header = 'TLD (' + total_tld.toString() + ')';
+                $("#tldTable div#container table thead tr th span").each(function(index) {
+                    if(index == 0) {
+                        $(this).text("TLD (" + total_tld.toString() + ")");
+                    }
+                    else if(index == 1) {
+                        $(this).text("Total (" + total_total_num.toString() + ")");
+                    }
+                    else if(index == 2) {
+                        $(this).text("KG (" + total_es_num.toString() + ")");
+                    }
+                    else if(index == 3) {
+                        $(this).text("Desired (" + total_desired_num.toString() + ")");
+                    }
+                });
             }
         });
     },
