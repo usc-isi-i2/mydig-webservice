@@ -1650,12 +1650,17 @@ class Data(Resource):
 
     @staticmethod
     def _update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
+        def _write_log(content):
+            try:
+                data[project_name]['locks']['catalog_log'].acquire()
+                log_file.write('<#{}> {}: {}\n'.format(thread.get_ident(), file_name, content))
+            finally:
+                data[project_name]['locks']['catalog_log'].release()
 
         log_path = os.path.join(_get_project_dir_path(project_name),
                                 'working_dir/catalog_error.log') if log_on else os.devnull
-        log_file = codecs.open(log_path, 'w')
-        log_file.write('Start processing file {} (Thread #{})\n'.format(file_name, thread.get_ident()))
-        log_file.write('======================================================\n')
+        log_file = codecs.open(log_path, 'a')
+        _write_log('start update catalog')
 
         try:
 
@@ -1670,13 +1675,13 @@ class Data(Resource):
                     if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
                         obj['doc_id'] = obj['_id']
                     if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
-                        log_file.write('Unknown doc_id: Invalid doc_id\n')
+                        _write_log('Unknown doc_id: Invalid doc_id')
                         continue
                     if 'url' not in obj:
-                        log_file.write('{}: Invalid URL\n'.format(obj['doc_id']))
+                        _write_log('{}: Invalid URL'.format(obj['doc_id']))
                         continue
                     if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
-                        log_file.write('{}: Invalid raw_content\n'.format(obj['doc_id']))
+                        _write_log('{}: Invalid raw_content'.format(obj['doc_id']))
                         continue
                     # this type will conflict with the attribute in logstash
                     if 'type' in obj:
@@ -1724,7 +1729,6 @@ class Data(Resource):
                     finally:
                         data[project_name]['locks']['status'].release()
 
-
                 f.close()
 
                 # update data db & status file
@@ -1739,13 +1743,12 @@ class Data(Resource):
 
         except Exception as e:
             print 'exception in _update_catalog_worker', e
-            log_file.write('Invalid file format\n')
+            _write_log('Invalid file format')
 
         finally:
 
             # stop logging
-            log_file.write('======================================================\n')
-            log_file.write('Done!')
+            _write_log('done')
             log_file.close()
 
             # remove temp file
@@ -2407,6 +2410,7 @@ if __name__ == '__main__':
                 # create project daemon thread
                 data[project_name]['locks']['data'] = threading.Lock()
                 data[project_name]['locks']['status'] = threading.Lock()
+                data[project_name]['locks']['catalog_log'] = threading.Lock()
                 data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
                 data[project_name]['data_pushing_worker'].start()
 

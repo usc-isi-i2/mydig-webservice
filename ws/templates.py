@@ -29,7 +29,8 @@ project = {
     'status': copy.deepcopy(status),
     'locks': {
         'data': None, # for data[project_name]['data']
-        'status': None # for data[project_name]['status']
+        'status': None, # for data[project_name]['status']
+        'catalog_log': None
     },
     'data_pushing_worker': None # daemon to periodically check if data needs to push to kafka
 }
