@@ -28,10 +28,10 @@ project = {
     'data': {}, # tlds -> meta data, protected by catalog lock
     'status': copy.deepcopy(status),
     'locks': {
-        'data': threading.Lock(),
-        'status': threading.Lock(),
-        'add_data_worker': threading.Lock() # only one add_data_work can work at one time
-    }
+        'data': None, # for data[project_name]['data']
+        'status': None # for data[project_name]['status']
+    },
+    'data_pushing_worker': None # daemon to periodically check if data needs to push to kafka
 }
 
 master_config = {

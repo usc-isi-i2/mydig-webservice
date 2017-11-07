@@ -69,7 +69,7 @@ api.route = types.MethodType(api_route, api)
 
 # in-memory data
 data = {}
-
+exit_signal = False
 
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
@@ -1638,17 +1638,17 @@ class Data(Resource):
             os.mkdir(dest_dir_path)
 
         if not args['sync']:
-            thread.start_new_thread(Data._data_catalog_worker,
+            thread.start_new_thread(Data._update_catalog_worker,
                 (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'], ))
 
             return rest.accepted()
         else:
-            Data._data_catalog_worker(project_name, file_name, args['file_type'],
+            Data._update_catalog_worker(project_name, file_name, args['file_type'],
                                       src_file_path, dest_dir_path, args['log'])
             return rest.created()
 
     @staticmethod
-    def _data_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
+    def _update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
 
         log_path = os.path.join(_get_project_dir_path(project_name),
                                 'working_dir/catalog_error.log') if log_on else os.devnull
@@ -1707,6 +1707,8 @@ class Data(Resource):
                             'url': obj['url'],
                             'add_to_queue': False
                         }
+                    except Exception as e:
+                        continue
                     finally:
                         data[project_name]['locks']['data'].release()
                     # update status
@@ -1714,6 +1716,8 @@ class Data(Resource):
                         data[project_name]['locks']['status'].acquire()
                         data[project_name]['status']['total_docs'][tld] =\
                             data[project_name]['status']['total_docs'].get(tld, 0) + 1
+                    except Exception as e:
+                        continue
                     finally:
                         data[project_name]['locks']['data'].release()
 
@@ -1728,7 +1732,7 @@ class Data(Resource):
                 pass
 
             # notify action add data if needed
-            Actions._add_data(project_name)
+            # Actions._add_data(project_name)
 
         except Exception as e:
             print e
@@ -1838,9 +1842,9 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        if action_name == 'add_data':
-            return self._add_data(project_name)
-        elif action_name == 'desired_num':
+        # if action_name == 'add_data':
+        #     return self._add_data(project_name)
+        if action_name == 'desired_num':
             return self._update_desired_num(project_name)
         elif action_name == 'extract':
             return self._extract(project_name)
@@ -1958,28 +1962,36 @@ class Actions(Resource):
 
     @staticmethod
     def _add_data_worker(project_name, kafka_producer, input_topic):
-
+        # this method is used by CatelogWorker in daemon thread
+        got_lock = None
         try:
-            data[project_name]['locks']['add_data_worker'].acquire()
+            got_lock = data[project_name]['locks']['data'].acquire(blocking=False)
+            if not got_lock:
+                return
 
-            try:
-                data[project_name]['locks']['status'].acquire()
-                if 'desired_docs' not in data[project_name]['status']:
-                    data[project_name]['status']['desired_docs'] = dict()
-            finally:
-                data[project_name]['locks']['status'].release()
-
-            # copy tld list here for iteration (not that much tld)
-            for tld in data[project_name]['status']['desired_docs'].keys():
-
+            # one more if-clause to to avoid unnecessary lock acquirement
+            if 'desired_docs' not in data[project_name]['status']:
                 try:
                     data[project_name]['locks']['status'].acquire()
-                    if tld not in data[project_name]['status']['added_docs']:
-                        data[project_name]['status']['added_docs'][tld] = 0
-                    desired_num = data[project_name]['status']['desired_docs'][tld]
-                    added_num = data[project_name]['status']['added_docs'][tld]
+                    if 'desired_docs' not in data[project_name]['status']:
+                        data[project_name]['status']['desired_docs'] = dict()
                 finally:
                     data[project_name]['locks']['status'].release()
+
+
+            for tld in data[project_name]['data'].iterkeys():
+
+                # one more if-clause to to avoid unnecessary lock acquirement
+                if 'desired_docs' not in data[project_name]['status']:
+                    try:
+                        data[project_name]['locks']['status'].acquire()
+                        if tld not in data[project_name]['status']['added_docs']:
+                            data[project_name]['status']['added_docs'][tld] = 0
+                    finally:
+                        data[project_name]['locks']['status'].release()
+
+                desired_num = data[project_name]['status']['desired_docs'][tld]
+                added_num = data[project_name]['status']['added_docs'][tld]
 
                 # only add docs to queue if desired num is larger than added num
                 if desired_num > added_num:
@@ -1987,7 +1999,7 @@ class Actions(Resource):
                     # update mark in catalog
                     num_to_add = desired_num - added_num
                     added_num_this_round = 0
-                    for doc_id in data[project_name]['data'][tld].iterkeys(): # TODO: not thread safe
+                    for doc_id in data[project_name]['data'][tld].iterkeys():
 
                         # finished
                         if num_to_add <= 0:
@@ -2015,27 +2027,29 @@ class Actions(Resource):
                     data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
                     update_data_db_file(project_name)
                     update_status_file(project_name)
-
-        finally:
-            data[project_name]['locks']['add_data_worker'].release()
-
-
-    @staticmethod
-    def _add_data(project_name):
-        try:
-            # set up input kafka
-            kafka_producer = KafkaProducer(
-                bootstrap_servers=config['kafka']['servers'],
-                max_request_size=10485760,
-                value_serializer=lambda v: json.dumps(v).encode('utf-8')
-            )
-            input_topic = project_name + '_in'
-
-            thread.start_new_thread(Actions._add_data_worker, (project_name, kafka_producer,input_topic))
-            return rest.accepted()
         except Exception as e:
-            print e
-            return rest.internal_error('Can not start thread for adding data')
+            pass
+        finally:
+            if got_lock:
+                data[project_name]['locks']['data'].release()
+
+
+    # @staticmethod
+    # def _add_data(project_name):
+    #     try:
+    #         # set up input kafka
+    #         kafka_producer = KafkaProducer(
+    #             bootstrap_servers=config['kafka']['servers'],
+    #             max_request_size=10485760,
+    #             value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    #         )
+    #         input_topic = project_name + '_in'
+    #
+    #         thread.start_new_thread(Actions._add_data_worker, (project_name, kafka_producer,input_topic))
+    #         return rest.accepted()
+    #     except Exception as e:
+    #         print e
+    #         return rest.internal_error('Can not start thread for adding data')
 
 
     @staticmethod
@@ -2183,16 +2197,24 @@ class Actions(Resource):
         # 4. re-add all data
         print 're-add data'
         # 4.1 clean up mark and added num
-        if 'added_docs' not in data[project_name]['status']:
-            data[project_name]['status']['added_docs'] = dict()
-        for tld in data[project_name]['status']['added_docs'].iterkeys():
-            data[project_name]['status']['added_docs'][tld] = 0
-        for tld in data[project_name]['data'].iterkeys():
-            for doc_id in data[project_name]['data'][tld]:
-                data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+        try:
+            data[project_name]['locks']['status'].acquire()
+            if 'added_docs' not in data[project_name]['status']:
+                data[project_name]['status']['added_docs'] = dict()
+            for tld in data[project_name]['status']['added_docs'].iterkeys():
+                data[project_name]['status']['added_docs'][tld] = 0
+        finally:
+            data[project_name]['locks']['status'].release()
+        try:
+            data[project_name]['locks']['data'].acquire()
+            for tld in data[project_name]['data'].iterkeys():
+                for doc_id in data[project_name]['data'][tld]:
+                    data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+        finally:
+            data[project_name]['locks']['data'].release()
         update_status_file(project_name)
         # 4.2 add data
-        Actions._add_data(project_name)
+        # Actions._add_data(project_name)
 
         # 5. restart extraction
         return Actions._extract(project_name)
@@ -2248,6 +2270,29 @@ class Actions(Resource):
             return False, 'error in sending data to kafka queue'
 
         return True, ''
+
+
+class DataPushingWorker(threading.Thread):
+
+    def __init__(self, project_name):
+        super(DataPushingWorker, self).__init__()
+        self.project_name = project_name
+        self.exit_signal = False
+
+        # set up input kafka
+        self.kafka_producer = KafkaProducer(
+            bootstrap_servers=config['kafka']['servers'],
+            max_request_size=10485760,
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        )
+        self.input_topic = project_name + '_in'
+
+    def run(self):
+        print 'thread run....', self.project_name
+        while not self.exit_signal:
+            print '!!!signal', self.exit_signal
+            Actions._add_data_worker(self.project_name, self.kafka_producer, self.input_topic)
+            time.sleep(config['data_pushing_worker_backoff_time'])
 
 
 def ensure_sandpaper_is_on():
@@ -2326,12 +2371,26 @@ if __name__ == '__main__':
                 if resp.status_code // 100 != 2:
                     print 'failed to re-config sandpaper for {}'.format(project_name)
 
+                # create project daemon thread
+                data[project_name]['locks']['data'] = threading.Lock()
+                data[project_name]['locks']['status'] = threading.Lock()
+                data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
+                data[project_name]['data_pushing_worker'].start()
+
 
         # print json.dumps(data, indent=4)
         # run app
         print 'starting web service...'
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
+    except (KeyboardInterrupt, SystemExit) as e_exit:
+        print 'notify threads to exit'
+        for project_name in data.iterkeys():
+            data[project_name]['data_pushing_worker'].exit_signal = True
+            print data[project_name]['data_pushing_worker'].exit_signal
+            data[project_name]['data_pushing_worker'].join()
+        print 'threads exited, exiting main thread...'
+        sys.exit()
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
