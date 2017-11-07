@@ -1975,7 +1975,7 @@ class Actions(Resource):
         got_lock = None
         try:
             got_lock = data[project_name]['locks']['data'].acquire(False)
-            print 'lock', got_lock
+            # print '_add_data_worker got data lock?', got_lock
             if not got_lock:
                 return
 
@@ -2030,7 +2030,7 @@ class Actions(Resource):
                     update_data_db_file(project_name)
                     update_status_file(project_name)
         except Exception as e:
-            print 'exception in Actions._add_data_worker() data lock'
+            print 'exception in Actions._add_data_worker() data lock', e
             # exc_type, exc_value, exc_traceback = sys.exc_info()
             # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
             # lines = ''.join(lines)
@@ -2300,7 +2300,7 @@ class DataPushingWorker(threading.Thread):
     def run(self):
         print 'thread run....', self.project_name
         while not self.exit_signal:
-            print '!!!signal', self.exit_signal
+            # print 'DataPushingWorker.exit_signal', self.exit_signal
             Actions._add_data_worker(self.project_name, self.kafka_producer, self.input_topic)
             time.sleep(config['data_pushing_worker_backoff_time'])
 
@@ -2344,7 +2344,7 @@ if __name__ == '__main__':
         print 'ensure sandpaper is on...'
         ensure_sandpaper_is_on()
 
-        print 'register thread killer...'
+        print 'register signal handler...'
         signal.signal(signal.SIGINT, graceful_killer)
         signal.signal(signal.SIGTERM, graceful_killer)
 
