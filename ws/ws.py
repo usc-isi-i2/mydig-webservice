@@ -708,11 +708,14 @@ class SpacyRulesOfAField(Resource):
         input = request.get_json(force=True)
         rules = input.get('rules', [])
         test_text = input.get('test_text', '')
-        obj = {
-            'rules': rules,
-            'test_text': test_text,
-            'field_name': field_name
-        }
+        obj = input
+        obj['rules'] = rules
+        obj['test_text'] = test_text
+        # obj = {
+        #     'rules': rules,
+        #     'test_text': test_text,
+        #     'field_name': field_name
+        # }
 
         url = 'http://{}:{}/test_spacy_rules'.format(
             config['etk']['daemon']['host'], config['etk']['daemon']['port'])
@@ -1984,16 +1987,16 @@ class Actions(Resource):
 
             for tld in data[project_name]['data'].iterkeys():
 
-                # one more if-clause to to avoid unnecessary lock acquirement
-                if tld not in data[project_name]['status']['added_docs']:
-                    try:
-                        data[project_name]['locks']['status'].acquire()
-                        if tld not in data[project_name]['status']['added_docs']:
-                            data[project_name]['status']['added_docs'][tld] = 0
-                    except Exception as e:
-                        print 'exception in Actions._add_data_worker() status lock', e
-                    finally:
-                        data[project_name]['locks']['status'].release()
+                try:
+                    data[project_name]['locks']['status'].acquire()
+                    if tld not in data[project_name]['status']['added_docs']:
+                        data[project_name]['status']['added_docs'][tld] = 0
+                    if tld not in data[project_name]['status']['desired_docs']:
+                        data[project_name]['status']['desired_docs'][tld] = 0
+                except Exception as e:
+                    print 'exception in Actions._add_data_worker() status lock', e
+                finally:
+                    data[project_name]['locks']['status'].release()
 
                 desired_num = data[project_name]['status']['desired_docs'][tld]
                 added_num = data[project_name]['status']['added_docs'][tld]
@@ -2034,10 +2037,10 @@ class Actions(Resource):
                     update_status_file(project_name)
         except Exception as e:
             print 'exception in Actions._add_data_worker() data lock', e
-            # exc_type, exc_value, exc_traceback = sys.exc_info()
-            # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            # lines = ''.join(lines)
-            # print lines
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            lines = ''.join(lines)
+            print lines
         finally:
             if got_lock:
                 data[project_name]['locks']['data'].release()
@@ -2354,7 +2357,7 @@ if __name__ == '__main__':
         # init
         for project_name in os.listdir(config['repo']['local_path']):
             project_dir_path = _get_project_dir_path(project_name)
-            
+
             if os.path.isdir(project_dir_path) and \
                     not (project_name.startswith('.') or project_name.startswith('_')):
                 data[project_name] = templates.get('project')
