@@ -19,6 +19,7 @@ if __name__ == '__main__':
                 bootstrap_servers=config['kafka']['servers'],
                 group_id=config['ache']['group_id'],
                 value_deserializer=lambda v: json.loads(v.decode('utf-8')),
+                auto_offset_reset='earliest'
             )
             consumer.subscribe(config['ache']['kafka_topic'])
 
@@ -27,8 +28,9 @@ if __name__ == '__main__':
             for msg in consumer:
                 try:
                     data = msg.value
-                    url = config['ache']['upload']['endpoint'].format(project_name=data['project'])
-                    del data['project']
+                    # url = config['ache']['upload']['endpoint'].format(project_name=data['project'])
+                    url = config['ache']['upload']['endpoint'].format(project_name='ache')
+                    # del data['project']
                     payload = {
                         'file_name': config['ache']['upload']['file_name'],
                         'file_type': 'json_lines'
