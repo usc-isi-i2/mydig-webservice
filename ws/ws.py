@@ -706,11 +706,10 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('Field {} not found'.format(field_name))
 
         input = request.get_json(force=True)
-        rules = input.get('rules', [])
-        test_text = input.get('test_text', '')
         obj = input
-        obj['rules'] = rules
-        obj['test_text'] = test_text
+        obj['rules'] = input.get('rules', [])
+        obj['test_text'] = input.get('test_text', '')
+        obj['field_name'] = field_name
         # obj = {
         #     'rules': rules,
         #     'test_text': test_text,
@@ -729,7 +728,7 @@ class SpacyRulesOfAField(Resource):
         obj = json.loads(resp.content)
 
         path = os.path.join(_get_project_dir_path(project_name), 'spacy_rules/' + field_name + '.json')
-        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(rules)
+        data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = len(obj['rules'])
         # data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
         update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
