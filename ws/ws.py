@@ -1663,7 +1663,7 @@ class Data(Resource):
         log_path = os.path.join(_get_project_dir_path(project_name),
                                 'working_dir/catalog_error.log') if log_on else os.devnull
         log_file = codecs.open(log_path, 'a')
-        _write_log('start update catalog')
+        _write_log('start updating catalog')
 
         try:
 
