@@ -268,6 +268,8 @@ class AllProjects(Resource):
 
         update_status_file(project_name) # create status file after creating the working_dir
 
+        start_threads_and_locks(project_name)
+
         git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
         logger.info('project %s created.' % project_name)
         return rest.created()
@@ -1992,13 +1994,17 @@ class Actions(Resource):
                         data[project_name]['status']['added_docs'][tld] = 0
                     if tld not in data[project_name]['status']['desired_docs']:
                         data[project_name]['status']['desired_docs'][tld] = 0
+                    if tld not in data[project_name]['status']['total_docs']:
+                        data[project_name]['status']['total_docs'][tld] = 0
                 except Exception as e:
                     print 'exception in Actions._add_data_worker() status lock', e
                 finally:
                     data[project_name]['locks']['status'].release()
 
-                desired_num = data[project_name]['status']['desired_docs'][tld]
                 added_num = data[project_name]['status']['added_docs'][tld]
+                total_num = data[project_name]['status']['total_docs'][tld]
+                desired_num = data[project_name]['status']['desired_docs'][tld]
+                desired_num = min(desired_num, total_num)
 
                 # only add docs to queue if desired num is larger than added num
                 if desired_num > added_num:
@@ -2232,10 +2238,10 @@ class Actions(Resource):
         # Actions._add_data(project_name)
 
         # 5. restart extraction
-        return Actions._extract(project_name)
+        return Actions._extract(project_name, clean_up_queue=True)
 
     @staticmethod
-    def _extract(project_name):
+    def _extract(project_name, clean_up_queue=False):
         if Actions._is_etk_running(project_name):
             return rest.exists('already running')
 
@@ -2260,6 +2266,9 @@ class Actions(Resource):
             'project_name': project_name,
             'number_of_workers': config['etl']['number_of_workers']
         }
+        if clean_up_queue:
+            payload['input_offset'] = 'seek_to_end'
+            payload['output_offset'] = 'seek_to_end'
         resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to run_etk in ETL')
@@ -2339,6 +2348,14 @@ def graceful_killer(signum, frame):
     sys.exit()
 
 
+def start_threads_and_locks(project_name):
+    data[project_name]['locks']['data'] = threading.Lock()
+    data[project_name]['locks']['status'] = threading.Lock()
+    data[project_name]['locks']['catalog_log'] = threading.Lock()
+    data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
+    data[project_name]['data_pushing_worker'].start()
+
+
 if __name__ == '__main__':
     try:
 
@@ -2409,11 +2426,7 @@ if __name__ == '__main__':
                     print 'failed to re-config sandpaper for {}'.format(project_name)
 
                 # create project daemon thread
-                data[project_name]['locks']['data'] = threading.Lock()
-                data[project_name]['locks']['status'] = threading.Lock()
-                data[project_name]['locks']['catalog_log'] = threading.Lock()
-                data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
-                data[project_name]['data_pushing_worker'].start()
+                start_threads_and_locks(project_name)
 
 
         # print json.dumps(data, indent=4)
