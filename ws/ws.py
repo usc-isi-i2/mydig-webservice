@@ -69,7 +69,6 @@ api.route = types.MethodType(api_route, api)
 
 # in-memory data
 data = {}
-exit_signal = False
 
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
@@ -98,6 +97,7 @@ def update_status_file(project_name, lock=True):
             data[project_name]['locks']['status_file_replace_lock']
         )
 
+
 def update_data_db_file(project_name):
     data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
     data_persistence.dump_data(
@@ -118,6 +118,7 @@ def _add_keys_to_dict(obj, keys): # dict, list
             curr_obj[key] = dict()
         curr_obj = curr_obj[key]
     return obj
+
 
 @app.route('/spec')
 def spec():
@@ -1665,11 +1666,8 @@ class Data(Resource):
     @staticmethod
     def _update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
         def _write_log(content):
-            try:
-                data[project_name]['locks']['catalog_log'].acquire()
+            with data[project_name]['locks']['catalog_log']:
                 log_file.write('<#{}> {}: {}\n'.format(thread.get_ident(), file_name, content))
-            finally:
-                data[project_name]['locks']['catalog_log'].release()
 
         log_path = os.path.join(_get_project_dir_path(project_name),
                                 'working_dir/catalog_error.log') if log_on else os.devnull
@@ -1714,8 +1712,7 @@ class Data(Resource):
                         output.write(json.dumps(obj, indent=2))
                     # update data db
                     tld = Data.extract_tld(obj['url'])
-                    try:
-                        data[project_name]['locks']['data'].acquire()
+                    with data[project_name]['locks']['data']:
                         data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
                         # if doc has the same tld, skip
                         # overwrite will cause the problem in the number of docs loaded to es
@@ -1727,21 +1724,10 @@ class Data(Resource):
                             'url': obj['url'],
                             'add_to_queue': False
                         }
-                    except Exception as e:
-                        print 'exception in Data._update_catalog_worker() data lock', e
-                        continue
-                    finally:
-                        data[project_name]['locks']['data'].release()
                     # update status
-                    try:
-                        data[project_name]['locks']['status'].acquire()
+                    with data[project_name]['locks']['status']:
                         data[project_name]['status']['total_docs'][tld] =\
                             data[project_name]['status']['total_docs'].get(tld, 0) + 1
-                    except Exception as e:
-                        print 'exception in Data._update_catalog_worker() status lock', e
-                        continue
-                    finally:
-                        data[project_name]['locks']['status'].release()
 
                 f.close()
 
@@ -1789,14 +1775,9 @@ class Data(Resource):
                     for line in f:
                         ret['error_log'].append(line)
         else:
-            try:
-                data[project_name]['locks']['status'].acquire()
+            with data[project_name]['locks']['status']:
                 for tld, num in data[project_name]['status']['total_docs'].iteritems():
                     ret[tld] = num
-            except Exception as e:
-                print 'exception in status Data.get() status lock', e
-            finally:
-                data[project_name]['locks']['status'].release()
         return ret
 
     @staticmethod
@@ -1903,8 +1884,7 @@ class Actions(Resource):
         if args['value'] in ('all', 'tld_statistics'):
             tld_array = []
 
-            try:
-                data[project_name]['locks']['status'].acquire()
+            with data[project_name]['locks']['status']:
                 for tld in data[project_name]['status']['total_docs'].iterkeys():
                     if tld not in data[project_name]['status']['desired_docs']:
                         data[project_name]['status']['desired_docs'][tld] = 0
@@ -1916,10 +1896,6 @@ class Actions(Resource):
                             'desired_num': data[project_name]['status']['desired_docs'][tld]
                         }
                         tld_array.append(tld_obj)
-            except Exception as e:
-                print 'exception in Actions._get_extraction_status() status lock', e
-            finally:
-                data[project_name]['locks']['status'].release()
 
             # query es count if doc exists
             query = """
@@ -1973,15 +1949,10 @@ class Actions(Resource):
         for tld, desired_num in tld_list.iteritems():
             desired_num = max(desired_num, 0)
             desired_num = min(desired_num, 999999999)
-            try:
-                data[project_name]['locks']['status'].acquire()
+            with data[project_name]['locks']['status']:
                 if tld not in data[project_name]['status']['desired_docs']:
                     data[project_name]['status']['desired_docs'][tld] = dict()
                 data[project_name]['status']['desired_docs'][tld] = desired_num
-            except Exception as e:
-                print 'exception in Actions._update_desired_num() status lock', e
-            finally:
-                data[project_name]['locks']['status'].release()
 
         update_status_file(project_name)
         return rest.created()
@@ -1989,27 +1960,21 @@ class Actions(Resource):
     @staticmethod
     def _add_data_worker(project_name, kafka_producer, input_topic):
         # this method is used by CatelogWorker in daemon thread
-        got_lock = None
+        got_lock = data[project_name]['locks']['data'].acquire(False)
         try:
-            got_lock = data[project_name]['locks']['data'].acquire(False)
             # print '_add_data_worker got data lock?', got_lock
             if not got_lock:
                 return
 
             for tld in data[project_name]['data'].iterkeys():
 
-                try:
-                    data[project_name]['locks']['status'].acquire()
+                with data[project_name]['locks']['status']:
                     if tld not in data[project_name]['status']['added_docs']:
                         data[project_name]['status']['added_docs'][tld] = 0
                     if tld not in data[project_name]['status']['desired_docs']:
                         data[project_name]['status']['desired_docs'][tld] = 0
                     if tld not in data[project_name]['status']['total_docs']:
                         data[project_name]['status']['total_docs'][tld] = 0
-                except Exception as e:
-                    print 'exception in Actions._add_data_worker() status lock', e
-                finally:
-                    data[project_name]['locks']['status'].release()
 
                 added_num = data[project_name]['status']['added_docs'][tld]
                 total_num = data[project_name]['status']['total_docs'][tld]
@@ -2224,25 +2189,15 @@ class Actions(Resource):
         # 4. re-add all data
         print 're-add data'
         # 4.1 clean up mark and added num
-        try:
-            data[project_name]['locks']['status'].acquire()
+        with data[project_name]['locks']['status']:
             if 'added_docs' not in data[project_name]['status']:
                 data[project_name]['status']['added_docs'] = dict()
             for tld in data[project_name]['status']['added_docs'].iterkeys():
                 data[project_name]['status']['added_docs'][tld] = 0
-        except Exception as e:
-            print 'exception in Actions._recreate_mapping() status lock', e
-        finally:
-            data[project_name]['locks']['status'].release()
-        try:
-            data[project_name]['locks']['data'].acquire()
+        with data[project_name]['locks']['data']:
             for tld in data[project_name]['data'].iterkeys():
                 for doc_id in data[project_name]['data'][tld]:
                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
-        except Exception as e:
-            print 'exception in Actions._recreate_mapping() data lock', e
-        finally:
-            data[project_name]['locks']['data'].release()
         update_status_file(project_name)
         # 4.2 add data
         # Actions._add_data(project_name)
@@ -2350,7 +2305,7 @@ def graceful_killer(signum, frame):
     for project_name in data.iterkeys():
         try:
             data[project_name]['data_pushing_worker'].exit_signal = True
-            print data[project_name]['data_pushing_worker'].exit_signal
+            # print data[project_name]['data_pushing_worker'].exit_signal
             data[project_name]['data_pushing_worker'].join()
         except:
             pass
