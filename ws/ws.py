@@ -5,7 +5,6 @@ import logging
 import json
 import yaml
 import types
-import threading
 import werkzeug
 import codecs
 import csv
@@ -39,7 +38,7 @@ import rest
 from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
-import jobs
+import data_persistence
 
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
@@ -78,9 +77,8 @@ re_url = re.compile(r'[^0-9a-z-_]+')
 
 
 def write_to_file(content, file_path):
-    o = codecs.open(file_path, 'w')
-    o.write(content)
-    o.close()
+    with codecs.open(file_path, 'w') as f:
+        f.write(content)
 
 
 def update_master_config_file(project_name):
@@ -88,13 +86,25 @@ def update_master_config_file(project_name):
     write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
 
 
-def update_status_file(project_name):
-    file_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status.json')
-    write_to_file(json.dumps(data[project_name]['status'], indent=4), file_path)
+def update_status_file(project_name, lock=True):
+    status_file_path = os.path.join(
+        _get_project_dir_path(project_name),'working_dir/status.json')
+    if not lock:
+        write_to_file(json.dumps(data[project_name]['status'], indent=4), status_file_path)
+    else:
+        data_persistence.dump_data(
+            json.dumps(data[project_name]['status'], indent=4), status_file_path,
+            data[project_name]['locks']['status_file_write_lock'],
+            data[project_name]['locks']['status_file_replace_lock']
+        )
 
 def update_data_db_file(project_name):
     data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
-    write_to_file(json.dumps(data[project_name]['data'], indent=2), data_db_path)
+    data_persistence.dump_data(
+        json.dumps(data[project_name]['data']), data_db_path,
+        data[project_name]['locks']['data_file_write_lock'],
+        data[project_name]['locks']['data_file_replace_lock']
+    )
 
 
 def _get_project_dir_path(project_name):
@@ -2352,6 +2362,10 @@ def start_threads_and_locks(project_name):
     data[project_name]['locks']['data'] = threading.Lock()
     data[project_name]['locks']['status'] = threading.Lock()
     data[project_name]['locks']['catalog_log'] = threading.Lock()
+    data[project_name]['locks']['status_file_write_lock'] = threading.Lock()
+    data[project_name]['locks']['status_file_replace_lock'] = threading.Lock()
+    data[project_name]['locks']['data_file_write_lock'] = threading.Lock()
+    data[project_name]['locks']['data_file_replace_lock'] = threading.Lock()
     data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
     data[project_name]['data_pushing_worker'].start()
 
@@ -2392,15 +2406,15 @@ if __name__ == '__main__':
 
                 # data
                 data_db_path = os.path.join(project_dir_path, 'data/_db.json')
+                data_persistence.prepare_data_file(data_db_path)
                 if os.path.exists(data_db_path):
                     with codecs.open(data_db_path, 'r') as f:
                         data[project_name]['data'] = json.loads(f.read())
 
                 # status
                 status_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status.json')
-                if not os.path.exists(status_path):
-                    update_status_file(project_name)
-                else:
+                data_persistence.prepare_data_file(status_path)
+                if os.path.exists(status_path):
                     with codecs.open(status_path, 'r') as f:
                         data[project_name]['status'] = json.loads(f.read())
                         if 'added_docs' not in data[project_name]['status']:
@@ -2411,8 +2425,9 @@ if __name__ == '__main__':
                             data[project_name]['status']['total_docs'] = dict()
                 # initialize total docs status every time
                 for tld in data[project_name]['data'].iterkeys():
-                    data[project_name]['status']['total_docs'][tld] = len(data[project_name]['data'][tld])
-                update_status_file(project_name)
+                    data[project_name]['status']['total_docs'][tld] \
+                        = len(data[project_name]['data'][tld])
+                update_status_file(project_name, lock=False)
 
                 # re-config sandpaper
                 url = '{}/config?project={}&index={}&endpoint={}'.format(

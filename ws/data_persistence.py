@@ -43,7 +43,7 @@ def dump_data(data, file_path, write_lock, replace_lock):
 # if only file.new exists, error (user deletion)
 # if only file.old exists, error (user deletion)
 # if three of them exists, error (user operation, system error
-def read_data(file_path):
+def prepare_data_file(file_path):
     new_path = file_path + '.new'
     old_path = file_path + '.old'
     has_file = os.path.exists(file_path)
@@ -58,7 +58,5 @@ def read_data(file_path):
     elif has_file and not has_old and has_new:
         os.remove(new_path)
     else:
-        return
+        pass
 
-    with codecs.open(file_path, 'r') as f:
-        return f.read()
