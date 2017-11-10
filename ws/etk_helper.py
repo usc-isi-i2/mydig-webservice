@@ -29,11 +29,6 @@ default_etk_config_str = """{
                     "strict": "yes",
                     "extraction_policy": "keep_existing",
                     "field_name": "content_strict"
-                },
-                {
-                    "strict": "no",
-                    "extraction_policy": "keep_existing",
-                    "field_name": "content_relaxed"
                 }
             ],
             "title": {
@@ -42,6 +37,12 @@ default_etk_config_str = """{
         }
     }
 }"""
+
+# {
+#     "strict": "no",
+#     "extraction_policy": "keep_existing",
+#     "field_name": "content_relaxed"
+# }
 
 out_of_the_box_fields_and_extractors = {
     "social_media": "extract_using_spacy",
@@ -363,7 +364,7 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
         "*.inferlink_posts_special_text.text.`parent`",
-        "*.content_relaxed.text.`parent`",
+        # "*.content_relaxed.text.`parent`",
         "*.title.text.`parent`",
         "*.inferlink_extractions.*.text.`parent`"
     ]
@@ -406,7 +407,7 @@ def add_default_field_extractors(project_master_config, etk_config):
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
         "*.inferlink_posts_special_text.text.`parent`",
-        "*.content_relaxed.text.`parent`",
+        # "*.content_relaxed.text.`parent`",
         "*.title.text.`parent`",
         "*.inferlink_extractions.*.text.`parent`"
     ]
@@ -550,7 +551,7 @@ def add_custom_spacy_extractors(etk_config, project_master_config, project_name,
     # the extraction efficiently
     de_obj['input_path'] = [
         "*.content_strict.text.`parent`",
-        "*.content_relaxed.text.`parent`",
+        # "*.content_relaxed.text.`parent`",
         "*.inferlink_extractions.title.text.`parent`",
         "*.inferlink_extractions.description.text.`parent`",
         "*.inferlink_posts_special_text.text.`parent`",
