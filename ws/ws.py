@@ -91,20 +91,14 @@ def update_status_file(project_name, lock=True):
     if not lock:
         write_to_file(json.dumps(data[project_name]['status'], indent=4), status_file_path)
     else:
-        data_persistence.dump_data(
-            json.dumps(data[project_name]['status'], indent=4), status_file_path,
-            data[project_name]['locks']['status_file_write_lock'],
-            data[project_name]['locks']['status_file_replace_lock']
-        )
+        with data[project_name]['locks']['status_file_write_lock']:
+            data_persistence.dump_data(json.dumps(data[project_name]['status'], indent=4), status_file_path)
 
 
 def update_data_db_file(project_name):
     data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
-    data_persistence.dump_data(
-        json.dumps(data[project_name]['data']), data_db_path,
-        data[project_name]['locks']['data_file_write_lock'],
-        data[project_name]['locks']['data_file_replace_lock']
-    )
+    with data[project_name]['locks']['data_file_write_lock']:
+        data_persistence.dump_data(json.dumps(data[project_name]['data']), data_db_path)
 
 
 def _get_project_dir_path(project_name):
@@ -2318,9 +2312,7 @@ def start_threads_and_locks(project_name):
     data[project_name]['locks']['status'] = threading.Lock()
     data[project_name]['locks']['catalog_log'] = threading.Lock()
     data[project_name]['locks']['status_file_write_lock'] = threading.Lock()
-    data[project_name]['locks']['status_file_replace_lock'] = threading.Lock()
     data[project_name]['locks']['data_file_write_lock'] = threading.Lock()
-    data[project_name]['locks']['data_file_replace_lock'] = threading.Lock()
     data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
     data[project_name]['data_pushing_worker'].start()
 

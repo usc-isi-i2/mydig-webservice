@@ -1,5 +1,3 @@
-# https://github.com/usc-isi-i2/dig-etl-engine/issues/92
-
 import json
 import threading
 import os
@@ -8,27 +6,25 @@ import codecs
 
 # 1.acquire file write lock
 # 2.write to file.new
-# 3.acquire replace lock
 # 4.rename file to file.old
 # 5.rename file.new to file
-# 6.release replace lock and write lock
-# 7.remove file.old
-def dump_data(data, file_path, write_lock, replace_lock):
+# 6.remove file.old
+# 7.release write lock
+# *. lock should be acquire outside this method (convert data to binary should also be atomic)
+def dump_data(data, file_path):
     new_path = file_path + '.new'
     old_path = file_path + '.old'
 
     try:
-        with write_lock:
-            with codecs.open(new_path, 'w') as f:
-                f.write(data)
+        with codecs.open(new_path, 'w') as f:
+            f.write(data)
 
-            with replace_lock:
-                # https://docs.python.org/2/library/os.html#os.rename
-                # On Unix, if dst exists and is a file,
-                # it will be replaced silently if the user has permission.
-                os.rename(file_path, old_path)
-                os.rename(new_path, file_path)
-                os.remove(old_path)
+        # https://docs.python.org/2/library/os.html#os.rename
+        # On Unix, if dst exists and is a file,
+        # it will be replaced silently if the user has permission.
+        os.rename(file_path, old_path)
+        os.rename(new_path, file_path)
+        os.remove(old_path)
     except Exception as e:
         print e
 
