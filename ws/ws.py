@@ -1801,13 +1801,12 @@ class ActionProjectConfig(Resource):
 
             # save to tmp path and test
             tmp_project_config_path = os.path.join(_get_project_dir_path(project_name),
-                                                       'working_dir/uploaded_{}.tar.gz'.format(project_name))
+                                                       'working_dir/uploaded_project_config.tar.gz')
             tmp_project_config_extracted_path = os.path.join(_get_project_dir_path(project_name),
-                                                       'working_dir/uploaded_{}'.format(project_name))
+                                                       'working_dir/uploaded_project_config')
             args['file_data'].save(tmp_project_config_path)
             with tarfile.open(tmp_project_config_path, 'r:gz') as tar:
                 tar.extractall(tmp_project_config_extracted_path)
-
 
             # master_config
             with codecs.open(os.path.join(tmp_project_config_extracted_path, 'master_config.json'), 'r') as f:
@@ -1847,14 +1846,13 @@ class ActionProjectConfig(Resource):
             return rest.created()
         except Exception as e:
             print e
-            return rest.internal_error('fail of import')
+            return rest.internal_error('fail to import project config')
 
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        export_path = os.path.join(_get_project_dir_path(project_name),
-                                   'working_dir/{}.tar.gz'.format(project_name))
+        export_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/project_config.tar.gz')
 
         # tarzip file
         with tarfile.open(export_path, 'w:gz') as tar:
@@ -1869,7 +1867,6 @@ class ActionProjectConfig(Resource):
                          as_attachment=True, attachment_filename=project_name + '.tar.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
-
 
 
 @api.route('/projects/<project_name>/actions/<action_name>')
