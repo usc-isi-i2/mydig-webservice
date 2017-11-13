@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import distutils.dir_util
 import logging
 import json
 import yaml
@@ -15,6 +16,7 @@ import subprocess
 import requests
 import copy
 import gzip
+import tarfile
 import urlparse
 import re
 import hashlib
@@ -1788,8 +1790,8 @@ class Data(Resource):
         return tldextract.extract(url).domain + '.' + tldextract.extract(url).suffix
 
 
-@api.route('/projects/<project_name>/actions/master_config')
-class ActionMasterConfig(Resource):
+@api.route('/projects/<project_name>/actions/project_config')
+class ActionProjectConfig(Resource):
     @requires_auth
     def post(self, project_name): # frontend needs to get all configs again
         try:
@@ -1798,9 +1800,17 @@ class ActionMasterConfig(Resource):
             args = parse.parse_args()
 
             # save to tmp path and test
-            tmp_master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
-            args['file_data'].save(tmp_master_config_file_path)
-            with codecs.open(tmp_master_config_file_path, 'r') as f:
+            tmp_project_config_path = os.path.join(_get_project_dir_path(project_name),
+                                                       'working_dir/uploaded_{}.tar.gz'.format(project_name))
+            tmp_project_config_extracted_path = os.path.join(_get_project_dir_path(project_name),
+                                                       'working_dir/uploaded_{}'.format(project_name))
+            args['file_data'].save(tmp_project_config_path)
+            with tarfile.open(tmp_project_config_path, 'r:gz') as tar:
+                tar.extractall(tmp_project_config_extracted_path)
+
+
+            # master_config
+            with codecs.open(os.path.join(tmp_project_config_extracted_path, 'master_config.json'), 'r') as f:
                 new_master_config = json.loads(f.read())
             # TODO: validation and sanitizing
             # overwrite indices
@@ -1816,20 +1826,50 @@ class ActionMasterConfig(Resource):
                 = data[project_name]['master_config']['configuration']['sandpaper_sample_url']
             new_master_config['configuration']['sandpaper_full_url'] \
                 = data[project_name]['master_config']['configuration']['sandpaper_full_url']
-
             # overwrite previous master config
             data[project_name]['master_config'] = new_master_config
             update_master_config_file(project_name)
 
+            # replace dependencies
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'glossaries'),
+                os.path.join(_get_project_dir_path(project_name), 'glossaries')
+            )
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'spacy_rules'),
+                os.path.join(_get_project_dir_path(project_name), 'spacy_rules')
+            )
+
+            # clean up
+            os.remove(tmp_project_config_path)
+            shutil.rmtree(tmp_project_config_extracted_path)
+
             return rest.created()
         except Exception as e:
             print e
-            return rest.internal_error('fail of upload master_config')
+            return rest.internal_error('fail of import')
 
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
-        return data[project_name]['master_config']
+
+        export_path = os.path.join(_get_project_dir_path(project_name),
+                                   'working_dir/{}.tar.gz'.format(project_name))
+
+        # tarzip file
+        with tarfile.open(export_path, 'w:gz') as tar:
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'master_config.json'),
+                    arcname='master_config.json')
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'glossaries'),
+                    arcname='glossaries')
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'spacy_rules'),
+                    arcname='spacy_rules')
+
+        ret = send_file(export_path, mimetype='application/gzip',
+                         as_attachment=True, attachment_filename=project_name + '.tar.gz')
+        ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return ret
+
 
 
 @api.route('/projects/<project_name>/actions/<action_name>')

@@ -1166,18 +1166,18 @@ poly = Polymer({
         return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length > 0;
 
     },
-    submitImportMasterConfigForm: function() {
-        if(window.confirm("Are you sure to upload and overwrite current master config?") == false) {
+    submitImportProjectConfigForm: function() {
+        if(window.confirm("Are you sure to upload and overwrite current project config?") == false) {
             return;
         }
 
         var importFileFormData = new FormData();
-        var file = $("#importMasterConfigDialog paper-input[type=file] input")[0].files[0];
+        var file = $("#importProjectConfigDialog paper-input[type=file] input")[0].files[0];
         importFileFormData.append("file_data", file);
 
         $.ajax({
             type: "POST",
-            url: backend_url + "projects/" + projectName + '/actions/master_config',
+            url: backend_url + "projects/" + projectName + '/actions/project_config',
             dataType: "json",
             context: this,
             data: importFileFormData,
@@ -1185,32 +1185,57 @@ poly = Polymer({
             processData: false,
             contentType: false,
             success: function (data) {
-                alert("master_config uploaded");
+                alert("project config imported");
                 // update ui
                 this.updateDone();
             },
             error: function() {
-                alert("fail to upload master_config");
+                alert("fail to import project config");
             }
         });
     },
-    downloadMasterConfig: function() {
-        $.ajax({
-            type: "GET",
-            url: backend_url + "projects/" + projectName + '/actions/master_config',
-            dataType: "json",
-            context: this,
-            async: true,
-            processData: false,
-            success: function (data) {
-                $("<a />", {
-                    "download": "master_config.json",
-                    "href" : "data:application/json," + encodeURIComponent(JSON.stringify(data, null, 2))
-                }).appendTo("body").click(function() {
-                    $(this).remove();
-                })[0].click()
+    exportProject: function() {
+        // $.ajax({
+        //     type: "GET",
+        //     url: backend_url + "projects/" + projectName + '/actions/master_config',
+        //     dataType: "json",
+        //     context: this,
+        //     async: true,
+        //     processData: false,
+        //     success: function (data) {
+        //         $("<a />", {
+        //             "download": "master_config.json",
+        //             "href" : "data:application/json," + encodeURIComponent(JSON.stringify(data, null, 2))
+        //         }).appendTo("body").click(function() {
+        //             $(this).remove();
+        //         })[0].click()
+        //     }
+        // });
+
+
+        var url = backend_url + "projects/" + projectName + '/actions/project_config';
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.setRequestHeader("Content-type", "application/gzip");
+        request.setRequestHeader("Content-Transfer-Encoding", "binary");
+        request.responseType = "blob";
+        request.onreadystatechange = function () {
+            if (request.readyState === 4 && request.status === 200) {
+                var element = document.createElement('a');
+                blob = new Blob([request.response], {type: "application/gzip"}),
+                    url = window.URL.createObjectURL(blob);
+                element.setAttribute('href', url);
+                element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                window.URL.revokeObjectURL(url);
+            } else if(request.readyState === 4 && request.status != 200) {
+                alert("fail to export project config");
             }
-        });
+        }
+        request.send();
     },
 //	uploadSamplePages:function() {
 //		uploadZipFileDialog.toggle();

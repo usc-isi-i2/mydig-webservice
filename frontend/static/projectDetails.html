@@ -248,15 +248,15 @@
                     <br><br>
 
                     <paper-button style="width:100%"
-                                  on-tap="downloadMasterConfig"
-                                  id="btnDownloadMasterConfig"
-                                  raised>Download master config
+                                  on-tap="exportProject"
+                                  id="btnExportProject"
+                                  raised>Export Project
                     </paper-button>
                     <br><br>
                     <paper-button style="width:100%"
-                                  onclick="importMasterConfigDialog.toggle()"
-                                  id="btnUploadMasterConfig"
-                                  raised>Upload master config
+                                  onclick="importProjectConfigDialog.toggle()"
+                                  id="btnImportProject"
+                                  raised>Import Project
                     </paper-button>
                 </div>
 
@@ -513,14 +513,14 @@
             </paper-dialog>
 
             <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
-                          on-iron-overlay-closed="_restoreDocumentScrolling" id="importMasterConfigDialog"
+                          on-iron-overlay-closed="_restoreDocumentScrolling" id="importProjectConfigDialog"
                           style="width:50%;margin-left:auto;margin-right:auto">
                 <paper-dialog-scrollable>
-                    <form is="iron-form" content-type="multipart/form-data" id="importMasterConfigForm"
+                    <form is="iron-form" content-type="multipart/form-data" id="importProjectConfigForm"
                           on-iron-form-presubmit="onPresubmit" method="POST">
-                        <h4>Upload Master Config File</h4>
+                        <h4>Import Project Config File</h4>
                         <paper-input type="file"></paper-input>
-                        <paper-button raised on-tap="submitImportMasterConfigForm" dialog-dismiss>Submit
+                        <paper-button raised on-tap="submitImportProjectConfigForm" dialog-dismiss>Submit
                         </paper-button>
                         <paper-button raised dialog-dismiss>Close</paper-button>
                         <br><br>
