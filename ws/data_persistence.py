@@ -22,11 +22,14 @@ def dump_data(data, file_path):
         # https://docs.python.org/2/library/os.html#os.rename
         # On Unix, if dst exists and is a file,
         # it will be replaced silently if the user has permission.
-        os.rename(file_path, old_path)
+        if os.path.exists(file_path):
+            os.rename(file_path, old_path)
         os.rename(new_path, file_path)
-        os.remove(old_path)
+        if os.path.exists(old_path):
+            os.remove(old_path)
     except Exception as e:
         print e
+        print 'error in dump_data'
 
 
 # when starting:
