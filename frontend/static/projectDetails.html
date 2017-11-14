@@ -225,10 +225,15 @@
                                   <!--id="btnSwitchPipeline"-->
                                   <!--raised>Turn on Pipeline-->
                     <!--</paper-button>-->
-                    <paper-item style="margin: 0 0.29em; width:100%;">
-                        <span style="float:left; text-transform: uppercase;">Pipeline:</span>&nbsp;&nbsp;&nbsp;
-                        <paper-toggle-button style="float:left;" on-change="switchPipeline" id="btnSwitchPipeline" ></paper-toggle-button>
-                    </paper-item>
+                    <br>
+                    <div style="margin: 0 0.29em; width:100%;">
+                        <div style="position:relative;float:left;left:50%;">
+                        <span style="float:left; text-transform: uppercase;margin-left:-50%">Pipeline
+                            :</span>
+                        <paper-toggle-button style="float:left; margin-left:10px" on-change="switchPipeline" id="btnSwitchPipeline" ></paper-toggle-button>
+                        </div>
+                    </div>
+                    <br>
                     <br>
                     <paper-button style="width: 100%; background-color:red" on-tap="recreateMapping" id="btnRecreateMapping" raised>Recreate
                         Knowledge Graph
