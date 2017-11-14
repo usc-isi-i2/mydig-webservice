@@ -457,6 +457,7 @@ poly = Polymer({
         this.fieldsData = [];
         this.tableAttributes = [];
         this.fieldNames = [];
+        this.etkStatus = false;
 
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
@@ -1326,9 +1327,9 @@ poly = Polymer({
             success: function (data) {
                 // console.log(data);
                 if(data["etk_status"]) {
-                    this.togglePipelineBtn(true);
+                    this.updatePipelineBtn(true);
                 } else {
-                    this.togglePipelineBtn(false);
+                    this.updatePipelineBtn(false);
                 }
             }
         });
@@ -1424,13 +1425,64 @@ poly = Polymer({
         var url = kibana_url;
         window.open(url, '_blank');
     },
-    togglePipelineBtn: function(pipeline_on) {
-        if(pipeline_on) {
-            this.$.btnTurnOnPipeline.disabled = true;
-            this.$.btnTurnOnPipeline.textContent = "Pipeline is On";
+    switchPipeline: function() {
+        console.log("current pipeline status: " + this.etkStatus);
+        // force to update button status
+        // //(overwrite default behavior of paper-toggle-button)
+        this.updatePipelineBtn(this.etkStatus);
+
+        if(this.etkStatus) { // current on, need to turn off
+
+            if(window.confirm("Turn off pipeline?") == false) {
+                console.log("turn off");
+                return;
+            }
+            $.ajax({
+                type: "DELETE",
+                url: backend_url + "projects/" + projectName + '/actions/extract',
+                async: true,
+                dataType: "json",
+                processData: false,
+                context: this,
+                success: function (msg) {
+                    this.updatePipelineBtn(false);
+                },
+                error: function(msg) {
+                    alert("Can not turn off pipeline");
+                    console.log(msg);
+                }
+            });
         } else {
-            this.$.btnTurnOnPipeline.disabled = false;
-            this.$.btnTurnOnPipeline.textContent = "Turn on Pipeline";
+
+            if(window.confirm("Turn on pipeline?") == false) {
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: backend_url + "projects/" + projectName + '/actions/extract',
+                async: true,
+                dataType: "json",
+                processData: false,
+                context: this,
+                success: function (msg) {
+                    this.updatePipelineBtn(true);
+                },
+                error: function(msg) {
+                    alert("Can not turn on pipeline (Make sure you've created config and mapping)");
+                    console.log(msg);
+                }
+            });
+        }
+    },
+    updatePipelineBtn: function(pipeline_on) {
+        if(pipeline_on) {
+            this.etkStatus = true;
+            // this.$.btnSwitchPipeline.textContent = "Turn off Pipeline";
+            this.$.btnSwitchPipeline.checked = true;
+        } else {
+            this.etkStatus = false;
+            // this.$.btnSwitchPipeline.textContent = "Turn on Pipeline";
+            this.$.btnSwitchPipeline.checked = false;
         }
     },
     recreateMapping: function() {
@@ -1453,7 +1505,7 @@ poly = Polymer({
             success: function (msg) {
                 // console.log(msg);
                 alert("Mapping recreated and data is adding in the backend.");
-                this.togglePipelineBtn(true);
+                this.updatePipelineBtn(true);
             },
             error: function(msg) {
                 alert('Can not recreate mapping');
@@ -1504,26 +1556,6 @@ poly = Polymer({
             // },
             success: function (msg) {
                 alert("Adding data to queue in the backend");
-            }
-        });
-    },
-    turnOnPipeline: function() {
-        $.ajax({
-            type: "POST",
-            url: backend_url + "projects/" + projectName + '/actions/extract',
-            async: true,
-            dataType: "json",
-            processData: false,
-            context: this,
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
-            success: function (msg) {
-                this.togglePipelineBtn(true);
-            },
-            error: function(msg) {
-                alert("Can not turn on pipeline (Make sure you've created config and mapping)");
-                console.log(msg);
             }
         });
     },

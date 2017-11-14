@@ -25,6 +25,7 @@
 <link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../static/bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../static/bower_components/paper-toggle-button/paper-toggle-button.html">
 <!--<link rel="import" href="../static/bower_components/paper-toast/paper-toast.html">-->
 
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
@@ -219,12 +220,16 @@
                                   on-tap="openLandmarkTool" raised>Landmark Tool</paper-button>
                     <br><br>
 
-                    <paper-button style="width:100%;background-color:green"
-                                  on-tap="turnOnPipeline"
-                                  id="btnTurnOnPipeline"
-                                  raised>Turn on Pipeline
-                    </paper-button>
-                    <br><br>
+                    <!--<paper-button style="width:100%;background-color:green"-->
+                                  <!--on-tap="switchPipeline"-->
+                                  <!--id="btnSwitchPipeline"-->
+                                  <!--raised>Turn on Pipeline-->
+                    <!--</paper-button>-->
+                    <paper-item style="margin: 0 0.29em; width:100%;">
+                        <span style="float:left; text-transform: uppercase;">Pipeline:</span>&nbsp;&nbsp;&nbsp;
+                        <paper-toggle-button style="float:left;" on-change="switchPipeline" id="btnSwitchPipeline" ></paper-toggle-button>
+                    </paper-item>
+                    <br>
                     <paper-button style="width: 100%; background-color:red" on-tap="recreateMapping" id="btnRecreateMapping" raised>Recreate
                         Knowledge Graph
                     </paper-button>

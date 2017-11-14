@@ -1899,6 +1899,19 @@ class Actions(Resource):
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
+    @requires_auth
+    def delete(self, project_name, action_name):
+        if action_name == 'extract':
+            url = config['etl']['url'] + '/kill_etk'
+            payload = {
+                'project_name': project_name
+            }
+            resp = requests.post(url, json=payload, timeout=config['etl']['timeout'])
+            if resp.status_code // 100 != 2:
+                return rest.internal_error('failed to kill_etk in ETL')
+
+            return rest.deleted()
+
     @staticmethod
     def _get_extraction_status(project_name):
         ret = dict()
