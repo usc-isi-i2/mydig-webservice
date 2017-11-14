@@ -273,7 +273,7 @@ class AllProjects(Resource):
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
         write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
 
-        update_status_file(project_name) # create status file after creating the working_dir
+        update_status_file(project_name, lock=False) # create status file after creating the working_dir
 
         start_threads_and_locks(project_name)
 
@@ -1838,6 +1838,22 @@ class ActionProjectConfig(Resource):
                 os.path.join(tmp_project_config_extracted_path, 'spacy_rules'),
                 os.path.join(_get_project_dir_path(project_name), 'spacy_rules')
             )
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'landmark_rules'),
+                os.path.join(_get_project_dir_path(project_name), 'landmark_rules')
+            )
+
+            tmp_additional_etk_config = os.path.join(tmp_project_config_extracted_path,
+                                                   'working_dir/additional_etk_config')
+            if os.path.exists(tmp_additional_etk_config):
+                distutils.dir_util.copy_tree(tmp_additional_etk_config,
+                    os.path.join(_get_project_dir_path(project_name), 'working_dir/additional_etk_config'))
+
+            tmp_custom_etk_config = os.path.join(tmp_project_config_extracted_path,
+                                                     'working_dir/custom_etk_config.json')
+            if os.path.exists(tmp_custom_etk_config):
+                distutils.dir_util.copy_tree(tmp_custom_etk_config,
+                    os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
 
             # clean up
             os.remove(tmp_project_config_path)
@@ -1862,6 +1878,18 @@ class ActionProjectConfig(Resource):
                     arcname='glossaries')
             tar.add(os.path.join(_get_project_dir_path(project_name), 'spacy_rules'),
                     arcname='spacy_rules')
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'landmark_rules'),
+                    arcname='landmark_rules')
+            # custom_etk_config
+            custom_etk_config_path = os.path.join(_get_project_dir_path(project_name),
+                                                  'working_dir/custom_etk_config.json')
+            if os.path.exists(custom_etk_config_path):
+                tar.add(custom_etk_config_path, arcname='working_dir/custom_etk_config.json')
+            # additional_etk_config
+            additional_etk_config_path = os.path.join(_get_project_dir_path(project_name),
+                                                      'working_dir/additional_etk_config')
+            if os.path.exists(additional_etk_config_path):
+                tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
 
         ret = send_file(export_path, mimetype='application/gzip',
                          as_attachment=True, attachment_filename=project_name + '.tar.gz')
