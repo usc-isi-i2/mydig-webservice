@@ -2372,6 +2372,17 @@ def ensure_sandpaper_is_on():
         ensure_sandpaper_is_on()
 
 
+def ensure_etl_engine_is_on():
+    try:
+        url = config['etl']['url']
+        resp = requests.get(url, timeout=config['etl']['timeout'])
+
+    except requests.exceptions.ConnectionError:
+        # es if not online, retry
+        time.sleep(5)
+        ensure_etl_engine_is_on()
+
+
 def graceful_killer(signum, frame):
     print 'SIGNAL #{} received, notifying threads to exit...'.format(signum)
     for project_name in data.iterkeys():
@@ -2404,6 +2415,8 @@ if __name__ == '__main__':
         # prerequisites
         print 'ensure sandpaper is on...'
         ensure_sandpaper_is_on()
+        print 'ensure etl engine is on...'
+        ensure_etl_engine_is_on()
 
         print 'register signal handler...'
         signal.signal(signal.SIGINT, graceful_killer)
@@ -2464,6 +2477,15 @@ if __name__ == '__main__':
                 resp = requests.post(url, json=data[project_name]['master_config'], timeout=10)
                 if resp.status_code // 100 != 2:
                     print 'failed to re-config sandpaper for {}'.format(project_name)
+
+                # re-config etl engine
+                url = config['etl']['url'] + '/create_project'
+                payload = {
+                    'project_name': project_name
+                }
+                resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
+                if resp.status_code // 100 != 2:
+                    print 'failed to re-config ETL Engine for {}'.format(project_name)
 
                 # create project daemon thread
                 start_threads_and_locks(project_name)
