@@ -1793,7 +1793,10 @@ class Data(Resource):
 @api.route('/projects/<project_name>/actions/project_config')
 class ActionProjectConfig(Resource):
     @requires_auth
-    def post(self, project_name): # frontend needs to get all configs again
+    def post(self, project_name): # frontend needs to fresh to get all configs again
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
         try:
             parse = reqparse.RequestParser()
             parse.add_argument('file_data', type=werkzeug.FileStorage, location='files')
@@ -1894,6 +1897,49 @@ class ActionProjectConfig(Resource):
         ret = send_file(export_path, mimetype='application/gzip',
                          as_attachment=True, attachment_filename=project_name + '.tar.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return ret
+
+
+@api.route('/projects/<project_name>/actions/etk_filters')
+class ActionProjectEtkFilters(Resource):
+    @requires_auth
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        input = request.get_json(force=True)
+        filtering_rules = input.get('filters', {})
+
+        try:
+            for tld in filtering_rules.iteritems():
+                for rule in tld:
+                    if 'field' not in rule or 'regex' not in rule or 'action' not in rule:
+                        return rest.bad_request('Invalid attributes in filtering rule')
+                    try:
+                        re.compile(rule['regex'])
+                    except re.error:
+                        return rest.bad_request(
+                            'Invalid regex in TLD: {}, Field: {}'.format(tld, rule['field']))
+
+            config_path = os.path.join(_get_project_dir_path(project_name),
+                                'working_dir/additional_etk_config/etk_filters.json')
+            write_to_file(json.dumps(filtering_rules), config_path)
+            return rest.created()
+        except Exception as e:
+            print e
+            return rest.internal_error('fail to import ETK filters')
+
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        ret = dict()
+        config_path = os.path.join(_get_project_dir_path(project_name),
+                                   'working_dir/additional_etk_config/etk_filters.json')
+        if os.path.exists(config_path):
+            with codecs.open(config_path, 'r') as f:
+                ret = json.load(f.read())
+
         return ret
 
 
