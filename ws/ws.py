@@ -75,6 +75,8 @@ data = {}
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
 re_url = re.compile(r'[^0-9a-z-_]+')
+re_doc_id = re_project_name
+
 
 
 def write_to_file(content, file_path):
@@ -1682,7 +1684,8 @@ class Data(Resource):
                     obj = json.loads(line)
                     if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
                         obj['doc_id'] = obj['_id']
-                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
+                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring) \
+                            or not re_doc_id.match(obj['doc_id']) :
                         _write_log('Unknown doc_id: Invalid doc_id')
                         continue
                     if 'url' not in obj:
