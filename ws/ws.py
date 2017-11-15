@@ -1911,8 +1911,8 @@ class ActionProjectEtkFilters(Resource):
         filtering_rules = input.get('filters', {})
 
         try:
-            for tld in filtering_rules.iteritems():
-                for rule in tld:
+            for tld, rules in filtering_rules.iteritems():
+                for rule in rules:
                     if 'field' not in rule or 'regex' not in rule or 'action' not in rule:
                         return rest.bad_request('Invalid attributes in filtering rule')
                     try:
@@ -1933,7 +1933,7 @@ class ActionProjectEtkFilters(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        ret = dict()
+        ret = {'filters': {}}
         config_path = os.path.join(_get_project_dir_path(project_name),
                                    'working_dir/additional_etk_config/etk_filters.json')
         if os.path.exists(config_path):

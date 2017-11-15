@@ -182,6 +182,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         _CONTENT_EXTRACTION = 'content_extraction'
         _DATA_EXTRACTION = 'data_extraction'
         _RESOURCES = 'resources'
+        _FILTERS = 'filters'
 
         try:
             additional_etk_config_file_paths = glob.glob(additional_etk_config_path + '*.json')
@@ -224,6 +225,16 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
 
                         elif key not in etk_config_[_RESOURCES]:
                             etk_config_[_RESOURCES][key] = val
+
+                # Handle filters
+                if _FILTERS in additional_etk_config:
+                    if _FILTERS not in etk_config_:
+                        etk_config_[_FILTERS] = dict()
+                    for tld, rules in additional_etk_config[_FILTERS].iteritems():
+                        # overwrite the tld if it's already there
+                        # because helper could not decide the order of rules
+                        etk_config_[_FILTERS][tld] = rules
+
 
             etk_config = etk_config_
         except:
@@ -582,21 +593,12 @@ def add_custom_spacy_extractors(etk_config, project_master_config, project_name,
 
 if __name__ == '__main__':
     webservice_config = config
-    # print json.dumps(consolidate_landmark_rules(webservice_config, 'project02'), indent=2)
-    # project_master_config = json.load(codecs.open('/Users/amandeep/Github/mydig-projects/project02/master_config.json'))
-    project_master_config = json.load(codecs.open('/home/ashish/ISI/DIG/mydig-projects/test2/master_config.json'))
+    webservice_config['repo']['local_path'] = '/Users/yixiang/Projects/ISI/mydig-projects'
+    project_master_config = json.load(codecs.open(
+        '/Users/yixiang/Projects/ISI/mydig-projects/test2/master_config.json'))
     x = json.dumps(
-        generate_etk_config(project_master_config, webservice_config, 'domain1_test_04', document_id='doc_id',
+        generate_etk_config(project_master_config, webservice_config, 'test2', document_id='doc_id',
                             content_extraction_only=False),
         indent=2)
     print x
     print 'done'
-    # print unique_landmark_field_names(consolidate_landmark_rules(webservice_config, 'project02'))
-    # ngram_dist = {
-    #     "1" : 4,
-    #     "2" : 2,
-    #     "5" : 45,
-    #     "23" : 3
-    # }
-    #
-    # print choose_ngram(ngram_dist)
