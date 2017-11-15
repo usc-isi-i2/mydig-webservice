@@ -1975,8 +1975,7 @@ class Actions(Resource):
                 "aggs": {
                     "group_by_tld": {
                         "terms": {
-                            "field": "tld.raw",
-                            "size": 0
+                            "field": "tld.raw"
                         }
                     }
                 },
@@ -1984,7 +1983,7 @@ class Actions(Resource):
             }
             """
             es = ES(config['es']['sample_url'])
-            r = es.search(project_name, data[project_name]['master_config']['root_name'], query)
+            r = es.search(project_name, data[project_name]['master_config']['root_name'], query, ignore_no_index=True)
 
             if r is not None:
                 for obj in r['aggregations']['group_by_tld']['buckets']:
