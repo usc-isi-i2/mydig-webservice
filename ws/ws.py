@@ -1924,9 +1924,12 @@ class ActionProjectEtkFilters(Resource):
                         return rest.bad_request(
                             'Invalid regex in TLD: {}, Field: {}'.format(tld, rule['field']))
 
-            config_path = os.path.join(_get_project_dir_path(project_name),
-                                'working_dir/additional_etk_config/etk_filters.json')
-            write_to_file(json.dumps(filtering_rules), config_path)
+            dir_path = os.path.join(_get_project_dir_path(project_name),
+                                'working_dir/additional_etk_config')
+            if not os.path.exists(dir_path):
+                os.mkdir(dir_path)
+            config_path = os.path.join(dir_path, 'etk_filters.json')
+            write_to_file(json.dumps(input), config_path)
             return rest.created()
         except Exception as e:
             print e
@@ -1941,7 +1944,7 @@ class ActionProjectEtkFilters(Resource):
                                    'working_dir/additional_etk_config/etk_filters.json')
         if os.path.exists(config_path):
             with codecs.open(config_path, 'r') as f:
-                ret = json.load(f.read())
+                ret = json.loads(f.read())
 
         return ret
 
