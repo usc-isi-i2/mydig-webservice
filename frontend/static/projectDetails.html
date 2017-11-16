@@ -268,6 +268,14 @@
                                   id="btnImportProject"
                                   raised>Import Project
                     </paper-button>
+
+                    <br><br>
+                    <paper-button style="width:100%"
+                                  on-tap="editFilters"
+                                  id="btnEditFilters"
+                                  raised>Edit Filters
+                    </paper-button>
+
                 </div>
 
 
@@ -1259,6 +1267,30 @@
                         onclick="addNewTableValue()" raised><strong>Save</strong></paper-button>
                 <paper-button style="float:right;margin-top:20px"
                               dialog-dismiss raised><strong>Cancel</strong></paper-button>
+            </paper-dialog>
+
+            <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
+                          on-iron-overlay-closed="_restoreDocumentScrolling" id="editFiltersDialog"
+                          style="width:50%;margin-left:auto;margin-right:auto">
+                <h4>Edit Filters</h4>
+                <paper-dialog-scrollable>
+
+                    <paper-material class="addPaddingToSections"
+                                    style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+                        <div>
+                            <textarea id="editFiltersTextArea"
+                                      style="margin: 0px;width:100%;height: 34em;resize:none">{}</textarea>
+                        </div>
+                    </paper-material>
+                </paper-dialog-scrollable>
+
+                <div style="float:right">
+                    <paper-button
+                            style="float:right;margin-top:20px;margin-right:20px;"
+                            on-tap="updateFilters" raised><strong>Save</strong></paper-button>
+                    <paper-button style="float:right;margin-top:20px"
+                                  dialog-dismiss raised><strong>Cancel</strong></paper-button>
+                </div>
             </paper-dialog>
 
             <paper-dialog alwaysOnTop with-backdrop modal id="progressDialog" sizingTarget="p"

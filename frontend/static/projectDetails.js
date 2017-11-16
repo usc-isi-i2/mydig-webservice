@@ -1399,7 +1399,6 @@ poly = Polymer({
             url: backend_url + "projects/" + projectName + '/actions/landmark_extract',
             async: true,
             dataType: "json",
-            contentType: false,
             processData: false,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
@@ -1561,7 +1560,7 @@ poly = Polymer({
     },
     fetchCatalogError: function() {
         $.ajax({
-            ttype: "GET",
+            type: "GET",
             url: backend_url + "projects/" + projectName + '/data?type=error_log',
             dataType: "json",
             context: this,
@@ -1577,6 +1576,50 @@ poly = Polymer({
                     $("<p>"+ele+"</p>").appendTo("#logDialog .logDialogContent:first");
                 });
                 this.$.logDialog.toggle();
+            }
+        });
+    },
+    updateFilters: function() {
+        try {
+            var payload = {"filters": JSON.parse(this.$$('#editFiltersTextArea').value)};
+        } catch(e) {
+            alert("Invalid JSON");
+            return;
+        }
+        // console.log(JSON.stringify(payload));
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/etk_filters',
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            context: this,
+            async: true,
+            processData: false,
+            data: JSON.stringify(payload),
+            success: function (msg) {
+                this.$.editFiltersDialog.toggle();
+            },
+            error: function (data) {
+                // console.log(data);
+                if(data.status === 400) {
+                    alert('Invalid filters: ' + data.responseJSON.error_message);
+                }
+            }
+        });
+    },
+    editFilters: function() {
+        // fill in latest filters
+        $.ajax({
+            type: "GET",
+            url: backend_url + "projects/" + projectName + '/actions/etk_filters',
+            dataType: "json",
+            context: this,
+            async: true,
+            processData: false,
+            contentType: 'application/json; charset=utf-8',
+            success: function (msg) {
+                this.$$('#editFiltersTextArea').value = JSON.stringify(msg["filters"], undefined, 4);
+                this.$.editFiltersDialog.toggle();
             }
         });
     },
