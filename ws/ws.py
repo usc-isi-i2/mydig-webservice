@@ -1914,16 +1914,24 @@ class ActionProjectEtkFilters(Resource):
         filtering_rules = input.get('filters', {})
 
         try:
+            # validation
             for tld, rules in filtering_rules.iteritems():
+                if tld.strip() == '' or not isinstance(rules, list):
+                    return rest.bad_request('Invalid TLD')
                 for rule in rules:
-                    if 'field' not in rule or 'regex' not in rule or 'action' not in rule:
-                        return rest.bad_request('Invalid attributes in filtering rule')
+                    if 'field' not in rule or rule['field'].strip() == '':
+                        return rest.bad_request('Invalid Field in TLD: {}'.format(tld))
+                    if 'action' not in rule or rule['action'] not in ('no_action', 'keep', 'discard'):
+                        return rest.bad_request('Invalid action in TLD: {}, Field {}'.format(tld, rule['field']))
+                    if 'regex' not in rule:
+                        return rest.bad_request('Invalid regex in TLD: {}, Field {}'.format(tld))
                     try:
                         re.compile(rule['regex'])
                     except re.error:
                         return rest.bad_request(
                             'Invalid regex in TLD: {}, Field: {}'.format(tld, rule['field']))
 
+            # write to file
             dir_path = os.path.join(_get_project_dir_path(project_name),
                                 'working_dir/additional_etk_config')
             if not os.path.exists(dir_path):
