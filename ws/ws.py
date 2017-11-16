@@ -1924,7 +1924,7 @@ class ActionProjectEtkFilters(Resource):
                     if 'action' not in rule or rule['action'] not in ('no_action', 'keep', 'discard'):
                         return rest.bad_request('Invalid action in TLD: {}, Field {}'.format(tld, rule['field']))
                     if 'regex' not in rule:
-                        return rest.bad_request('Invalid regex in TLD: {}, Field {}'.format(tld))
+                        return rest.bad_request('Invalid regex in TLD: {}, Field {}'.format(tld, rule['field']))
                     try:
                         re.compile(rule['regex'])
                     except re.error:
