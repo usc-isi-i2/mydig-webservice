@@ -183,6 +183,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         _DATA_EXTRACTION = 'data_extraction'
         _RESOURCES = 'resources'
         _FILTERS = 'filters'
+        _EXTRACTION_POLICY = 'extraction_policy'
 
         try:
             additional_etk_config_file_paths = glob.glob(additional_etk_config_path + '*.json')
@@ -235,9 +236,14 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
                         # because helper could not decide the order of rules
                         etk_config_[_FILTERS][tld] = rules
 
+                # Handle extraction policy
+                if _EXTRACTION_POLICY in additional_etk_config:
+                    etk_config_[_EXTRACTION_POLICY] = additional_etk_config[_EXTRACTION_POLICY]
 
             etk_config = etk_config_
-        except:
+
+        except Exception as e:
+            print e
             print 'Error in merging additional ETK configs'
 
 
