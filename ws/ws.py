@@ -1682,24 +1682,24 @@ class Data(Resource):
 
                 for line in f:
                     obj = json.loads(line)
-                    if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
-                        obj['doc_id'] = obj['_id']
-                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring) \
-                            or not re_doc_id.match(obj['doc_id']) :
-                        _write_log('Unknown doc_id: Invalid doc_id')
+                    if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
+                        _write_log('Invalid raw_content: {}'.format(json.dumps(obj)))
                         continue
                     if 'url' not in obj:
-                        _write_log('{}: Invalid URL'.format(obj['doc_id']))
-                        continue
-                    if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
-                        _write_log('{}: Invalid raw_content'.format(obj['doc_id']))
-                        continue
+                        obj['url'] = Data.generate_tld(file_name)
+                        _write_log('Generated URL for obj: {}'.format(json.dumps(obj)))
+                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
+                        if '_id' in obj and isinstance(obj['_id'], basestring):
+                            obj['doc_id'] = obj['_id']
+                        else:
+                            obj['doc_id'] = Data.generate_doc_id(obj['url'])
+                            _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+                    if 'timestamp_crawl' not in obj:
+                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # this type will conflict with the attribute in logstash
                     if 'type' in obj:
                         obj['original_type'] = obj['type']
                         del obj['type']
-                    if 'timestamp_crawl' not in obj:
-                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # split raw_content and json
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
@@ -1784,8 +1784,8 @@ class Data(Resource):
         return 'www.{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
 
     @staticmethod
-    def generate_doc_id(url, timestamp=None):
-        content = url if timestamp else '{}-{}'.format(url, timestamp)
+    def generate_doc_id(url):
+        content = '{}-{}'.format(url, str(time.time()))
         return hashlib.sha256(content).hexdigest().upper()
 
     @staticmethod
