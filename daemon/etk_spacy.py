@@ -35,7 +35,11 @@ def test_spacy_rules():
 
         config = dict()
         config['field_name'] = obj['field_name']
-
+        if 'infer_rule' in obj and obj['infer_rule']:
+            p_filtered = [[x.decode('string_escape').decode('utf-8') for x in pp if x] for pp in obj['positive_examples']]
+            if not (p_filtered == [[]] or p_filtered == []):
+                infered_rule = c.infer_rule_using_custom_spacy(d, p_filtered)
+                obj["rules"].append(infered_rule)
         results = c.extract_using_custom_spacy(d, config, field_rules=obj)
 
         obj['test_tokens'] = d['simple_tokens_original_case']

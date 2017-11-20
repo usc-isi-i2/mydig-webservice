@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import distutils.dir_util
 import logging
 import json
 import yaml
@@ -15,6 +16,7 @@ import subprocess
 import requests
 import copy
 import gzip
+import tarfile
 import urlparse
 import re
 import hashlib
@@ -73,6 +75,8 @@ data = {}
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
 re_url = re.compile(r'[^0-9a-z-_]+')
+re_doc_id = re_project_name
+
 
 
 def write_to_file(content, file_path):
@@ -271,7 +275,7 @@ class AllProjects(Resource):
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
         write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
 
-        update_status_file(project_name) # create status file after creating the working_dir
+        update_status_file(project_name, lock=False) # create status file after creating the working_dir
 
         start_threads_and_locks(project_name)
 
@@ -1678,23 +1682,24 @@ class Data(Resource):
 
                 for line in f:
                     obj = json.loads(line)
-                    if '_id' in obj and 'doc_id' not in obj:  # convert _id to doc_id
-                        obj['doc_id'] = obj['_id']
-                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
-                        _write_log('Unknown doc_id: Invalid doc_id')
-                        continue
-                    if 'url' not in obj:
-                        _write_log('{}: Invalid URL'.format(obj['doc_id']))
-                        continue
                     if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
-                        _write_log('{}: Invalid raw_content'.format(obj['doc_id']))
+                        _write_log('Invalid raw_content: {}'.format(json.dumps(obj)))
                         continue
+                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
+                        if '_id' in obj and isinstance(obj['_id'], basestring):
+                            obj['doc_id'] = obj['_id']
+                        else:
+                            obj['doc_id'] = Data.generate_doc_id(obj['url'])
+                            _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+                    if 'url' not in obj:
+                        obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
+                        _write_log('Generated URL for object: {}'.format(obj['url']))
+                    if 'timestamp_crawl' not in obj:
+                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # this type will conflict with the attribute in logstash
                     if 'type' in obj:
                         obj['original_type'] = obj['type']
                         del obj['type']
-                    if 'timestamp_crawl' not in obj:
-                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # split raw_content and json
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
@@ -1779,8 +1784,8 @@ class Data(Resource):
         return 'www.{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
 
     @staticmethod
-    def generate_doc_id(url, timestamp=None):
-        content = url if timestamp else '{}-{}'.format(url, timestamp)
+    def generate_doc_id(url):
+        content = '{}-{}'.format(url, str(time.time()))
         return hashlib.sha256(content).hexdigest().upper()
 
     @staticmethod
@@ -1788,19 +1793,29 @@ class Data(Resource):
         return tldextract.extract(url).domain + '.' + tldextract.extract(url).suffix
 
 
-@api.route('/projects/<project_name>/actions/master_config')
-class ActionMasterConfig(Resource):
+@api.route('/projects/<project_name>/actions/project_config')
+class ActionProjectConfig(Resource):
     @requires_auth
-    def post(self, project_name): # frontend needs to get all configs again
+    def post(self, project_name): # frontend needs to fresh to get all configs again
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
         try:
             parse = reqparse.RequestParser()
             parse.add_argument('file_data', type=werkzeug.FileStorage, location='files')
             args = parse.parse_args()
 
             # save to tmp path and test
-            tmp_master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
-            args['file_data'].save(tmp_master_config_file_path)
-            with codecs.open(tmp_master_config_file_path, 'r') as f:
+            tmp_project_config_path = os.path.join(_get_project_dir_path(project_name),
+                                                       'working_dir/uploaded_project_config.tar.gz')
+            tmp_project_config_extracted_path = os.path.join(_get_project_dir_path(project_name),
+                                                       'working_dir/uploaded_project_config')
+            args['file_data'].save(tmp_project_config_path)
+            with tarfile.open(tmp_project_config_path, 'r:gz') as tar:
+                tar.extractall(tmp_project_config_extracted_path)
+
+            # master_config
+            with codecs.open(os.path.join(tmp_project_config_extracted_path, 'master_config.json'), 'r') as f:
                 new_master_config = json.loads(f.read())
             # TODO: validation and sanitizing
             # overwrite indices
@@ -1816,20 +1831,130 @@ class ActionMasterConfig(Resource):
                 = data[project_name]['master_config']['configuration']['sandpaper_sample_url']
             new_master_config['configuration']['sandpaper_full_url'] \
                 = data[project_name]['master_config']['configuration']['sandpaper_full_url']
-
             # overwrite previous master config
             data[project_name]['master_config'] = new_master_config
             update_master_config_file(project_name)
 
+            # replace dependencies
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'glossaries'),
+                os.path.join(_get_project_dir_path(project_name), 'glossaries')
+            )
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'spacy_rules'),
+                os.path.join(_get_project_dir_path(project_name), 'spacy_rules')
+            )
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'landmark_rules'),
+                os.path.join(_get_project_dir_path(project_name), 'landmark_rules')
+            )
+
+            tmp_additional_etk_config = os.path.join(tmp_project_config_extracted_path,
+                                                   'working_dir/additional_etk_config')
+            if os.path.exists(tmp_additional_etk_config):
+                distutils.dir_util.copy_tree(tmp_additional_etk_config,
+                    os.path.join(_get_project_dir_path(project_name), 'working_dir/additional_etk_config'))
+
+            tmp_custom_etk_config = os.path.join(tmp_project_config_extracted_path,
+                                                     'working_dir/custom_etk_config.json')
+            if os.path.exists(tmp_custom_etk_config):
+                distutils.dir_util.copy_tree(tmp_custom_etk_config,
+                    os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
+
+            # clean up
+            os.remove(tmp_project_config_path)
+            shutil.rmtree(tmp_project_config_extracted_path)
+
             return rest.created()
         except Exception as e:
             print e
-            return rest.internal_error('fail of upload master_config')
+            return rest.internal_error('fail to import project config')
 
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
-        return data[project_name]['master_config']
+
+        export_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/project_config.tar.gz')
+
+        # tarzip file
+        with tarfile.open(export_path, 'w:gz') as tar:
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'master_config.json'),
+                    arcname='master_config.json')
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'glossaries'),
+                    arcname='glossaries')
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'spacy_rules'),
+                    arcname='spacy_rules')
+            tar.add(os.path.join(_get_project_dir_path(project_name), 'landmark_rules'),
+                    arcname='landmark_rules')
+            # custom_etk_config
+            custom_etk_config_path = os.path.join(_get_project_dir_path(project_name),
+                                                  'working_dir/custom_etk_config.json')
+            if os.path.exists(custom_etk_config_path):
+                tar.add(custom_etk_config_path, arcname='working_dir/custom_etk_config.json')
+            # additional_etk_config
+            additional_etk_config_path = os.path.join(_get_project_dir_path(project_name),
+                                                      'working_dir/additional_etk_config')
+            if os.path.exists(additional_etk_config_path):
+                tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
+
+        ret = send_file(export_path, mimetype='application/gzip',
+                         as_attachment=True, attachment_filename=project_name + '.tar.gz')
+        ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return ret
+
+
+@api.route('/projects/<project_name>/actions/etk_filters')
+class ActionProjectEtkFilters(Resource):
+    @requires_auth
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        input = request.get_json(force=True)
+        filtering_rules = input.get('filters', {})
+
+        try:
+            # validation
+            for tld, rules in filtering_rules.iteritems():
+                if tld.strip() == '' or not isinstance(rules, list):
+                    return rest.bad_request('Invalid TLD')
+                for rule in rules:
+                    if 'field' not in rule or rule['field'].strip() == '':
+                        return rest.bad_request('Invalid Field in TLD: {}'.format(tld))
+                    if 'action' not in rule or rule['action'] not in ('no_action', 'keep', 'discard'):
+                        return rest.bad_request('Invalid action in TLD: {}, Field {}'.format(tld, rule['field']))
+                    if 'regex' not in rule:
+                        return rest.bad_request('Invalid regex in TLD: {}, Field {}'.format(tld, rule['field']))
+                    try:
+                        re.compile(rule['regex'])
+                    except re.error:
+                        return rest.bad_request(
+                            'Invalid regex in TLD: {}, Field: {}'.format(tld, rule['field']))
+
+            # write to file
+            dir_path = os.path.join(_get_project_dir_path(project_name),
+                                'working_dir/additional_etk_config')
+            if not os.path.exists(dir_path):
+                os.mkdir(dir_path)
+            config_path = os.path.join(dir_path, 'etk_filters.json')
+            write_to_file(json.dumps(input), config_path)
+            return rest.created()
+        except Exception as e:
+            print e
+            return rest.internal_error('fail to import ETK filters')
+
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        ret = {'filters': {}}
+        config_path = os.path.join(_get_project_dir_path(project_name),
+                                   'working_dir/additional_etk_config/etk_filters.json')
+        if os.path.exists(config_path):
+            with codecs.open(config_path, 'r') as f:
+                ret = json.loads(f.read())
+
+        return ret
 
 
 @api.route('/projects/<project_name>/actions/<action_name>')
@@ -1861,6 +1986,19 @@ class Actions(Resource):
             return self._get_extraction_status(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
+
+    @requires_auth
+    def delete(self, project_name, action_name):
+        if action_name == 'extract':
+            url = config['etl']['url'] + '/kill_etk'
+            payload = {
+                'project_name': project_name
+            }
+            resp = requests.post(url, json=payload, timeout=config['etl']['timeout'])
+            if resp.status_code // 100 != 2:
+                return rest.internal_error('failed to kill_etk in ETL')
+
+            return rest.deleted()
 
     @staticmethod
     def _get_extraction_status(project_name):
@@ -1897,8 +2035,7 @@ class Actions(Resource):
                 "aggs": {
                     "group_by_tld": {
                         "terms": {
-                            "field": "tld.raw",
-                            "size": 0
+                            "field": "tld.raw"
                         }
                     }
                 },
@@ -1906,7 +2043,7 @@ class Actions(Resource):
             }
             """
             es = ES(config['es']['sample_url'])
-            r = es.search(project_name, data[project_name]['master_config']['root_name'], query)
+            r = es.search(project_name, data[project_name]['master_config']['root_name'], query, ignore_no_index=True)
 
             if r is not None:
                 for obj in r['aggregations']['group_by_tld']['buckets']:
@@ -2294,6 +2431,17 @@ def ensure_sandpaper_is_on():
         ensure_sandpaper_is_on()
 
 
+def ensure_etl_engine_is_on():
+    try:
+        url = config['etl']['url']
+        resp = requests.get(url, timeout=config['etl']['timeout'])
+
+    except requests.exceptions.ConnectionError:
+        # es if not online, retry
+        time.sleep(5)
+        ensure_etl_engine_is_on()
+
+
 def graceful_killer(signum, frame):
     print 'SIGNAL #{} received, notifying threads to exit...'.format(signum)
     for project_name in data.iterkeys():
@@ -2326,6 +2474,8 @@ if __name__ == '__main__':
         # prerequisites
         print 'ensure sandpaper is on...'
         ensure_sandpaper_is_on()
+        print 'ensure etl engine is on...'
+        ensure_etl_engine_is_on()
 
         print 'register signal handler...'
         signal.signal(signal.SIGINT, graceful_killer)
@@ -2386,6 +2536,15 @@ if __name__ == '__main__':
                 resp = requests.post(url, json=data[project_name]['master_config'], timeout=10)
                 if resp.status_code // 100 != 2:
                     print 'failed to re-config sandpaper for {}'.format(project_name)
+
+                # re-config etl engine
+                url = config['etl']['url'] + '/create_project'
+                payload = {
+                    'project_name': project_name
+                }
+                resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
+                if resp.status_code // 100 != 2:
+                    print 'failed to re-config ETL Engine for {}'.format(project_name)
 
                 # create project daemon thread
                 start_threads_and_locks(project_name)

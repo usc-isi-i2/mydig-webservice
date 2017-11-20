@@ -1,6 +1,7 @@
 import json
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
+from elasticsearch import TransportError
 import requests
 
 class ES(object):
@@ -69,19 +70,17 @@ class ES(object):
                 print e
                 return None
 
-    def search(self, index, doc_type, query):
+    def search(self, index, doc_type, query, ignore_no_index=False):
         # print query
         try:
             return self.es.search(index=index, doc_type=doc_type, body=query,
                                   filter_path=['hits.hits._source', 'hits.hits._id', 'aggregations'])
-        except:
-            # try once more
-            try:
-                return self.es.search(index=index, doc_type=doc_type, body=query,
-                                      filter_path=['hits.hits._source', 'hits.hits._id', 'aggregations'])
-            except Exception as e:
+        except TransportError as e:
+            if e.error != 'index_not_found_exception' and ignore_no_index:
                 print e
-                return None
+        except Exception as e:
+            print e
+            return None
 
 if __name__ == '__main__':
     es = ES('http://10.1.94.103:9201')

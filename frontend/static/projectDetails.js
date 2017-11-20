@@ -457,6 +457,7 @@ poly = Polymer({
         this.fieldsData = [];
         this.tableAttributes = [];
         this.fieldNames = [];
+        this.etkStatus = false;
 
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
@@ -1166,18 +1167,18 @@ poly = Polymer({
         return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length > 0;
 
     },
-    submitImportMasterConfigForm: function() {
-        if(window.confirm("Are you sure to upload and overwrite current master config?") == false) {
+    submitImportProjectConfigForm: function() {
+        if(window.confirm("Are you sure to upload and overwrite current project config?") == false) {
             return;
         }
 
         var importFileFormData = new FormData();
-        var file = $("#importMasterConfigDialog paper-input[type=file] input")[0].files[0];
+        var file = $("#importProjectConfigDialog paper-input[type=file] input")[0].files[0];
         importFileFormData.append("file_data", file);
 
         $.ajax({
             type: "POST",
-            url: backend_url + "projects/" + projectName + '/actions/master_config',
+            url: backend_url + "projects/" + projectName + '/actions/project_config',
             dataType: "json",
             context: this,
             data: importFileFormData,
@@ -1185,32 +1186,57 @@ poly = Polymer({
             processData: false,
             contentType: false,
             success: function (data) {
-                alert("master_config uploaded");
+                alert("project config imported");
                 // update ui
                 this.updateDone();
             },
             error: function() {
-                alert("fail to upload master_config");
+                alert("fail to import project config");
             }
         });
     },
-    downloadMasterConfig: function() {
-        $.ajax({
-            type: "GET",
-            url: backend_url + "projects/" + projectName + '/actions/master_config',
-            dataType: "json",
-            context: this,
-            async: true,
-            processData: false,
-            success: function (data) {
-                $("<a />", {
-                    "download": "master_config.json",
-                    "href" : "data:application/json," + encodeURIComponent(JSON.stringify(data, null, 2))
-                }).appendTo("body").click(function() {
-                    $(this).remove();
-                })[0].click()
+    exportProject: function() {
+        // $.ajax({
+        //     type: "GET",
+        //     url: backend_url + "projects/" + projectName + '/actions/master_config',
+        //     dataType: "json",
+        //     context: this,
+        //     async: true,
+        //     processData: false,
+        //     success: function (data) {
+        //         $("<a />", {
+        //             "download": "master_config.json",
+        //             "href" : "data:application/json," + encodeURIComponent(JSON.stringify(data, null, 2))
+        //         }).appendTo("body").click(function() {
+        //             $(this).remove();
+        //         })[0].click()
+        //     }
+        // });
+
+
+        var url = backend_url + "projects/" + projectName + '/actions/project_config';
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.setRequestHeader("Content-type", "application/gzip");
+        request.setRequestHeader("Content-Transfer-Encoding", "binary");
+        request.responseType = "blob";
+        request.onreadystatechange = function () {
+            if (request.readyState === 4 && request.status === 200) {
+                var element = document.createElement('a');
+                blob = new Blob([request.response], {type: "application/gzip"}),
+                    url = window.URL.createObjectURL(blob);
+                element.setAttribute('href', url);
+                element.setAttribute('download', request.getResponseHeader("Content-Disposition").split("=")[1]);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                window.URL.revokeObjectURL(url);
+            } else if(request.readyState === 4 && request.status != 200) {
+                alert("fail to export project config");
             }
-        });
+        }
+        request.send();
     },
 //	uploadSamplePages:function() {
 //		uploadZipFileDialog.toggle();
@@ -1301,9 +1327,9 @@ poly = Polymer({
             success: function (data) {
                 // console.log(data);
                 if(data["etk_status"]) {
-                    this.togglePipelineBtn(true);
+                    this.updatePipelineBtn(true);
                 } else {
-                    this.togglePipelineBtn(false);
+                    this.updatePipelineBtn(false);
                 }
             }
         });
@@ -1373,7 +1399,6 @@ poly = Polymer({
             url: backend_url + "projects/" + projectName + '/actions/landmark_extract',
             async: true,
             dataType: "json",
-            contentType: false,
             processData: false,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
@@ -1399,13 +1424,64 @@ poly = Polymer({
         var url = kibana_url;
         window.open(url, '_blank');
     },
-    togglePipelineBtn: function(pipeline_on) {
-        if(pipeline_on) {
-            this.$.btnTurnOnPipeline.disabled = true;
-            this.$.btnTurnOnPipeline.textContent = "Pipeline is On";
+    switchPipeline: function() {
+        console.log("current pipeline status: " + this.etkStatus);
+        // force to update button status
+        // //(overwrite default behavior of paper-toggle-button)
+        this.updatePipelineBtn(this.etkStatus);
+
+        if(this.etkStatus) { // current on, need to turn off
+
+            if(window.confirm("Turn off pipeline?") == false) {
+                console.log("turn off");
+                return;
+            }
+            $.ajax({
+                type: "DELETE",
+                url: backend_url + "projects/" + projectName + '/actions/extract',
+                async: true,
+                dataType: "json",
+                processData: false,
+                context: this,
+                success: function (msg) {
+                    this.updatePipelineBtn(false);
+                },
+                error: function(msg) {
+                    alert("Can not turn off pipeline");
+                    console.log(msg);
+                }
+            });
         } else {
-            this.$.btnTurnOnPipeline.disabled = false;
-            this.$.btnTurnOnPipeline.textContent = "Turn on Pipeline";
+
+            if(window.confirm("Turn on pipeline?") == false) {
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: backend_url + "projects/" + projectName + '/actions/extract',
+                async: true,
+                dataType: "json",
+                processData: false,
+                context: this,
+                success: function (msg) {
+                    this.updatePipelineBtn(true);
+                },
+                error: function(msg) {
+                    alert("Can not turn on pipeline (Make sure you've created config and mapping)");
+                    console.log(msg);
+                }
+            });
+        }
+    },
+    updatePipelineBtn: function(pipeline_on) {
+        if(pipeline_on) {
+            this.etkStatus = true;
+            // this.$.btnSwitchPipeline.textContent = "Turn off Pipeline";
+            this.$.btnSwitchPipeline.checked = true;
+        } else {
+            this.etkStatus = false;
+            // this.$.btnSwitchPipeline.textContent = "Turn on Pipeline";
+            this.$.btnSwitchPipeline.checked = false;
         }
     },
     recreateMapping: function() {
@@ -1428,7 +1504,7 @@ poly = Polymer({
             success: function (msg) {
                 // console.log(msg);
                 alert("Mapping recreated and data is adding in the backend.");
-                this.togglePipelineBtn(true);
+                this.updatePipelineBtn(true);
             },
             error: function(msg) {
                 alert('Can not recreate mapping');
@@ -1482,29 +1558,9 @@ poly = Polymer({
             }
         });
     },
-    turnOnPipeline: function() {
-        $.ajax({
-            type: "POST",
-            url: backend_url + "projects/" + projectName + '/actions/extract',
-            async: true,
-            dataType: "json",
-            processData: false,
-            context: this,
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
-            success: function (msg) {
-                this.togglePipelineBtn(true);
-            },
-            error: function(msg) {
-                alert("Can not turn on pipeline (Make sure you've created config and mapping)");
-                console.log(msg);
-            }
-        });
-    },
     fetchCatalogError: function() {
         $.ajax({
-            ttype: "GET",
+            type: "GET",
             url: backend_url + "projects/" + projectName + '/data?type=error_log',
             dataType: "json",
             context: this,
@@ -1520,6 +1576,50 @@ poly = Polymer({
                     $("<p>"+ele+"</p>").appendTo("#logDialog .logDialogContent:first");
                 });
                 this.$.logDialog.toggle();
+            }
+        });
+    },
+    updateFilters: function() {
+        try {
+            var payload = {"filters": JSON.parse(this.$$('#editFiltersTextArea').value)};
+        } catch(e) {
+            alert("Invalid JSON");
+            return;
+        }
+        // console.log(JSON.stringify(payload));
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/etk_filters',
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            context: this,
+            async: true,
+            processData: false,
+            data: JSON.stringify(payload),
+            success: function (msg) {
+                this.$.editFiltersDialog.toggle();
+            },
+            error: function (data) {
+                // console.log(data);
+                if(data.status === 400) {
+                    alert('Invalid filters: ' + data.responseJSON.error_message);
+                }
+            }
+        });
+    },
+    editFilters: function() {
+        // fill in latest filters
+        $.ajax({
+            type: "GET",
+            url: backend_url + "projects/" + projectName + '/actions/etk_filters',
+            dataType: "json",
+            context: this,
+            async: true,
+            processData: false,
+            contentType: 'application/json; charset=utf-8',
+            success: function (msg) {
+                this.$$('#editFiltersTextArea').value = JSON.stringify(msg["filters"], undefined, 4);
+                this.$.editFiltersDialog.toggle();
             }
         });
     },

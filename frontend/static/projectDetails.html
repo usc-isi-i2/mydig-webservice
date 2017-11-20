@@ -25,6 +25,7 @@
 <link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../static/bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../static/bower_components/paper-toggle-button/paper-toggle-button.html">
 <!--<link rel="import" href="../static/bower_components/paper-toast/paper-toast.html">-->
 
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
@@ -219,12 +220,21 @@
                                   on-tap="openLandmarkTool" raised>Landmark Tool</paper-button>
                     <br><br>
 
-                    <paper-button style="width:100%;background-color:green"
-                                  on-tap="turnOnPipeline"
-                                  id="btnTurnOnPipeline"
-                                  raised>Turn on Pipeline
-                    </paper-button>
-                    <br><br>
+                    <!--<paper-button style="width:100%;background-color:green"-->
+                                  <!--on-tap="switchPipeline"-->
+                                  <!--id="btnSwitchPipeline"-->
+                                  <!--raised>Turn on Pipeline-->
+                    <!--</paper-button>-->
+                    <br>
+                    <div style="margin: 0 0.29em; width:100%;">
+                        <div style="position:relative;float:left;left:50%;">
+                        <span style="float:left; text-transform: uppercase;margin-left:-50%">Pipeline
+                            :</span>
+                        <paper-toggle-button style="float:left; margin-left:10px" on-change="switchPipeline" id="btnSwitchPipeline" ></paper-toggle-button>
+                        </div>
+                    </div>
+                    <br>
+                    <br>
                     <paper-button style="width: 100%; background-color:red" on-tap="recreateMapping" id="btnRecreateMapping" raised>Recreate
                         Knowledge Graph
                     </paper-button>
@@ -248,16 +258,24 @@
                     <br><br>
 
                     <paper-button style="width:100%"
-                                  on-tap="downloadMasterConfig"
-                                  id="btnDownloadMasterConfig"
-                                  raised>Download master config
+                                  on-tap="exportProject"
+                                  id="btnExportProject"
+                                  raised>Export Project
                     </paper-button>
                     <br><br>
                     <paper-button style="width:100%"
-                                  onclick="importMasterConfigDialog.toggle()"
-                                  id="btnUploadMasterConfig"
-                                  raised>Upload master config
+                                  onclick="importProjectConfigDialog.toggle()"
+                                  id="btnImportProject"
+                                  raised>Import Project
                     </paper-button>
+
+                    <br><br>
+                    <paper-button style="width:100%"
+                                  on-tap="editFilters"
+                                  id="btnEditFilters"
+                                  raised>Edit Filters
+                    </paper-button>
+
                 </div>
 
 
@@ -513,14 +531,14 @@
             </paper-dialog>
 
             <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
-                          on-iron-overlay-closed="_restoreDocumentScrolling" id="importMasterConfigDialog"
+                          on-iron-overlay-closed="_restoreDocumentScrolling" id="importProjectConfigDialog"
                           style="width:50%;margin-left:auto;margin-right:auto">
                 <paper-dialog-scrollable>
-                    <form is="iron-form" content-type="multipart/form-data" id="importMasterConfigForm"
+                    <form is="iron-form" content-type="multipart/form-data" id="importProjectConfigForm"
                           on-iron-form-presubmit="onPresubmit" method="POST">
-                        <h4>Upload Master Config File</h4>
+                        <h4>Import Project Config File</h4>
                         <paper-input type="file"></paper-input>
-                        <paper-button raised on-tap="submitImportMasterConfigForm" dialog-dismiss>Submit
+                        <paper-button raised on-tap="submitImportProjectConfigForm" dialog-dismiss>Submit
                         </paper-button>
                         <paper-button raised dialog-dismiss>Close</paper-button>
                         <br><br>
@@ -1249,6 +1267,30 @@
                         onclick="addNewTableValue()" raised><strong>Save</strong></paper-button>
                 <paper-button style="float:right;margin-top:20px"
                               dialog-dismiss raised><strong>Cancel</strong></paper-button>
+            </paper-dialog>
+
+            <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
+                          on-iron-overlay-closed="_restoreDocumentScrolling" id="editFiltersDialog"
+                          style="width:50%;margin-left:auto;margin-right:auto">
+                <h4>Edit Filters</h4>
+                <paper-dialog-scrollable>
+
+                    <paper-material class="addPaddingToSections"
+                                    style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+                        <div>
+                            <textarea id="editFiltersTextArea"
+                                      style="margin: 0px;width:100%;height: 34em;resize:none">{}</textarea>
+                        </div>
+                    </paper-material>
+                </paper-dialog-scrollable>
+
+                <div style="float:right">
+                    <paper-button
+                            style="float:right;margin-top:20px;margin-right:20px;"
+                            on-tap="updateFilters" raised><strong>Save</strong></paper-button>
+                    <paper-button style="float:right;margin-top:20px"
+                                  dialog-dismiss raised><strong>Cancel</strong></paper-button>
+                </div>
             </paper-dialog>
 
             <paper-dialog alwaysOnTop with-backdrop modal id="progressDialog" sizingTarget="p"
