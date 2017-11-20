@@ -1685,15 +1685,15 @@ class Data(Resource):
                     if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
                         _write_log('Invalid raw_content: {}'.format(json.dumps(obj)))
                         continue
-                    if 'url' not in obj:
-                        obj['url'] = Data.generate_tld(file_name)
-                        _write_log('Generated URL for obj: {}'.format(json.dumps(obj)))
                     if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
                         if '_id' in obj and isinstance(obj['_id'], basestring):
                             obj['doc_id'] = obj['_id']
                         else:
                             obj['doc_id'] = Data.generate_doc_id(obj['url'])
                             _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+                    if 'url' not in obj:
+                        obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
+                        _write_log('Generated URL for object: {}'.format(obj['url']))
                     if 'timestamp_crawl' not in obj:
                         obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     # this type will conflict with the attribute in logstash
