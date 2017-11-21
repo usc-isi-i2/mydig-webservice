@@ -1689,7 +1689,7 @@ class Data(Resource):
                         if '_id' in obj and isinstance(obj['_id'], basestring):
                             obj['doc_id'] = obj['_id']
                         else:
-                            obj['doc_id'] = Data.generate_doc_id(obj['url'])
+                            obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
                             _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
                     if 'url' not in obj:
                         obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
