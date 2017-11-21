@@ -22,6 +22,7 @@ import re
 import hashlib
 import traceback
 import time
+import datetime
 import random
 import signal
 
@@ -32,6 +33,7 @@ from flask_restful import Resource, Api, reqparse
 
 from kafka import KafkaProducer, KafkaConsumer
 from tldextract import tldextract
+import dateparser
 
 from config import config
 from elastic_manager.elastic_manager import ES
@@ -1695,7 +1697,15 @@ class Data(Resource):
                         obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
                         _write_log('Generated URL for object: {}'.format(obj['url']))
                     if 'timestamp_crawl' not in obj:
-                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                        # obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                        obj['timestamp_crawl'] = datetime.datetime.now().isoformat()
+                    else:
+                        try:
+                            parsed_date = dateparser.parse(obj['timestamp_crawl'])
+                            obj['timestamp_crawl'] = parsed_date.isoformat()
+                        except:
+                            _write_log('Can not parse timestamp_crawl: {}'.format(obj['doc_id']))
+                            continue
                     # this type will conflict with the attribute in logstash
                     if 'type' in obj:
                         obj['original_type'] = obj['type']
@@ -1785,7 +1795,7 @@ class Data(Resource):
 
     @staticmethod
     def generate_doc_id(url):
-        content = '{}-{}'.format(url, str(time.time()))
+        content = '{}-{}'.format(url, datetime.datetime.now().isoformat())
         return hashlib.sha256(content).hexdigest().upper()
 
     @staticmethod
