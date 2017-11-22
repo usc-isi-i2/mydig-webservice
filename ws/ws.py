@@ -79,6 +79,12 @@ re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
 re_url = re.compile(r'[^0-9a-z-_]+')
 re_doc_id = re_project_name
 
+# kafka
+kafka_producer = KafkaProducer(
+    bootstrap_servers=config['kafka']['servers'],
+    max_request_size=10485760,
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+)
 
 
 def write_to_file(content, file_path):
@@ -1967,6 +1973,70 @@ class ActionProjectEtkFilters(Resource):
         return ret
 
 
+@api.route('/projects/<project_name>/actions/blacklists')
+class ActionBlackLists(Resource):
+    def post(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        ActionBlackLists.query_and_add_doc(project_name, 'country', 'nigeria')
+        return rest.accepted()
+
+    @staticmethod
+    def query_and_add_doc(project_name, field_name, key):
+        # init query
+        scroll_alive_time = '1m'
+        query = """
+        {{
+            "size": 1000,
+            "query": {{
+                "term": {{
+                    "knowledge_graph.{field_name}.key": "{key}"
+                }}
+            }},
+            "_source": ["doc_id", "tld"]
+        }}
+        """.format(field_name=field_name, key=key)
+        es = ES(config['es']['sample_url'])
+        r = es.search(project_name, data[project_name]['master_config']['root_name'], query,
+                      params={'scroll': scroll_alive_time}, ignore_no_index=False)
+
+        if r is None:
+            return
+
+        scroll_id = r['_scroll_id']
+        ActionBlackLists._re_add_docs(r, project_name)
+
+        # scroll queries
+        while True:
+            # use the es object here directly
+            r = es.es.scroll(scroll_id=scroll_id, scroll=scroll_alive_time)
+            if r is None:
+                break
+            if len(r['hits']['hits']) == 0:
+                break
+
+            ActionBlackLists._re_add_docs(r, project_name)
+
+    @staticmethod
+    def _re_add_docs(resp, project_name):
+
+        input_topic = project_name + '_in'
+        for obj in resp['hits']['hits']:
+            doc_id = obj['_source']['doc_id']
+            tld = obj['_source']['tld']
+
+            try:
+                print 're-add doc', doc_id, '({})'.format(tld)
+                ret, msg = Actions._publish_to_kafka_input_queue(
+                    doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
+                if not ret:
+                    print 'Error of re-adding data to Kafka: {}'.format(msg)
+            except Exception as e:
+                print e
+                print 'error in re_add_docs'
+
+
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
     @requires_auth
@@ -2053,7 +2123,8 @@ class Actions(Resource):
             }
             """
             es = ES(config['es']['sample_url'])
-            r = es.search(project_name, data[project_name]['master_config']['root_name'], query, ignore_no_index=True)
+            r = es.search(project_name, data[project_name]['master_config']['root_name'],
+                          query, ignore_no_index=True, filter_path=['aggregations'])
 
             if r is not None:
                 for obj in r['aggregations']['group_by_tld']['buckets']:
@@ -2099,7 +2170,7 @@ class Actions(Resource):
         return rest.created()
 
     @staticmethod
-    def _add_data_worker(project_name, kafka_producer, input_topic):
+    def _add_data_worker(project_name, producer, input_topic):
         # this method is used by CatelogWorker in daemon thread
         got_lock = data[project_name]['locks']['data'].acquire(False)
         try:
@@ -2145,7 +2216,7 @@ class Actions(Resource):
 
                         # publish to kafka queue
                         ret, msg = Actions._publish_to_kafka_input_queue(
-                            doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
+                            doc_id, data[project_name]['data'][tld][doc_id], producer, input_topic)
                         if not ret:
                             print 'Error of pushing data to Kafka: {}'.format(msg)
                             # roll back
@@ -2165,25 +2236,6 @@ class Actions(Resource):
         finally:
             if got_lock:
                 data[project_name]['locks']['data'].release()
-
-
-    # @staticmethod
-    # def _add_data(project_name):
-    #     try:
-    #         # set up input kafka
-    #         kafka_producer = KafkaProducer(
-    #             bootstrap_servers=config['kafka']['servers'],
-    #             max_request_size=10485760,
-    #             value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    #         )
-    #         input_topic = project_name + '_in'
-    #
-    #         thread.start_new_thread(Actions._add_data_worker, (project_name, kafka_producer,input_topic))
-    #         return rest.accepted()
-    #     except Exception as e:
-    #         print e
-    #         return rest.internal_error('Can not start thread for adding data')
-
 
     @staticmethod
     def landmark_extract(project_name):
@@ -2382,7 +2434,7 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _publish_to_kafka_input_queue(doc_id, catalog_obj, kafka_producer, topic):
+    def _publish_to_kafka_input_queue(doc_id, catalog_obj, producer, topic):
         try:
             with codecs.open(catalog_obj['json_path'], 'r') as f:
                 doc_obj = json.loads(f.read())
@@ -2392,7 +2444,7 @@ class Actions(Resource):
             print e
             return False, 'error in reading file from catalog'
         try:
-            r = kafka_producer.send(topic, doc_obj)
+            r = producer.send(topic, doc_obj)
             r.get(timeout=60)  # wait till sent
             print 'sent {} to topic {}'.format(doc_id, topic)
         except Exception as e:
@@ -2410,18 +2462,14 @@ class DataPushingWorker(threading.Thread):
         self.exit_signal = False
 
         # set up input kafka
-        self.kafka_producer = KafkaProducer(
-            bootstrap_servers=config['kafka']['servers'],
-            max_request_size=10485760,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
-        )
+        self.producer = kafka_producer
         self.input_topic = project_name + '_in'
 
     def run(self):
         print 'thread run....', self.project_name
         while not self.exit_signal:
             # print 'DataPushingWorker.exit_signal', self.exit_signal
-            Actions._add_data_worker(self.project_name, self.kafka_producer, self.input_topic)
+            Actions._add_data_worker(self.project_name, self.producer, self.input_topic)
             time.sleep(config['data_pushing_worker_backoff_time'])
 
 

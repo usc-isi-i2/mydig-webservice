@@ -70,17 +70,15 @@ class ES(object):
                 print e
                 return None
 
-    def search(self, index, doc_type, query, ignore_no_index=False):
+    def search(self, index, doc_type, query, ignore_no_index=False, **other_params):
         # print query
         try:
-            return self.es.search(index=index, doc_type=doc_type, body=query,
-                                  filter_path=['hits.hits._source', 'hits.hits._id', 'aggregations'])
+            return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
         except TransportError as e:
             if e.error != 'index_not_found_exception' and ignore_no_index:
                 print e
         except Exception as e:
             print e
-            return None
 
 if __name__ == '__main__':
     es = ES('http://10.1.94.103:9201')
