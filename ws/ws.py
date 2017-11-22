@@ -655,6 +655,9 @@ class ProjectFields(Resource):
                 not isinstance(field_obj['case_sensitive'], bool) or \
                 len(field_obj['glossaries']) == 0:
             field_obj['case_sensitive'] = False
+        if 'blacklists' not in field_obj or \
+                not isinstance(field_obj['blacklists'], list):
+            field_obj['blacklists'] = list()
         return True, None
 
 
@@ -1973,70 +1976,6 @@ class ActionProjectEtkFilters(Resource):
         return ret
 
 
-@api.route('/projects/<project_name>/actions/blacklists')
-class ActionBlackLists(Resource):
-    def post(self, project_name):
-        if project_name not in data:
-            return rest.not_found('project {} not found'.format(project_name))
-
-        ActionBlackLists.query_and_add_doc(project_name, 'country', 'nigeria')
-        return rest.accepted()
-
-    @staticmethod
-    def query_and_add_doc(project_name, field_name, key):
-        # init query
-        scroll_alive_time = '1m'
-        query = """
-        {{
-            "size": 1000,
-            "query": {{
-                "term": {{
-                    "knowledge_graph.{field_name}.key": "{key}"
-                }}
-            }},
-            "_source": ["doc_id", "tld"]
-        }}
-        """.format(field_name=field_name, key=key)
-        es = ES(config['es']['sample_url'])
-        r = es.search(project_name, data[project_name]['master_config']['root_name'], query,
-                      params={'scroll': scroll_alive_time}, ignore_no_index=False)
-
-        if r is None:
-            return
-
-        scroll_id = r['_scroll_id']
-        ActionBlackLists._re_add_docs(r, project_name)
-
-        # scroll queries
-        while True:
-            # use the es object here directly
-            r = es.es.scroll(scroll_id=scroll_id, scroll=scroll_alive_time)
-            if r is None:
-                break
-            if len(r['hits']['hits']) == 0:
-                break
-
-            ActionBlackLists._re_add_docs(r, project_name)
-
-    @staticmethod
-    def _re_add_docs(resp, project_name):
-
-        input_topic = project_name + '_in'
-        for obj in resp['hits']['hits']:
-            doc_id = obj['_source']['doc_id']
-            tld = obj['_source']['tld']
-
-            try:
-                print 're-add doc', doc_id, '({})'.format(tld)
-                ret, msg = Actions._publish_to_kafka_input_queue(
-                    doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
-                if not ret:
-                    print 'Error of re-adding data to Kafka: {}'.format(msg)
-            except Exception as e:
-                print e
-                print 'error in re_add_docs'
-
-
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
     @requires_auth
@@ -2047,13 +1986,15 @@ class Actions(Resource):
         # if action_name == 'add_data':
         #     return self._add_data(project_name)
         if action_name == 'desired_num':
-            return self._update_desired_num(project_name)
+            return self.update_desired_num(project_name)
         elif action_name == 'extract':
-            return self._extract(project_name)
+            return self.etk_extract(project_name)
         elif action_name == 'recreate_mapping':
-            return self._recreate_mapping(project_name)
+            return self.recreate_mapping(project_name)
         elif action_name == 'landmark_extract':
             return self.landmark_extract(project_name)
+        elif action_name == 'reload_blacklist':
+            return self.reload_blacklist(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
@@ -2070,14 +2011,8 @@ class Actions(Resource):
     @requires_auth
     def delete(self, project_name, action_name):
         if action_name == 'extract':
-            url = config['etl']['url'] + '/kill_etk'
-            payload = {
-                'project_name': project_name
-            }
-            resp = requests.post(url, json=payload, timeout=config['etl']['timeout'])
-            if resp.status_code // 100 != 2:
+            if not Actions._etk_stop(project_name):
                 return rest.internal_error('failed to kill_etk in ETL')
-
             return rest.deleted()
 
     @staticmethod
@@ -2148,7 +2083,7 @@ class Actions(Resource):
         return resp.json()['etk_processes'] > 0
 
     @staticmethod
-    def _update_desired_num(project_name):
+    def update_desired_num(project_name):
         # {
         #     "tlds": {
         #         'tld1': 100,
@@ -2285,11 +2220,9 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _recreate_mapping(project_name):
-        print 'create_mapping'
+    def _generate_etk_config(project_name):
         new_extraction = True
 
-        # 1. create etk config and snapshot
         custom_etk_config_file_path = os.path.join(
             _get_project_dir_path(project_name), 'working_dir/custom_etk_config.json')
         etk_config_file_path = os.path.join(
@@ -2308,8 +2241,21 @@ class Actions(Resource):
             if not os.path.exists(etk_config_snapshot_file_path):
                 write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
             else:
-                new_extraction = False # currently not in use
-            # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
+                new_extraction = False  # currently not in use
+                # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
+
+        return new_extraction
+
+    @staticmethod
+    def recreate_mapping(project_name):
+        print 'recreate_mapping'
+
+        # 1. kill etk
+        if not Actions._etk_stop(project_name):
+            return rest.internal_error('failed to kill_etk in ETL')
+
+        # 2. create etk config and snapshot
+        Actions._generate_etk_config(project_name)
 
         # add config for etl
         # when creating kafka container, group id is not there. set consumer to read from start.
@@ -2327,24 +2273,6 @@ class Actions(Resource):
                 }
             }
             write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
-
-        # kill etk
-        url = config['etl']['url'] + '/kill_etk'
-        payload = {
-            'project_name': project_name
-        }
-        resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
-        if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to kill_etk in ETL')
-
-        # # 2. delete topics
-        # url = config['etl']['url'] + '/delete_topics'
-        # payload = {
-        #     'project_name': project_name
-        # }
-        # resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
-        # if resp.status_code // 100 != 2:
-        #     return rest.internal_error('failed to delete_topics in ETL')
 
         # 3. sandpaper
         # 3.1 delete previous index
@@ -2379,9 +2307,8 @@ class Actions(Resource):
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to switch index in sandpaper')
 
-        # 4. re-add all data
+        # 4. clean up added data status
         print 're-add data'
-        # 4.1 clean up mark and added num
         with data[project_name]['locks']['status']:
             if 'added_docs' not in data[project_name]['status']:
                 data[project_name]['status']['added_docs'] = dict()
@@ -2392,14 +2319,87 @@ class Actions(Resource):
                 for doc_id in data[project_name]['data'][tld]:
                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
         update_status_file(project_name)
-        # 4.2 add data
-        # Actions._add_data(project_name)
 
-        # 5. restart extraction
-        return Actions._extract(project_name, clean_up_queue=True)
+        # 5. restart extraction (and clean up previous queue)
+        return Actions.etk_extract(project_name, clean_up_queue=True)
 
     @staticmethod
-    def _extract(project_name, clean_up_queue=False):
+    def reload_blacklist(project_name):
+
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        # field_name = ''
+        # key = ''
+        #
+        # # kill etk
+        # if not Actions._etk_stop(project_name):
+        #     return rest.internal_error('failed to kill_etk in ETL')
+        #
+        # # generate etk config
+        # Actions._generate_etk_config(project_name)
+        #
+        # # restart etk
+        # Actions.etk_extract(project_name)
+        #
+        # # fetch and re-add data
+        # Actions.query_and_add_doc(project_name, 'country', 'nigeria')
+        # # init query
+        # scroll_alive_time = '1m'
+        # query = """
+        # {{
+        #     "size": 1000,
+        #     "query": {{
+        #         "term": {{
+        #             "knowledge_graph.{field_name}.key": "{key}"
+        #         }}
+        #     }},
+        #     "_source": ["doc_id", "tld"]
+        # }}
+        # """.format(field_name=field_name, key=key)
+        # es = ES(config['es']['sample_url'])
+        # r = es.search(project_name, data[project_name]['master_config']['root_name'], query,
+        #               params={'scroll': scroll_alive_time}, ignore_no_index=False)
+        #
+        # if r is None:
+        #     return
+        #
+        # scroll_id = r['_scroll_id']
+        # Actions._re_add_docs(r, project_name)
+        #
+        # # scroll queries
+        # while True:
+        #     # use the es object here directly
+        #     r = es.es.scroll(scroll_id=scroll_id, scroll=scroll_alive_time)
+        #     if r is None:
+        #         break
+        #     if len(r['hits']['hits']) == 0:
+        #         break
+        #
+        #     Actions._re_add_docs(r, project_name)
+
+        return rest.accepted()
+
+    @staticmethod
+    def _re_add_docs(resp, project_name):
+
+        input_topic = project_name + '_in'
+        for obj in resp['hits']['hits']:
+            doc_id = obj['_source']['doc_id']
+            tld = obj['_source']['tld']
+
+            try:
+                print 're-add doc', doc_id, '({})'.format(tld)
+                ret, msg = Actions._publish_to_kafka_input_queue(
+                    doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
+                if not ret:
+                    print 'Error of re-adding data to Kafka: {}'.format(msg)
+            except Exception as e:
+                print e
+                print 'error in re_add_docs'
+
+    @staticmethod
+    def etk_extract(project_name, clean_up_queue=False):
         if Actions._is_etk_running(project_name):
             return rest.exists('already running')
 
@@ -2432,6 +2432,18 @@ class Actions(Resource):
             return rest.internal_error('failed to run_etk in ETL')
 
         return rest.accepted()
+
+    @staticmethod
+    def _etk_stop(project_name):
+        url = config['etl']['url'] + '/kill_etk'
+        payload = {
+            'project_name': project_name
+        }
+        resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
+        if resp.status_code // 100 != 2:
+            print 'failed to kill_etk in ETL'
+            return False
+        return True
 
     @staticmethod
     def _publish_to_kafka_input_queue(doc_id, catalog_obj, producer, topic):
