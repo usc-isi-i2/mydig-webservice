@@ -379,6 +379,20 @@
                                     </paper-checkbox>
                                 </template>
                             </div>
+
+                            <div style="padding: 8px;">
+                                <strong disabled="disabled">Blacklists:</strong>
+                                <template is="dom-repeat" items="{{item.0.blacklists}}"
+                                          renderedItemCount="{{renderedCount}}">
+                                    {{item}} &nbsp;
+                                </template>
+                                &nbsp;
+                                <template is="dom-if" if="{{checkLength(item)}}">
+                                    <!--<paper-checkbox disabled="disabled" checked="{{item.0.case_sensitive}}"><span>Case Sensitive ?</span>-->
+                                    <!--</paper-checkbox>-->
+                                </template>
+                            </div>
+
                         </paper-material>
                         <br><br></template>
                 </div>
@@ -755,8 +769,9 @@
 
                 <br>
                 <paper-button style="float:right;margin-top:20px;margin-right:20px"
+                              on-tap="getFieldBlacklistsForAdd" raised><strong>Blacklists</strong></paper-button>
+                <paper-button style="float:right;margin-top:20px;"
                               on-tap="getFieldGlossariesForAdd" raised><strong>Glossaries</strong></paper-button>
-
                 <paper-button
                         style="float:right;margin-top:20px;"
                         onclick="addNewField()" raised><strong>Save</strong></paper-button>
@@ -818,6 +833,29 @@
                             <div style="padding-bottom:0.5em">
                                 <span><strong style="float:left">Name:</strong> {{item.0}}</span>
                                 <paper-checkbox style="float:right;" id="{{item.0}}" raised value="">
+                                    <strong>Use</strong></paper-checkbox>
+                            </div>
+                        </paper-material>
+                    </template>
+                </paper-dialog-scrollable>
+
+            </paper-dialog>
+
+            <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
+                          on-iron-overlay-closed="_restoreDocumentScrolling" id="EditFieldBlacklists"
+                          style="width:50%;margin-left:auto;margin-right:auto">
+
+                <paper-button style="float:right;"
+                              dialog-dismiss raised on-tap="saveTempBlacklists"><strong>X</strong></paper-button>
+                <br><br><br>
+                <h4>Blacklists</h4>
+                <paper-dialog-scrollable>
+                    <template is="dom-repeat" items="{{glossaries}}">
+                        <paper-material class="addPaddingToSections"
+                                        style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
+                            <div style="padding-bottom:0.5em">
+                                <span><strong style="float:left">Name:</strong> {{item.0}}</span>
+                                <paper-checkbox style="float:right;" id="bl-{{item.0}}" raised value="">
                                     <strong>Use</strong></paper-checkbox>
                             </div>
                         </paper-material>
@@ -1106,9 +1144,11 @@
                 </paper-dialog-scrollable>
 
                 <br>
-                <paper-button style="float:right;margin-top:20px;margin-right:20px"
-                              on-tap="getFieldGlossary" raised><strong>Glossaries</strong></paper-button>
 
+                <paper-button style="float:right;margin-top:20px;margin-right:20px"
+                              on-tap="getFieldBlacklist" raised><strong>Blacklists</strong></paper-button>
+                <paper-button style="float:right;margin-top:20px"
+                              on-tap="getFieldGlossary" raised><strong>Glossaries</strong></paper-button>
                 <paper-button
                         style="float:right;margin-top:20px;"
                         on-tap="updateField" raised><strong>Save</strong></paper-button>

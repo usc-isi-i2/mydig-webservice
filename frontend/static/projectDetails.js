@@ -1,5 +1,6 @@
 var dataText;
 var glossariesNewField = [];
+var blacklistsNewField = [];
 var username = localStorage.getItem("username");
 var password = localStorage.getItem("password");
 var projectName = window.location.href.split('?')[1];
@@ -372,6 +373,7 @@ function addNewField() {
             addFieldDialog.toggle();
             document.getElementById("getFields").generateRequest();
             glossariesNewField = [];
+            blacklistsNewField = [];
             document.getElementById("fieldnameinput").value = "";
             document.getElementById("fielddescriptioninput").value = "";
             document.getElementById("fieldscreenlabelinput").value = "";
@@ -406,6 +408,7 @@ function addNewField() {
             "combine_fields": combinefields,
             "description": description,
             "glossaries": glossariesNewField,
+            "blacklists": blacklistsNewField,
             "group_name": groupname,
             "icon": icon,
             "name": name,
@@ -453,6 +456,7 @@ poly = Polymer({
         this.glossaryFormField = [];
         this.glossaries = [];
         this.fieldFormGlossaries = [];
+        this.fieldFormBlacklists = [];
         this.tagsData = [];
         this.fieldsData = [];
         this.tableAttributes = [];
@@ -578,17 +582,17 @@ poly = Polymer({
         this.convertFileInputToFormData();
         form.request.body = this.text;
     },
-    saveFieldGlossaries: function () {
-        this.fieldFormGlossaries = [];
-        for (var i = 0; i < this.glossaries.length; i++) {
-            var gloss = this.glossaries[i];
-            if (this.$$('#' + gloss).checked) {
-                this.fieldFormGlossaries.push(gloss[0]);
-            }
-        }
-        glossariesNewField = this.fieldFormGlossaries;
-        EditFieldGlossaries.toggle();
-    },
+    // saveFieldGlossaries: function () {
+    //     this.fieldFormGlossaries = [];
+    //     for (var i = 0; i < this.glossaries.length; i++) {
+    //         var gloss = this.glossaries[i];
+    //         if (this.$$('#' + gloss).checked) {
+    //             this.fieldFormGlossaries.push(gloss[0]);
+    //         }
+    //     }
+    //     glossariesNewField = this.fieldFormGlossaries;
+    //     EditFieldGlossaries.toggle();
+    // },
 
     setTableAttributes: function (data) {
 
@@ -772,6 +776,7 @@ poly = Polymer({
                 "combine_fields": this.fieldForm.combine_fields,
                 "description": this.fieldForm.description,
                 "glossaries": this.fieldFormGlossaries,
+                "blacklists": this.fieldFormBlacklists,
                 "group_name": this.fieldForm.group_name,
                 "icon": this.fieldForm.icon,
                 "name": this.fieldForm.name,
@@ -924,6 +929,12 @@ poly = Polymer({
         document.body.style.overflow = '';
     },
     getFieldGlossary: function () {
+        // console.log('getFieldGlossary');
+        // console.log(this.glossaries);
+        // console.log(this.fieldForm);
+        // console.log(this.fieldForm.glossaries);
+        // console.log(this.fieldFormGlossaries);
+
         EditFieldGlossaries.toggle();
         for (var j = 0; j < this.glossaries.length; j++) {
             this.$$('#' + this.glossaries[j][0]).checked = "";
@@ -979,6 +990,73 @@ poly = Polymer({
             }
         }
     },
+
+    getFieldBlacklist: function () {
+        // console.log('getFieldBlacklist');
+        // console.log(this.glossaries);
+        // console.log(this.fieldForm);
+        // console.log(this.fieldForm.blacklists);
+        // console.log(this.fieldFormBlacklists);
+
+        EditFieldBlacklists.toggle();
+
+        // clean up checked state
+        for (var j = 0; j < this.glossaries.length; j++) {
+            this.$$('#bl-' + this.glossaries[j][0]).checked = "";
+        }
+
+        // check remote items
+        if (this.fieldForm) {
+            if (this.fieldForm.blacklists) {
+                for (var i = 0; i < this.fieldForm.blacklists.length; i++) {
+                    for (var j = 0; j < this.glossaries.length; j++) {
+                        if (this.fieldForm.blacklists[i] == this.glossaries[j][0]) {
+                            this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // check temp items
+        if (this.fieldFormBlacklists) {
+            for (var i = 0; i < this.fieldFormBlacklists.length; i++) {
+                for (var j = 0; j < this.glossaries.length; j++) {
+                    if (this.fieldFormBlacklists[i] == this.glossaries[j][0]) {
+                        this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                        break;
+                    }
+                }
+            }
+        }
+    },
+
+    getFieldBlacklistsForAdd: function () {
+        EditFieldBlacklists.toggle();
+
+        if (blacklistsNewField) {
+            for (var i = 0; i < blacklistsNewField.length; i++) {
+                for (var j = 0; j < this.glossaries.length; j++) {
+                    if (blacklistsNewField[i] == this.glossaries[j][0]) {
+                        this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                        break;
+                    }
+                }
+
+            }
+
+        } else {
+            blacklistsNewField = [];
+            for (var i = 0; i < this.glossaries.length; i++) {
+                var gloss = this.glossaries[i];
+                if (this.$$('#bl-' + gloss).checked) {
+                    blacklistsNewField.push(gloss[0]);
+                }
+            }
+        }
+    },
+
 //	updateToNewIndex:function() {
 //		 var obj = {};
 //		 obj.Authorization = "Basic " + btoa(username+":"+password);
@@ -1087,11 +1165,12 @@ poly = Polymer({
     },
     setEditFieldForm: function (data) {
         this.fieldFormGlossaries = [];
+        this.fieldFormBlacklists = [];
         this.fieldForm = [];
         this.fieldForm = data.detail.response;
         for (var j = 0; j < this.glossaries.length; j++) {
             this.$$('#' + this.glossaries[j][0]).checked = "";
-
+            this.$$('#bl-' + this.glossaries[j][0]).checked = "";
         }
         if (this.fieldForm) {
             if (this.fieldForm.glossaries) {
@@ -1102,7 +1181,17 @@ poly = Polymer({
                             break;
                         }
                     }
+                }
+            }
 
+            if (this.fieldForm.blacklists) {
+                for (var i = 0; i < this.fieldForm.blacklists.length; i++) {
+                    for (var j = 0; j < this.glossaries.length; j++) {
+                        if (this.fieldForm.blacklists[i] == this.glossaries[j][0]) {
+                            this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1110,6 +1199,7 @@ poly = Polymer({
     addNewFieldSetup: function () {
         addFieldDialog.toggle();
         glossariesNewField = [];
+        blacklistsNewField = [];
         this.$$("#fieldnameinput").value = "";
         this.$$("#fielddescriptioninput").value = "";
         this.$$("#fieldscreenlabelinput").value = "";
@@ -1143,6 +1233,17 @@ poly = Polymer({
             }
         }
         glossariesNewField = this.fieldFormGlossaries;
+    },
+    saveTempBlacklists: function () {
+        this.fieldFormBlacklists = [];
+        blacklistsNewField = [];
+        for (var i = 0; i < this.glossaries.length; i++) {
+            var gloss = this.glossaries[i];
+            if (this.$$('#bl-' + gloss).checked) {
+                this.fieldFormBlacklists.push(gloss[0]);
+            }
+        }
+        blacklistsNewField = this.fieldFormBlacklists;
     },
     addNewAttribute: function () {
         this.$$("#tableAttributeInputValue").value = "";
