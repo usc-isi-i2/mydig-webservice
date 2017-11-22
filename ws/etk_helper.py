@@ -19,6 +19,7 @@ default_etk_config_str = """{
     "error_handling": "raise_error",
     "resources": {
         "dictionaries": {},
+        "stop_word_dictionaries": {},
         "landmark": []
     },
     "content_extraction": {
@@ -355,13 +356,24 @@ def create_dictionary_data_extractor_for_field(ngram, dictionary_name, case_sens
     }
 
 
+def create_stop_word_dictionary_data_extractor_for_field(dictionary_name):
+    return {
+        "filter_results": {
+            "config": {
+                "stop_word_dictionaries": dictionary_name
+            }
+        }
+    }
+
+
 def add_default_glossaries(etk_config, project_master_config, glossary_dir_path):
     gloss_dict = project_master_config['glossary_dicts']
     if 'resources' not in etk_config:
         etk_config['resources'] = dict()
     if 'dictionaries' not in etk_config['resources']:
         etk_config['resources']['dictionaries'] = dict()
-
+    if 'stop_word_dictionaries' not in etk_config['resources']:
+        etk_config['resources']['stop_word_dictionaries'] = dict()
     for d in gloss_dict.keys():
         etk_config['resources']['dictionaries'][d] = os.path.join(glossary_dir_path, gloss_dict[d]['path'])
 
@@ -413,6 +425,25 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
                         'case_sensitive'] if 'case_sensitive' in field_definition else False
                     de_obj['fields'][field_name]['extractors'].update(
                         create_dictionary_data_extractor_for_field(ngram, glossary, case_sensitive))
+        if 'blacklists' in field_definition and len(field_definition['blacklists']) > 0:
+            field_backlists = field_definition['blacklists']
+            for blacklist in field_backlists:
+                if blacklist in glossaries.keys():
+                    b_path = os.path.join(glossary_dir_path, glossaries[blacklist]['path'])
+
+                    # glossary path to etk
+                    etk_config['resources']['stop_word_dictionaries'][blacklist] = b_path
+
+                    # add this to data extraction part in etk config
+                    if field_name not in de_obj['fields']:
+                        de_obj['fields'][field_name] = dict()
+
+                    if 'extractors' not in de_obj['fields'][field_name]:
+                        de_obj['fields'][field_name]['extractors'] = dict()
+
+                    de_obj['fields'][field_name]['extractors'].update(
+                        create_stop_word_dictionary_data_extractor_for_field(blacklist))
+
     etk_config['data_extraction'].append(de_obj)
     return etk_config
 
@@ -601,9 +632,9 @@ if __name__ == '__main__':
     webservice_config = config
     webservice_config['repo']['local_path'] = '/Users/yixiang/Projects/ISI/mydig-projects'
     project_master_config = json.load(codecs.open(
-        '/Users/yixiang/Projects/ISI/mydig-projects/test2/master_config.json'))
+        '/Users/yixiang/Projects/ISI/mydig-projects/test/master_config.json'))
     x = json.dumps(
-        generate_etk_config(project_master_config, webservice_config, 'test2', document_id='doc_id',
+        generate_etk_config(project_master_config, webservice_config, 'test', document_id='doc_id',
                             content_extraction_only=False),
         indent=2)
     print x
