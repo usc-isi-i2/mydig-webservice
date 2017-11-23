@@ -1613,6 +1613,30 @@ poly = Polymer({
             }
         });
     },
+    reloadBlacklist: function() {
+        if(window.confirm("Are you sure to reload blacklist and restart pipeline?") == false) {
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/reload_blacklist',
+            async: true,
+            dataType: "json",
+            contentType: false,
+            processData: false,
+            context: this,
+            success: function (msg) {
+                // console.log(msg);
+                alert("KG data reloaded to queue.");
+                this.updatePipelineBtn(true);
+            },
+            error: function(msg) {
+                alert('Can not reload blacklist');
+                console.log(msg);
+            }
+        });
+    },
     updateDesiredNumber: function() {
         var num = parseInt(this.$.globalDesiredNumber.value);
         num = num <= 9999999999 ? num : 999999999;
