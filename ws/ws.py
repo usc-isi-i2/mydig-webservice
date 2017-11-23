@@ -2329,56 +2329,75 @@ class Actions(Resource):
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
-        # field_name = ''
-        # key = ''
-        #
-        # # kill etk
-        # if not Actions._etk_stop(project_name):
-        #     return rest.internal_error('failed to kill_etk in ETL')
-        #
-        # # generate etk config
-        # Actions._generate_etk_config(project_name)
-        #
-        # # restart etk
-        # Actions.etk_extract(project_name)
-        #
-        # # fetch and re-add data
-        # Actions.query_and_add_doc(project_name, 'country', 'nigeria')
-        # # init query
-        # scroll_alive_time = '1m'
-        # query = """
-        # {{
-        #     "size": 1000,
-        #     "query": {{
-        #         "term": {{
-        #             "knowledge_graph.{field_name}.key": "{key}"
-        #         }}
-        #     }},
-        #     "_source": ["doc_id", "tld"]
-        # }}
-        # """.format(field_name=field_name, key=key)
-        # es = ES(config['es']['sample_url'])
-        # r = es.search(project_name, data[project_name]['master_config']['root_name'], query,
-        #               params={'scroll': scroll_alive_time}, ignore_no_index=False)
-        #
-        # if r is None:
-        #     return
-        #
-        # scroll_id = r['_scroll_id']
-        # Actions._re_add_docs(r, project_name)
-        #
-        # # scroll queries
-        # while True:
-        #     # use the es object here directly
-        #     r = es.es.scroll(scroll_id=scroll_id, scroll=scroll_alive_time)
-        #     if r is None:
-        #         break
-        #     if len(r['hits']['hits']) == 0:
-        #         break
-        #
-        #     Actions._re_add_docs(r, project_name)
+        # 1. kill etk
+        if not Actions._etk_stop(project_name):
+            return rest.internal_error('failed to kill_etk in ETL')
 
-        return rest.accepted()
+        # 2. generate etk config
+        Actions._generate_etk_config(project_name)
+
+        # 3. fetch and re-add data
+        # copy here to avoid modification while iteration
+        for field_name, field_obj in data[project_name]['master_config']['fields'].items():
+
+            if 'blacklists' not in field_obj or len(field_obj['blacklists']) == 0:
+                continue
+
+            # 3.1 get all stop words and generate query
+            # only use the last blacklist if there are multiple blacklists
+            blacklist = data[project_name]['master_config']['fields'][field_name]['blacklists'][-1]
+            file_path = os.path.join(_get_project_dir_path(project_name),
+                                     'glossaries', '{}.txt'.format(blacklist))
+
+            query_conditions = []
+            with codecs.open(file_path, 'r') as f:
+                for line in f:
+                    key = line.strip()
+                    if len(key) == 0:
+                        continue
+                    query_conditions.append(
+                        '{{ "term": {{"knowledge_graph.{field_name}.key": "{key}"}} }}'
+                            .format(field_name=field_name, key=key))
+
+            query = """
+            {{
+                "size": 1000,
+                "query": {{
+                    "bool": {{
+                        "should": [{conditions}]
+                    }}
+                }},
+                "_source": ["doc_id", "tld"]
+            }}
+            """.format(conditions=','.join(query_conditions))
+            print query_conditions
+            print query
+
+            # 3.2 init query
+            scroll_alive_time = '1m'
+            es = ES(config['es']['sample_url'])
+            r = es.search(project_name, data[project_name]['master_config']['root_name'], query,
+                          params={'scroll': scroll_alive_time}, ignore_no_index=False)
+
+            if r is None:
+                return
+
+            scroll_id = r['_scroll_id']
+            Actions._re_add_docs(r, project_name)
+
+            # 3.3 scroll queries
+            while True:
+                # use the es object here directly
+                r = es.es.scroll(scroll_id=scroll_id, scroll=scroll_alive_time)
+                if r is None:
+                    break
+                if len(r['hits']['hits']) == 0:
+                    break
+
+                Actions._re_add_docs(r, project_name)
+
+        # 4. restart etk
+        return Actions.etk_extract(project_name)
 
     @staticmethod
     def _re_add_docs(resp, project_name):
