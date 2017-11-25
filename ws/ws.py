@@ -1877,17 +1877,20 @@ class ActionProjectConfig(Resource):
             tmp_custom_etk_config = os.path.join(tmp_project_config_extracted_path,
                                                      'working_dir/custom_etk_config.json')
             if os.path.exists(tmp_custom_etk_config):
-                distutils.dir_util.copy_tree(tmp_custom_etk_config,
+                shutil.copyfile(tmp_custom_etk_config,
                     os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
-
-            # clean up
-            os.remove(tmp_project_config_path)
-            shutil.rmtree(tmp_project_config_extracted_path)
 
             return rest.created()
         except Exception as e:
             print e
             return rest.internal_error('fail to import project config')
+
+        finally:
+            # always clean up, or some of the files may affect new uploaded files
+            if os.path.exists(tmp_project_config_path):
+                os.remove(tmp_project_config_path)
+            if os.path.exists(tmp_project_config_extracted_path):
+                shutil.rmtree(tmp_project_config_extracted_path)
 
     def get(self, project_name):
         if project_name not in data:
