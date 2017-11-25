@@ -1772,7 +1772,6 @@ class Data(Resource):
             # remove temp file
             os.remove(src_file_path)
 
-
     @requires_auth
     def get(self, project_name):
         if project_name not in data:
@@ -1804,7 +1803,11 @@ class Data(Resource):
 
     @staticmethod
     def generate_doc_id(url):
-        content = '{}-{}'.format(url, datetime.datetime.now().isoformat())
+        try:
+            content = '{}-{}'.format(url, datetime.datetime.now().isoformat())
+        except:
+            # sometimes url contains invalid character
+            content = datetime.datetime.now().isoformat()
         return hashlib.sha256(content).hexdigest().upper()
 
     @staticmethod
