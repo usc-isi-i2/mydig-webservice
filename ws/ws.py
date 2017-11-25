@@ -77,7 +77,7 @@ data = {}
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
 re_url = re.compile(r'[^0-9a-z-_]+')
-re_doc_id = re_project_name
+re_doc_id = re.compile(r'^[a-zA-Z0-9]{1}[a-zA-Z0-9_-]{1,255}$')
 
 # kafka
 kafka_producer = KafkaProducer(
@@ -1696,8 +1696,9 @@ class Data(Resource):
                     if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
                         _write_log('Invalid raw_content: {}'.format(json.dumps(obj)))
                         continue
-                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
-                        if '_id' in obj and isinstance(obj['_id'], basestring):
+                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring) \
+                            or not re_doc_id.match(obj['doc_id']):
+                        if '_id' in obj and isinstance(obj['_id'], basestring) and re_doc_id.match(obj['_id']):
                             obj['doc_id'] = obj['_id']
                         else:
                             obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
