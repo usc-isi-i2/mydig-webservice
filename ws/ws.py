@@ -1693,7 +1693,9 @@ class Data(Resource):
 
                 for line in f:
                     obj = json.loads(line)
-                    if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
+                    if 'raw_content' not in obj:
+                        obj['raw_content'] = ''
+                    if not isinstance(obj['raw_content'], basestring): # invalid raw content format
                         _write_log('Invalid raw_content: {}'.format(json.dumps(obj)))
                         continue
                     if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring) \
@@ -1701,7 +1703,8 @@ class Data(Resource):
                         if '_id' in obj and isinstance(obj['_id'], basestring) and re_doc_id.match(obj['_id']):
                             obj['doc_id'] = obj['_id']
                         else:
-                            obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
+                            # generate id based on timestamp and random number (avoid accuracy problem)
+                            obj['doc_id'] = Data.generate_doc_id(str(random.randrange(0, 1000)))
                             _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
                     if 'url' not in obj:
                         obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
