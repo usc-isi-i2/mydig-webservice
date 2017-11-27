@@ -240,9 +240,9 @@
                     </paper-button>
                     <br><br>
 
-                    <!--<paper-button style="width: 100%;" on-tap="reloadBlacklist" id="btnReloadBlacklist" raised>Reload Blacklist-->
-                    <!--</paper-button>-->
-                    <!--<br><br>-->
+                    <paper-button style="width: 100%;" on-tap="reloadBlacklist" id="btnReloadBlacklist" raised>Update KG (Blacklists)
+                    </paper-button>
+                    <br><br>
 
                     <paper-button style="width: 100%" onclick="importFileFormDialog.toggle();"
                                   raised>Import JSON Lines File</paper-button>
@@ -384,18 +384,18 @@
                                 </template>
                             </div>
 
-                            <!--<div style="padding: 8px;">-->
-                                <!--<strong disabled="disabled">Blacklists:</strong>-->
-                                <!--<template is="dom-repeat" items="{{item.0.blacklists}}"-->
-                                          <!--renderedItemCount="{{renderedCount}}">-->
-                                    <!--{{item}} &nbsp;-->
-                                <!--</template>-->
-                                <!--&nbsp;-->
-                                <!--<template is="dom-if" if="{{checkLength(item)}}">-->
-                                    <!--&lt;!&ndash;<paper-checkbox disabled="disabled" checked="{{item.0.case_sensitive}}"><span>Case Sensitive ?</span>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;</paper-checkbox>&ndash;&gt;-->
-                                <!--</template>-->
-                            <!--</div>-->
+                            <div style="padding: 8px;">
+                                <strong disabled="disabled">Blacklists:</strong>
+                                <template is="dom-repeat" items="{{item.0.blacklists}}"
+                                          renderedItemCount="{{renderedCount}}">
+                                    {{item}} &nbsp;
+                                </template>
+                                &nbsp;
+                                <template is="dom-if" if="{{checkLength(item)}}">
+                                    <!--<paper-checkbox disabled="disabled" checked="{{item.0.case_sensitive}}"><span>Case Sensitive ?</span>-->
+                                    <!--</paper-checkbox>-->
+                                </template>
+                            </div>
 
                         </paper-material>
                         <br><br></template>
@@ -772,8 +772,8 @@
                 </paper-dialog-scrollable>
 
                 <br>
-                <!--<paper-button style="float:right;margin-top:20px;margin-right:20px"-->
-                              <!--on-tap="getFieldBlacklistsForAdd" raised><strong>Blacklists</strong></paper-button>-->
+                <paper-button style="float:right;margin-top:20px;margin-right:20px"
+                              on-tap="getFieldBlacklistsForAdd" raised><strong>Blacklists</strong></paper-button>
                 <paper-button style="float:right;margin-top:20px;"
                               on-tap="getFieldGlossariesForAdd" raised><strong>Glossaries</strong></paper-button>
                 <paper-button
@@ -1149,8 +1149,8 @@
 
                 <br>
 
-                <!--<paper-button style="float:right;margin-top:20px;margin-right:20px"-->
-                              <!--on-tap="getFieldBlacklist" raised><strong>Blacklists</strong></paper-button>-->
+                <paper-button style="float:right;margin-top:20px;margin-right:20px"
+                              on-tap="getFieldBlacklist" raised><strong>Blacklists</strong></paper-button>
                 <paper-button style="float:right;margin-top:20px"
                               on-tap="getFieldGlossary" raised><strong>Glossaries</strong></paper-button>
                 <paper-button

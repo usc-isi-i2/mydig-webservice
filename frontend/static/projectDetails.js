@@ -1614,7 +1614,7 @@ poly = Polymer({
         });
     },
     reloadBlacklist: function() {
-        if(window.confirm("Are you sure to reload blacklist and restart pipeline?") == false) {
+        if(window.confirm("Are you sure to update KG (blacklists) and restart pipeline?") == false) {
             return;
         }
 
@@ -1632,7 +1632,7 @@ poly = Polymer({
                 this.updatePipelineBtn(true);
             },
             error: function(msg) {
-                alert('Can not reload blacklist');
+                alert('Can not update KG (blacklists)');
                 console.log(msg);
             }
         });
