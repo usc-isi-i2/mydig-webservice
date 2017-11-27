@@ -173,7 +173,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         add_glossary_extraction(default_etk_config, project_master_config, glossary_dir_path),
         project_master_config, project_name, project_local_path)
     etk_config = add_default_field_extractors(project_master_config, etk_config)
-    etk_config = add_kg_enhancement(etk_config)
+    etk_config = create_kg_enhancement(etk_config)
 
     # Adding additional etk configs
     additional_etk_config_path = os.path.join(project_local_path, project_name, 'working_dir/additional_etk_config/')
@@ -356,11 +356,14 @@ def create_dictionary_data_extractor_for_field(ngram, dictionary_name, case_sens
     }
 
 
-def create_stop_word_dictionary_data_extractor_for_field(dictionary_name):
+def create_stop_word_dictionary_data_extractor_for_field(dictionary_name, priority):
     return {
-        "filter_results": {
-            "config": {
-                "stop_word_dictionaries": dictionary_name
+        "priority": priority,
+        "extractors": {
+            "filter_results": {
+                "config": {
+                    "stop_word_dictionaries": dictionary_name
+                }
             }
         }
     }
@@ -429,6 +432,9 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
             field_backlists = field_definition['blacklists']
             for blacklist in field_backlists:
                 if blacklist in glossaries.keys():
+
+                    etk_config = create_kg_enhancement(etk_config) # create it it's not there
+
                     b_path = os.path.join(glossary_dir_path, glossaries[blacklist]['path'])
 
                     # glossary path to etk
@@ -441,8 +447,8 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
                     if 'extractors' not in de_obj['fields'][field_name]:
                         de_obj['fields'][field_name]['extractors'] = dict()
 
-                    de_obj['fields'][field_name]['extractors'].update(
-                        create_stop_word_dictionary_data_extractor_for_field(blacklist))
+                    etk_config['kg_enhancement']['fields'][field_name] = \
+                        create_stop_word_dictionary_data_extractor_for_field(blacklist, 10) # set priority to 10
 
     etk_config['data_extraction'].append(de_obj)
     return etk_config
@@ -563,7 +569,10 @@ def add_default_TLD_extractor(project_master_config, etk_config):
     return etk_config
 
 
-def add_kg_enhancement(etk_config):
+def create_kg_enhancement(etk_config):
+    if 'kg_enhancement' in etk_config: # ignore if it's already there
+        return etk_config
+
     kg_enhancement = {
         "input_path": "knowledge_graph.`parent`",
         "fields": {
@@ -586,7 +595,7 @@ def add_kg_enhancement(etk_config):
         }
     }
 
-    etk_config['kg_enhancement'] = kg_enhancement
+    etk_config['kg_enhancement'] = copy.deepcopy(kg_enhancement)
     return etk_config
 
 
