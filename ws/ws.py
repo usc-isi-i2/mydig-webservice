@@ -2463,7 +2463,7 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _etk_stop(project_name):
+    def _etk_stop(project_name, wait_till_kill=True):
         url = config['etl']['url'] + '/kill_etk'
         payload = {
             'project_name': project_name
@@ -2472,6 +2472,12 @@ class Actions(Resource):
         if resp.status_code // 100 != 2:
             print 'failed to kill_etk in ETL'
             return False
+
+        if wait_till_kill:
+            while True:
+                time.sleep(5)
+                if not Actions._is_etk_running(project_name):
+                    break
         return True
 
     @staticmethod
