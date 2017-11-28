@@ -77,7 +77,7 @@ data = {}
 # regex precompile
 re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
 re_url = re.compile(r'[^0-9a-z-_]+')
-re_doc_id = re.compile(r'^[a-zA-Z0-9]{1}[a-zA-Z0-9_-]{1,255}$')
+re_doc_id = re.compile(r'^[a-zA-Z0-9]{1}[a-zA-Z0-9_-]{0,255}$')
 
 # kafka
 kafka_producer = KafkaProducer(
@@ -1703,8 +1703,12 @@ class Data(Resource):
                         if '_id' in obj and isinstance(obj['_id'], basestring) and re_doc_id.match(obj['_id']):
                             obj['doc_id'] = obj['_id']
                         else:
-                            # generate id based on timestamp and random number (avoid accuracy problem)
-                            obj['doc_id'] = Data.generate_doc_id(str(random.randrange(0, 1000)))
+                            # if there's raw_content, generate id based on raw_content
+                            # if not, use the whole object
+                            if len(obj['raw_content']) != 0:
+                                obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
+                            else:
+                                obj['doc_id'] = Data.generate_doc_id(json.dumps(obj))
                             _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
                     if 'url' not in obj:
                         obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
@@ -1806,12 +1810,12 @@ class Data(Resource):
         return 'www.{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
 
     @staticmethod
-    def generate_doc_id(url):
-        try:
-            content = '{}-{}'.format(url, datetime.datetime.now().isoformat())
-        except:
-            # sometimes url contains invalid character
-            content = datetime.datetime.now().isoformat()
+    def generate_doc_id(content):
+        # try:
+        #     content = '{}-{}'.format(url, datetime.datetime.now().isoformat())
+        # except:
+        #     # sometimes url contains invalid character
+        #     content = datetime.datetime.now().isoformat()
         return hashlib.sha256(content).hexdigest().upper()
 
     @staticmethod
