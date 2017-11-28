@@ -1740,10 +1740,7 @@ class Data(Resource):
                     tld = Data.extract_tld(obj['url'])
                     with data[project_name]['locks']['data']:
                         data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
-                        # if doc has the same tld, skip
-                        # overwrite will cause the problem in the number of docs loaded to es
-                        if obj['doc_id'] in data[project_name]['data'][tld]:
-                            continue
+                        # if doc_id is already there, still overwrite it
                         data[project_name]['data'][tld][obj['doc_id']] = {
                             'raw_content_path': output_raw_content_path,
                             'json_path': output_json_path,
