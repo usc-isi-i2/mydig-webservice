@@ -1741,6 +1741,7 @@ class Data(Resource):
                     with data[project_name]['locks']['data']:
                         data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
                         # if doc_id is already there, still overwrite it
+                        exists_before = True if obj['doc_id'] in data[project_name]['data'][tld] else False
                         data[project_name]['data'][tld][obj['doc_id']] = {
                             'raw_content_path': output_raw_content_path,
                             'json_path': output_json_path,
@@ -1748,9 +1749,10 @@ class Data(Resource):
                             'add_to_queue': False
                         }
                     # update status
-                    with data[project_name]['locks']['status']:
-                        data[project_name]['status']['total_docs'][tld] =\
-                            data[project_name]['status']['total_docs'].get(tld, 0) + 1
+                    if not exists_before:
+                        with data[project_name]['locks']['status']:
+                            data[project_name]['status']['total_docs'][tld] =\
+                                data[project_name]['status']['total_docs'].get(tld, 0) + 1
 
                 f.close()
 
