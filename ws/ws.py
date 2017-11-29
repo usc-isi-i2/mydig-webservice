@@ -2058,14 +2058,32 @@ class Actions(Resource):
             # query es count if doc exists
             query = """
             {
-                "aggs": {
-                    "group_by_tld": {
-                        "terms": {
-                            "field": "tld.raw"
+              "aggs": {
+                  "group_by_tld_original": {
+                    "filter": {
+                      "not": {
+                        "filter": {
+                          "term": {
+                            "created_by": "etk"
+                          }
                         }
+                      }
+                    },
+                    "aggs": {
+                      "grouped": {
+                        "terms": {
+                          "field": "tld.raw"
+                        }
+                      }
                     }
-                },
-                "size":0
+                  },
+                  "group_by_tld": {
+                    "terms": {
+                      "field": "tld.raw"
+                    }
+                  }
+              },
+              "size":0
             }
             """
             es = ES(config['es']['sample_url'])
@@ -2079,6 +2097,13 @@ class Actions(Resource):
                     for tld_obj in tld_array:
                         if tld_obj['tld'] == tld:
                             tld_obj['es_num'] = obj['doc_count']
+
+                for obj in r['aggregations']['group_by_tld_original']['grouped']['buckets']:
+                    # check if tld is in uploaded file
+                    tld = obj['key']
+                    for tld_obj in tld_array:
+                        if tld_obj['tld'] == tld:
+                            tld_obj['es_original_num'] = obj['doc_count']
 
             ret['tld_statistics'] = tld_array
 

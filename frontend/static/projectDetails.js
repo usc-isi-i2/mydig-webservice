@@ -1362,6 +1362,7 @@ poly = Polymer({
                 var total_tld = 0;
                 var total_total_num = 0;
                 var total_es_num = 0;
+                var total_es_original_num = 0;
                 var total_desired_num = 0;
                 newTldTableData = [];
                 data["tld_statistics"].forEach(function(obj) {
@@ -1373,12 +1374,14 @@ poly = Polymer({
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
+                        "es_original_num": obj["es_original_num"],
                         "desired_num": obj["desired_num"],
                         "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\"" + disable_landmark_btn + ">Add</paper-icon-button>"
                     };
                     total_tld += 1;
                     total_total_num += obj["total_num"];
                     total_es_num += obj["es_num"];
+                    total_es_original_num += obj["es_original_num"];
                     total_desired_num += obj["desired_num"];
                     newTldTableData.push(newObj);
                 });
@@ -1401,6 +1404,9 @@ poly = Polymer({
                         $(this).text("KG (" + total_es_num.toString() + ")");
                     }
                     else if(index == 3) {
+                        $(this).text("KG Original (" + total_es_original_num.toString() + ")");
+                    }
+                    else if(index == 4) {
                         $(this).text("Desired (" + total_desired_num.toString() + ")");
                     }
                 });
