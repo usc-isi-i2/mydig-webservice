@@ -2051,6 +2051,7 @@ class Actions(Resource):
                             'tld': tld,
                             'total_num': data[project_name]['status']['total_docs'][tld],
                             'es_num': 0,
+                            'es_original_num': 0,
                             'desired_num': data[project_name]['status']['desired_docs'][tld]
                         }
                         tld_array.append(tld_obj)
