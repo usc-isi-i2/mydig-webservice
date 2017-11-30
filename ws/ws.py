@@ -25,6 +25,7 @@ import time
 import datetime
 import random
 import signal
+import base64
 
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
@@ -75,9 +76,12 @@ api.route = types.MethodType(api_route, api)
 data = {}
 
 # regex precompile
-re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
+re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{0,254}$')
 re_url = re.compile(r'[^0-9a-z-_]+')
-re_doc_id = re.compile(r'^[a-zA-Z0-9]{1}[a-zA-Z0-9_-]{0,255}$')
+re_doc_id = re.compile(r'^[a-zA-Z0-9_-]{1,255}$')
+os_reserved_file_names = ('CON', 'PRN', 'AUX', 'NUL',
+                          'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+                          'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9')
 
 # kafka
 kafka_producer = KafkaProducer(
@@ -124,6 +128,40 @@ def _add_keys_to_dict(obj, keys): # dict, list
             curr_obj[key] = dict()
         curr_obj = curr_obj[key]
     return obj
+
+
+def tail_file(f, lines=1, _buffer=4098):
+    # https://stackoverflow.com/questions/136168/get-last-n-lines-of-a-file-with-python-similar-to-tail
+    """Tail a file and get X lines from the end"""
+    # place holder for the lines found
+    lines_found = []
+
+    # block counter will be multiplied by buffer
+    # to get the block size from the end
+    block_counter = -1
+
+    # loop until we find X lines
+    while len(lines_found) < lines:
+        try:
+            f.seek(block_counter * _buffer, os.SEEK_END)
+        except IOError:  # either file is too small, or too many lines requested
+            f.seek(0)
+            lines_found = f.readlines()
+            break
+
+        lines_found = f.readlines()
+
+        # we found enough lines, get out
+        # Removed this line because it was redundant the while will catch
+        # it, I left it for history
+        # if len(lines_found) > lines:
+        #    break
+
+        # decrement the block counter to get the
+        # next X bytes
+        block_counter -= 1
+
+    return lines_found[-lines:]
 
 
 @app.route('/spec')
@@ -1692,27 +1730,42 @@ class Data(Resource):
                     if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
 
                 for line in f:
+                    if len(line.strip()) == 0:
+                        continue
                     obj = json.loads(line)
+
+                    # raw_content
                     if 'raw_content' not in obj:
                         obj['raw_content'] = ''
-                    if not isinstance(obj['raw_content'], basestring): # invalid raw content format
-                        _write_log('Invalid raw_content: {}'.format(json.dumps(obj)))
-                        continue
-                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring) \
-                            or not re_doc_id.match(obj['doc_id']):
-                        if '_id' in obj and isinstance(obj['_id'], basestring) and re_doc_id.match(obj['_id']):
-                            obj['doc_id'] = obj['_id']
-                        else:
-                            # if there's raw_content, generate id based on raw_content
-                            # if not, use the whole object
-                            if len(obj['raw_content']) != 0:
-                                obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
-                            else:
-                                obj['doc_id'] = Data.generate_doc_id(json.dumps(obj))
-                            _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+                    try:
+                        obj['raw_content'] = unicode(obj['raw_content']).encode('utf-8')
+                    except:
+                        pass
+
+                    # doc_id
+                    obj['doc_id'] = unicode(obj.get('doc_id', obj.get('_id', ''))).encode('utf-8')
+                    if not Data.is_valid_doc_id(obj['doc_id']):
+                            if len(obj['doc_id']) > 0: # has doc_id but invalid
+                                old_doc_id = obj['doc_id']
+                                obj['doc_id'] = base64.b64encode(old_doc_id)
+                                _write_log('base64 encoded doc_id from {} to {}'
+                                           .format(old_doc_id, obj['doc_id']))
+                            if not Data.is_valid_doc_id(obj['doc_id']):
+                                # generate doc_id
+                                # if there's raw_content, generate id based on raw_content
+                                # if not, use the whole object
+                                if len(obj['raw_content']) != 0:
+                                    obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
+                                else:
+                                    obj['doc_id'] = Data.generate_doc_id(json.dumps(obj))
+                                _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+
+                    # url
                     if 'url' not in obj:
                         obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
                         _write_log('Generated URL for object: {}'.format(obj['url']))
+
+                    # timestamp_crawl
                     if 'timestamp_crawl' not in obj:
                         # obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                         obj['timestamp_crawl'] = datetime.datetime.now().isoformat()
@@ -1723,16 +1776,19 @@ class Data(Resource):
                         except:
                             _write_log('Can not parse timestamp_crawl: {}'.format(obj['doc_id']))
                             continue
+
+                    # type
                     # this type will conflict with the attribute in logstash
                     if 'type' in obj:
                         obj['original_type'] = obj['type']
                         del obj['type']
+
                     # split raw_content and json
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
                     output_json_path = output_path_prefix + '.json'
                     with codecs.open(output_raw_content_path, 'w') as output:
-                        output.write(obj['raw_content'].encode('utf-8'))
+                        output.write(obj['raw_content'])
                     with codecs.open(output_json_path, 'w') as output:
                         del obj['raw_content']
                         output.write(json.dumps(obj, indent=2))
@@ -1768,6 +1824,10 @@ class Data(Resource):
 
         except Exception as e:
             print 'exception in _update_catalog_worker', e
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            lines = ''.join(lines)
+            print lines
             _write_log('Invalid file format')
 
         finally:
@@ -1796,8 +1856,7 @@ class Data(Resource):
             ret['error_log'] = list()
             if os.path.exists(log_path):
                 with codecs.open(log_path, 'r') as f:
-                    for line in f:
-                        ret['error_log'].append(line)
+                    ret['error_log'] = tail_file(f, 500)
         else:
             with data[project_name]['locks']['status']:
                 for tld, num in data[project_name]['status']['total_docs'].iteritems():
@@ -1806,16 +1865,15 @@ class Data(Resource):
 
     @staticmethod
     def generate_tld(file_name):
-        return 'www.{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
+        return 'www.dig_{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
 
     @staticmethod
     def generate_doc_id(content):
-        # try:
-        #     content = '{}-{}'.format(url, datetime.datetime.now().isoformat())
-        # except:
-        #     # sometimes url contains invalid character
-        #     content = datetime.datetime.now().isoformat()
         return hashlib.sha256(content).hexdigest().upper()
+
+    @staticmethod
+    def is_valid_doc_id(doc_id):
+        return re_doc_id.match(doc_id) and doc_id not in os_reserved_file_names
 
     @staticmethod
     def extract_tld(url):
