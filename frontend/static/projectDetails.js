@@ -500,8 +500,8 @@ poly = Polymer({
 
         this.searchImportance = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
         this.show_as_linkArray = ["text", "entity"];
-        this.show_in_resultArray = ["header", "detail", "description", "no", "title"];
-        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username"];
+        this.show_in_resultArray = ["header", "detail", "description", "no", "title", "nested"];
+        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id"];
         this.predefined_extractor_Array = ["none", "address", "country", "email", "posting_date", "phone", "review_id", "social_media", "TLD"];
         this.extractionTargetArray = ["title_only", "description_only", "title_and_description"];
     },

@@ -33,6 +33,7 @@ from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api, reqparse
 
 from kafka import KafkaProducer, KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 from tldextract import tldextract
 import dateparser
 
@@ -84,12 +85,7 @@ os_reserved_file_names = ('CON', 'PRN', 'AUX', 'NUL',
                           'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9')
 
 # kafka
-kafka_producer = KafkaProducer(
-    bootstrap_servers=config['kafka']['servers'],
-    max_request_size=10485760,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
-
+kafka_producer = None
 
 def write_to_file(content, file_path):
     with codecs.open(file_path, 'w') as f:
@@ -648,7 +644,7 @@ class ProjectFields(Resource):
         if 'description' not in field_obj:
             field_obj['description'] = ''
         if 'type' not in field_obj or field_obj['type'] not in \
-                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image'):
+                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id'):
             return False, 'Invalid field attribute: type'
         if 'show_in_search' not in field_obj or \
                 not isinstance(field_obj['show_in_search'], bool):
@@ -660,7 +656,7 @@ class ProjectFields(Resource):
                         field_obj['show_as_link'] not in ('text', 'entity'):
             return False, 'Invalid field attribute: show_as_link'
         if 'show_in_result' not in field_obj or \
-                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description'):
+                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description', 'nested'):
             return False, 'Invalid field attribute: show_in_result'
         if 'color' not in field_obj:
             return False, 'Invalid field attribute: color'
@@ -2634,6 +2630,19 @@ def ensure_etl_engine_is_on():
         ensure_etl_engine_is_on()
 
 
+def ensure_kafka_is_on():
+    global kafka_producer
+    try:
+        kafka_producer = KafkaProducer(
+            bootstrap_servers=config['kafka']['servers'],
+            max_request_size=10485760,
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        )
+    except NoBrokersAvailable as e:
+        time.sleep(5)
+        ensure_kafka_is_on()
+
+
 def graceful_killer(signum, frame):
     print 'SIGNAL #{} received, notifying threads to exit...'.format(signum)
     for project_name in data.iterkeys():
@@ -2668,6 +2677,8 @@ if __name__ == '__main__':
         ensure_sandpaper_is_on()
         print 'ensure etl engine is on...'
         ensure_etl_engine_is_on()
+        print 'ensure kafka is on...'
+        ensure_kafka_is_on()
 
         print 'register signal handler...'
         signal.signal(signal.SIGINT, graceful_killer)
