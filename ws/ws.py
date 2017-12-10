@@ -87,6 +87,7 @@ os_reserved_file_names = ('CON', 'PRN', 'AUX', 'NUL',
 # kafka
 kafka_producer = None
 
+
 def write_to_file(content, file_path):
     with codecs.open(file_path, 'w') as f:
         f.write(content)
@@ -1852,7 +1853,7 @@ class Data(Resource):
             ret['error_log'] = list()
             if os.path.exists(log_path):
                 with codecs.open(log_path, 'r') as f:
-                    ret['error_log'] = tail_file(f, 500)
+                    ret['error_log'] = tail_file(f, 200)
         else:
             with data[project_name]['locks']['status']:
                 for tld, num in data[project_name]['status']['total_docs'].iteritems():
@@ -2638,7 +2639,7 @@ def ensure_kafka_is_on():
             bootstrap_servers=config['kafka']['servers'],
             max_request_size=10485760,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-            compression_type = 'gzip'
+            compression_type='gzip'
         )
     except NoBrokersAvailable as e:
         time.sleep(5)
