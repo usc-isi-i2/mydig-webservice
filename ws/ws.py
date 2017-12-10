@@ -2362,7 +2362,8 @@ class Actions(Resource):
                     "max_poll_records": 10
                 },
                 "output_args": {
-                    "max_request_size": 10485760
+                    "max_request_size": 10485760,
+                    "compression_type": "gzip"
                 }
             }
             write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
@@ -2636,7 +2637,8 @@ def ensure_kafka_is_on():
         kafka_producer = KafkaProducer(
             bootstrap_servers=config['kafka']['servers'],
             max_request_size=10485760,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+            value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+            compression_type = 'gzip'
         )
     except NoBrokersAvailable as e:
         time.sleep(5)
