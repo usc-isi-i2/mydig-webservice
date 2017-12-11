@@ -1860,6 +1860,43 @@ class Data(Resource):
                     ret[tld] = num
         return ret
 
+    @requires_auth
+    def delete(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        input = request.get_json(force=True)
+        tld_list = input.get('tlds', list())
+
+        for tld in tld_list:
+            # update status
+            with data[project_name]['locks']['status']:
+                if tld in data[project_name]['status']['desired_docs']:
+                    del data[project_name]['status']['desired_docs'][tld]
+                if tld in data[project_name]['status']['added_docs']:
+                    del data[project_name]['status']['added_docs'][tld]
+                if tld in data[project_name]['status']['total_docs']:
+                    del data[project_name]['status']['total_docs'][tld]
+            update_status_file(project_name)
+
+            # update data
+            with data[project_name]['locks']['data']:
+                if tld in data[project_name]['data']:
+                    # remove data file
+                    for k, v in data[project_name]['data'][tld].iteritems():
+                        try:
+                            os.remove(v['raw_content_path'])
+                        except:
+                            pass
+                        try:
+                            os.remove(v['json_path'])
+                        except:
+                            pass
+                    # remove from catalog
+                    del data[project_name]['data'][tld]
+            update_data_db_file(project_name)
+
+
     @staticmethod
     def generate_tld(file_name):
         return 'www.dig_{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
