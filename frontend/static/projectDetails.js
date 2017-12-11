@@ -1366,9 +1366,6 @@ poly = Polymer({
                 var total_desired_num = 0;
                 newTldTableData = [];
                 data["tld_statistics"].forEach(function(obj) {
-                    // if(obj["tld"] == "asexyservice.com") {
-                    //     obj["tld"] = "ddd.com";
-                    // }
                     var disable_landmark_btn = obj["total_num"] < 10 ? " disabled" : "";
                     newObj = {
                         "tld": obj["tld"].toLowerCase(),
@@ -1710,7 +1707,7 @@ poly = Polymer({
             }
         });
     },
-    deleteAllData: function() {
+    deleteAllFileData: function() {
 
         if(window.confirm("Are you sure to delete all data?") == false) {
             return;
