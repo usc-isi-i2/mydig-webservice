@@ -1896,7 +1896,6 @@ class Data(Resource):
                     del data[project_name]['data'][tld]
             update_data_db_file(project_name)
 
-
     @staticmethod
     def generate_tld(file_name):
         return 'www.dig_{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
@@ -2134,7 +2133,7 @@ class Actions(Resource):
             ret['etk_status'] = Actions._is_etk_running(project_name)
 
         if args['value'] in ('all', 'tld_statistics'):
-            tld_array = []
+            tld_list = dict()
 
             with data[project_name]['locks']['status']:
                 for tld in data[project_name]['status']['total_docs'].iterkeys():
@@ -2148,7 +2147,7 @@ class Actions(Resource):
                             'es_original_num': 0,
                             'desired_num': data[project_name]['status']['desired_docs'][tld]
                         }
-                        tld_array.append(tld_obj)
+                        tld_list[tld] = tld_obj
 
             # query es count if doc exists
             query = """
@@ -2189,18 +2188,30 @@ class Actions(Resource):
                 for obj in r['aggregations']['group_by_tld']['buckets']:
                     # check if tld is in uploaded file
                     tld = obj['key']
-                    for tld_obj in tld_array:
-                        if tld_obj['tld'] == tld:
-                            tld_obj['es_num'] = obj['doc_count']
+                    if tld not in tld_list:
+                        tld_list[tld] = {
+                            'tld': tld,
+                            'total_num': 0,
+                            'es_num': 0,
+                            'es_original_num': 0,
+                            'desired_num': 0
+                        }
+                    tld_list[tld]['es_num'] = obj['doc_count']
 
                 for obj in r['aggregations']['group_by_tld_original']['grouped']['buckets']:
                     # check if tld is in uploaded file
                     tld = obj['key']
-                    for tld_obj in tld_array:
-                        if tld_obj['tld'] == tld:
-                            tld_obj['es_original_num'] = obj['doc_count']
+                    if tld not in tld_list:
+                        tld_list[tld] = {
+                            'tld': tld,
+                            'total_num': 0,
+                            'es_num': 0,
+                            'es_original_num': 0,
+                            'desired_num': 0
+                        }
+                    tld_list[tld]['es_original_num'] = obj['doc_count']
 
-            ret['tld_statistics'] = tld_array
+            ret['tld_statistics'] = tld_list.values()
 
         return ret
 
