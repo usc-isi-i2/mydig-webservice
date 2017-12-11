@@ -1868,6 +1868,13 @@ class Data(Resource):
         input = request.get_json(force=True)
         tld_list = input.get('tlds', list())
 
+        thread.start_new_thread(Data._delete_file_worker, (project_name, tld_list,))
+
+        return rest.accepted()
+
+    @staticmethod
+    def _delete_file_worker(project_name, tld_list):
+
         for tld in tld_list:
             # update status
             with data[project_name]['locks']['status']:
@@ -1895,8 +1902,6 @@ class Data(Resource):
                     # remove from catalog
                     del data[project_name]['data'][tld]
             update_data_db_file(project_name)
-
-        return rest.deleted()
 
     @staticmethod
     def generate_tld(file_name):
