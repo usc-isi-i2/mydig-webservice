@@ -1710,6 +1710,32 @@ poly = Polymer({
             }
         });
     },
+    deleteAllData: function() {
+
+        if(window.confirm("Are you sure to delete all data?") == false) {
+            return;
+        }
+
+        payload = {"tlds":[]};
+        this.tldTableData.forEach(function(obj){
+            payload["tlds"].push(obj["tld"]);
+        });
+
+        $.ajax({
+            type: "DELETE",
+            url: backend_url + "projects/" + projectName + '/data',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            success: function (msg) {
+                // console.log(msg);
+                this.refreshTldTable();
+            }
+        });
+    },
     updateFilters: function() {
         try {
             var payload = {"filters": JSON.parse(this.$$('#editFiltersTextArea').value)};

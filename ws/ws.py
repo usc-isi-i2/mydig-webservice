@@ -1896,6 +1896,8 @@ class Data(Resource):
                     del data[project_name]['data'][tld]
             update_data_db_file(project_name)
 
+        return rest.deleted()
+
     @staticmethod
     def generate_tld(file_name):
         return 'www.dig_{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
