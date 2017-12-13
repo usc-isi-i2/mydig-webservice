@@ -108,7 +108,7 @@ function addProject(data)  {
           </paper-header-panel>
           <br>
           <h4 style="padding:0em;margin-left:10px">DIG Projects</h4>
-		<template is="dom-repeat" items="{{projectDatas}}">
+		<template is="dom-repeat" items="{{projectDatas}}" sort="sortProject">
 		 <br><br>
 	     <paper-material style="width:94%;margin-left:auto;margin-right:auto;height:10%">
               <section id = "projectSection" style="width:96%;margin-left:auto;margin-right:auto;" class="main-search-results">
@@ -275,9 +275,17 @@ Polymer({
     	var projectName = (data.detail.url).split("/");
     	var obj = {"name":projectName[projectName.length-1],"value":data.detail.response};
     	this.push('projectDatas',obj);
+    	console.log(this.projectDatas);
     	this.i++;
-    	
     },
+
+	sortProject: function(obj1, obj2) {
+        var a = obj1["name"].toLowerCase();
+		var b = obj2["name"].toLowerCase();
+		if (a < b) return -1;
+		else if (a > b) return 1;
+		else return 0;
+	},
     
     editProjectData: function(e) {
     	this.tlds=[];
