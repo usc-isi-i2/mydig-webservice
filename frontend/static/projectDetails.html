@@ -304,7 +304,7 @@
                     <paper-button on-tap="addNewFieldSetup" raised
                                   style="float:right;text-transform:none"><strong>Add Field</strong></paper-button>
                     <br> <br><br>
-                    <template is="dom-repeat" items="{{fields}}">
+                    <template is="dom-repeat" items="{{fields}}" sort="sortFields">
                         <paper-material class="addPaddingToSections"
                                         style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
                             <div style="padding: 8px;">
@@ -414,7 +414,7 @@
                     <paper-button onclick="addTagsDialog.toggle()" raised
                                   style="float:right;text-transform:none"><strong>Add Tag</strong></paper-button>
                     <br> <br><br>
-                    <template is="dom-repeat" items="{{tags}}">
+                    <template is="dom-repeat" items="{{tags}}" sort="sortTags">
                         <paper-material class="addPaddingToSections"
                                         style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
                             <div>
@@ -462,7 +462,7 @@
                     <paper-button onclick="addGlossaryDialog.toggle()" raised
                                   style="float:right;text-transform:none"><strong>Add Glossary</strong></paper-button>
                     <br> <br>
-                    <template is="dom-repeat" items="{{glossaries}}">
+                    <template is="dom-repeat" items="{{glossaries}}" sort="sortGlossaries">
                         <paper-material class="addPaddingToSections"
                                         style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
                             <br><br>

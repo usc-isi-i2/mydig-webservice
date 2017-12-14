@@ -1777,6 +1777,27 @@ poly = Polymer({
             }
         });
     },
+    sortFields: function(obj1, obj2) {
+        var a = obj1[0]["name"].toLowerCase();
+		var b = obj2[0]["name"].toLowerCase();
+		if (a < b) return -1;
+		else if (a > b) return 1;
+		else return 0;
+    },
+    sortTags: function(obj1, obj2) {
+        var a = obj1[0]["name"].toLowerCase();
+		var b = obj2[0]["name"].toLowerCase();
+		if (a < b) return -1;
+		else if (a > b) return 1;
+		else return 0;
+    },
+    sortGlossaries: function(obj1, obj2) {
+        var a = obj1[0].toLowerCase();
+		var b = obj2[0].toLowerCase();
+		if (a < b) return -1;
+		else if (a > b) return 1;
+		else return 0;
+    },
 
 
     /*
