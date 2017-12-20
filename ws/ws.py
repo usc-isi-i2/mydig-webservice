@@ -215,6 +215,12 @@ class Debug(Resource):
 
         return rest.bad_request()
 
+@api.route('/query')
+class ConjuctiveQuery(Resource):
+    @requires_auth
+    def get(self):
+        logger.info('API Request recieved')
+        return rest.ok('request recieved')
 
 @api.route('/projects')
 class AllProjects(Resource):
