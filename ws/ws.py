@@ -26,7 +26,7 @@ import datetime
 import random
 import signal
 import base64
-
+import urllib
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
@@ -160,6 +160,78 @@ def tail_file(f, lines=1, _buffer=4098):
 
     return lines_found[-lines:]
 
+def validate_input(args,keylist):
+    for key in args.keys():
+        if not key.startswith("_"):
+            if "." in key:
+                if key.split('.')[0] not in keylist:
+                    return False
+            elif key not in keylist:
+                return False
+
+    return True
+
+def minify_response(response,myargs):
+    fields = myargs.split(',')
+    docs = response['hits']['hits']
+    minified_docs = []
+    for json_doc in docs:
+        minidoc = {}
+        for field in fields:
+            if "." in field:
+                (f,x) = field.split(',')
+            else:
+                (f,x) = field,"value"
+            minidoc[field] = json_doc['_source']['knowledge_graph'][f][0][x]
+        minified_docs.append(minidoc)
+    return minified_docs
+
+def extract_term(term):
+    extraction = dict()
+    if "." in term:
+        extraction['field_name'],rest = term.split('.')
+        if "$" in rest:
+            extraction['valueorkey'],extraction['filter_criteria'] = rest.split('$')
+        else:
+            extraction['valueorkey'] = rest
+            extraction['filter_criteria'] = None
+    else:
+        extraction['field_name'] = term
+        extraction['valueorkey'] = "value"
+        extraction['filter_criteria'] = None
+    return extraction
+
+def _build_query(args,field_names,num_results,page,ordering,filtering):
+    """
+    Builds an ElasticSearch query from a simple spec of DIG fields and constraints.
+    @param field_query_terms: List of field:value pairs.
+    The field can end with "/value" or "/key" to specify where to do the term query.
+    @type field_query_terms:
+    @return: JSON object with a bool term query in the ElasticSearch DSL.
+    @rtype: dict
+    """
+    num_results = int(num_results)
+    page = int(page)
+    must_list = []
+    for term in args:
+        if not term.startswith("_"):
+            extracted_term = extract_term(term)
+            must_clause = {
+                "match": {
+                    "knowledge_graph." + extracted_term['field_name'] + "." + extracted_term['valueorkey']: urllib.unquote(args[term])
+                }
+            }
+            must_list.append(must_clause)
+    full_query = {
+        "query": {
+            "bool": {
+                "must": must_list
+            }
+        }
+    }
+    full_query['size'] = num_results
+    full_query['from'] = page*num_results
+    return full_query
 
 @app.route('/spec')
 def spec():
@@ -215,12 +287,43 @@ class Debug(Resource):
 
         return rest.bad_request()
 
-@api.route('/query')
+@api.route('/apisearch/<project_name>')
 class ConjuctiveQuery(Resource):
     @requires_auth
-    def get(self):
-        logger.info('API Request recieved')
-        return rest.ok('request recieved')
+    def get(self,project_name):
+        logger.error('API Request recieved for %s'%(project_name))
+        myargs = request.args
+        field_names = myargs.get("_fields",None)
+        num_results =  myargs.get("_size",20)
+        ordering = myargs.get("_order-by",None)
+        filtering = myargs.get("_filtering",None)
+        page = myargs.get("_page",0)
+        valid_input = validate_input(myargs,data[project_name]['master_config']['fields'].keys())
+        if not valid_input:
+            err_json = {}
+            err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://\{mydigurl\}/projects/<project_name>/fields"
+            err_json['fields'] = data[project_name]['master_config']['fields'].keys()
+            return rest.bad_request(err_json)
+        # query = """
+        #     {
+        #       "query": {
+        #         "bool": {
+        #           "must": [
+        #             { "match": { "knowledge_graph.website.value": "gjopen.com" } }
+        #           ]
+        #         }
+        #       }
+        #     }
+        #     """
+        query = _build_query(request.args,field_names,num_results,page,ordering,filtering)
+        es = ES(config['es']['sample_url'])
+        r = es.search(project_name, data[project_name]['master_config']['root_name'],query, ignore_no_index=True)
+        response_docs = minify_response(r,field_names)
+        resp={}
+        resp['documents'] = response_docs
+        resp['hit_count'] = len(response_docs)
+        resp['execution_time'] = r['took']
+        return rest.ok(resp)
 
 @api.route('/projects')
 class AllProjects(Resource):
