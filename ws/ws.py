@@ -182,26 +182,38 @@ def minify_response(response,myargs):
                 (f,x) = field.split(',')
             else:
                 (f,x) = field,"value"
-            minidoc[field] = json_doc['_source']['knowledge_graph'][f][0][x]
+            try:
+                minidoc[field] = json_doc['_source']['knowledge_graph'][f][0][x]
+            except Exception as e:
+                pass
         minified_docs.append(minidoc)
     return minified_docs
 
-def extract_term(term):
+def generate_match_clause(term,args):
     extraction = dict()
     if "." in term:
         extraction['field_name'],rest = term.split('.')
-        if "$" in rest:
-            extraction['valueorkey'],extraction['filter_criteria'] = rest.split('$')
-        else:
-            extraction['valueorkey'] = rest
-            extraction['filter_criteria'] = None
+        extraction['valueorkey'] = rest
     else:
         extraction['field_name'] = term
         extraction['valueorkey'] = "value"
-        extraction['filter_criteria'] = None
-    return extraction
+    must_clause = {
+        "match": {
+            "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(args[term])
+        }
+    }
+    return must_clause
+def get_sort_order(orderings):
+    sort_clauses = []
+    field_prefix = "knowledge_graph."
+    field_suffix = ".value"
+    for order in orderings.split(','):
+        order_key,order_val = order.split('$')
+        sort_clause =  { field_prefix + order_key + field_suffix : {"order" : order_val}}
+        sort_clauses.append(sort_clause)
+    return sort_clauses
 
-def _build_query(args,field_names,num_results,page,ordering,filtering):
+def _build_query(args,field_names,num_results,page,ordering):
     """
     Builds an ElasticSearch query from a simple spec of DIG fields and constraints.
     @param field_query_terms: List of field:value pairs.
@@ -213,15 +225,9 @@ def _build_query(args,field_names,num_results,page,ordering,filtering):
     num_results = int(num_results)
     page = int(page)
     must_list = []
-    for term in args:
-        if not term.startswith("_"):
-            extracted_term = extract_term(term)
-            must_clause = {
-                "match": {
-                    "knowledge_graph." + extracted_term['field_name'] + "." + extracted_term['valueorkey']: urllib.unquote(args[term])
-                }
-            }
-            must_list.append(must_clause)
+    for query_term in args:
+        if not query_term.startswith("_") and "$" not in query_term:
+            must_list.append(generate_match_clause(query_term,args))
     full_query = {
         "query": {
             "bool": {
@@ -231,6 +237,11 @@ def _build_query(args,field_names,num_results,page,ordering,filtering):
     }
     full_query['size'] = num_results
     full_query['from'] = page*num_results
+    #filter_query = generate_filter_query(args)
+    #if filter_query is not None:
+    #   full_query['filter'] = filter_query
+    if ordering is not None:
+        full_query['sort'] = get_sort_order(ordering)    
     return full_query
 
 @app.route('/spec')
@@ -296,13 +307,12 @@ class ConjuctiveQuery(Resource):
         field_names = myargs.get("_fields",None)
         num_results =  myargs.get("_size",20)
         ordering = myargs.get("_order-by",None)
-        filtering = myargs.get("_filtering",None)
         page = myargs.get("_page",0)
+        verbosity = myargs.get("_verbosity","full")
         valid_input = validate_input(myargs,data[project_name]['master_config']['fields'].keys())
         if not valid_input:
             err_json = {}
-            err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://\{mydigurl\}/projects/<project_name>/fields"
-            err_json['fields'] = data[project_name]['master_config']['fields'].keys()
+            err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
             return rest.bad_request(err_json)
         # query = """
         #     {
@@ -315,14 +325,19 @@ class ConjuctiveQuery(Resource):
         #       }
         #     }
         #     """
-        query = _build_query(request.args,field_names,num_results,page,ordering,filtering)
+        query = _build_query(request.args,field_names,num_results,page,ordering)
         es = ES(config['es']['sample_url'])
         r = es.search(project_name, data[project_name]['master_config']['root_name'],query, ignore_no_index=True)
-        response_docs = minify_response(r,field_names)
         resp={}
-        resp['documents'] = response_docs
-        resp['hit_count'] = len(response_docs)
-        resp['execution_time'] = r['took']
+        if verbosity == "minimal":
+            if field_names is None:
+                field_names = ','.join(data[project_name]['master_config']['fields'].keys())
+            response_docs = minify_response(r,field_names)
+            resp['documents'] = response_docs
+            resp['hit_count'] = len(response_docs)
+            resp['execution_time'] = r['took']
+        else:
+            resp = r
         return rest.ok(resp)
 
 @api.route('/projects')
