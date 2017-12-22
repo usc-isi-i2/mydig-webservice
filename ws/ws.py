@@ -166,6 +166,11 @@ def validate_input(args,keylist):
             if "." in key:
                 if key.split('.')[0] not in keylist:
                     return False
+            elif "$" in key:
+                if key.split('$')[0] not in keylist:
+                    return False
+            elif "_" in key:
+                continue
             elif key not in keylist:
                 return False
 
@@ -203,6 +208,7 @@ def generate_match_clause(term,args):
         }
     }
     return must_clause
+
 def get_sort_order(orderings):
     sort_clauses = []
     field_prefix = "knowledge_graph."
@@ -212,6 +218,25 @@ def get_sort_order(orderings):
         sort_clause =  { field_prefix + order_key + field_suffix : {"order" : order_val}}
         sort_clauses.append(sort_clause)
     return sort_clauses
+
+def generate_filter_query(term,args):
+    conversions = { "less-than": "lt", "less-equal-than" : "lte", "greater-than": "gt","greater-equal-than": "gte"}
+    extracted_term = term.split('$')
+    filter_clause = {
+          "filtered": {
+            "query": {"match_all": {}
+            },
+            "filter": { 
+                "range": {
+              "knowledge_graph."+extracted_term[0]+".value": {
+                conversions[extracted_term[1]] : args[term]
+                    } 
+                }
+            }
+        }
+    }
+    return filter_clause
+
 
 def _build_query(args,field_names,num_results,page,ordering):
     """
@@ -228,6 +253,8 @@ def _build_query(args,field_names,num_results,page,ordering):
     for query_term in args:
         if not query_term.startswith("_") and "$" not in query_term:
             must_list.append(generate_match_clause(query_term,args))
+        elif not query_term.startswith("_"):
+            must_list.append(generate_filter_query(query_term,args))
     full_query = {
         "query": {
             "bool": {
@@ -237,9 +264,6 @@ def _build_query(args,field_names,num_results,page,ordering):
     }
     full_query['size'] = num_results
     full_query['from'] = page*num_results
-    #filter_query = generate_filter_query(args)
-    #if filter_query is not None:
-    #   full_query['filter'] = filter_query
     if ordering is not None:
         full_query['sort'] = get_sort_order(ordering)    
     return full_query
@@ -334,7 +358,7 @@ class ConjuctiveQuery(Resource):
                 field_names = ','.join(data[project_name]['master_config']['fields'].keys())
             response_docs = minify_response(r,field_names)
             resp['documents'] = response_docs
-            resp['hit_count'] = len(response_docs)
+            resp['hit_count'] = r['hits']['total']
             resp['execution_time'] = r['took']
         else:
             resp = r
