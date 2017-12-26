@@ -1,0 +1,175 @@
+import requests
+import rest
+import urllib
+
+class ConjuctiveQueryProcessor(object):
+	def __init__(self,request,project_name,config_fields,project_root_name,es):
+		self.myargs = request.args
+		self.field_names = self.myargs.get("_fields",None)
+		self.num_results =  self.myargs.get("_size",20)
+		self.ordering = self.myargs.get("_order-by",None)
+		self.page = self.myargs.get("_page",0)
+		self.verbosity = self.myargs.get("_verbosity","full")
+		self.response_format = self.myargs.get("_format","json")
+		self.config_fields = config_fields
+		self.es = es
+		self.project_root_name = project_root_name
+		self.project_name = project_name
+		self.nested_query = self.myargs.get("_nested-query",None)
+
+	def process(self):
+		valid_input = self.validate_input()
+		if not valid_input:
+			err_json = {}
+			err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
+			return rest.bad_request(err_json)
+		query = self._build_query("must")
+		
+		res = self.es.search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
+		res_filtered = self.filter_response(res,self.field_names)
+		resp={}
+		if self.response_format =="json_lines":
+			return rest.ok('\n'.join(str(x) for x in res_filtered['hits']['hits']))
+		else:
+			if self.verbosity == "minimal":
+				if self.field_names is None:
+					self.field_names = ','.join(self.config_fields)
+				response_docs = self.minify_response(res_filtered,self.field_names)
+				resp['hits']['hits'] = response_docs
+				resp['hit_count'] = res_filtered['hits']['total']
+				resp['execution_time'] = res_filtered['took']
+			else:
+				resp = res_filtered
+
+	# 	if self.nested_query is not None:
+	# 		resp = self.setNestedComponents(resp)
+	# 	return rest.ok(resp)
+
+	# def setNestedComponents(resp):
+	# 	list_of_fields = self.nested_query.split(',')
+	# 	ids_to_query = {}
+	# 	for field in list_of_fields:
+	# 		ids_to_query[field] = []
+	# 	for json_doc in resp.
+
+
+
+	def validate_input(self):
+		for key in self.myargs.keys():
+			if not key.startswith("_"):
+				if "." in key:
+					if key.split('.')[0] not in self.config_fields:
+						return False
+				elif "$" in key:
+					if key.split('$')[0] not in self.config_fields:
+						return False
+				elif "_" in key:
+					continue
+				elif key not in self.config_fields:
+					return False
+
+		return True
+
+	def minify_response(self,response,myargs):
+		fields = myargs.split(',')
+		docs = response['hits']['hits']
+		minified_docs = []
+		for json_doc in docs:
+			minidoc = {}
+			for field in fields:
+				try:
+					if 'data' in json_doc['_source']['knowledge_graph'][field][0].keys():
+						minidoc[field] = json_doc['_source']['knowledge_graph'][field][0]['data']
+					else:
+						 minidoc[field] = json_doc['_source']['knowledge_graph'][field][0]['value']
+				except Exception as e:
+					pass
+			minified_docs.append(minidoc)
+		return minified_docs
+
+	def generate_match_clause(self,term,args):
+		extraction = dict()
+		if "." in term:
+			extraction['field_name'],rest = term.split('.')
+			extraction['valueorkey'] = rest
+		else:
+			extraction['field_name'] = term
+			extraction['valueorkey'] = "value"
+		must_clause = {
+			"match": {
+				"knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(args[term])
+			}
+		}
+		return must_clause
+
+	def get_sort_order(self):
+		sort_clauses = []
+		field_prefix = "knowledge_graph."
+		field_suffix = ".value"
+		for order in self.ordering.split(','):
+			order_key,order_val = order.split('$')
+			sort_clause =  { field_prefix + order_key + field_suffix : {"order" : order_val}}
+			sort_clauses.append(sort_clause)
+		return sort_clauses
+
+	def generate_filter_query(self,term,args):
+		conversions = { "less-than": "lt", "less-equal-than" : "lte", "greater-than": "gt","greater-equal-than": "gte"}
+		extracted_term = term.split('$')
+		filter_clause = {
+			  "filtered": {
+				"query": {"match_all": {}
+				},
+				"filter": { 
+					"range": {
+				  "knowledge_graph."+extracted_term[0]+".value": {
+					conversions[extracted_term[1]] : args[term]
+						} 
+					}
+				}
+			}
+		}
+		return filter_clause
+
+
+	def _build_query(self,querytype):
+		"""
+		Builds an ElasticSearch query from a simple spec of DIG fields and constraints.
+		@param field_query_terms: List of field:value pairs.
+		The field can end with "/value" or "/key" to specify where to do the term query.
+		@type field_query_terms:
+		@return: JSON object with a bool term query in the ElasticSearch DSL.
+		@rtype: dict
+		"""
+		self.num_results = int(self.num_results)
+		self.page = int(self.page)
+		clause_list = []
+		for query_term in self.myargs:
+			if not query_term.startswith("_") and "$" not in query_term:
+				clause_list.append(self.generate_match_clause(query_term,self.myargs))
+			elif not query_term.startswith("_"):
+				clause_list.append(self.generate_filter_query(query_term,self.myargs))
+		full_query = {
+			"query": {
+				"bool": {
+					querytype: clause_list
+				}
+			}
+		}
+		full_query['size'] = self.num_results
+		full_query['from'] = self.page*self.num_results
+		if self.ordering is not None:
+			full_query['sort'] = self.get_sort_order(self.ordering)    
+		return full_query
+
+	def filter_response(self,resp,fields):
+		if fields is None:
+			return resp
+		else:
+			docs = resp['hits']['hits']
+			for json_doc in docs:
+				for field in json_doc['_source']['knowledge_graph'].keys():
+					if field not in fields:
+						del json_doc['_source']['knowledge_graph'][field]
+			resp['hits']['hits'] = docs
+			return resp
+			

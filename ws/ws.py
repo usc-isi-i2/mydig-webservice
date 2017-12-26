@@ -45,6 +45,7 @@ from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
 import data_persistence
+from conjuctive_query import ConjuctiveQueryProcessor
 
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
@@ -160,114 +161,6 @@ def tail_file(f, lines=1, _buffer=4098):
 
     return lines_found[-lines:]
 
-def validate_input(args,keylist):
-    for key in args.keys():
-        if not key.startswith("_"):
-            if "." in key:
-                if key.split('.')[0] not in keylist:
-                    return False
-            elif "$" in key:
-                if key.split('$')[0] not in keylist:
-                    return False
-            elif "_" in key:
-                continue
-            elif key not in keylist:
-                return False
-
-    return True
-
-def minify_response(response,myargs):
-    fields = myargs.split(',')
-    docs = response['hits']['hits']
-    minified_docs = []
-    for json_doc in docs:
-        minidoc = {}
-        for field in fields:
-            if "." in field:
-                (f,x) = field.split(',')
-            else:
-                (f,x) = field,"value"
-            try:
-                minidoc[field] = json_doc['_source']['knowledge_graph'][f][0][x]
-            except Exception as e:
-                pass
-        minified_docs.append(minidoc)
-    return minified_docs
-
-def generate_match_clause(term,args):
-    extraction = dict()
-    if "." in term:
-        extraction['field_name'],rest = term.split('.')
-        extraction['valueorkey'] = rest
-    else:
-        extraction['field_name'] = term
-        extraction['valueorkey'] = "value"
-    must_clause = {
-        "match": {
-            "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(args[term])
-        }
-    }
-    return must_clause
-
-def get_sort_order(orderings):
-    sort_clauses = []
-    field_prefix = "knowledge_graph."
-    field_suffix = ".value"
-    for order in orderings.split(','):
-        order_key,order_val = order.split('$')
-        sort_clause =  { field_prefix + order_key + field_suffix : {"order" : order_val}}
-        sort_clauses.append(sort_clause)
-    return sort_clauses
-
-def generate_filter_query(term,args):
-    conversions = { "less-than": "lt", "less-equal-than" : "lte", "greater-than": "gt","greater-equal-than": "gte"}
-    extracted_term = term.split('$')
-    filter_clause = {
-          "filtered": {
-            "query": {"match_all": {}
-            },
-            "filter": { 
-                "range": {
-              "knowledge_graph."+extracted_term[0]+".value": {
-                conversions[extracted_term[1]] : args[term]
-                    } 
-                }
-            }
-        }
-    }
-    return filter_clause
-
-
-def _build_query(args,field_names,num_results,page,ordering):
-    """
-    Builds an ElasticSearch query from a simple spec of DIG fields and constraints.
-    @param field_query_terms: List of field:value pairs.
-    The field can end with "/value" or "/key" to specify where to do the term query.
-    @type field_query_terms:
-    @return: JSON object with a bool term query in the ElasticSearch DSL.
-    @rtype: dict
-    """
-    num_results = int(num_results)
-    page = int(page)
-    must_list = []
-    for query_term in args:
-        if not query_term.startswith("_") and "$" not in query_term:
-            must_list.append(generate_match_clause(query_term,args))
-        elif not query_term.startswith("_"):
-            must_list.append(generate_filter_query(query_term,args))
-    full_query = {
-        "query": {
-            "bool": {
-                "must": must_list
-            }
-        }
-    }
-    full_query['size'] = num_results
-    full_query['from'] = page*num_results
-    if ordering is not None:
-        full_query['sort'] = get_sort_order(ordering)    
-    return full_query
-
 @app.route('/spec')
 def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='spec.yaml')
@@ -327,42 +220,9 @@ class ConjuctiveQuery(Resource):
     @requires_auth
     def get(self,project_name):
         logger.error('API Request recieved for %s'%(project_name))
-        myargs = request.args
-        field_names = myargs.get("_fields",None)
-        num_results =  myargs.get("_size",20)
-        ordering = myargs.get("_order-by",None)
-        page = myargs.get("_page",0)
-        verbosity = myargs.get("_verbosity","full")
-        valid_input = validate_input(myargs,data[project_name]['master_config']['fields'].keys())
-        if not valid_input:
-            err_json = {}
-            err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
-            return rest.bad_request(err_json)
-        # query = """
-        #     {
-        #       "query": {
-        #         "bool": {
-        #           "must": [
-        #             { "match": { "knowledge_graph.website.value": "gjopen.com" } }
-        #           ]
-        #         }
-        #       }
-        #     }
-        #     """
-        query = _build_query(request.args,field_names,num_results,page,ordering)
         es = ES(config['es']['sample_url'])
-        r = es.search(project_name, data[project_name]['master_config']['root_name'],query, ignore_no_index=True)
-        resp={}
-        if verbosity == "minimal":
-            if field_names is None:
-                field_names = ','.join(data[project_name]['master_config']['fields'].keys())
-            response_docs = minify_response(r,field_names)
-            resp['documents'] = response_docs
-            resp['hit_count'] = r['hits']['total']
-            resp['execution_time'] = r['took']
-        else:
-            resp = r
-        return rest.ok(resp)
+        query = ConjuctiveQueryProcessor(request,project_name,data[project_name]['master_config']['fields'].keys(),data[project_name]['master_config']['root_name'],es)
+        return query.process()
 
 @api.route('/projects')
 class AllProjects(Resource):
