@@ -8,9 +8,9 @@ ps -ef | grep "dummy-this-is-mydig-daemon" | awk '{print $2}' | xargs kill -9
 
 if [ ${restart} != "no" ]; then
     echo "starting daemon (ETK spaCy)"
-    nohup python etk_spacy.py --dummy-this-is-mydig-daemon > nohup_etk_spacy.out &
+    python -u etk_spacy.py --dummy-this-is-mydig-daemon &
 #    echo "starting daemon (ACHE)"
-#    nohup python ache_consumer.py --dummy-this-is-mydig-daemon > nohup_ache.out &
+#    python -u ache_consumer.py --dummy-this-is-mydig-daemon &
 fi
 
 echo "done"
