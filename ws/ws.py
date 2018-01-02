@@ -1988,6 +1988,12 @@ class ActionProjectConfig(Resource):
                 shutil.copyfile(tmp_custom_etk_config,
                     os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
 
+            tmp_landmark_config_path = os.path.join(tmp_project_config_extracted_path,
+                                                'working_dir/_landmark_config.json')
+            if os.path.exists(tmp_landmark_config_path):
+                with codecs.open(tmp_landmark_config_path, 'r') as f:
+                    ActionProjectConfig.landmark_import(project_name, f.read())
+
             return rest.created()
         except Exception as e:
             print e
@@ -2027,11 +2033,36 @@ class ActionProjectConfig(Resource):
             if os.path.exists(additional_etk_config_path):
                 tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
 
+            landmark_config = ActionProjectConfig.landmark_export(project_name)
+            print 'config', landmark_config
+            if len(landmark_config) > 0:
+                landmark_config_path = os.path.join(
+                    _get_project_dir_path(project_name), 'working_dir/_landmark_config.json')
+                write_to_file(json.dumps(landmark_config), landmark_config_path)
+                tar.add(landmark_config_path, arcname='working_dir/_landmark_config.json')
+
         ret = send_file(export_path, mimetype='application/gzip',
                          as_attachment=True, attachment_filename=project_name + '.tar.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
 
+    @staticmethod
+    def landmark_export(project_name):
+        try:
+            url = config['landmark']['export'].format(project_name=project_name)
+            resp = requests.post(url)
+            return resp.json()
+        except Exception as e:
+            print 'landmark export error', e
+            return list()
+
+    @staticmethod
+    def landmark_import(project_name, landmark_config):
+        try:
+            url = config['landmark']['import'].format(project_name=project_name)
+            resp = requests.post(url, data=landmark_config)
+        except Exception as e:
+            print 'landmark import error', e
 
 @api.route('/projects/<project_name>/actions/etk_filters')
 class ActionProjectEtkFilters(Resource):
@@ -2361,7 +2392,7 @@ class Actions(Resource):
                     payload[tld]['documents'].append(catalog_obj)
                     idx += 1
 
-        url = config['landmark']['url'].format(project_name=project_name)
+        url = config['landmark']['create'].format(project_name=project_name)
         resp = requests.post(url, json.dumps(payload), timeout=10)
         if resp.status_code // 100 != 2:
             return rest.internal_error('Landmark error: {}'.format(resp.status_code))
