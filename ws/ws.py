@@ -2193,8 +2193,8 @@ class Actions(Resource):
               "aggs": {
                   "group_by_tld_original": {
                     "filter": {
-                      "not": {
-                        "filter": {
+                      "bool": {
+                        "must_not": {
                           "term": {
                             "created_by": "etk"
                           }
