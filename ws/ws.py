@@ -180,7 +180,7 @@ def home():
 
 
 @api.route('/authentication')
-class authentication(Resource):
+class Authentication(Resource):
     @requires_auth
     def get(self):
         # no need to do anything here
@@ -449,19 +449,37 @@ class Project(Resource):
     def delete(self, project_name):
         if project_name not in data:
             return rest.not_found()
+
+        # 1. stop etk (and clean up previous queue)
+        if not Actions._etk_stop(project_name, clean_up_queue=True):
+            return rest.internal_error('failed to kill_etk in ETL')
+
+        # 2. delete logstash config
+        # since queue is empty, leave it here is not a problem
+        # but for perfect solution, it needs to be deleted
+
+        # 3. clean up es data
+        url = '{}/{}'.format(
+            config['es']['sample_url'],
+            project_name
+        )
         try:
-            # project_lock.acquire(project_name)
+            resp = requests.delete(url, timeout=10)
+        except:
+            pass  # ignore no index error
+
+        # 4. release resource
+        stop_threads_and_locks(project_name)
+
+        # 5. delete all files
+        try:
             del data[project_name]
             shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
-            git_helper.commit(files=[project_name + '/*'],
-                              message='delete project {}'.format(project_name))
-            return rest.deleted()
         except Exception as e:
-            logger.error('deleting project %s: %s' % (project_name, e.message))
-            return rest.internal_error('deleting project %s error, halted.' % project_name)
-        # finally:
-        #     project_lock.remove(project_name)
+            print 'delete project error', e
+            return rest.internal_error('delete project error')
 
+        return rest.deleted()
 
 @api.route('/projects/<project_name>/tags')
 class ProjectTags(Resource):
@@ -2430,8 +2448,8 @@ class Actions(Resource):
     def recreate_mapping(project_name):
         print 'recreate_mapping'
 
-        # 1. kill etk
-        if not Actions._etk_stop(project_name):
+        # 1. kill etk (and clean up previous queue)
+        if not Actions._etk_stop(project_name, clean_up_queue=True):
             return rest.internal_error('failed to kill_etk in ETL')
 
         # 2. create etk config and snapshot
@@ -2501,7 +2519,9 @@ class Actions(Resource):
                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
         update_status_file(project_name)
 
-        # 5. restart extraction (and clean up previous queue)
+        # 5. restart extraction
+        # still need to do clean_up_queue here
+        # because etk process may not be running at that time
         return Actions.etk_extract(project_name, clean_up_queue=True)
 
     @staticmethod
@@ -2634,11 +2654,14 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _etk_stop(project_name, wait_till_kill=True):
+    def _etk_stop(project_name, wait_till_kill=True, clean_up_queue=False):
         url = config['etl']['url'] + '/kill_etk'
         payload = {
             'project_name': project_name
         }
+        if clean_up_queue:
+            payload['input_offset'] = 'seek_to_end'
+            payload['output_offset'] = 'seek_to_end'
         resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
         if resp.status_code // 100 != 2:
             print 'failed to kill_etk in ETL'
@@ -2753,6 +2776,15 @@ def start_threads_and_locks(project_name):
     data[project_name]['locks']['data_file_write_lock'] = threading.Lock()
     data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
     data[project_name]['data_pushing_worker'].start()
+
+
+def stop_threads_and_locks(project_name):
+    try:
+        data[project_name]['data_pushing_worker'].exit_signal = True
+        data[project_name]['data_pushing_worker'].join()
+        print 'threads of project {} exited'.format(project_name)
+    except:
+        pass
 
 
 if __name__ == '__main__':

@@ -9,7 +9,8 @@
 <link rel="import" href="../static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
 	
-	
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
 <link rel="import" href="../static/elements/elements.html">
@@ -117,7 +118,8 @@ function addProject(data)  {
 	              <a style="color:black" href="details?{{item.name}}">
 	              <paper-button style="float:right;text-transform: none;" raised ><strong>Open</strong></paper-button>
 	              </a>
-	              
+
+	              <paper-button style="float:right;text-transform: none;" raised on-tap="deleteProject"><strong>Delete</strong></paper-button>
 	              <!--<paper-button on-tap="editProjectData" style="float:right;color:black;text-transform: none;" raised><strong>Edit</strong></paper-button>-->
 	          </div>
               </section>
@@ -245,8 +247,7 @@ Polymer({
    
     ready : function() {
     	var obj = {};
-//        obj.Authorization = "Basic " + btoa(username+":"+password);
-    	this.$.ajaxCall.headers = obj;
+        this.$.ajaxCall.headers = obj;
     	this.$.ajaxCall.url=backend_url +"projects";
     	this.$.ajaxCall.generateRequest();
     	this.projects=[];
@@ -275,7 +276,7 @@ Polymer({
     	var projectName = (data.detail.url).split("/");
     	var obj = {"name":projectName[projectName.length-1],"value":data.detail.response};
     	this.push('projectDatas',obj);
-    	console.log(this.projectDatas);
+//    	console.log(this.projectDatas);
     	this.i++;
     },
 
@@ -339,8 +340,31 @@ Polymer({
   	},
   	_restoreDocumentScrolling: function() {
   		  document.body.style.overflow = '';
-  	}
+  	},
+	deleteProject: function(e) {
+        project_name = e.model.item.name;
 
+        if(window.confirm("Are you sure to delete project: " + project_name + "?") == false) {
+            return;
+        }
+
+        $.ajax({
+            type: "DELETE",
+            url: backend_url + "projects/" + project_name,
+            async: true,
+            dataType: "json",
+            contentType: false,
+            processData: false,
+            context: this,
+            success: function (msg) {
+    			location.reload();
+            },
+            error: function(msg) {
+                alert("Can not delete project: " + project_name);
+                console.log(msg);
+            }
+        });
+    }
 });
 
 
