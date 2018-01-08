@@ -16,6 +16,8 @@ class ConjuctiveQueryProcessor(object):
 		self.project_root_name = project_root_name
 		self.project_name = project_name
 		self.nested_query = self.myargs.get("_nested-query",None)
+		self.KG_PREFIX = 'knowledge_graph'
+		self.SOURCE = '_source'
 
 	def process(self):
 		valid_input = self.validate_input()
@@ -28,6 +30,8 @@ class ConjuctiveQueryProcessor(object):
 		res = self.es.search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
 		res_filtered = self.filter_response(res,self.field_names)
 		resp={}
+		if self.nested_query is not None:
+			res_filtered = self.setNestedComponents(res_filtered)
 		if self.response_format =="json_lines":
 			return rest.ok('\n'.join(str(x) for x in res_filtered['hits']['hits']))
 		else:
@@ -35,23 +39,55 @@ class ConjuctiveQueryProcessor(object):
 				if self.field_names is None:
 					self.field_names = ','.join(self.config_fields)
 				response_docs = self.minify_response(res_filtered,self.field_names)
+				resp['hits']={}
 				resp['hits']['hits'] = response_docs
 				resp['hit_count'] = res_filtered['hits']['total']
 				resp['execution_time'] = res_filtered['took']
 			else:
 				resp = res_filtered
 
-	# 	if self.nested_query is not None:
-	# 		resp = self.setNestedComponents(resp)
-	# 	return rest.ok(resp)
+		return rest.ok(resp)
 
-	# def setNestedComponents(resp):
-	# 	list_of_fields = self.nested_query.split(',')
-	# 	ids_to_query = {}
-	# 	for field in list_of_fields:
-	# 		ids_to_query[field] = []
-	# 	for json_doc in resp.
+	def setNestedComponents(self,resp):           
+		list_of_fields = self.nested_query.split(',')
+		ids_to_query = {}
+		for field in list_of_fields:
+			ids_to_query[field] = []
+		for json_doc in resp['hits']['hits']:
+			for field in list_of_fields:
+				try:
+					temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
+					if temp_id not in ids_to_query[field]:
+						ids_to_query[field].append(temp_id)
+				except: 
+					pass
+		result_map = self.executeNestedQuery(ids_to_query)
+		for json_doc in resp['hits']['hits']:
+			for field in list_of_fields:
+				try:
+					temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
+					if temp_id in result_map:
+						json_doc[self.SOURCE][self.KG_PREFIX][field] = {}
+						new_list=[]
+						json_doc[self.SOURCE][self.KG_PREFIX][field]['data'] = result_map[temp_id]
+						new_list.append(json_doc[self.SOURCE][self.KG_PREFIX][field])
+						json_doc[self.SOURCE][self.KG_PREFIX][field]= new_list
+				except: 
+					pass
+		return resp
 
+
+	def executeNestedQuery(self,idMap):
+		result_map = {}
+		for key in idMap:
+			query = {
+    		"ids" : idMap[key]
+			}
+			resp = self.es.mget(index=self.project_name,body=query,doc_type=self.project_root_name)
+			if len(resp['docs']) > 0:
+				for json_doc in resp['docs']:
+					result_map[json_doc['_source']['document_id']] = json_doc
+		return result_map
 
 
 	def validate_input(self):
@@ -113,6 +149,13 @@ class ConjuctiveQueryProcessor(object):
 		return sort_clauses
 
 	def generate_filter_query(self,term,args):
+		'''
+		This function converts filter operators such as field.name$desc into a sort clause,
+		which can be used in our Elastic search query
+		@input a single term of the form field.value$asc or field.value$desc and set of all input argument mappings.
+		@output a filter_clause with the field.value and filter type.
+
+		'''
 		conversions = { "less-than": "lt", "less-equal-than" : "lte", "greater-than": "gt","greater-equal-than": "gte"}
 		extracted_term = term.split('$')
 		filter_clause = {
@@ -162,6 +205,11 @@ class ConjuctiveQueryProcessor(object):
 		return full_query
 
 	def filter_response(self,resp,fields):
+		'''
+		This function takes a response from elasticSearch and keeps only the specified fields in the 'knowledge_graph' component
+		@input : response from ES and fields specified in query
+		@output : filter fields in _source.knowledge_graph basis fields specified by user
+		'''
 		if fields is None:
 			return resp
 		else:
