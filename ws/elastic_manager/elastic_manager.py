@@ -84,7 +84,7 @@ class ES(object):
         try:
             return self.es.mget(index=index,doc_type=doc_type,body=body)
         except TransportError as e:
-            if e.error != 'index_not_found_exception' and ignore_no_index:
+            if e.error != 'index_not_found_exception':
                 print e
         except Exception as e:
             print e

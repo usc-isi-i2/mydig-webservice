@@ -215,7 +215,7 @@ class Debug(Resource):
 
         return rest.bad_request()
 
-@api.route('/apisearch/<project_name>')
+@api.route('/search/<project_name>')
 class ConjuctiveQuery(Resource):
     @requires_auth
     def get(self,project_name):

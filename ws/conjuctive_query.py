@@ -18,20 +18,25 @@ class ConjuctiveQueryProcessor(object):
 		self.nested_query = self.myargs.get("_dereference",None)
 		self.KG_PREFIX = 'knowledge_graph'
 		self.SOURCE = '_source'
+		self.stats = self.myargs.get("_statistics","yes")
 
 	def process(self):
+		'''
+		This is the main function in this class. This calls several functions to validate input, set match clauses, set filter clauses
+		set sort clauses and finally resolve any nested documents if needed. Finally this function returns the data as a json or json_lines
+		joined by a '\n'
+		'''
 		valid_input = self.validate_input()
 		if not valid_input:
 			err_json = {}
 			err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
 			return rest.bad_request(err_json)
 		query = self._build_query("must")
-		
 		res = self.es.search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
 		res_filtered = self.filter_response(res,self.field_names)
 		resp={}
-		if self.nested_query is not None:
-			res_filtered = self.setNestedComponents(res_filtered)
+		if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
+			res_filtered = self.setNestedDocuments(res_filtered)
 		if self.response_format =="json_lines":
 			return rest.ok('\n'.join(str(x) for x in res_filtered['hits']['hits']))
 		else:
@@ -41,14 +46,22 @@ class ConjuctiveQueryProcessor(object):
 				response_docs = self.minify_response(res_filtered,self.field_names)
 				resp['hits']={}
 				resp['hits']['hits'] = response_docs
-				resp['hit_count'] = res_filtered['hits']['total']
-				resp['execution_time'] = res_filtered['took']
+				if not self.stats == "no":
+					resp['hit_count'] = res_filtered['hits']['total']
+					resp['execution_time'] = res_filtered['took']
 			else:
 				resp = res_filtered
 
 		return rest.ok(resp)
 
-	def setNestedComponents(self,resp):           
+	def setNestedDocuments(self,resp):
+		'''
+		    This function is to query for the nested documents and retrieve them
+		    It attaches only the KG component of the nested document into the parent document. Expects a json response,
+		    returns a json resposne after dereferencing the required set of child documents. Can dereference multiple children 
+		    documents. 
+		    See readme for exact usage and details.
+		'''          
 		list_of_fields = self.nested_query.split(',')
 		ids_to_query = {}
 		for field in list_of_fields:
@@ -78,6 +91,9 @@ class ConjuctiveQueryProcessor(object):
 
 
 	def executeNestedQuery(self,idMap):
+		'''
+			A function to perform the mget search and retrieve the nested documents
+		'''
 		result_map = {}
 		for key in idMap:
 			query = {
@@ -93,13 +109,13 @@ class ConjuctiveQueryProcessor(object):
 	def validate_input(self):
 		for key in self.myargs.keys():
 			if not key.startswith("_"):
-				if "." in key:
-					if key.split('.')[0] not in self.config_fields:
+				if "/" in key:
+					if key.split('/')[0] not in self.config_fields:
 						return False
 				elif "$" in key:
 					if key.split('$')[0] not in self.config_fields:
 						return False
-				elif "_" in key:
+				elif "." in key:
 					continue
 				elif key not in self.config_fields:
 					return False
@@ -108,7 +124,8 @@ class ConjuctiveQueryProcessor(object):
 
 	def minify_response(self,response,myargs):
 		'''
-		This function takes in the response in json format and minimizes the KG Component down to simple key,value pairs
+			This function takes in the response in json format and minimizes the KG Component down to simple key,value pairs
+			Also minimizes the KG component inside a particular nested field as well. 
 		'''
 		fields = myargs.split(',')
 		docs = response['hits']['hits']
@@ -116,46 +133,59 @@ class ConjuctiveQueryProcessor(object):
 		for json_doc in docs:
 			minidoc = {}
 			for field in fields:
-				#try:
-				new_list = []
-				new_json = {}
-				if 'data' in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-					new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['data']
-				else:
-					new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
-				if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-					nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
-					min_nested_kg = {}
-					for inner_field in nested_kg.keys():
-						nest_list = []
-						nest_json = {}
-						if 'data' in nested_kg[inner_field][0].keys():
-							nest_json['value'] = nested_kg[inner_field][0]['data'] 
-						else:
-							nest_json['value'] = nested_kg[inner_field][0]['value']
-						nest_list.append(nest_json)
-						nested_kg[inner_field] = nest_list
-					new_json[self.KG_PREFIX] = nested_kg
-				new_list.append(new_json)
-				minidoc[field] = new_list
-				#except Exception as e:
-				#	pass
+				try:
+					new_list = []
+					new_json = {}
+					if 'data' in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
+						new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['data']
+					else:
+						new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
+					if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
+						nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
+						min_nested_kg = {}
+						for inner_field in nested_kg.keys():
+							nest_list = []
+							nest_json = {}
+							if 'data' in nested_kg[inner_field][0].keys():
+								nest_json['value'] = nested_kg[inner_field][0]['data'] 
+							else:
+								nest_json['value'] = nested_kg[inner_field][0]['value']
+							nest_list.append(nest_json)
+							nested_kg[inner_field] = nest_list
+						new_json[self.KG_PREFIX] = nested_kg
+					new_list.append(new_json)
+					minidoc[field] = new_list
+				except Exception as e:
+					pass
 			minified_docs.append(minidoc)
 		return minified_docs
 
 	def generate_match_clause(self,term,args):
+		'''
+			This function generates match clauses which are inserted into the must part of the conjuctive query
+		'''
 		extraction = dict()
-		if "." in term:
+		if "/" in term:
+			extraction['field_name'],rest = term.split('/')
+			extraction['valueorkey'] = rest
+		elif "." in term:
 			extraction['field_name'],rest = term.split('.')
 			extraction['valueorkey'] = rest
 		else:
 			extraction['field_name'] = term
 			extraction['valueorkey'] = "value"
-		must_clause = {
-			"match": {
-				"knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(args[term])
+		if "/" in term:
+			must_clause = {
+				"match": {
+					"knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(args[term])
+				}
 			}
-		}
+		elif "." in term:
+			must_clause = {
+				"match": {
+					"knowledge_graph." + extraction['field_name'] + "__" + extraction['valueorkey']: urllib.unquote(args[term])
+				}
+			}
 		return must_clause
 
 	def get_sort_order(self):
@@ -225,7 +255,7 @@ class ConjuctiveQueryProcessor(object):
 		full_query['size'] = self.num_results
 		full_query['from'] = self.page*self.num_results
 		if self.ordering is not None:
-			full_query['sort'] = self.get_sort_order(self.ordering)    
+			full_query['sort'] = self.get_sort_order()    
 		return full_query
 
 	def filter_response(self,resp,fields):
