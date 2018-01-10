@@ -15,7 +15,7 @@ class ConjuctiveQueryProcessor(object):
 		self.es = es
 		self.project_root_name = project_root_name
 		self.project_name = project_name
-		self.nested_query = self.myargs.get("_nested-query",None)
+		self.nested_query = self.myargs.get("_dereference",None)
 		self.KG_PREFIX = 'knowledge_graph'
 		self.SOURCE = '_source'
 
@@ -67,10 +67,10 @@ class ConjuctiveQueryProcessor(object):
 				try:
 					temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
 					if temp_id in result_map:
-						json_doc[self.SOURCE][self.KG_PREFIX][field] = {}
-						new_list=[]
-						json_doc[self.SOURCE][self.KG_PREFIX][field]['data'] = result_map[temp_id]
-						new_list.append(json_doc[self.SOURCE][self.KG_PREFIX][field])
+						new_list = []
+						new_doc = json_doc[self.SOURCE][self.KG_PREFIX][field][0]
+						new_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
+						new_list.append(new_doc)
 						json_doc[self.SOURCE][self.KG_PREFIX][field]= new_list
 				except: 
 					pass
@@ -139,6 +139,10 @@ class ConjuctiveQueryProcessor(object):
 		return must_clause
 
 	def get_sort_order(self):
+		'''
+		This function generates order clauses for the query. It uses the member variables set in class to generate
+		any order by clauses if needed. It looks for fields like field_name$desc or field_name$asc.
+		'''
 		sort_clauses = []
 		field_prefix = "knowledge_graph."
 		field_suffix = ".value"
