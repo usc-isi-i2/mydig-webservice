@@ -107,19 +107,39 @@ class ConjuctiveQueryProcessor(object):
 		return True
 
 	def minify_response(self,response,myargs):
+		'''
+		This function takes in the response in json format and minimizes the KG Component down to simple key,value pairs
+		'''
 		fields = myargs.split(',')
 		docs = response['hits']['hits']
 		minified_docs = []
 		for json_doc in docs:
 			minidoc = {}
 			for field in fields:
-				try:
-					if 'data' in json_doc['_source']['knowledge_graph'][field][0].keys():
-						minidoc[field] = json_doc['_source']['knowledge_graph'][field][0]['data']
-					else:
-						 minidoc[field] = json_doc['_source']['knowledge_graph'][field][0]['value']
-				except Exception as e:
-					pass
+				#try:
+				new_list = []
+				new_json = {}
+				if 'data' in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
+					new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['data']
+				else:
+					new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
+				if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
+					nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
+					min_nested_kg = {}
+					for inner_field in nested_kg.keys():
+						nest_list = []
+						nest_json = {}
+						if 'data' in nested_kg[inner_field][0].keys():
+							nest_json['value'] = nested_kg[inner_field][0]['data'] 
+						else:
+							nest_json['value'] = nested_kg[inner_field][0]['value']
+						nest_list.append(nest_json)
+						nested_kg[inner_field] = nest_list
+					new_json[self.KG_PREFIX] = nested_kg
+				new_list.append(new_json)
+				minidoc[field] = new_list
+				#except Exception as e:
+				#	pass
 			minified_docs.append(minidoc)
 		return minified_docs
 
