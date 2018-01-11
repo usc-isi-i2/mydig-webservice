@@ -165,6 +165,7 @@ class ConjuctiveQueryProcessor(object):
 			This function generates match clauses which are inserted into the must part of the conjuctive query
 		'''
 		extraction = dict()
+		must_clause = dict()
 		if "/" in term:
 			extraction['field_name'],rest = term.split('/')
 			extraction['valueorkey'] = rest
