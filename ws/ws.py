@@ -663,7 +663,7 @@ class ProjectFields(Resource):
         if 'description' not in field_obj:
             field_obj['description'] = ''
         if 'type' not in field_obj or field_obj['type'] not in \
-                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id'):
+                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number'):
             return False, 'Invalid field attribute: type'
         if 'show_in_search' not in field_obj or \
                 not isinstance(field_obj['show_in_search'], bool):
