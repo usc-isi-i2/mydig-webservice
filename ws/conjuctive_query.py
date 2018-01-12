@@ -251,6 +251,14 @@ class ConjuctiveQueryProcessor(object):
 		}
 		full_query['size'] = self.num_results
 		full_query['from'] = self.page*self.num_results
+		# full_query['aggs'] = {
+  #       "event_date" : {
+  #           "date_histogram" : {
+  #               "field" : "event_date",
+  #               "interval" : "month"
+	 #            }
+	 #        }
+	 #    }
 		if self.ordering is not None:
 			full_query['sort'] = self.get_sort_order()
 		print full_query    
