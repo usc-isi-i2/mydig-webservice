@@ -72,7 +72,8 @@ class ConjuctiveQueryProcessor(object):
 					temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
 					if temp_id not in ids_to_query[field]:
 						ids_to_query[field].append(temp_id)
-				except: 
+				except Exception as e: 
+					print e
 					pass
 		result_map = self.executeNestedQuery(ids_to_query)
 		for json_doc in resp['hits']['hits']:
@@ -85,7 +86,8 @@ class ConjuctiveQueryProcessor(object):
 						new_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
 						new_list.append(new_doc)
 						json_doc[self.SOURCE][self.KG_PREFIX][field]= new_list
-				except: 
+				except Exception as e: 
+					print e
 					pass
 		return resp
 
@@ -203,7 +205,7 @@ class ConjuctiveQueryProcessor(object):
 			sort_clauses.append(sort_clause)
 		return sort_clauses
 
-	def generate_filter_query(self,term,args):
+	def generate_range_clause(self,term,args):
 		'''
 		This function converts filter operators such as field.name$desc into a sort clause,
 		which can be used in our Elastic search query
@@ -213,20 +215,14 @@ class ConjuctiveQueryProcessor(object):
 		'''
 		conversions = { "less-than": "lt", "less-equal-than" : "lte", "greater-than": "gt","greater-equal-than": "gte"}
 		extracted_term = term.split('$')
-		filter_clause = {
-			  "filtered": {
-				"query": {"match_all": {}
-				},
-				"filter": { 
-					"range": {
-				  "knowledge_graph."+extracted_term[0]+".value": {
-					conversions[extracted_term[1]] : args[term]
-						} 
-					}
-				}
-			}
-		}
-		return filter_clause
+		range_clause = {
+					"range" : {
+           				 "knowledge_graph."+extracted_term[0]+".value" : {
+               					 conversions[extracted_term[1]] : args[term]
+            	}
+        	}
+        }
+		return range_clause
 
 
 	def _build_query(self,querytype):
@@ -245,7 +241,7 @@ class ConjuctiveQueryProcessor(object):
 			if not query_term.startswith("_") and "$" not in query_term:
 				clause_list.append(self.generate_match_clause(query_term,self.myargs))
 			elif not query_term.startswith("_"):
-				clause_list.append(self.generate_filter_query(query_term,self.myargs))
+				clause_list.append(self.generate_range_clause(query_term,self.myargs))
 		full_query = {
 			"query": {
 				"bool": {
@@ -256,7 +252,8 @@ class ConjuctiveQueryProcessor(object):
 		full_query['size'] = self.num_results
 		full_query['from'] = self.page*self.num_results
 		if self.ordering is not None:
-			full_query['sort'] = self.get_sort_order()    
+			full_query['sort'] = self.get_sort_order()
+		print full_query    
 		return full_query
 
 	def filter_response(self,resp,fields):
