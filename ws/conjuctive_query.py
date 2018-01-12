@@ -141,12 +141,6 @@ class ConjuctiveQueryProcessor(object):
                 try:
                     new_list = []
                     new_json = {}
-                    print json_doc
-                    print json_doc[self.SOURCE]
-                    print json_doc[self.SOURCE][self.KG_PREFIX]
-                    print json_doc[self.SOURCE][self.KG_PREFIX][field]
-                    print json_doc[self.SOURCE][self.KG_PREFIX][field][0]
-                    print json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys()
                     if 'data' in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
                         new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['data']
                     else:
@@ -167,6 +161,7 @@ class ConjuctiveQueryProcessor(object):
                     new_list.append(new_json)
                     minidoc[self.SOURCE][self.KG_PREFIX][field] = new_list
                 except Exception as e:
+                    print e
                     pass
             minified_docs.append(minidoc)
         return minified_docs
