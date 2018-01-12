@@ -10,14 +10,12 @@ import werkzeug
 import codecs
 import csv
 import multiprocessing
+import subprocess
 import thread
 import threading
-import subprocess
 import requests
-import copy
 import gzip
 import tarfile
-import urlparse
 import re
 import hashlib
 import traceback
@@ -26,7 +24,6 @@ import datetime
 import random
 import signal
 import base64
-import urllib
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
