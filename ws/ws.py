@@ -26,7 +26,7 @@ import datetime
 import random
 import signal
 import base64
-
+import urllib
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
@@ -45,6 +45,7 @@ from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
 import data_persistence
+from conjuctive_query import ConjuctiveQueryProcessor
 
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
@@ -160,7 +161,6 @@ def tail_file(f, lines=1, _buffer=4098):
 
     return lines_found[-lines:]
 
-
 @app.route('/spec')
 def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='spec.yaml')
@@ -215,6 +215,14 @@ class Debug(Resource):
 
         return rest.bad_request()
 
+@api.route('/search/<project_name>')
+class ConjuctiveQuery(Resource):
+    @requires_auth
+    def get(self,project_name):
+        logger.error('API Request recieved for %s'%(project_name))
+        es = ES(config['es']['sample_url'])
+        query = ConjuctiveQueryProcessor(request,project_name,data[project_name]['master_config']['fields'].keys(),data[project_name]['master_config']['root_name'],es)
+        return query.process()
 
 @api.route('/projects')
 class AllProjects(Resource):
