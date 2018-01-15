@@ -11,7 +11,7 @@ class ConjuctiveQueryProcessor(object):
 		self.page = self.myargs.get("_page",0)
 		self.verbosity = self.myargs.get("_verbosity","full")
 		self.response_format = self.myargs.get("_format","json")
-		self.config_fields = config_fields
+		self.config_fields = config_fields.keys()
 		self.es = es
 		self.project_root_name = project_root_name
 		self.project_name = project_name
@@ -251,14 +251,14 @@ class ConjuctiveQueryProcessor(object):
 		}
 		full_query['size'] = self.num_results
 		full_query['from'] = self.page*self.num_results
-		# full_query['aggs'] = {
-  #       "event_date" : {
-  #           "date_histogram" : {
-  #               "field" : "event_date",
-  #               "interval" : "month"
-	 #            }
-	 #        }
-	 #    }
+		full_query['aggs'] = {
+        "event_date" : {
+            "date_histogram" : {
+                "field" : "event_date",
+                "interval" : "month"
+	            }
+	        }
+	    }
 		if self.ordering is not None:
 			full_query['sort'] = self.get_sort_order()
 		print full_query    
