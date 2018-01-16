@@ -45,4 +45,7 @@
     -v $(pwd)/ws/config_docker.py:/app/mydig-webservice/ws/config.py \
     -v $(pwd)/../mydig-projects:/shared_data/projects \
     uscisii2/mydig_ws:1.0.0 /bin/bash
-        
+       
+## Conjunctive query API
+
+[Conjunctive query API document](conjunctive_query_doc.md)

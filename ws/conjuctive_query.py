@@ -1,6 +1,7 @@
 import requests
 import rest
 import urllib
+import traceback,sys
 
 class ConjuctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
@@ -152,6 +153,8 @@ class ConjuctiveQueryProcessor(object):
         minified_docs = []
         for json_doc in docs:
             minidoc = {}
+            minidoc[self.SOURCE] = {}
+            minidoc[self.SOURCE][self.KG_PREFIX] = {}
             for field in fields:
                 try:
                     new_list = []
@@ -174,8 +177,9 @@ class ConjuctiveQueryProcessor(object):
                             nested_kg[inner_field] = nest_list
                         new_json[self.KG_PREFIX] = nested_kg
                     new_list.append(new_json)
-                    minidoc[field] = new_list
+                    minidoc[self.SOURCE][self.KG_PREFIX][field] = new_list
                 except Exception as e:
+                    print e
                     pass
             minified_docs.append(minidoc)
         return minified_docs
@@ -304,7 +308,7 @@ class ConjuctiveQueryProcessor(object):
                         del json_doc['_source']['knowledge_graph'][field]
             resp['hits']['hits'] = docs
             return resp
-          
+            
     def _addGroupByClause(self):
         full_clause =  {
                   self.group_by: {
