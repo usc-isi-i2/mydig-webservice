@@ -1813,7 +1813,7 @@ class Data(Resource):
                         del obj['raw_content']
                         output.write(json.dumps(obj, indent=2))
                     # update data db
-                    tld = Data.extract_tld(obj['url'])
+                    tld = obj.get('tld', Data.extract_tld(obj['url']))
                     with data[project_name]['locks']['data']:
                         data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
                         # if doc_id is already there, still overwrite it
