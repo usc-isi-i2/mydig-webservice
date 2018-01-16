@@ -42,7 +42,6 @@ from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
 import data_persistence
-from conjuctive_query import ConjuctiveQueryProcessor
 from aggregate_query import AggregateQueryProcessor
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
