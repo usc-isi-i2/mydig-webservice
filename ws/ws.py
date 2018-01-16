@@ -42,7 +42,7 @@ from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
 import data_persistence
-from aggregate_query import AggregateQueryProcessor
+from conjunctive_query import ConjunctiveQueryProcessor
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
@@ -211,17 +211,22 @@ class Debug(Resource):
 
         return rest.bad_request()
 
+
 @api.route('/search/<project_name>')
-class ConjuctiveQuery(Resource):
+class ConjunctiveQuery(Resource):
+
     @requires_auth
-    def get(self,project_name):
-        logger.error('API Request recieved for %s'%(project_name))
+    def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
+        logger.error('API Request received for %s'%(project_name))
         es = ES(config['es']['sample_url'])
-        query = ConjuctiveQueryProcessor(request,project_name,data[project_name]['master_config']['fields'],data[project_name]['master_config']['root_name'],es)
+        query = ConjunctiveQueryProcessor(request, project_name,
+            data[project_name]['master_config']['fields'],
+            data[project_name]['master_config']['root_name'], es)
         
         return query.process()
+
 
 @api.route('/projects')
 class AllProjects(Resource):

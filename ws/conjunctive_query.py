@@ -3,7 +3,8 @@ import rest
 import urllib
 import traceback,sys
 
-class ConjuctiveQueryProcessor(object):
+
+class ConjunctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.myargs = request.args
         self.field_names = self.myargs.get("_fields",None)
@@ -186,7 +187,7 @@ class ConjuctiveQueryProcessor(object):
 
     def generate_match_clause(self,term,args):
         '''
-            This function generates match clauses which are inserted into the must part of the conjuctive query
+            This function generates match clauses which are inserted into the must part of the conjunctive query
         '''
         extraction = dict()
         must_clause = dict()
