@@ -815,3 +815,183 @@ Also note in the below response how setting `_verbosity` to `minimal` recursivel
   "hit_count": 3418
 }
 ```
+
+To perform some additional queries such as aggregations please read below:
+Aggregations queries are supported in the current API. You can perform several type of queries like aggregation by date with varied intervals such as weekly,monthly etc. 
+The accepted intervals are week,month,year,quarter,hour,minute,day,second
+This can be specified as
+```
+http://<mydigurl>/mydig/search/projectName?_group-by=date_field_here
+```
+
+You can also execute queries where the data is bucketed according to a string field/number field as well. In such scenarios a sub-aggregation is possible with sum,min,max,avg and count as the possibilities.
+
+This can be specified as 
+```
+http://<mydigurl>/mydig/search/projectName?_group-by=some_field&_aggregation-field=death_count&_aggregation=avg
+```
+The above syntax can be used to execute aggregation queries using mydig.
+
+Let us now consider some examples below
+
+Example 1: Date histogram 
+This query can be executed on the sage dataset with acled & pitf data loaded into it. Note how the earlier syntax of field/value=something is used to filter out the result and the aggregation is performed on the resultant subset.
+```
+http://<mydigurl>/mydig/search/sage?_group-by=event_date&_interval=year&website/value=acleddata.com
+```
+
+```
+{
+  "hits": {
+    "hits": [],
+    "total": 100,
+    "max_score": 0.0
+  },
+  "_shards": {
+    "successful": 5,
+    "failed": 0,
+    "skipped": 0,
+    "total": 5
+  },
+  "took": 2,
+  "aggregations": {
+    "event_date": {
+      "buckets": [
+        {
+          "key_as_string": "1997-01-01T00:00:00.000Z",
+          "key": 852076800000,
+          "doc_count": 2
+        },
+        {
+          "key_as_string": "1998-01-01T00:00:00.000Z",
+          "key": 883612800000,
+          "doc_count": 3
+        },
+        .
+        .
+        .
+        .
+        .
+
+        {
+          "key_as_string": "2017-01-01T00:00:00.000Z",
+          "key": 1483228800000,
+          "doc_count": 17
+        }
+      ]
+    }
+  },
+  "timed_out": false
+}
+```
+
+Example 2 : Performing bucket aggregation with a string field
+```
+http://<mydigurl>/mydig/search/sage?_group-by=website
+```
+
+```
+{
+  "hits": {
+    "hits": [],
+    "total": 200,
+    "max_score": 0.0
+  },
+  "_shards": {
+    "successful": 5,
+    "failed": 0,
+    "skipped": 0,
+    "total": 5
+  },
+  "took": 599,
+  "aggregations": {
+    "website": {
+      "buckets": [
+        {
+          "key": "acleddata.com",
+          "doc_count": 100
+        },
+        {
+          "key": "parusanalytics.com",
+          "doc_count": 100
+        }
+      ],
+      "sum_other_doc_count": 0,
+      "doc_count_error_upper_bound": 0
+    }
+  },
+  "timed_out": false
+}
+```
+Another example : 
+
+```
+http://<mydigurl>/mydig/search/sage?_group-by=event_type
+```
+
+```
+{
+  "hits": {
+    "hits": [],
+    "total": 200,
+    "max_score": 0.0
+  },
+  "_shards": {
+    "successful": 5,
+    "failed": 0,
+    "skipped": 0,
+    "total": 5
+  },
+  "took": 6,
+  "aggregations": {
+    "event_type": {
+      "buckets": [
+        {
+          "key": "attack/massacre",
+          "doc_count": 94
+        },
+        {
+          "key": "incident",
+          "doc_count": 64
+        },
+        {
+          "key": "riots/protests",
+          "doc_count": 45
+        },
+        {
+          "key": "campaign",
+          "doc_count": 36
+        },
+        {
+          "key": "firearms",
+          "doc_count": 32
+        },
+        {
+          "key": "sole protester action",
+          "doc_count": 32
+        },
+        {
+          "key": "heavy weapons",
+          "doc_count": 31
+        },
+        {
+          "key": "battle-no change of territory",
+          "doc_count": 23
+        },
+        {
+          "key": "violence against civilians",
+          "doc_count": 23
+        },
+        {
+          "key": "unclear/other",
+          "doc_count": 20
+        }
+      ],
+      "sum_other_doc_count": 99,
+      "doc_count_error_upper_bound": 2
+    }
+  },
+  "timed_out": false
+}
+
+```

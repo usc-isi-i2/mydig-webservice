@@ -12,7 +12,8 @@ class ConjuctiveQueryProcessor(object):
         self.page = self.myargs.get("_page",0)
         self.verbosity = self.myargs.get("_verbosity","full")
         self.response_format = self.myargs.get("_format","json")
-        self.config_fields = config_fields
+        self.config_fields = config_fields.keys()
+        self.config = config_fields
         self.es = es
         self.project_root_name = project_root_name
         self.project_name = project_name
@@ -20,6 +21,14 @@ class ConjuctiveQueryProcessor(object):
         self.KG_PREFIX = 'knowledge_graph'
         self.SOURCE = '_source'
         self.stats = self.myargs.get("_statistics","yes")
+        self.group_by=self.myargs.get("_group-by",None)
+        self.aggregation = self.myargs.get("_aggregation",None)
+        self.aggregation_field = self.myargs.get("_aggregation-field",None)
+        if self.aggregation_field is not None and self.aggregation is None:
+            self.aggregation = "sum"
+        self.interval = self.myargs.get("_interval","day")
+        self.intervals = ["day","month","week","year","quarter","hour","minute","second"]
+        self.aggregations = ["min","max","avg","count","sum"]
 
     def process(self):
         '''
@@ -36,6 +45,7 @@ class ConjuctiveQueryProcessor(object):
         res = self.es.search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
         res_filtered = self.filter_response(res,self.field_names)
         resp={}
+        print query
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
         if self.response_format =="json_lines":
@@ -122,6 +132,14 @@ class ConjuctiveQueryProcessor(object):
                     continue
                 elif key not in self.config_fields:
                     return False
+        if self.interval is not None and self.interval not in self.intervals:
+            return False
+        elif self.group_by is not None and self.group_by not in self.config_fields:
+            return False
+        elif self.aggregation_field is not None and self.aggregation_field not in self.config_fields:
+            return False
+        elif self.aggregation is not None and self.aggregation not in self.aggregations:
+            return False
 
         return True
 
@@ -193,6 +211,12 @@ class ConjuctiveQueryProcessor(object):
                     "knowledge_graph." + extraction['field_name'] + "__" + extraction['valueorkey']: urllib.unquote(args[term])
                 }
             }
+        else:
+            must_clause = {
+                "match": {
+                    "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(args[term])
+                }
+            }
         return must_clause
 
     def get_sort_order(self):
@@ -257,6 +281,14 @@ class ConjuctiveQueryProcessor(object):
         full_query['from'] = self.page*self.num_results
         if self.ordering is not None:
             full_query['sort'] = self.get_sort_order()
+        if self.group_by is not None:
+            full_query['size'] = 0
+            if self.config[self.group_by]['type'] == "date":
+                query = self._addDateClause()
+                full_query['aggs'] = query
+            else:
+                query = self._addGroupByClause()
+                full_query['aggs'] = query
         print full_query    
         return full_query
 
@@ -277,3 +309,33 @@ class ConjuctiveQueryProcessor(object):
             resp['hits']['hits'] = docs
             return resp
             
+    def _addGroupByClause(self):
+        full_clause =  {
+                  self.group_by: {
+                   "terms": {
+                    "field":  'knowledge_graph.'+self.group_by+'.key'
+                }
+            }
+        }
+        if self.aggregation_field is not None:
+            agg_clause = {
+                    self.aggregation_field: {
+                     self.aggregation : {
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.value'
+                    }
+                }
+            }
+            full_clause['agg'] = agg_clause
+        return full_clause
+        
+
+    def _addDateClause(self):
+        date_clause = {
+            self.group_by : {
+                "date_histogram" : {
+                    "field" : self.group_by,
+                    "interval" : self.interval
+                }
+            }
+        }
+        return date_clause  
