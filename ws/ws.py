@@ -223,10 +223,7 @@ class ConjuctiveQuery(Resource):
         if project_name not in data:
             return rest.not_found()
         es = ES(config['es']['sample_url'])
-        if '_group-by' in request.args:
-            query = AggregateQueryProcessor(request,project_name,data[project_name]['master_config']['fields'],data[project_name]['master_config']['root_name'],es)
-        else:
-            query = ConjuctiveQueryProcessor(request,project_name,data[project_name]['master_config']['fields'],data[project_name]['master_config']['root_name'],es)
+        query = ConjuctiveQueryProcessor(request,project_name,data[project_name]['master_config']['fields'],data[project_name]['master_config']['root_name'],es)
         
         return query.process()
 
