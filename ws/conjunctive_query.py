@@ -334,7 +334,7 @@ class ConjunctiveQueryProcessor(object):
         date_clause = {
             self.group_by : {
                 "date_histogram" : {
-                    "field" : self.group_by,
+                    "field" : 'knowledge_graph.'+self.group_by+'.key',
                     "interval" : self.interval
                 }
             }
