@@ -1785,6 +1785,7 @@ class Data(Resource):
 
     @staticmethod
     def generate_doc_id(url):
+
         content = '{}-{}'.format(url, str(time.time()))
         return hashlib.sha256(content).hexdigest().upper()
 
