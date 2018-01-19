@@ -185,6 +185,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         _RESOURCES = 'resources'
         _FILTERS = 'filters'
         _EXTRACTION_POLICY = 'extraction_policy'
+        _KG_ENHANCEMENT = 'kg_enhancement'
 
         try:
             additional_etk_config_file_paths = glob.glob(additional_etk_config_path + '*.json')
@@ -192,17 +193,26 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
             for additional_etk_config_file_path in additional_etk_config_file_paths:
                 additional_etk_config = json.load(open(additional_etk_config_file_path, 'r'))
 
+                if _KG_ENHANCEMENT in additional_etk_config:
+                    if _KG_ENHANCEMENT not in etk_config_:
+                        etk_config_[_KG_ENHANCEMENT] = list()
+
+                    kg_enhancement = additional_etk_config[_KG_ENHANCEMENT]
+                    if not isinstance(kg_enhancement, list):
+                        kg_enhancement = [kg_enhancement]
+                    etk_config_[_KG_ENHANCEMENT].extend(kg_enhancement)
+
                 # Handle content_extraction
                 if _CONTENT_EXTRACTION in additional_etk_config:
                     for key, val in additional_etk_config[_CONTENT_EXTRACTION].iteritems():
                         if key in etk_config_[_CONTENT_EXTRACTION] and \
-                        isinstance(val, list) and \
-                        isinstance(etk_config_[_CONTENT_EXTRACTION][key], list):
+                                isinstance(val, list) and \
+                                isinstance(etk_config_[_CONTENT_EXTRACTION][key], list):
                             etk_config_[_CONTENT_EXTRACTION][key].extend(val)
 
                         elif key in etk_config_[_CONTENT_EXTRACTION] and \
-                        isinstance(val, dict) and \
-                        isinstance(etk_config_[_CONTENT_EXTRACTION][key], dict):
+                                isinstance(val, dict) and \
+                                isinstance(etk_config_[_CONTENT_EXTRACTION][key], dict):
                             etk_config_[_CONTENT_EXTRACTION][key].update(val)
 
                         elif key not in etk_config_[_CONTENT_EXTRACTION]:
@@ -216,13 +226,13 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
                 if _RESOURCES in additional_etk_config:
                     for key, val in additional_etk_config[_RESOURCES].iteritems():
                         if key in etk_config_[_RESOURCES] and \
-                        isinstance(val, list) and \
-                        isinstance(etk_config_[_RESOURCES][key], list):
+                                isinstance(val, list) and \
+                                isinstance(etk_config_[_RESOURCES][key], list):
                             etk_config_[_RESOURCES][key].extend(val)
 
                         elif key in etk_config_[_RESOURCES] and \
-                        isinstance(val, dict) and \
-                        isinstance(etk_config_[_RESOURCES][key], dict):
+                                isinstance(val, dict) and \
+                                isinstance(etk_config_[_RESOURCES][key], dict):
                             etk_config_[_RESOURCES][key].update(val)
 
                         elif key not in etk_config_[_RESOURCES]:
@@ -247,7 +257,6 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
             print e
             print 'Error in merging additional ETK configs'
 
-
     return etk_config
 
 
@@ -265,7 +274,8 @@ def create_landmark_data_extractor_for_field(mapped_fields, field_name):
     if field_name == 'phone' or field_name == 'email' or field_name == 'posting_date':
         de['extractors']['extract_from_landmark']['config']['post_filter'] = [inferlink_fields_post_filter[field_name]]
     elif 'date' in field_name:
-        de['extractors']['extract_from_landmark']['config']['post_filter'] = [inferlink_fields_post_filter['posting_date']]
+        de['extractors']['extract_from_landmark']['config']['post_filter'] = [
+            inferlink_fields_post_filter['posting_date']]
     return de
 
 
@@ -433,7 +443,7 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
             for blacklist in field_backlists:
                 if blacklist in glossaries.keys():
 
-                    etk_config = create_kg_enhancement(etk_config) # create it it's not there
+                    etk_config = create_kg_enhancement(etk_config)  # create it it's not there
 
                     b_path = os.path.join(glossary_dir_path, glossaries[blacklist]['path'])
 
@@ -448,7 +458,7 @@ def add_glossary_extraction(etk_config, project_master_config, glossary_dir_path
                         de_obj['fields'][field_name]['extractors'] = dict()
 
                     etk_config['kg_enhancement']['fields'][field_name] = \
-                        create_stop_word_dictionary_data_extractor_for_field(blacklist, 10) # set priority to 10
+                        create_stop_word_dictionary_data_extractor_for_field(blacklist, 10)  # set priority to 10
 
     etk_config['data_extraction'].append(de_obj)
     return etk_config
@@ -570,7 +580,7 @@ def add_default_TLD_extractor(project_master_config, etk_config):
 
 
 def create_kg_enhancement(etk_config):
-    if 'kg_enhancement' in etk_config: # ignore if it's already there
+    if 'kg_enhancement' in etk_config:  # ignore if it's already there
         return etk_config
 
     kg_enhancement = {

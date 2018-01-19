@@ -44,6 +44,7 @@ import etk_helper
 import data_persistence
 from conjunctive_query import ConjunctiveQueryProcessor
 import requests.packages.urllib3
+
 requests.packages.urllib3.disable_warnings()
 
 # logger
@@ -56,7 +57,7 @@ logger.setLevel(config['logging']['level'])
 
 # flask app
 app = Flask(__name__)
-app.config.update(MAX_CONTENT_LENGTH=1024*1024*1024*10)
+app.config.update(MAX_CONTENT_LENGTH=1024 * 1024 * 1024 * 10)
 cors = CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
 api = Api(app)
 
@@ -67,6 +68,7 @@ def api_route(self, *args, **kwargs):
         return cls
 
     return wrapper
+
 
 api.route = types.MethodType(api_route, api)
 
@@ -97,7 +99,7 @@ def update_master_config_file(project_name):
 
 def update_status_file(project_name, lock=True):
     status_file_path = os.path.join(
-        _get_project_dir_path(project_name),'working_dir/status.json')
+        _get_project_dir_path(project_name), 'working_dir/status.json')
     if not lock:
         write_to_file(json.dumps(data[project_name]['status'], indent=4), status_file_path)
     else:
@@ -115,7 +117,7 @@ def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
 
 
-def _add_keys_to_dict(obj, keys): # dict, list
+def _add_keys_to_dict(obj, keys):  # dict, list
     curr_obj = obj
     for key in keys:
         if key not in curr_obj:
@@ -156,6 +158,7 @@ def tail_file(f, lines=1, _buffer=4098):
         block_counter -= 1
 
     return lines_found[-lines:]
+
 
 @app.route('/spec')
 def spec():
@@ -214,17 +217,16 @@ class Debug(Resource):
 
 @api.route('/search/<project_name>')
 class ConjunctiveQuery(Resource):
-
     @requires_auth
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
-        logger.error('API Request received for %s'%(project_name))
+        logger.error('API Request received for %s' % (project_name))
         es = ES(config['es']['sample_url'])
         query = ConjunctiveQueryProcessor(request, project_name,
-            data[project_name]['master_config']['fields'],
-            data[project_name]['master_config']['root_name'], es)
-        
+                                          data[project_name]['master_config']['fields'],
+                                          data[project_name]['master_config']['root_name'], es)
+
         return query.process()
 
 
@@ -234,7 +236,7 @@ class AllProjects(Resource):
     def post(self):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
-        project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
+        project_name = project_name.lower()  # convert to lower (sandpaper index needs to be lower)
         if not re_project_name.match(project_name) or project_name in config['project_name_blacklist']:
             return rest.bad_request('Invalid project name.')
         if project_name in data:
@@ -330,7 +332,7 @@ class AllProjects(Resource):
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
         write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
 
-        update_status_file(project_name, lock=False) # create status file after creating the working_dir
+        update_status_file(project_name, lock=False)  # create status file after creating the working_dir
 
         start_threads_and_locks(project_name)
 
@@ -352,55 +354,55 @@ class AllProjects(Resource):
             except Exception as e:
                 logger.error('deleting project %s: %s' % (project_name, e.message))
                 return rest.internal_error('deleting project %s error, halted.' % project_name)
-            # finally:
-            #     project_lock.remove(project_name)
+                # finally:
+                #     project_lock.remove(project_name)
 
         git_helper.commit(message='delete all projects')
         return rest.deleted()
 
-    # @staticmethod
-    # def extract_credentials_from_sources(sources):
-    #     # add credential_id to source if there's username & password there
-    #     # store them to credentials dict
-    #     # and remove them from source
-    #     idx = 0
-    #     credentials = {}
-    #     for s in sources:
-    #         if 'username' in s:
-    #             s['credential_id'] = str(idx)
-    #             credentials[idx] = dict()
-    #             credentials[idx]['username'] = s['username'].strip()
-    #             credentials[idx]['password'] = s['password'].strip()
-    #             del s['username']
-    #             del s['password']
-    #             idx += 1
-    #     return credentials
+        # @staticmethod
+        # def extract_credentials_from_sources(sources):
+        #     # add credential_id to source if there's username & password there
+        #     # store them to credentials dict
+        #     # and remove them from source
+        #     idx = 0
+        #     credentials = {}
+        #     for s in sources:
+        #         if 'username' in s:
+        #             s['credential_id'] = str(idx)
+        #             credentials[idx] = dict()
+        #             credentials[idx]['username'] = s['username'].strip()
+        #             credentials[idx]['password'] = s['password'].strip()
+        #             del s['username']
+        #             del s['password']
+        #             idx += 1
+        #     return credentials
 
-    # @staticmethod
-    # def get_authenticated_sources(project_name):
-    #     """don't store authenticated source"""
-    #     sources = copy.deepcopy(data[project_name]['master_config']['sources'])
-    #     with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
-    #         j = json.loads(f.read())
-    #         for s in sources:
-    #             if 'credential_id' in s:
-    #                 id = s['credential_id']
-    #                 s['http_auth'] = (j[id]['username'], j[id]['password'])
-    #     return sources
-    #
-    # @staticmethod
-    # def trim_empty_tld_in_sources(sources):
-    #     for i in xrange(len(sources)):
-    #         s = sources[i]
-    #         tlds = []
-    #         if 'tlds' in s:
-    #             for tld in s['tlds']:
-    #                 tld = tld.strip()
-    #                 if len(tld) == 0:
-    #                     continue
-    #                 tlds.append(tld)
-    #         s['tlds'] = tlds
-    #     return sources
+        # @staticmethod
+        # def get_authenticated_sources(project_name):
+        #     """don't store authenticated source"""
+        #     sources = copy.deepcopy(data[project_name]['master_config']['sources'])
+        #     with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
+        #         j = json.loads(f.read())
+        #         for s in sources:
+        #             if 'credential_id' in s:
+        #                 id = s['credential_id']
+        #                 s['http_auth'] = (j[id]['username'], j[id]['password'])
+        #     return sources
+        #
+        # @staticmethod
+        # def trim_empty_tld_in_sources(sources):
+        #     for i in xrange(len(sources)):
+        #         s = sources[i]
+        #         tlds = []
+        #         if 'tlds' in s:
+        #             for tld in s['tlds']:
+        #                 tld = tld.strip()
+        #                 if len(tld) == 0:
+        #                     continue
+        #                 tlds.append(tld)
+        #         s['tlds'] = tlds
+        #     return sources
 
 
 @api.route('/projects/<project_name>')
@@ -493,6 +495,7 @@ class Project(Resource):
 
         return rest.deleted()
 
+
 @api.route('/projects/<project_name>/tags')
 class ProjectTags(Resource):
     @requires_auth
@@ -554,10 +557,10 @@ class ProjectTags(Resource):
                 not isinstance(tag_obj['include_in_menu'], bool):
             return False, 'Invalid tag attribute: include_in_menu'
         if 'positive_class_precision' not in tag_obj or \
-                tag_obj['positive_class_precision'] > 1 or tag_obj['positive_class_precision'] < 0:
+                        tag_obj['positive_class_precision'] > 1 or tag_obj['positive_class_precision'] < 0:
             return False, 'Invalid tag attribute: positive_class_precision'
         if 'negative_class_precision' not in tag_obj or \
-                tag_obj['negative_class_precision'] > 1 or tag_obj['negative_class_precision'] < 0:
+                        tag_obj['negative_class_precision'] > 1 or tag_obj['negative_class_precision'] < 0:
             return False, 'Invalid tag attribute: negative_class_precision'
         return True, None
 
@@ -637,7 +640,7 @@ class ProjectFields(Resource):
 
     @requires_auth
     def get(self, project_name):
-        project_name = project_name.lower() # patches for inferlink
+        project_name = project_name.lower()  # patches for inferlink
         if project_name not in data:
             return rest.not_found()
         return data[project_name]['master_config']['fields']
@@ -714,11 +717,12 @@ class ProjectFields(Resource):
                 ('social_media', 'review_id', 'posting_date', 'phone', 'email', 'address', 'TLD', 'none'):
             field_obj['predefined_extractor'] = 'none'
         if 'rule_extraction_target' not in field_obj or \
-                field_obj['rule_extraction_target'] not in ('title_only', 'description_only', 'title_and_description'):
+                        field_obj['rule_extraction_target'] not in (
+                'title_only', 'description_only', 'title_and_description'):
             field_obj['rule_extraction_target'] = 'title_and_description'
         if 'case_sensitive' not in field_obj or \
                 not isinstance(field_obj['case_sensitive'], bool) or \
-                len(field_obj['glossaries']) == 0:
+                        len(field_obj['glossaries']) == 0:
             field_obj['case_sensitive'] = False
         if 'blacklists' not in field_obj or \
                 not isinstance(field_obj['blacklists'], list):
@@ -820,7 +824,7 @@ class SpacyRulesOfAField(Resource):
         update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
-            message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
+                          message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
 
         with codecs.open(path, 'r') as f:
             obj = json.loads(f.read())
@@ -870,7 +874,7 @@ class SpacyRulesOfAField(Resource):
         # del data[project_name]['master_config']['spacy_field_rules'][field_name]
         update_master_config_file(project_name)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
-            message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
+                          message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
         return rest.deleted()
 
 
@@ -927,7 +931,7 @@ class ProjectGlossaries(Resource):
 
         dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
         shutil.rmtree(dir_path)
-        os.mkdir(dir_path) # recreate folder
+        os.mkdir(dir_path)  # recreate folder
         data[project_name]['master_config']['glossaries'] = dict()
         # remove all glossary names from all fields
         for k, v in data[project_name]['master_config']['fields'].items():
@@ -963,11 +967,11 @@ class ProjectGlossaries(Resource):
     @staticmethod
     def convert_glossary_to_json(lines):
         glossary = list()
-        lines = lines.replace('\r', '\n') # convert
+        lines = lines.replace('\r', '\n')  # convert
         lines = lines.split('\n')
         for line in lines:
             line = line.strip()
-            if len(line) == 0: # trim empty line
+            if len(line) == 0:  # trim empty line
                 continue
             glossary.append(line)
         return json.dumps(glossary)
@@ -1027,7 +1031,7 @@ class Glossary(Resource):
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt.gz')
         ret = send_file(file_path, mimetype='application/gzip',
-                         as_attachment=True, attachment_filename=glossary_name + '.txt.gz')
+                        as_attachment=True, attachment_filename=glossary_name + '.txt.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
 
@@ -1324,10 +1328,10 @@ class FieldAnnotations(Resource):
                 if field_name not in doc['knowledge_graph']:
                     return
                 for field_instance in doc['knowledge_graph'][field_name]:
-                    if key is None: # delete all annotations
+                    if key is None:  # delete all annotations
                         if 'human_annotation' in field_instance:
                             del field_instance['human_annotation']
-                    else: # delete annotation of a specific key
+                    else:  # delete annotation of a specific key
                         if field_instance['key'] == key:
                             del field_instance['human_annotation']
                             break
@@ -1371,7 +1375,7 @@ class FieldAnnotations(Resource):
                 reader = csv.DictReader(
                     csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-                next(reader, None) # skip header
+                next(reader, None)  # skip header
                 for row in reader:
                     _add_keys_to_dict(data[project_name]['field_annotations'],
                                       [row['kg_id'], row['field_name'], row['key']])
@@ -1513,7 +1517,6 @@ class TagAnnotationsForEntityType(Resource):
     def put(self, project_name, tag_name, entity_name):
         return self.post(project_name, tag_name, entity_name)
 
-
     @staticmethod
     def es_update_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
         try:
@@ -1528,16 +1531,16 @@ class TagAnnotationsForEntityType(Resource):
                 res = es.load_data(index, type, doc, doc['doc_id'])
                 if not res:
                     logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                   .format(index_version, project_name, kg_id, tag_name, index, type))
+                                .format(index_version, project_name, kg_id, tag_name, index, type))
                     return
 
             logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                .format(index_version, project_name, kg_id, tag_name, index, type))
+                        .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
             print e
             logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'
-                .format(index_version, project_name, kg_id, tag_name))
+                           .format(index_version, project_name, kg_id, tag_name))
 
     @staticmethod
     def es_remove_tag_annotation(index_version, project_name, kg_id, tag_name):
@@ -1562,11 +1565,11 @@ class TagAnnotationsForEntityType(Resource):
                 res = es.load_data(index, type, doc, doc['doc_id'])
                 if not res:
                     logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                        .format(index_version, project_name, kg_id, tag_name, index, type))
+                                .format(index_version, project_name, kg_id, tag_name, index, type))
                     return
 
             logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                .format(index_version, project_name, kg_id, tag_name, index, type))
+                        .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
             print e
@@ -1603,10 +1606,10 @@ class TagAnnotationsForEntityType(Resource):
                 reader = csv.DictReader(
                     csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-                next(reader, None) # skip header
+                next(reader, None)  # skip header
                 for row in reader:
                     _add_keys_to_dict(data[project_name]['entities'],
-                        [row['entity_name'], row['kg_id'], row['tag_name']])
+                                      [row['entity_name'], row['kg_id'], row['tag_name']])
                     data[project_name]['entities'][row['entity_name']][row['kg_id']][row['tag_name']][
                         'human_annotation'] = row['human_annotation']
 
@@ -1664,7 +1667,7 @@ class TagAnnotationsForEntity(Resource):
         args = parser.parse_args()
 
         return_kg = True if args['kg'] is not None and \
-            args['kg'].lower() == 'true' else False
+                            args['kg'].lower() == 'true' else False
 
         if return_kg:
             ret['knowledge_graph'] = self.get_kg(project_name, kg_id, tag_name)
@@ -1729,12 +1732,13 @@ class Data(Resource):
 
         if not args['sync']:
             thread.start_new_thread(Data._update_catalog_worker,
-                (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'], ))
+                                    (project_name, file_name, args['file_type'], src_file_path, dest_dir_path,
+                                     args['log'],))
 
             return rest.accepted()
         else:
             Data._update_catalog_worker(project_name, file_name, args['file_type'],
-                                      src_file_path, dest_dir_path, args['log'])
+                                        src_file_path, dest_dir_path, args['log'])
             return rest.created()
 
     @staticmethod
@@ -1772,20 +1776,20 @@ class Data(Resource):
                     # doc_id
                     obj['doc_id'] = unicode(obj.get('doc_id', obj.get('_id', ''))).encode('utf-8')
                     if not Data.is_valid_doc_id(obj['doc_id']):
-                            if len(obj['doc_id']) > 0: # has doc_id but invalid
-                                old_doc_id = obj['doc_id']
-                                obj['doc_id'] = base64.b64encode(old_doc_id)
-                                _write_log('base64 encoded doc_id from {} to {}'
-                                           .format(old_doc_id, obj['doc_id']))
-                            if not Data.is_valid_doc_id(obj['doc_id']):
-                                # generate doc_id
-                                # if there's raw_content, generate id based on raw_content
-                                # if not, use the whole object
-                                if len(obj['raw_content']) != 0:
-                                    obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
-                                else:
-                                    obj['doc_id'] = Data.generate_doc_id(json.dumps(obj))
-                                _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+                        if len(obj['doc_id']) > 0:  # has doc_id but invalid
+                            old_doc_id = obj['doc_id']
+                            obj['doc_id'] = base64.b64encode(old_doc_id)
+                            _write_log('base64 encoded doc_id from {} to {}'
+                                       .format(old_doc_id, obj['doc_id']))
+                        if not Data.is_valid_doc_id(obj['doc_id']):
+                            # generate doc_id
+                            # if there's raw_content, generate id based on raw_content
+                            # if not, use the whole object
+                            if len(obj['raw_content']) != 0:
+                                obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
+                            else:
+                                obj['doc_id'] = Data.generate_doc_id(json.dumps(obj))
+                            _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
 
                     # url
                     if 'url' not in obj:
@@ -1834,7 +1838,7 @@ class Data(Resource):
                     # update status
                     if not exists_before:
                         with data[project_name]['locks']['status']:
-                            data[project_name]['status']['total_docs'][tld] =\
+                            data[project_name]['status']['total_docs'][tld] = \
                                 data[project_name]['status']['total_docs'].get(tld, 0) + 1
 
                 f.close()
@@ -1846,8 +1850,8 @@ class Data(Resource):
             elif file_type == 'html':
                 pass
 
-            # notify action add data if needed
-            # Actions._add_data(project_name)
+                # notify action add data if needed
+                # Actions._add_data(project_name)
 
         except Exception as e:
             print 'exception in _update_catalog_worker', e
@@ -1953,7 +1957,7 @@ class Data(Resource):
 @api.route('/projects/<project_name>/actions/project_config')
 class ActionProjectConfig(Resource):
     @requires_auth
-    def post(self, project_name): # frontend needs to fresh to get all configs again
+    def post(self, project_name):  # frontend needs to fresh to get all configs again
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
@@ -1964,9 +1968,9 @@ class ActionProjectConfig(Resource):
 
             # save to tmp path and test
             tmp_project_config_path = os.path.join(_get_project_dir_path(project_name),
-                                                       'working_dir/uploaded_project_config.tar.gz')
+                                                   'working_dir/uploaded_project_config.tar.gz')
             tmp_project_config_extracted_path = os.path.join(_get_project_dir_path(project_name),
-                                                       'working_dir/uploaded_project_config')
+                                                             'working_dir/uploaded_project_config')
             args['file_data'].save(tmp_project_config_path)
             with tarfile.open(tmp_project_config_path, 'r:gz') as tar:
                 tar.extractall(tmp_project_config_extracted_path)
@@ -2007,19 +2011,20 @@ class ActionProjectConfig(Resource):
             )
 
             tmp_additional_etk_config = os.path.join(tmp_project_config_extracted_path,
-                                                   'working_dir/additional_etk_config')
+                                                     'working_dir/additional_etk_config')
             if os.path.exists(tmp_additional_etk_config):
                 distutils.dir_util.copy_tree(tmp_additional_etk_config,
-                    os.path.join(_get_project_dir_path(project_name), 'working_dir/additional_etk_config'))
+                                             os.path.join(_get_project_dir_path(project_name),
+                                                          'working_dir/additional_etk_config'))
 
             tmp_custom_etk_config = os.path.join(tmp_project_config_extracted_path,
-                                                     'working_dir/custom_etk_config.json')
+                                                 'working_dir/custom_etk_config.json')
             if os.path.exists(tmp_custom_etk_config):
                 shutil.copyfile(tmp_custom_etk_config,
-                    os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
+                                os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
 
             tmp_landmark_config_path = os.path.join(tmp_project_config_extracted_path,
-                                                'working_dir/_landmark_config.json')
+                                                    'working_dir/_landmark_config.json')
             if os.path.exists(tmp_landmark_config_path):
                 with codecs.open(tmp_landmark_config_path, 'r') as f:
                     ActionProjectConfig.landmark_import(project_name, f.read())
@@ -2072,7 +2077,7 @@ class ActionProjectConfig(Resource):
                 tar.add(landmark_config_path, arcname='working_dir/_landmark_config.json')
 
         ret = send_file(export_path, mimetype='application/gzip',
-                         as_attachment=True, attachment_filename=project_name + '.tar.gz')
+                        as_attachment=True, attachment_filename=project_name + '.tar.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
 
@@ -2093,6 +2098,7 @@ class ActionProjectConfig(Resource):
             resp = requests.post(url, data=landmark_config)
         except Exception as e:
             print 'landmark import error', e
+
 
 @api.route('/projects/<project_name>/actions/etk_filters')
 class ActionProjectEtkFilters(Resource):
@@ -2124,7 +2130,7 @@ class ActionProjectEtkFilters(Resource):
 
             # write to file
             dir_path = os.path.join(_get_project_dir_path(project_name),
-                                'working_dir/additional_etk_config')
+                                    'working_dir/additional_etk_config')
             if not os.path.exists(dir_path):
                 os.mkdir(dir_path)
             config_path = os.path.join(dir_path, 'etk_filters.json')
@@ -2394,7 +2400,6 @@ class Actions(Resource):
         tld_list = input.get('tlds', {})
         payload = dict()
 
-
         for tld, num_to_run in tld_list.iteritems():
             if tld in data[project_name]['data']:
 
@@ -2416,7 +2421,7 @@ class Actions(Resource):
                     # {
                     #     "tld1": {"documents": [{doc_id, raw_content_path, url}, {...}, ...]},
                     # }
-                    payload[tld]= payload.get(tld, dict())
+                    payload[tld] = payload.get(tld, dict())
                     payload[tld]['documents'] = payload[tld].get('documents', list())
                     catalog_obj['doc_id'] = doc_id
                     payload[tld]['documents'].append(catalog_obj)
@@ -2494,7 +2499,7 @@ class Actions(Resource):
         try:
             resp = requests.delete(url, timeout=10)
         except:
-            pass # ignore no index error
+            pass  # ignore no index error
         # 3.2 create new index
         url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
             config['sandpaper']['url'],
@@ -2692,7 +2697,7 @@ class Actions(Resource):
             with codecs.open(catalog_obj['json_path'], 'r') as f:
                 doc_obj = json.loads(f.read())
             with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
-                doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
+                doc_obj['raw_content'] = f.read()  # .decode('utf-8', 'ignore')
         except Exception as e:
             print e
             return False, 'error in reading file from catalog'
@@ -2708,7 +2713,6 @@ class Actions(Resource):
 
 
 class DataPushingWorker(threading.Thread):
-
     def __init__(self, project_name):
         super(DataPushingWorker, self).__init__()
         self.project_name = project_name
@@ -2884,7 +2888,6 @@ if __name__ == '__main__':
 
                 # create project daemon thread
                 start_threads_and_locks(project_name)
-
 
         # print json.dumps(data, indent=4)
         # run app
