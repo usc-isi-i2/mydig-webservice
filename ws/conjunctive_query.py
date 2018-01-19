@@ -153,24 +153,23 @@ class ConjunctiveQueryProcessor(object):
             for field in fields:
                 try:
                     new_list = []
-                    if 'data' in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-                       new_list.append(json_doc[self.SOURCE][self.KG_PREFIX][field][0]['data'])
-                    else:
-                       new_list.append(json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value'])
-                    if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-                        nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
-                        min_nested_kg = {}
-                        for inner_field in nested_kg.keys():
-                            nest_list = []
-                            if 'data' in nested_kg[inner_field][0].keys():
-                                nest_list.append(nested_kg[inner_field][0]['data']) 
-                            else:
-                                nest_list.append(nested_kg[inner_field][0]['value'])
-                            nested_kg[inner_field] = nest_list
-                        if len(new_list) > 0:
-                            new_list[0] = nested_kg
-                        else:
+                    for element in json_doc[self.SOURCE][self.KG_PREFIX][field]:
+                        if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
+                            nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
+                            min_nested_kg = {}
+                            for inner_field in nested_kg.keys():
+                                nest_list = []
+                                for nested_element in nested_kg[inner_field]:
+                                    if 'data' in nested_element.keys():
+                                        nest_list.append(nested_element['data']) 
+                                    else:
+                                        nest_list.append(nested_element['value'])
+                                nested_kg[inner_field] = nest_list
                             new_list.append(nested_kg)
+                        elif 'data' in element.keys():
+                           new_list.append(element['data'])
+                        else:
+                           new_list.append(element['value'])
                     minidoc[field] = new_list
                 except Exception as e:
                     print e
