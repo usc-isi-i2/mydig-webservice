@@ -28,7 +28,10 @@ The underscore parameters specify modifiers to the query:
 - `_order-by`: a set of fields specifies fields to use as sort criteria, with modifiers such as `name$desc` or `name$asc`
 - `_format`: specifies how to format the query results, the possible values are `json` to produce an array of JSON objects, `jsonlines` to produce a sequence of JSON lines, one object per line
 - `_verbosity`: specifies how much data for each KG object to return, the possible values are `minimal` to return a compact representation, stripping provenance and returning the `value` attribute, `full` to return the original format of the KN object
-- `_statistics`: specifies whether to return statistics about the query execution, like in elastic search, possible values are `no` to return no statistics so that the payload contains only the KG objects, `yes` returns time to execute, etc like in elastic search (this option is ignored if the format is other than JSON.
+- `_statistics`: specifies whether to return statistics about the query execution,returns time to execute, etc like in elastic search (this option is ignored if the format is other than JSON. Now there are three levels of verbosity `minimal` , `full` and `es`.
+`minimal` - returns minified version of response with just values
+`full` - returns the doc from the es without statistics
+`es` - returns the complete response from es without alteration
 
 The query also would do a nested filter which would be of the format - 
 `field_name.nested_field`: searches on the nested_field attribute of the field_name in the KG.
@@ -711,54 +714,53 @@ http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=5&event_da
 ```
 
 ```
-{
-  "execution_time": 5,
-  "hits": {
-    "hits": [
-      {
-        "_source": {
-          "knowledge_graph": {
-            "event_date": [
-              {
-                "value": "2012-01-02T00:00:00"
-              }
-            ]
-          }
-        }
-      },
-      ...
+[
+  {
+    "event_date": [
+      "2012-06-08T00:00:00"
     ]
   },
-  "hit_count": 13374
-}
+ .
+ .
+ .
+ .
+ .
+ .
+  {
+    "event_date": [
+      "2013-01-26T00:00:00"
+    ]
+  }
+]
 ```
 
 Same query above with no statistics
 ```
-http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date&_verbosity=minimal&_statistics=no
+http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date&_verbosity=minimal
 
 ```
 ```
-Notice the time taken and docs are removed away from response if statistics is a no
-
-{
-  "hits": {
-    "hits": [
-      {
-        "_source": {
-          "knowledge_graph": {
-            "event_date": [
-              {
-                "value": "2012-01-02T00:00:00"
-              }
-            ]
-          }
-        }
-      },
-      ...
+Notice the time taken and docs are removed away from response if verbosity is not es.
+[
+  {
+    "event_date": [
+      "2012-06-08T00:00:00"
+    ]
+  },
+  .
+  .
+  .
+  .
+  .
+  .
+  .
+  .
+  {
+    "event_date": [
+      "2013-01-26T00:00:00"
     ]
   }
-}
+]
 ```
 
 Some advanced queries that can be performed on the dataset are dereferencing nested documents and also performing nested filters.
@@ -772,48 +774,32 @@ http://<mydigurl>/mydig/search/elicit_gtd?country/value=nigeria&_size=5&_fields=
 ```
 Also note in the below response how setting `_verbosity` to `minimal` recursively simplifies the Knowledge Graph of the nested document as well.
 ```
-{
-  "execution_time": 7863,
-  "hits": {
-    "hits": [
+[
+  {
+    "fatalities": [
       {
-        "_source": {
-          "knowledge_graph": {
-            "fatalities": [
-              {
-                "knowledge_graph": {
-                  "website": [
-                    {
-                      "value": "umd.edu"
-                    }
-                  ],
-                  "title": [
-                    {
-                      "value": "{\"doc_id\": \"26dc82eb5b18f029dd00e6f114c69f06594b899b\", \"size\": \"0\", \"title\": \"No Fatalities\", \"type\": [\"Consequence\", \"Group Of People\", \"Killed People\", \"Group Of Terrorists\", \"Empty Group\"]}"
-                    }
-                  ],
-                  "type": [
-                    {
-                      "value": "Consequence"
-                    }
-                  ],
-                  "size": [
-                    {
-                      "value": "0"
-                    }
-                  ]
-                },
-                "value": "26dc82eb5b18f029dd00e6f114c69f06594b899b"
-              }
-            ]
-          },
-          ...
-        }
+        "website": [
+          "umd.edu"
+        ],
+        "title": [
+          "{\"doc_id\": \"26dc82eb5b18f029dd00e6f114c69f06594b899b\", \"size\": \"0\", \"title\": \"No Fatalities\", \"type\": [\"Consequence\", \"Group Of People\", \"Killed People\", \"Group Of Terrorists\", \"Empty Group\"]}"
+        ],
+        "type": [
+          "Consequence"
+        ],
+        "size": [
+          "0"
+        ]
       }
     ]
   },
-  "hit_count": 3418
-}
+ .
+ .
+ .
+ .
+ .
+ .
+]
 ```
 
 To perform some additional queries such as aggregations please read below:

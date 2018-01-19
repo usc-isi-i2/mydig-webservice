@@ -11,7 +11,7 @@ class ConjunctiveQueryProcessor(object):
         self.num_results =  self.myargs.get("_size",20)
         self.ordering = self.myargs.get("_order-by",None)
         self.page = self.myargs.get("_page",0)
-        self.verbosity = self.myargs.get("_verbosity","full")
+        self.verbosity = self.myargs.get("_verbosity","es")
         self.response_format = self.myargs.get("_format","json")
         self.config_fields = config_fields.keys()
         self.config = config_fields
@@ -21,7 +21,6 @@ class ConjunctiveQueryProcessor(object):
         self.nested_query = self.myargs.get("_dereference",None)
         self.KG_PREFIX = 'knowledge_graph'
         self.SOURCE = '_source'
-        self.stats = self.myargs.get("_statistics","yes")
         self.group_by=self.myargs.get("_group-by",None)
         self.aggregation = self.myargs.get("_aggregation",None)
         self.aggregation_field = self.myargs.get("_aggregation-field",None)
@@ -55,12 +54,9 @@ class ConjunctiveQueryProcessor(object):
             if self.verbosity == "minimal":
                 if self.field_names is None:
                     self.field_names = ','.join(self.config_fields)
-                response_docs = self.minify_response(res_filtered,self.field_names)
-                resp['hits']={}
-                resp['hits']['hits'] = response_docs
-                if not self.stats == "no":
-                    resp['hit_count'] = res_filtered['hits']['total']
-                    resp['execution_time'] = res_filtered['took']
+                resp = self.minify_response(res_filtered,self.field_names)
+            elif self.verbosity == "full":
+                resp = res_filtered['hits']['hits']
             else:
                 resp = res_filtered
 
@@ -154,31 +150,28 @@ class ConjunctiveQueryProcessor(object):
         minified_docs = []
         for json_doc in docs:
             minidoc = {}
-            minidoc[self.SOURCE] = {}
-            minidoc[self.SOURCE][self.KG_PREFIX] = {}
             for field in fields:
                 try:
                     new_list = []
-                    new_json = {}
                     if 'data' in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-                        new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['data']
+                       new_list.append(json_doc[self.SOURCE][self.KG_PREFIX][field][0]['data'])
                     else:
-                        new_json['value'] = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
+                       new_list.append(json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value'])
                     if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
                         nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
                         min_nested_kg = {}
                         for inner_field in nested_kg.keys():
                             nest_list = []
-                            nest_json = {}
                             if 'data' in nested_kg[inner_field][0].keys():
-                                nest_json['value'] = nested_kg[inner_field][0]['data'] 
+                                nest_list.append(nested_kg[inner_field][0]['data']) 
                             else:
-                                nest_json['value'] = nested_kg[inner_field][0]['value']
-                            nest_list.append(nest_json)
+                                nest_list.append(nested_kg[inner_field][0]['value'])
                             nested_kg[inner_field] = nest_list
-                        new_json[self.KG_PREFIX] = nested_kg
-                    new_list.append(new_json)
-                    minidoc[self.SOURCE][self.KG_PREFIX][field] = new_list
+                        if len(new_list) > 0:
+                            new_list[0] = nested_kg
+                        else:
+                            new_list.append(nested_kg)
+                    minidoc[field] = new_list
                 except Exception as e:
                     print e
                     pass
@@ -271,13 +264,14 @@ class ConjunctiveQueryProcessor(object):
                 clause_list.append(self.generate_match_clause(query_term,self.myargs))
             elif not query_term.startswith("_"):
                 clause_list.append(self.generate_range_clause(query_term,self.myargs))
-        full_query = {
-            "query": {
+        full_query = {}
+        if len(clause_list) > 0:
+            full_query['query'] = {
                 "bool": {
                     querytype: clause_list
                 }
             }
-        }
+
         full_query['size'] = self.num_results
         full_query['from'] = self.page*self.num_results
         if self.ordering is not None:
