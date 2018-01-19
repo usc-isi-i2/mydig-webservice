@@ -10,28 +10,29 @@ import werkzeug
 import codecs
 import csv
 import multiprocessing
+import subprocess
 import thread
 import threading
-import subprocess
 import requests
-import copy
 import gzip
 import tarfile
-import urlparse
 import re
 import hashlib
 import traceback
 import time
+import datetime
 import random
 import signal
-
+import base64
 from flask import Flask, render_template, Response, make_response
 from flask import request, abort, redirect, url_for, send_file
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api, reqparse
 
 from kafka import KafkaProducer, KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 from tldextract import tldextract
+import dateparser
 
 from config import config
 from elastic_manager.elastic_manager import ES
@@ -41,8 +42,9 @@ from basic_auth import requires_auth, requires_auth_html
 import git_helper
 import etk_helper
 import data_persistence
-
+from conjunctive_query import ConjunctiveQueryProcessor
 import requests.packages.urllib3
+
 requests.packages.urllib3.disable_warnings()
 
 # logger
@@ -55,7 +57,7 @@ logger.setLevel(config['logging']['level'])
 
 # flask app
 app = Flask(__name__)
-app.config.update(MAX_CONTENT_LENGTH=1024*1024*1024*10)
+app.config.update(MAX_CONTENT_LENGTH=1024 * 1024 * 1024 * 10)
 cors = CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
 api = Api(app)
 
@@ -67,16 +69,22 @@ def api_route(self, *args, **kwargs):
 
     return wrapper
 
+
 api.route = types.MethodType(api_route, api)
 
 # in-memory data
 data = {}
 
 # regex precompile
-re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{1,255}$')
+re_project_name = re.compile(r'^[a-z0-9]{1}[a-z0-9_-]{0,254}$')
 re_url = re.compile(r'[^0-9a-z-_]+')
-re_doc_id = re_project_name
+re_doc_id = re.compile(r'^[a-zA-Z0-9_-]{1,255}$')
+os_reserved_file_names = ('CON', 'PRN', 'AUX', 'NUL',
+                          'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+                          'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9')
 
+# kafka
+kafka_producer = None
 
 
 def write_to_file(content, file_path):
@@ -91,7 +99,7 @@ def update_master_config_file(project_name):
 
 def update_status_file(project_name, lock=True):
     status_file_path = os.path.join(
-        _get_project_dir_path(project_name),'working_dir/status.json')
+        _get_project_dir_path(project_name), 'working_dir/status.json')
     if not lock:
         write_to_file(json.dumps(data[project_name]['status'], indent=4), status_file_path)
     else:
@@ -109,13 +117,47 @@ def _get_project_dir_path(project_name):
     return os.path.join(config['repo']['local_path'], project_name)
 
 
-def _add_keys_to_dict(obj, keys): # dict, list
+def _add_keys_to_dict(obj, keys):  # dict, list
     curr_obj = obj
     for key in keys:
         if key not in curr_obj:
             curr_obj[key] = dict()
         curr_obj = curr_obj[key]
     return obj
+
+
+def tail_file(f, lines=1, _buffer=4098):
+    # https://stackoverflow.com/questions/136168/get-last-n-lines-of-a-file-with-python-similar-to-tail
+    """Tail a file and get X lines from the end"""
+    # place holder for the lines found
+    lines_found = []
+
+    # block counter will be multiplied by buffer
+    # to get the block size from the end
+    block_counter = -1
+
+    # loop until we find X lines
+    while len(lines_found) < lines:
+        try:
+            f.seek(block_counter * _buffer, os.SEEK_END)
+        except IOError:  # either file is too small, or too many lines requested
+            f.seek(0)
+            lines_found = f.readlines()
+            break
+
+        lines_found = f.readlines()
+
+        # we found enough lines, get out
+        # Removed this line because it was redundant the while will catch
+        # it, I left it for history
+        # if len(lines_found) > lines:
+        #    break
+
+        # decrement the block counter to get the
+        # next X bytes
+        block_counter -= 1
+
+    return lines_found[-lines:]
 
 
 @app.route('/spec')
@@ -137,7 +179,7 @@ def home():
 
 
 @api.route('/authentication')
-class authentication(Resource):
+class Authentication(Resource):
     @requires_auth
     def get(self):
         # no need to do anything here
@@ -173,13 +215,28 @@ class Debug(Resource):
         return rest.bad_request()
 
 
+@api.route('/search/<project_name>')
+class ConjunctiveQuery(Resource):
+    @requires_auth
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+        logger.error('API Request received for %s' % (project_name))
+        es = ES(config['es']['sample_url'])
+        query = ConjunctiveQueryProcessor(request, project_name,
+                                          data[project_name]['master_config']['fields'],
+                                          data[project_name]['master_config']['root_name'], es)
+
+        return query.process()
+
+
 @api.route('/projects')
 class AllProjects(Resource):
     @requires_auth
     def post(self):
         input = request.get_json(force=True)
         project_name = input.get('project_name', '')
-        project_name = project_name.lower() # convert to lower (sandpaper index needs to be lower)
+        project_name = project_name.lower()  # convert to lower (sandpaper index needs to be lower)
         if not re_project_name.match(project_name) or project_name in config['project_name_blacklist']:
             return rest.bad_request('Invalid project name.')
         if project_name in data:
@@ -275,7 +332,7 @@ class AllProjects(Resource):
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
         write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
 
-        update_status_file(project_name, lock=False) # create status file after creating the working_dir
+        update_status_file(project_name, lock=False)  # create status file after creating the working_dir
 
         start_threads_and_locks(project_name)
 
@@ -297,55 +354,55 @@ class AllProjects(Resource):
             except Exception as e:
                 logger.error('deleting project %s: %s' % (project_name, e.message))
                 return rest.internal_error('deleting project %s error, halted.' % project_name)
-            # finally:
-            #     project_lock.remove(project_name)
+                # finally:
+                #     project_lock.remove(project_name)
 
         git_helper.commit(message='delete all projects')
         return rest.deleted()
 
-    # @staticmethod
-    # def extract_credentials_from_sources(sources):
-    #     # add credential_id to source if there's username & password there
-    #     # store them to credentials dict
-    #     # and remove them from source
-    #     idx = 0
-    #     credentials = {}
-    #     for s in sources:
-    #         if 'username' in s:
-    #             s['credential_id'] = str(idx)
-    #             credentials[idx] = dict()
-    #             credentials[idx]['username'] = s['username'].strip()
-    #             credentials[idx]['password'] = s['password'].strip()
-    #             del s['username']
-    #             del s['password']
-    #             idx += 1
-    #     return credentials
+        # @staticmethod
+        # def extract_credentials_from_sources(sources):
+        #     # add credential_id to source if there's username & password there
+        #     # store them to credentials dict
+        #     # and remove them from source
+        #     idx = 0
+        #     credentials = {}
+        #     for s in sources:
+        #         if 'username' in s:
+        #             s['credential_id'] = str(idx)
+        #             credentials[idx] = dict()
+        #             credentials[idx]['username'] = s['username'].strip()
+        #             credentials[idx]['password'] = s['password'].strip()
+        #             del s['username']
+        #             del s['password']
+        #             idx += 1
+        #     return credentials
 
-    # @staticmethod
-    # def get_authenticated_sources(project_name):
-    #     """don't store authenticated source"""
-    #     sources = copy.deepcopy(data[project_name]['master_config']['sources'])
-    #     with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
-    #         j = json.loads(f.read())
-    #         for s in sources:
-    #             if 'credential_id' in s:
-    #                 id = s['credential_id']
-    #                 s['http_auth'] = (j[id]['username'], j[id]['password'])
-    #     return sources
-    #
-    # @staticmethod
-    # def trim_empty_tld_in_sources(sources):
-    #     for i in xrange(len(sources)):
-    #         s = sources[i]
-    #         tlds = []
-    #         if 'tlds' in s:
-    #             for tld in s['tlds']:
-    #                 tld = tld.strip()
-    #                 if len(tld) == 0:
-    #                     continue
-    #                 tlds.append(tld)
-    #         s['tlds'] = tlds
-    #     return sources
+        # @staticmethod
+        # def get_authenticated_sources(project_name):
+        #     """don't store authenticated source"""
+        #     sources = copy.deepcopy(data[project_name]['master_config']['sources'])
+        #     with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
+        #         j = json.loads(f.read())
+        #         for s in sources:
+        #             if 'credential_id' in s:
+        #                 id = s['credential_id']
+        #                 s['http_auth'] = (j[id]['username'], j[id]['password'])
+        #     return sources
+        #
+        # @staticmethod
+        # def trim_empty_tld_in_sources(sources):
+        #     for i in xrange(len(sources)):
+        #         s = sources[i]
+        #         tlds = []
+        #         if 'tlds' in s:
+        #             for tld in s['tlds']:
+        #                 tld = tld.strip()
+        #                 if len(tld) == 0:
+        #                     continue
+        #                 tlds.append(tld)
+        #         s['tlds'] = tlds
+        #     return sources
 
 
 @api.route('/projects/<project_name>')
@@ -406,18 +463,37 @@ class Project(Resource):
     def delete(self, project_name):
         if project_name not in data:
             return rest.not_found()
+
+        # 1. stop etk (and clean up previous queue)
+        if not Actions._etk_stop(project_name, clean_up_queue=True):
+            return rest.internal_error('failed to kill_etk in ETL')
+
+        # 2. delete logstash config
+        # since queue is empty, leave it here is not a problem
+        # but for perfect solution, it needs to be deleted
+
+        # 3. clean up es data
+        url = '{}/{}'.format(
+            config['es']['sample_url'],
+            project_name
+        )
         try:
-            # project_lock.acquire(project_name)
+            resp = requests.delete(url, timeout=10)
+        except:
+            pass  # ignore no index error
+
+        # 4. release resource
+        stop_threads_and_locks(project_name)
+
+        # 5. delete all files
+        try:
             del data[project_name]
             shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
-            git_helper.commit(files=[project_name + '/*'],
-                              message='delete project {}'.format(project_name))
-            return rest.deleted()
         except Exception as e:
-            logger.error('deleting project %s: %s' % (project_name, e.message))
-            return rest.internal_error('deleting project %s error, halted.' % project_name)
-        # finally:
-        #     project_lock.remove(project_name)
+            print 'delete project error', e
+            return rest.internal_error('delete project error')
+
+        return rest.deleted()
 
 
 @api.route('/projects/<project_name>/tags')
@@ -481,10 +557,10 @@ class ProjectTags(Resource):
                 not isinstance(tag_obj['include_in_menu'], bool):
             return False, 'Invalid tag attribute: include_in_menu'
         if 'positive_class_precision' not in tag_obj or \
-                tag_obj['positive_class_precision'] > 1 or tag_obj['positive_class_precision'] < 0:
+                        tag_obj['positive_class_precision'] > 1 or tag_obj['positive_class_precision'] < 0:
             return False, 'Invalid tag attribute: positive_class_precision'
         if 'negative_class_precision' not in tag_obj or \
-                tag_obj['negative_class_precision'] > 1 or tag_obj['negative_class_precision'] < 0:
+                        tag_obj['negative_class_precision'] > 1 or tag_obj['negative_class_precision'] < 0:
             return False, 'Invalid tag attribute: negative_class_precision'
         return True, None
 
@@ -564,7 +640,7 @@ class ProjectFields(Resource):
 
     @requires_auth
     def get(self, project_name):
-        project_name = project_name.lower() # patches for inferlink
+        project_name = project_name.lower()  # patches for inferlink
         if project_name not in data:
             return rest.not_found()
         return data[project_name]['master_config']['fields']
@@ -602,7 +678,7 @@ class ProjectFields(Resource):
         if 'description' not in field_obj:
             field_obj['description'] = ''
         if 'type' not in field_obj or field_obj['type'] not in \
-                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image'):
+                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number'):
             return False, 'Invalid field attribute: type'
         if 'show_in_search' not in field_obj or \
                 not isinstance(field_obj['show_in_search'], bool):
@@ -614,7 +690,7 @@ class ProjectFields(Resource):
                         field_obj['show_as_link'] not in ('text', 'entity'):
             return False, 'Invalid field attribute: show_as_link'
         if 'show_in_result' not in field_obj or \
-                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description'):
+                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description', 'nested'):
             return False, 'Invalid field attribute: show_in_result'
         if 'color' not in field_obj:
             return False, 'Invalid field attribute: color'
@@ -641,12 +717,16 @@ class ProjectFields(Resource):
                 ('social_media', 'review_id', 'posting_date', 'phone', 'email', 'address', 'TLD', 'none'):
             field_obj['predefined_extractor'] = 'none'
         if 'rule_extraction_target' not in field_obj or \
-                field_obj['rule_extraction_target'] not in ('title_only', 'description_only', 'title_and_description'):
+                        field_obj['rule_extraction_target'] not in (
+                'title_only', 'description_only', 'title_and_description'):
             field_obj['rule_extraction_target'] = 'title_and_description'
         if 'case_sensitive' not in field_obj or \
                 not isinstance(field_obj['case_sensitive'], bool) or \
-                len(field_obj['glossaries']) == 0:
+                        len(field_obj['glossaries']) == 0:
             field_obj['case_sensitive'] = False
+        if 'blacklists' not in field_obj or \
+                not isinstance(field_obj['blacklists'], list):
+            field_obj['blacklists'] = list()
         return True, None
 
 
@@ -744,7 +824,7 @@ class SpacyRulesOfAField(Resource):
         update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
-            message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
+                          message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
 
         with codecs.open(path, 'r') as f:
             obj = json.loads(f.read())
@@ -794,7 +874,7 @@ class SpacyRulesOfAField(Resource):
         # del data[project_name]['master_config']['spacy_field_rules'][field_name]
         update_master_config_file(project_name)
         git_helper.commit(files=[path, project_name + '/master_config.json'],
-            message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
+                          message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
         return rest.deleted()
 
 
@@ -851,7 +931,7 @@ class ProjectGlossaries(Resource):
 
         dir_path = os.path.join(_get_project_dir_path(project_name), 'glossaries')
         shutil.rmtree(dir_path)
-        os.mkdir(dir_path) # recreate folder
+        os.mkdir(dir_path)  # recreate folder
         data[project_name]['master_config']['glossaries'] = dict()
         # remove all glossary names from all fields
         for k, v in data[project_name]['master_config']['fields'].items():
@@ -887,11 +967,11 @@ class ProjectGlossaries(Resource):
     @staticmethod
     def convert_glossary_to_json(lines):
         glossary = list()
-        lines = lines.replace('\r', '\n') # convert
+        lines = lines.replace('\r', '\n')  # convert
         lines = lines.split('\n')
         for line in lines:
             line = line.strip()
-            if len(line) == 0: # trim empty line
+            if len(line) == 0:  # trim empty line
                 continue
             glossary.append(line)
         return json.dumps(glossary)
@@ -951,7 +1031,7 @@ class Glossary(Resource):
 
         file_path = os.path.join(_get_project_dir_path(project_name), 'glossaries/' + glossary_name + '.txt.gz')
         ret = send_file(file_path, mimetype='application/gzip',
-                         as_attachment=True, attachment_filename=glossary_name + '.txt.gz')
+                        as_attachment=True, attachment_filename=glossary_name + '.txt.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
 
@@ -1248,10 +1328,10 @@ class FieldAnnotations(Resource):
                 if field_name not in doc['knowledge_graph']:
                     return
                 for field_instance in doc['knowledge_graph'][field_name]:
-                    if key is None: # delete all annotations
+                    if key is None:  # delete all annotations
                         if 'human_annotation' in field_instance:
                             del field_instance['human_annotation']
-                    else: # delete annotation of a specific key
+                    else:  # delete annotation of a specific key
                         if field_instance['key'] == key:
                             del field_instance['human_annotation']
                             break
@@ -1295,7 +1375,7 @@ class FieldAnnotations(Resource):
                 reader = csv.DictReader(
                     csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-                next(reader, None) # skip header
+                next(reader, None)  # skip header
                 for row in reader:
                     _add_keys_to_dict(data[project_name]['field_annotations'],
                                       [row['kg_id'], row['field_name'], row['key']])
@@ -1437,7 +1517,6 @@ class TagAnnotationsForEntityType(Resource):
     def put(self, project_name, tag_name, entity_name):
         return self.post(project_name, tag_name, entity_name)
 
-
     @staticmethod
     def es_update_tag_annotation(index_version, project_name, kg_id, tag_name, human_annotation):
         try:
@@ -1452,16 +1531,16 @@ class TagAnnotationsForEntityType(Resource):
                 res = es.load_data(index, type, doc, doc['doc_id'])
                 if not res:
                     logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                   .format(index_version, project_name, kg_id, tag_name, index, type))
+                                .format(index_version, project_name, kg_id, tag_name, index, type))
                     return
 
             logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                .format(index_version, project_name, kg_id, tag_name, index, type))
+                        .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
             print e
             logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'
-                .format(index_version, project_name, kg_id, tag_name))
+                           .format(index_version, project_name, kg_id, tag_name))
 
     @staticmethod
     def es_remove_tag_annotation(index_version, project_name, kg_id, tag_name):
@@ -1486,11 +1565,11 @@ class TagAnnotationsForEntityType(Resource):
                 res = es.load_data(index, type, doc, doc['doc_id'])
                 if not res:
                     logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                        .format(index_version, project_name, kg_id, tag_name, index, type))
+                                .format(index_version, project_name, kg_id, tag_name, index, type))
                     return
 
             logger.info('Fail to retrieve or load data to {}: project {}, kg_id {}, tag{}, index {}, type {}'
-                .format(index_version, project_name, kg_id, tag_name, index, type))
+                        .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
             print e
@@ -1527,10 +1606,10 @@ class TagAnnotationsForEntityType(Resource):
                 reader = csv.DictReader(
                     csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-                next(reader, None) # skip header
+                next(reader, None)  # skip header
                 for row in reader:
                     _add_keys_to_dict(data[project_name]['entities'],
-                        [row['entity_name'], row['kg_id'], row['tag_name']])
+                                      [row['entity_name'], row['kg_id'], row['tag_name']])
                     data[project_name]['entities'][row['entity_name']][row['kg_id']][row['tag_name']][
                         'human_annotation'] = row['human_annotation']
 
@@ -1588,7 +1667,7 @@ class TagAnnotationsForEntity(Resource):
         args = parser.parse_args()
 
         return_kg = True if args['kg'] is not None and \
-            args['kg'].lower() == 'true' else False
+                            args['kg'].lower() == 'true' else False
 
         if return_kg:
             ret['knowledge_graph'] = self.get_kg(project_name, kg_id, tag_name)
@@ -1653,12 +1732,13 @@ class Data(Resource):
 
         if not args['sync']:
             thread.start_new_thread(Data._update_catalog_worker,
-                (project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'], ))
+                                    (project_name, file_name, args['file_type'], src_file_path, dest_dir_path,
+                                     args['log'],))
 
             return rest.accepted()
         else:
             Data._update_catalog_worker(project_name, file_name, args['file_type'],
-                                      src_file_path, dest_dir_path, args['log'])
+                                        src_file_path, dest_dir_path, args['log'])
             return rest.created()
 
     @staticmethod
@@ -1681,42 +1761,74 @@ class Data(Resource):
                     if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
 
                 for line in f:
-                    obj = json.loads(line)
-                    if 'raw_content' not in obj or not isinstance(obj['raw_content'], basestring):
-                        _write_log('Invalid raw_content: {}'.format(json.dumps(obj)))
+                    if len(line.strip()) == 0:
                         continue
-                    if 'doc_id' not in obj or not isinstance(obj['doc_id'], basestring):
-                        if '_id' in obj and isinstance(obj['_id'], basestring):
-                            obj['doc_id'] = obj['_id']
-                        else:
-                            obj['doc_id'] = Data.generate_doc_id(obj['url'])
+                    obj = json.loads(line)
+
+                    # raw_content
+                    if 'raw_content' not in obj:
+                        obj['raw_content'] = ''
+                    try:
+                        obj['raw_content'] = unicode(obj['raw_content']).encode('utf-8')
+                    except:
+                        pass
+
+                    # doc_id
+                    obj['doc_id'] = unicode(obj.get('doc_id', obj.get('_id', ''))).encode('utf-8')
+                    if not Data.is_valid_doc_id(obj['doc_id']):
+                        if len(obj['doc_id']) > 0:  # has doc_id but invalid
+                            old_doc_id = obj['doc_id']
+                            obj['doc_id'] = base64.b64encode(old_doc_id)
+                            _write_log('base64 encoded doc_id from {} to {}'
+                                       .format(old_doc_id, obj['doc_id']))
+                        if not Data.is_valid_doc_id(obj['doc_id']):
+                            # generate doc_id
+                            # if there's raw_content, generate id based on raw_content
+                            # if not, use the whole object
+                            if len(obj['raw_content']) != 0:
+                                obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
+                            else:
+                                obj['doc_id'] = Data.generate_doc_id(json.dumps(obj))
                             _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+
+                    # url
                     if 'url' not in obj:
                         obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
                         _write_log('Generated URL for object: {}'.format(obj['url']))
+
+                    # timestamp_crawl
                     if 'timestamp_crawl' not in obj:
-                        obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                        # obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                        obj['timestamp_crawl'] = datetime.datetime.now().isoformat()
+                    else:
+                        try:
+                            parsed_date = dateparser.parse(obj['timestamp_crawl'])
+                            obj['timestamp_crawl'] = parsed_date.isoformat()
+                        except:
+                            _write_log('Can not parse timestamp_crawl: {}'.format(obj['doc_id']))
+                            continue
+
+                    # type
                     # this type will conflict with the attribute in logstash
                     if 'type' in obj:
                         obj['original_type'] = obj['type']
                         del obj['type']
+
                     # split raw_content and json
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
                     output_json_path = output_path_prefix + '.json'
                     with codecs.open(output_raw_content_path, 'w') as output:
-                        output.write(obj['raw_content'].encode('utf-8'))
+                        output.write(obj['raw_content'])
                     with codecs.open(output_json_path, 'w') as output:
                         del obj['raw_content']
                         output.write(json.dumps(obj, indent=2))
                     # update data db
-                    tld = Data.extract_tld(obj['url'])
+                    tld = obj.get('tld', Data.extract_tld(obj['url']))
                     with data[project_name]['locks']['data']:
                         data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
-                        # if doc has the same tld, skip
-                        # overwrite will cause the problem in the number of docs loaded to es
-                        if obj['doc_id'] in data[project_name]['data'][tld]:
-                            continue
+                        # if doc_id is already there, still overwrite it
+                        exists_before = True if obj['doc_id'] in data[project_name]['data'][tld] else False
                         data[project_name]['data'][tld][obj['doc_id']] = {
                             'raw_content_path': output_raw_content_path,
                             'json_path': output_json_path,
@@ -1724,9 +1836,10 @@ class Data(Resource):
                             'add_to_queue': False
                         }
                     # update status
-                    with data[project_name]['locks']['status']:
-                        data[project_name]['status']['total_docs'][tld] =\
-                            data[project_name]['status']['total_docs'].get(tld, 0) + 1
+                    if not exists_before:
+                        with data[project_name]['locks']['status']:
+                            data[project_name]['status']['total_docs'][tld] = \
+                                data[project_name]['status']['total_docs'].get(tld, 0) + 1
 
                 f.close()
 
@@ -1737,11 +1850,15 @@ class Data(Resource):
             elif file_type == 'html':
                 pass
 
-            # notify action add data if needed
-            # Actions._add_data(project_name)
+                # notify action add data if needed
+                # Actions._add_data(project_name)
 
         except Exception as e:
             print 'exception in _update_catalog_worker', e
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            lines = ''.join(lines)
+            print lines
             _write_log('Invalid file format')
 
         finally:
@@ -1752,7 +1869,6 @@ class Data(Resource):
 
             # remove temp file
             os.remove(src_file_path)
-
 
     @requires_auth
     def get(self, project_name):
@@ -1771,23 +1887,67 @@ class Data(Resource):
             ret['error_log'] = list()
             if os.path.exists(log_path):
                 with codecs.open(log_path, 'r') as f:
-                    for line in f:
-                        ret['error_log'].append(line)
+                    ret['error_log'] = tail_file(f, 200)
         else:
             with data[project_name]['locks']['status']:
                 for tld, num in data[project_name]['status']['total_docs'].iteritems():
                     ret[tld] = num
         return ret
 
+    @requires_auth
+    def delete(self, project_name):
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        input = request.get_json(force=True)
+        tld_list = input.get('tlds', list())
+
+        thread.start_new_thread(Data._delete_file_worker, (project_name, tld_list,))
+
+        return rest.accepted()
+
+    @staticmethod
+    def _delete_file_worker(project_name, tld_list):
+
+        for tld in tld_list:
+            # update status
+            with data[project_name]['locks']['status']:
+                if tld in data[project_name]['status']['desired_docs']:
+                    del data[project_name]['status']['desired_docs'][tld]
+                if tld in data[project_name]['status']['added_docs']:
+                    del data[project_name]['status']['added_docs'][tld]
+                if tld in data[project_name]['status']['total_docs']:
+                    del data[project_name]['status']['total_docs'][tld]
+            update_status_file(project_name)
+
+            # update data
+            with data[project_name]['locks']['data']:
+                if tld in data[project_name]['data']:
+                    # remove data file
+                    for k, v in data[project_name]['data'][tld].iteritems():
+                        try:
+                            os.remove(v['raw_content_path'])
+                        except:
+                            pass
+                        try:
+                            os.remove(v['json_path'])
+                        except:
+                            pass
+                    # remove from catalog
+                    del data[project_name]['data'][tld]
+            update_data_db_file(project_name)
+
     @staticmethod
     def generate_tld(file_name):
-        return 'www.{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
+        return 'www.dig_{}.org'.format(re.sub(re_url, '_', file_name.lower()).strip())
 
     @staticmethod
-    def generate_doc_id(url):
-
-        content = '{}-{}'.format(url, str(time.time()))
+    def generate_doc_id(content):
         return hashlib.sha256(content).hexdigest().upper()
+
+    @staticmethod
+    def is_valid_doc_id(doc_id):
+        return re_doc_id.match(doc_id) and doc_id not in os_reserved_file_names
 
     @staticmethod
     def extract_tld(url):
@@ -1797,7 +1957,7 @@ class Data(Resource):
 @api.route('/projects/<project_name>/actions/project_config')
 class ActionProjectConfig(Resource):
     @requires_auth
-    def post(self, project_name): # frontend needs to fresh to get all configs again
+    def post(self, project_name):  # frontend needs to fresh to get all configs again
         if project_name not in data:
             return rest.not_found('project {} not found'.format(project_name))
 
@@ -1808,9 +1968,9 @@ class ActionProjectConfig(Resource):
 
             # save to tmp path and test
             tmp_project_config_path = os.path.join(_get_project_dir_path(project_name),
-                                                       'working_dir/uploaded_project_config.tar.gz')
+                                                   'working_dir/uploaded_project_config.tar.gz')
             tmp_project_config_extracted_path = os.path.join(_get_project_dir_path(project_name),
-                                                       'working_dir/uploaded_project_config')
+                                                             'working_dir/uploaded_project_config')
             args['file_data'].save(tmp_project_config_path)
             with tarfile.open(tmp_project_config_path, 'r:gz') as tar:
                 tar.extractall(tmp_project_config_extracted_path)
@@ -1851,25 +2011,35 @@ class ActionProjectConfig(Resource):
             )
 
             tmp_additional_etk_config = os.path.join(tmp_project_config_extracted_path,
-                                                   'working_dir/additional_etk_config')
+                                                     'working_dir/additional_etk_config')
             if os.path.exists(tmp_additional_etk_config):
                 distutils.dir_util.copy_tree(tmp_additional_etk_config,
-                    os.path.join(_get_project_dir_path(project_name), 'working_dir/additional_etk_config'))
+                                             os.path.join(_get_project_dir_path(project_name),
+                                                          'working_dir/additional_etk_config'))
 
             tmp_custom_etk_config = os.path.join(tmp_project_config_extracted_path,
-                                                     'working_dir/custom_etk_config.json')
+                                                 'working_dir/custom_etk_config.json')
             if os.path.exists(tmp_custom_etk_config):
-                distutils.dir_util.copy_tree(tmp_custom_etk_config,
-                    os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
+                shutil.copyfile(tmp_custom_etk_config,
+                                os.path.join(_get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
 
-            # clean up
-            os.remove(tmp_project_config_path)
-            shutil.rmtree(tmp_project_config_extracted_path)
+            tmp_landmark_config_path = os.path.join(tmp_project_config_extracted_path,
+                                                    'working_dir/_landmark_config.json')
+            if os.path.exists(tmp_landmark_config_path):
+                with codecs.open(tmp_landmark_config_path, 'r') as f:
+                    ActionProjectConfig.landmark_import(project_name, f.read())
 
             return rest.created()
         except Exception as e:
             print e
             return rest.internal_error('fail to import project config')
+
+        finally:
+            # always clean up, or some of the files may affect new uploaded files
+            if os.path.exists(tmp_project_config_path):
+                os.remove(tmp_project_config_path)
+            if os.path.exists(tmp_project_config_extracted_path):
+                shutil.rmtree(tmp_project_config_extracted_path)
 
     def get(self, project_name):
         if project_name not in data:
@@ -1898,10 +2068,36 @@ class ActionProjectConfig(Resource):
             if os.path.exists(additional_etk_config_path):
                 tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
 
+            landmark_config = ActionProjectConfig.landmark_export(project_name)
+            print 'config', landmark_config
+            if len(landmark_config) > 0:
+                landmark_config_path = os.path.join(
+                    _get_project_dir_path(project_name), 'working_dir/_landmark_config.json')
+                write_to_file(json.dumps(landmark_config), landmark_config_path)
+                tar.add(landmark_config_path, arcname='working_dir/_landmark_config.json')
+
         ret = send_file(export_path, mimetype='application/gzip',
-                         as_attachment=True, attachment_filename=project_name + '.tar.gz')
+                        as_attachment=True, attachment_filename=project_name + '.tar.gz')
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
+
+    @staticmethod
+    def landmark_export(project_name):
+        try:
+            url = config['landmark']['export'].format(project_name=project_name)
+            resp = requests.post(url)
+            return resp.json()
+        except Exception as e:
+            print 'landmark export error', e
+            return list()
+
+    @staticmethod
+    def landmark_import(project_name, landmark_config):
+        try:
+            url = config['landmark']['import'].format(project_name=project_name)
+            resp = requests.post(url, data=landmark_config)
+        except Exception as e:
+            print 'landmark import error', e
 
 
 @api.route('/projects/<project_name>/actions/etk_filters')
@@ -1934,7 +2130,7 @@ class ActionProjectEtkFilters(Resource):
 
             # write to file
             dir_path = os.path.join(_get_project_dir_path(project_name),
-                                'working_dir/additional_etk_config')
+                                    'working_dir/additional_etk_config')
             if not os.path.exists(dir_path):
                 os.mkdir(dir_path)
             config_path = os.path.join(dir_path, 'etk_filters.json')
@@ -1968,13 +2164,15 @@ class Actions(Resource):
         # if action_name == 'add_data':
         #     return self._add_data(project_name)
         if action_name == 'desired_num':
-            return self._update_desired_num(project_name)
+            return self.update_desired_num(project_name)
         elif action_name == 'extract':
-            return self._extract(project_name)
+            return self.etk_extract(project_name)
         elif action_name == 'recreate_mapping':
-            return self._recreate_mapping(project_name)
+            return self.recreate_mapping(project_name)
         elif action_name == 'landmark_extract':
             return self.landmark_extract(project_name)
+        elif action_name == 'reload_blacklist':
+            return self.reload_blacklist(project_name)
         else:
             return rest.not_found('action {} not found'.format(action_name))
 
@@ -1991,14 +2189,8 @@ class Actions(Resource):
     @requires_auth
     def delete(self, project_name, action_name):
         if action_name == 'extract':
-            url = config['etl']['url'] + '/kill_etk'
-            payload = {
-                'project_name': project_name
-            }
-            resp = requests.post(url, json=payload, timeout=config['etl']['timeout'])
-            if resp.status_code // 100 != 2:
+            if not Actions._etk_stop(project_name):
                 return rest.internal_error('failed to kill_etk in ETL')
-
             return rest.deleted()
 
     @staticmethod
@@ -2015,7 +2207,7 @@ class Actions(Resource):
             ret['etk_status'] = Actions._is_etk_running(project_name)
 
         if args['value'] in ('all', 'tld_statistics'):
-            tld_array = []
+            tld_list = dict()
 
             with data[project_name]['locks']['status']:
                 for tld in data[project_name]['status']['total_docs'].iterkeys():
@@ -2026,35 +2218,74 @@ class Actions(Resource):
                             'tld': tld,
                             'total_num': data[project_name]['status']['total_docs'][tld],
                             'es_num': 0,
+                            'es_original_num': 0,
                             'desired_num': data[project_name]['status']['desired_docs'][tld]
                         }
-                        tld_array.append(tld_obj)
+                        tld_list[tld] = tld_obj
 
             # query es count if doc exists
             query = """
             {
-                "aggs": {
-                    "group_by_tld": {
-                        "terms": {
-                            "field": "tld.raw"
+              "aggs": {
+                  "group_by_tld_original": {
+                    "filter": {
+                      "bool": {
+                        "must_not": {
+                          "term": {
+                            "created_by": "etk"
+                          }
                         }
+                      }
+                    },
+                    "aggs": {
+                      "grouped": {
+                        "terms": {
+                          "field": "tld.raw"
+                        }
+                      }
                     }
-                },
-                "size":0
+                  },
+                  "group_by_tld": {
+                    "terms": {
+                      "field": "tld.raw"
+                    }
+                  }
+              },
+              "size":0
             }
             """
             es = ES(config['es']['sample_url'])
-            r = es.search(project_name, data[project_name]['master_config']['root_name'], query, ignore_no_index=True)
+            r = es.search(project_name, data[project_name]['master_config']['root_name'],
+                          query, ignore_no_index=True, filter_path=['aggregations'])
 
             if r is not None:
                 for obj in r['aggregations']['group_by_tld']['buckets']:
                     # check if tld is in uploaded file
                     tld = obj['key']
-                    for tld_obj in tld_array:
-                        if tld_obj['tld'] == tld:
-                            tld_obj['es_num'] = obj['doc_count']
+                    if tld not in tld_list:
+                        tld_list[tld] = {
+                            'tld': tld,
+                            'total_num': 0,
+                            'es_num': 0,
+                            'es_original_num': 0,
+                            'desired_num': 0
+                        }
+                    tld_list[tld]['es_num'] = obj['doc_count']
 
-            ret['tld_statistics'] = tld_array
+                for obj in r['aggregations']['group_by_tld_original']['grouped']['buckets']:
+                    # check if tld is in uploaded file
+                    tld = obj['key']
+                    if tld not in tld_list:
+                        tld_list[tld] = {
+                            'tld': tld,
+                            'total_num': 0,
+                            'es_num': 0,
+                            'es_original_num': 0,
+                            'desired_num': 0
+                        }
+                    tld_list[tld]['es_original_num'] = obj['doc_count']
+
+            ret['tld_statistics'] = tld_list.values()
 
         return ret
 
@@ -2068,7 +2299,7 @@ class Actions(Resource):
         return resp.json()['etk_processes'] > 0
 
     @staticmethod
-    def _update_desired_num(project_name):
+    def update_desired_num(project_name):
         # {
         #     "tlds": {
         #         'tld1': 100,
@@ -2090,7 +2321,7 @@ class Actions(Resource):
         return rest.created()
 
     @staticmethod
-    def _add_data_worker(project_name, kafka_producer, input_topic):
+    def _add_data_worker(project_name, producer, input_topic):
         # this method is used by CatelogWorker in daemon thread
         got_lock = data[project_name]['locks']['data'].acquire(False)
         try:
@@ -2136,7 +2367,7 @@ class Actions(Resource):
 
                         # publish to kafka queue
                         ret, msg = Actions._publish_to_kafka_input_queue(
-                            doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
+                            doc_id, data[project_name]['data'][tld][doc_id], producer, input_topic)
                         if not ret:
                             print 'Error of pushing data to Kafka: {}'.format(msg)
                             # roll back
@@ -2157,25 +2388,6 @@ class Actions(Resource):
             if got_lock:
                 data[project_name]['locks']['data'].release()
 
-
-    # @staticmethod
-    # def _add_data(project_name):
-    #     try:
-    #         # set up input kafka
-    #         kafka_producer = KafkaProducer(
-    #             bootstrap_servers=config['kafka']['servers'],
-    #             max_request_size=10485760,
-    #             value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    #         )
-    #         input_topic = project_name + '_in'
-    #
-    #         thread.start_new_thread(Actions._add_data_worker, (project_name, kafka_producer,input_topic))
-    #         return rest.accepted()
-    #     except Exception as e:
-    #         print e
-    #         return rest.internal_error('Can not start thread for adding data')
-
-
     @staticmethod
     def landmark_extract(project_name):
         # {
@@ -2187,7 +2399,6 @@ class Actions(Resource):
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
         payload = dict()
-
 
         for tld, num_to_run in tld_list.iteritems():
             if tld in data[project_name]['data']:
@@ -2210,13 +2421,13 @@ class Actions(Resource):
                     # {
                     #     "tld1": {"documents": [{doc_id, raw_content_path, url}, {...}, ...]},
                     # }
-                    payload[tld]= payload.get(tld, dict())
+                    payload[tld] = payload.get(tld, dict())
                     payload[tld]['documents'] = payload[tld].get('documents', list())
                     catalog_obj['doc_id'] = doc_id
                     payload[tld]['documents'].append(catalog_obj)
                     idx += 1
 
-        url = config['landmark']['url'].format(project_name=project_name)
+        url = config['landmark']['create'].format(project_name=project_name)
         resp = requests.post(url, json.dumps(payload), timeout=10)
         if resp.status_code // 100 != 2:
             return rest.internal_error('Landmark error: {}'.format(resp.status_code))
@@ -2224,11 +2435,9 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _recreate_mapping(project_name):
-        print 'create_mapping'
+    def _generate_etk_config(project_name):
         new_extraction = True
 
-        # 1. create etk config and snapshot
         custom_etk_config_file_path = os.path.join(
             _get_project_dir_path(project_name), 'working_dir/custom_etk_config.json')
         etk_config_file_path = os.path.join(
@@ -2247,8 +2456,21 @@ class Actions(Resource):
             if not os.path.exists(etk_config_snapshot_file_path):
                 write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
             else:
-                new_extraction = False # currently not in use
-            # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
+                new_extraction = False  # currently not in use
+                # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
+
+        return new_extraction
+
+    @staticmethod
+    def recreate_mapping(project_name):
+        print 'recreate_mapping'
+
+        # 1. kill etk (and clean up previous queue)
+        if not Actions._etk_stop(project_name, clean_up_queue=True):
+            return rest.internal_error('failed to kill_etk in ETL')
+
+        # 2. create etk config and snapshot
+        Actions._generate_etk_config(project_name)
 
         # add config for etl
         # when creating kafka container, group id is not there. set consumer to read from start.
@@ -2262,28 +2484,11 @@ class Actions(Resource):
                     "max_poll_records": 10
                 },
                 "output_args": {
-                    "max_request_size": 10485760
+                    "max_request_size": 10485760,
+                    "compression_type": "gzip"
                 }
             }
             write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
-
-        # kill etk
-        url = config['etl']['url'] + '/kill_etk'
-        payload = {
-            'project_name': project_name
-        }
-        resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
-        if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to kill_etk in ETL')
-
-        # # 2. delete topics
-        # url = config['etl']['url'] + '/delete_topics'
-        # payload = {
-        #     'project_name': project_name
-        # }
-        # resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
-        # if resp.status_code // 100 != 2:
-        #     return rest.internal_error('failed to delete_topics in ETL')
 
         # 3. sandpaper
         # 3.1 delete previous index
@@ -2294,7 +2499,7 @@ class Actions(Resource):
         try:
             resp = requests.delete(url, timeout=10)
         except:
-            pass # ignore no index error
+            pass  # ignore no index error
         # 3.2 create new index
         url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
             config['sandpaper']['url'],
@@ -2318,9 +2523,8 @@ class Actions(Resource):
         if resp.status_code // 100 != 2:
             return rest.internal_error('failed to switch index in sandpaper')
 
-        # 4. re-add all data
+        # 4. clean up added data status
         print 're-add data'
-        # 4.1 clean up mark and added num
         with data[project_name]['locks']['status']:
             if 'added_docs' not in data[project_name]['status']:
                 data[project_name]['status']['added_docs'] = dict()
@@ -2331,14 +2535,108 @@ class Actions(Resource):
                 for doc_id in data[project_name]['data'][tld]:
                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
         update_status_file(project_name)
-        # 4.2 add data
-        # Actions._add_data(project_name)
 
         # 5. restart extraction
-        return Actions._extract(project_name, clean_up_queue=True)
+        # still need to do clean_up_queue here
+        # because etk process may not be running at that time
+        return Actions.etk_extract(project_name, clean_up_queue=True)
 
     @staticmethod
-    def _extract(project_name, clean_up_queue=False):
+    def reload_blacklist(project_name):
+
+        if project_name not in data:
+            return rest.not_found('project {} not found'.format(project_name))
+
+        # 1. kill etk
+        if not Actions._etk_stop(project_name):
+            return rest.internal_error('failed to kill_etk in ETL')
+
+        # 2. generate etk config
+        Actions._generate_etk_config(project_name)
+
+        # 3. fetch and re-add data
+        # copy here to avoid modification while iteration
+        for field_name, field_obj in data[project_name]['master_config']['fields'].items():
+
+            if 'blacklists' not in field_obj or len(field_obj['blacklists']) == 0:
+                continue
+
+            # 3.1 get all stop words and generate query
+            # only use the last blacklist if there are multiple blacklists
+            blacklist = data[project_name]['master_config']['fields'][field_name]['blacklists'][-1]
+            file_path = os.path.join(_get_project_dir_path(project_name),
+                                     'glossaries', '{}.txt'.format(blacklist))
+
+            query_conditions = []
+            with codecs.open(file_path, 'r') as f:
+                for line in f:
+                    key = line.strip()
+                    if len(key) == 0:
+                        continue
+                    query_conditions.append(
+                        '{{ "term": {{"knowledge_graph.{field_name}.key": "{key}"}} }}'
+                            .format(field_name=field_name, key=key))
+
+            query = """
+            {{
+                "size": 1000,
+                "query": {{
+                    "bool": {{
+                        "should": [{conditions}]
+                    }}
+                }},
+                "_source": ["doc_id", "tld"]
+            }}
+            """.format(conditions=','.join(query_conditions))
+            print query_conditions
+            print query
+
+            # 3.2 init query
+            scroll_alive_time = '1m'
+            es = ES(config['es']['sample_url'])
+            r = es.search(project_name, data[project_name]['master_config']['root_name'], query,
+                          params={'scroll': scroll_alive_time}, ignore_no_index=False)
+
+            if r is None:
+                return
+
+            scroll_id = r['_scroll_id']
+            Actions._re_add_docs(r, project_name)
+
+            # 3.3 scroll queries
+            while True:
+                # use the es object here directly
+                r = es.es.scroll(scroll_id=scroll_id, scroll=scroll_alive_time)
+                if r is None:
+                    break
+                if len(r['hits']['hits']) == 0:
+                    break
+
+                Actions._re_add_docs(r, project_name)
+
+        # 4. restart etk
+        return Actions.etk_extract(project_name)
+
+    @staticmethod
+    def _re_add_docs(resp, project_name):
+
+        input_topic = project_name + '_in'
+        for obj in resp['hits']['hits']:
+            doc_id = obj['_source']['doc_id']
+            tld = obj['_source']['tld']
+
+            try:
+                print 're-add doc', doc_id, '({})'.format(tld)
+                ret, msg = Actions._publish_to_kafka_input_queue(
+                    doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
+                if not ret:
+                    print 'Error of re-adding data to Kafka: {}'.format(msg)
+            except Exception as e:
+                print e
+                print 'error in re_add_docs'
+
+    @staticmethod
+    def etk_extract(project_name, clean_up_queue=False):
         if Actions._is_etk_running(project_name):
             return rest.exists('already running')
 
@@ -2373,17 +2671,38 @@ class Actions(Resource):
         return rest.accepted()
 
     @staticmethod
-    def _publish_to_kafka_input_queue(doc_id, catalog_obj, kafka_producer, topic):
+    def _etk_stop(project_name, wait_till_kill=True, clean_up_queue=False):
+        url = config['etl']['url'] + '/kill_etk'
+        payload = {
+            'project_name': project_name
+        }
+        if clean_up_queue:
+            payload['input_offset'] = 'seek_to_end'
+            payload['output_offset'] = 'seek_to_end'
+        resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
+        if resp.status_code // 100 != 2:
+            print 'failed to kill_etk in ETL'
+            return False
+
+        if wait_till_kill:
+            while True:
+                time.sleep(5)
+                if not Actions._is_etk_running(project_name):
+                    break
+        return True
+
+    @staticmethod
+    def _publish_to_kafka_input_queue(doc_id, catalog_obj, producer, topic):
         try:
             with codecs.open(catalog_obj['json_path'], 'r') as f:
                 doc_obj = json.loads(f.read())
             with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
-                doc_obj['raw_content'] = f.read() # .decode('utf-8', 'ignore')
+                doc_obj['raw_content'] = f.read()  # .decode('utf-8', 'ignore')
         except Exception as e:
             print e
             return False, 'error in reading file from catalog'
         try:
-            r = kafka_producer.send(topic, doc_obj)
+            r = producer.send(topic, doc_obj)
             r.get(timeout=60)  # wait till sent
             print 'sent {} to topic {}'.format(doc_id, topic)
         except Exception as e:
@@ -2394,25 +2713,20 @@ class Actions(Resource):
 
 
 class DataPushingWorker(threading.Thread):
-
     def __init__(self, project_name):
         super(DataPushingWorker, self).__init__()
         self.project_name = project_name
         self.exit_signal = False
 
         # set up input kafka
-        self.kafka_producer = KafkaProducer(
-            bootstrap_servers=config['kafka']['servers'],
-            max_request_size=10485760,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
-        )
+        self.producer = kafka_producer
         self.input_topic = project_name + '_in'
 
     def run(self):
         print 'thread run....', self.project_name
         while not self.exit_signal:
             # print 'DataPushingWorker.exit_signal', self.exit_signal
-            Actions._add_data_worker(self.project_name, self.kafka_producer, self.input_topic)
+            Actions._add_data_worker(self.project_name, self.producer, self.input_topic)
             time.sleep(config['data_pushing_worker_backoff_time'])
 
 
@@ -2443,6 +2757,20 @@ def ensure_etl_engine_is_on():
         ensure_etl_engine_is_on()
 
 
+def ensure_kafka_is_on():
+    global kafka_producer
+    try:
+        kafka_producer = KafkaProducer(
+            bootstrap_servers=config['kafka']['servers'],
+            max_request_size=10485760,
+            value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+            compression_type='gzip'
+        )
+    except NoBrokersAvailable as e:
+        time.sleep(5)
+        ensure_kafka_is_on()
+
+
 def graceful_killer(signum, frame):
     print 'SIGNAL #{} received, notifying threads to exit...'.format(signum)
     for project_name in data.iterkeys():
@@ -2466,6 +2794,15 @@ def start_threads_and_locks(project_name):
     data[project_name]['data_pushing_worker'].start()
 
 
+def stop_threads_and_locks(project_name):
+    try:
+        data[project_name]['data_pushing_worker'].exit_signal = True
+        data[project_name]['data_pushing_worker'].join()
+        print 'threads of project {} exited'.format(project_name)
+    except:
+        pass
+
+
 if __name__ == '__main__':
     try:
 
@@ -2477,6 +2814,8 @@ if __name__ == '__main__':
         ensure_sandpaper_is_on()
         print 'ensure etl engine is on...'
         ensure_etl_engine_is_on()
+        print 'ensure kafka is on...'
+        ensure_kafka_is_on()
 
         print 'register signal handler...'
         signal.signal(signal.SIGINT, graceful_killer)
@@ -2549,7 +2888,6 @@ if __name__ == '__main__':
 
                 # create project daemon thread
                 start_threads_and_locks(project_name)
-
 
         # print json.dumps(data, indent=4)
         # run app

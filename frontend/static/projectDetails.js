@@ -1,5 +1,6 @@
 var dataText;
 var glossariesNewField = [];
+var blacklistsNewField = [];
 var username = localStorage.getItem("username");
 var password = localStorage.getItem("password");
 var projectName = window.location.href.split('?')[1];
@@ -372,6 +373,7 @@ function addNewField() {
             addFieldDialog.toggle();
             document.getElementById("getFields").generateRequest();
             glossariesNewField = [];
+            blacklistsNewField = [];
             document.getElementById("fieldnameinput").value = "";
             document.getElementById("fielddescriptioninput").value = "";
             document.getElementById("fieldscreenlabelinput").value = "";
@@ -406,6 +408,7 @@ function addNewField() {
             "combine_fields": combinefields,
             "description": description,
             "glossaries": glossariesNewField,
+            "blacklists": blacklistsNewField,
             "group_name": groupname,
             "icon": icon,
             "name": name,
@@ -453,6 +456,7 @@ poly = Polymer({
         this.glossaryFormField = [];
         this.glossaries = [];
         this.fieldFormGlossaries = [];
+        this.fieldFormBlacklists = [];
         this.tagsData = [];
         this.fieldsData = [];
         this.tableAttributes = [];
@@ -496,8 +500,8 @@ poly = Polymer({
 
         this.searchImportance = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
         this.show_as_linkArray = ["text", "entity"];
-        this.show_in_resultArray = ["header", "detail", "description", "no", "title"];
-        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username"];
+        this.show_in_resultArray = ["header", "detail", "description", "no", "title", "nested"];
+        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id", "number"];
         this.predefined_extractor_Array = ["none", "address", "country", "email", "posting_date", "phone", "review_id", "social_media", "TLD"];
         this.extractionTargetArray = ["title_only", "description_only", "title_and_description"];
     },
@@ -578,17 +582,17 @@ poly = Polymer({
         this.convertFileInputToFormData();
         form.request.body = this.text;
     },
-    saveFieldGlossaries: function () {
-        this.fieldFormGlossaries = [];
-        for (var i = 0; i < this.glossaries.length; i++) {
-            var gloss = this.glossaries[i];
-            if (this.$$('#' + gloss).checked) {
-                this.fieldFormGlossaries.push(gloss[0]);
-            }
-        }
-        glossariesNewField = this.fieldFormGlossaries;
-        EditFieldGlossaries.toggle();
-    },
+    // saveFieldGlossaries: function () {
+    //     this.fieldFormGlossaries = [];
+    //     for (var i = 0; i < this.glossaries.length; i++) {
+    //         var gloss = this.glossaries[i];
+    //         if (this.$$('#' + gloss).checked) {
+    //             this.fieldFormGlossaries.push(gloss[0]);
+    //         }
+    //     }
+    //     glossariesNewField = this.fieldFormGlossaries;
+    //     EditFieldGlossaries.toggle();
+    // },
 
     setTableAttributes: function (data) {
 
@@ -772,6 +776,7 @@ poly = Polymer({
                 "combine_fields": this.fieldForm.combine_fields,
                 "description": this.fieldForm.description,
                 "glossaries": this.fieldFormGlossaries,
+                "blacklists": this.fieldFormBlacklists,
                 "group_name": this.fieldForm.group_name,
                 "icon": this.fieldForm.icon,
                 "name": this.fieldForm.name,
@@ -924,6 +929,12 @@ poly = Polymer({
         document.body.style.overflow = '';
     },
     getFieldGlossary: function () {
+        // console.log('getFieldGlossary');
+        // console.log(this.glossaries);
+        // console.log(this.fieldForm);
+        // console.log(this.fieldForm.glossaries);
+        // console.log(this.fieldFormGlossaries);
+
         EditFieldGlossaries.toggle();
         for (var j = 0; j < this.glossaries.length; j++) {
             this.$$('#' + this.glossaries[j][0]).checked = "";
@@ -979,6 +990,73 @@ poly = Polymer({
             }
         }
     },
+
+    getFieldBlacklist: function () {
+        // console.log('getFieldBlacklist');
+        // console.log(this.glossaries);
+        // console.log(this.fieldForm);
+        // console.log(this.fieldForm.blacklists);
+        // console.log(this.fieldFormBlacklists);
+
+        EditFieldBlacklists.toggle();
+
+        // clean up checked state
+        for (var j = 0; j < this.glossaries.length; j++) {
+            this.$$('#bl-' + this.glossaries[j][0]).checked = "";
+        }
+
+        // check remote items
+        if (this.fieldForm) {
+            if (this.fieldForm.blacklists) {
+                for (var i = 0; i < this.fieldForm.blacklists.length; i++) {
+                    for (var j = 0; j < this.glossaries.length; j++) {
+                        if (this.fieldForm.blacklists[i] == this.glossaries[j][0]) {
+                            this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // check temp items
+        if (this.fieldFormBlacklists) {
+            for (var i = 0; i < this.fieldFormBlacklists.length; i++) {
+                for (var j = 0; j < this.glossaries.length; j++) {
+                    if (this.fieldFormBlacklists[i] == this.glossaries[j][0]) {
+                        this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                        break;
+                    }
+                }
+            }
+        }
+    },
+
+    getFieldBlacklistsForAdd: function () {
+        EditFieldBlacklists.toggle();
+
+        if (blacklistsNewField) {
+            for (var i = 0; i < blacklistsNewField.length; i++) {
+                for (var j = 0; j < this.glossaries.length; j++) {
+                    if (blacklistsNewField[i] == this.glossaries[j][0]) {
+                        this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                        break;
+                    }
+                }
+
+            }
+
+        } else {
+            blacklistsNewField = [];
+            for (var i = 0; i < this.glossaries.length; i++) {
+                var gloss = this.glossaries[i];
+                if (this.$$('#bl-' + gloss).checked) {
+                    blacklistsNewField.push(gloss[0]);
+                }
+            }
+        }
+    },
+
 //	updateToNewIndex:function() {
 //		 var obj = {};
 //		 obj.Authorization = "Basic " + btoa(username+":"+password);
@@ -1087,11 +1165,12 @@ poly = Polymer({
     },
     setEditFieldForm: function (data) {
         this.fieldFormGlossaries = [];
+        this.fieldFormBlacklists = [];
         this.fieldForm = [];
         this.fieldForm = data.detail.response;
         for (var j = 0; j < this.glossaries.length; j++) {
             this.$$('#' + this.glossaries[j][0]).checked = "";
-
+            this.$$('#bl-' + this.glossaries[j][0]).checked = "";
         }
         if (this.fieldForm) {
             if (this.fieldForm.glossaries) {
@@ -1102,7 +1181,17 @@ poly = Polymer({
                             break;
                         }
                     }
+                }
+            }
 
+            if (this.fieldForm.blacklists) {
+                for (var i = 0; i < this.fieldForm.blacklists.length; i++) {
+                    for (var j = 0; j < this.glossaries.length; j++) {
+                        if (this.fieldForm.blacklists[i] == this.glossaries[j][0]) {
+                            this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1110,6 +1199,7 @@ poly = Polymer({
     addNewFieldSetup: function () {
         addFieldDialog.toggle();
         glossariesNewField = [];
+        blacklistsNewField = [];
         this.$$("#fieldnameinput").value = "";
         this.$$("#fielddescriptioninput").value = "";
         this.$$("#fieldscreenlabelinput").value = "";
@@ -1143,6 +1233,17 @@ poly = Polymer({
             }
         }
         glossariesNewField = this.fieldFormGlossaries;
+    },
+    saveTempBlacklists: function () {
+        this.fieldFormBlacklists = [];
+        blacklistsNewField = [];
+        for (var i = 0; i < this.glossaries.length; i++) {
+            var gloss = this.glossaries[i];
+            if (this.$$('#bl-' + gloss).checked) {
+                this.fieldFormBlacklists.push(gloss[0]);
+            }
+        }
+        blacklistsNewField = this.fieldFormBlacklists;
     },
     addNewAttribute: function () {
         this.$$("#tableAttributeInputValue").value = "";
@@ -1261,23 +1362,23 @@ poly = Polymer({
                 var total_tld = 0;
                 var total_total_num = 0;
                 var total_es_num = 0;
+                var total_es_original_num = 0;
                 var total_desired_num = 0;
                 newTldTableData = [];
                 data["tld_statistics"].forEach(function(obj) {
-                    // if(obj["tld"] == "asexyservice.com") {
-                    //     obj["tld"] = "ddd.com";
-                    // }
                     var disable_landmark_btn = obj["total_num"] < 10 ? " disabled" : "";
                     newObj = {
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
+                        "es_original_num": obj["es_original_num"],
                         "desired_num": obj["desired_num"],
                         "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\"" + disable_landmark_btn + ">Add</paper-icon-button>"
                     };
                     total_tld += 1;
                     total_total_num += obj["total_num"];
                     total_es_num += obj["es_num"];
+                    total_es_original_num += obj["es_original_num"];
                     total_desired_num += obj["desired_num"];
                     newTldTableData.push(newObj);
                 });
@@ -1300,6 +1401,9 @@ poly = Polymer({
                         $(this).text("KG (" + total_es_num.toString() + ")");
                     }
                     else if(index == 3) {
+                        $(this).text("KG Original (" + total_es_original_num.toString() + ")");
+                    }
+                    else if(index == 4) {
                         $(this).text("Desired (" + total_desired_num.toString() + ")");
                     }
                 });
@@ -1512,6 +1616,30 @@ poly = Polymer({
             }
         });
     },
+    reloadBlacklist: function() {
+        if(window.confirm("Are you sure to update KG (blacklists) and restart pipeline?") == false) {
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: backend_url + "projects/" + projectName + '/actions/reload_blacklist',
+            async: true,
+            dataType: "json",
+            contentType: false,
+            processData: false,
+            context: this,
+            success: function (msg) {
+                // console.log(msg);
+                alert("KG data reloaded to queue.");
+                this.updatePipelineBtn(true);
+            },
+            error: function(msg) {
+                alert('Can not update KG (blacklists)');
+                console.log(msg);
+            }
+        });
+    },
     updateDesiredNumber: function() {
         var num = parseInt(this.$.globalDesiredNumber.value);
         num = num <= 9999999999 ? num : 999999999;
@@ -1579,6 +1707,32 @@ poly = Polymer({
             }
         });
     },
+    deleteAllFileData: function() {
+
+        if(window.confirm("Are you sure to delete all data?") == false) {
+            return;
+        }
+
+        payload = {"tlds":[]};
+        this.tldTableData.forEach(function(obj){
+            payload["tlds"].push(obj["tld"]);
+        });
+
+        $.ajax({
+            type: "DELETE",
+            url: backend_url + "projects/" + projectName + '/data',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            success: function (msg) {
+                // console.log(msg);
+                this.refreshTldTable();
+            }
+        });
+    },
     updateFilters: function() {
         try {
             var payload = {"filters": JSON.parse(this.$$('#editFiltersTextArea').value)};
@@ -1622,6 +1776,27 @@ poly = Polymer({
                 this.$.editFiltersDialog.toggle();
             }
         });
+    },
+    sortFields: function(obj1, obj2) {
+        var a = obj1[0]["name"].toLowerCase();
+		var b = obj2[0]["name"].toLowerCase();
+		if (a < b) return -1;
+		else if (a > b) return 1;
+		else return 0;
+    },
+    sortTags: function(obj1, obj2) {
+        var a = obj1[0]["name"].toLowerCase();
+		var b = obj2[0]["name"].toLowerCase();
+		if (a < b) return -1;
+		else if (a > b) return 1;
+		else return 0;
+    },
+    sortGlossaries: function(obj1, obj2) {
+        var a = obj1[0].toLowerCase();
+		var b = obj2[0].toLowerCase();
+		if (a < b) return -1;
+		else if (a > b) return 1;
+		else return 0;
     },
 
 

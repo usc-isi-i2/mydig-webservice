@@ -7,7 +7,7 @@ import requests
 class ES(object):
     def __init__(self, es_url, http_auth=None):
         self.es_url = es_url
-        self.es = Elasticsearch([es_url], show_ssl_warnings=False, http_auth=http_auth)
+        self.es = Elasticsearch([es_url], show_ssl_warnings=False, http_auth=http_auth,retry_on_timeout=True)
 
     def load_data(self, index, doc_type, doc, doc_id):
         # import certifi
@@ -70,17 +70,24 @@ class ES(object):
                 print e
                 return None
 
-    def search(self, index, doc_type, query, ignore_no_index=False):
+    def search(self, index, doc_type, query, ignore_no_index=False, **other_params):
         # print query
         try:
-            return self.es.search(index=index, doc_type=doc_type, body=query,
-                                  filter_path=['hits.hits._source', 'hits.hits._id', 'aggregations'])
+            return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
         except TransportError as e:
             if e.error != 'index_not_found_exception' and ignore_no_index:
                 print e
         except Exception as e:
             print e
-            return None
+
+    def mget(self,index,doc_type,body):
+        try:
+            return self.es.mget(index=index,doc_type=doc_type,body=body)
+        except TransportError as e:
+            if e.error != 'index_not_found_exception':
+                print e
+        except Exception as e:
+            print e
 
 if __name__ == '__main__':
     es = ES('http://10.1.94.103:9201')
