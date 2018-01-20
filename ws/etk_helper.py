@@ -195,12 +195,17 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
 
                 if _KG_ENHANCEMENT in additional_etk_config:
                     if _KG_ENHANCEMENT not in etk_config_:
-                        etk_config_[_KG_ENHANCEMENT] = list()
+                        kge = list()
+                    else:
+                        kge = etk_config_[_KG_ENHANCEMENT]
+                        if not isinstance(kge, list):
+                            kge = [kge]
 
                     kg_enhancement = additional_etk_config[_KG_ENHANCEMENT]
                     if not isinstance(kg_enhancement, list):
                         kg_enhancement = [kg_enhancement]
-                    etk_config_[_KG_ENHANCEMENT].extend(kg_enhancement)
+                    kge.extend(kg_enhancement)
+                etk_config_[_KG_ENHANCEMENT] = kge
 
                 # Handle content_extraction
                 if _CONTENT_EXTRACTION in additional_etk_config:
