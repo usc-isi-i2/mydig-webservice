@@ -193,19 +193,16 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
             for additional_etk_config_file_path in additional_etk_config_file_paths:
                 additional_etk_config = json.load(open(additional_etk_config_file_path, 'r'))
 
+                # handle kg enhancement
                 if _KG_ENHANCEMENT in additional_etk_config:
-                    if _KG_ENHANCEMENT not in etk_config_:
-                        kge = list()
-                    else:
-                        kge = etk_config_[_KG_ENHANCEMENT]
-                        if not isinstance(kge, list):
-                            kge = [kge]
-
+                    kge = list() if _KG_ENHANCEMENT not in etk_config_ else etk_config_[_KG_ENHANCEMENT]
+                    if not isinstance(kge, list):
+                        kge = [kge]
                     kg_enhancement = additional_etk_config[_KG_ENHANCEMENT]
                     if not isinstance(kg_enhancement, list):
                         kg_enhancement = [kg_enhancement]
                     kge.extend(kg_enhancement)
-                etk_config_[_KG_ENHANCEMENT] = kge
+                    etk_config_[_KG_ENHANCEMENT] = kge
 
                 # Handle content_extraction
                 if _CONTENT_EXTRACTION in additional_etk_config:
