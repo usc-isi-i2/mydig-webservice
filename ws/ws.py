@@ -43,6 +43,8 @@ import git_helper
 import etk_helper
 import data_persistence
 from conjunctive_query import ConjunctiveQueryProcessor
+from event_query import EventQueryProcessor
+from timeseries_query import TimeSeriesQueryProcessor
 import requests.packages.urllib3
 
 requests.packages.urllib3.disable_warnings()
@@ -228,6 +230,32 @@ class ConjunctiveQuery(Resource):
                                           data[project_name]['master_config']['root_name'], es)
 
         return query.process()
+
+@api.route('/event_search/<project_name>')
+class EventQuery(Resource):
+    @requires_auth
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+        logger.error('API Request received for %s' % (project_name))
+        es = ES(config['es']['sample_url'])
+        query = EventQueryProcessor(request, project_name,
+                                          data[project_name]['master_config']['fields'],
+                                          data[project_name]['master_config']['root_name'], es)
+        return query.process_event_query()
+
+@api.route('/timeseries_search/<project_name>')
+class TimeSeriesQuery(Resource):
+    @requires_auth
+    def get(self, project_name):
+        if project_name not in data:
+            return rest.not_found()
+        logger.error('API Request received for %s' % (project_name))
+        es = ES(config['es']['sample_url'])
+        query = TimeSeriesQueryProcessor(request, project_name,
+                                          data[project_name]['master_config']['fields'],
+                                          data[project_name]['master_config']['root_name'], es)
+        return query.process_ts_query()
 
 
 @api.route('/projects')
