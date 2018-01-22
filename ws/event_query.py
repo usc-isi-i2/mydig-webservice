@@ -4,7 +4,7 @@ import urllib
 import traceback,sys
 from conjunctive_query import ConjunctiveQueryProcessor
 from response_converter import DigOutputProcessor,TimeSeries
-import json
+import json,sys,traceback
 
 
 class EventQueryProcessor(object):
@@ -17,7 +17,54 @@ class EventQueryProcessor(object):
         self.cquery = ConjunctiveQueryProcessor(self.request, self.project_name,
                                           self.config,
                                           self.project_root_name, self.es)
-        self.field = request.args.get('_group-by')
+        self.field = request.args.get('_group-by',"event_date")
+        self.agg = request.args.get('_interval',"month")
+
+    def process_ts_query(self):
+        '''
+        This is the main function in this class. This calls several functions to validate input, set match clauses, set filter clauses
+        set sort clauses and finally resolve any nested documents if needed. Finally this function returns the data as a json or json_lines
+        joined by a '\n'
+        '''
+        # valid_input = self.validate_input()
+        # if not valid_input:
+        #     err_json = {}
+        #     err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
+        #     return rest.bad_request(err_json)
+
+        resp = self.cquery.process()[0]
+        try:
+            if len(resp['hits']['hits']) > 0 and 'doc_id' in resp['hits']['hits'][0]['_source'].keys():
+                docid = resp['hits']['hits'][0]['_source']['doc_id']
+                argmap = {}
+                argmap['measure/value'] = docid 
+                argmap['_group-by'] = 'event_date'
+                argmap['_interval'] = self.agg
+                #meta = resp['hits']['hits'][0]['_source']['measure']['metadata']
+                self.request.args = argmap
+                newquery = ConjunctiveQueryProcessor(self.request, self.project_name, self.config, self.project_root_name, self.es)
+                resp = newquery.process()[0]
+                print resp
+                ts,dims = DigOutputProcessor(resp['aggregations'][self.field]).process()
+                dimensions = []
+                dimensions.append("DATE")
+                dimensions.append(dims)
+                ts_obj = TimeSeries(ts,meta, dimensions).to_dict()
+                return rest.ok(ts_obj)
+            else:
+                return rest.not_found("Time series not found")
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            lines = ''.join(lines)
+            print lines
+            return rest.bad_request("Enter valid query for measure document")
+
+        # ts,dims = DigOutputProcessor(json.dumps(resp['aggregations'][self.field])).process()
+        # dimensions = []
+        # dimensions.append("DATE")
+        # dimensions.append(dims)
+        # ts_obj = TimeSeries(ts, {}, dimensions).to_dict()
 
     def process_event_query(self):
         '''
