@@ -1,7 +1,8 @@
 import requests
-import rest
 import urllib
 import traceback,sys
+
+import rest
 
 
 class ConjunctiveQueryProcessor(object):

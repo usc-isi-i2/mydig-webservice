@@ -56,7 +56,7 @@ into the knowledge Graph.
 Let's try a simple query to fetch all acled documents.
 
 ```
-http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=1
+http://<mydigurl>/mydig/projects/sage/search/conjunctive?website/value=acleddata.com&_size=1
 ```
 Sample response looks like: 
 ```
@@ -433,7 +433,7 @@ Sample response looks like:
 ```
 A sample query with sorting according to the `event_date` in ACLED data:
 ```
-http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date
+http://<mydigurl>/mydig/projects/sage/search/conjunctive?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date
 ```
 The response is given below:
 ```
@@ -709,7 +709,7 @@ The response is given below:
 ```
 Applying verbosity to minimize the response size
 ```
-http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date&_verbosity=minimal
+http://<mydigurl>/mydig/projects/sage/search/conjunctive?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date&_verbosity=minimal
 
 ```
 
@@ -736,7 +736,7 @@ http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=5&event_da
 
 Same query above with no statistics
 ```
-http://<mydigurl>/mydig/search/sage?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date&_verbosity=minimal
+http://<mydigurl>/mydig/projects/sage/search/conjunctive?website/value=acleddata.com&_size=5&event_date$greater-than=2012-01-01T00:00:00&_order-by=event_date$asc&_fields=event_date&_verbosity=minimal
 
 ```
 ```
@@ -770,7 +770,7 @@ The below query can be run on the elicit_gtd dataset.
 In the query, we dereference a field called fatalities. This field has data that is stored in a separate document. The api will retrieve the documents and merge the responses together appropriately and return the response back.
 Below is an example:
 ```
-http://<mydigurl>/mydig/search/elicit_gtd?country/value=nigeria&_size=5&_fields=fatalities&_dereference=fatalities&_verbosity=minimal
+http://<mydigurl>/mydig/projects/elicit_gtd/search/conjunctive?country/value=nigeria&_size=5&_fields=fatalities&_dereference=fatalities&_verbosity=minimal
 ```
 Also note in the below response how setting `_verbosity` to `minimal` recursively simplifies the Knowledge Graph of the nested document as well.
 ```
@@ -807,14 +807,15 @@ Aggregations queries are supported in the current API. You can perform several t
 The accepted intervals are week,month,year,quarter,hour,minute,day,second
 This can be specified as
 ```
-http://<mydigurl>/mydig/search/projectName?_group-by=date_field_here
+http://<mydigurl>/mydig/projects/<project_name>/search/conjunctive?_group-by=date_field_here
 ```
 
 You can also execute queries where the data is bucketed according to a string field/number field as well. In such scenarios a sub-aggregation is possible with sum,min,max,avg and count as the possibilities.
 
 This can be specified as 
 ```
-http://<mydigurl>/mydig/search/projectName?_group-by=some_field&_aggregation-field=death_count&_aggregation=avg
+http://<mydigurl>/mydig/projects/<project_name>/search/conjunctive?_group-by=some_field&_aggregation-field=death_count
+&_aggregation=avg
 ```
 The above syntax can be used to execute aggregation queries using mydig.
 
@@ -823,7 +824,7 @@ Let us now consider some examples below
 Example 1: Date histogram 
 This query can be executed on the sage dataset with acled & pitf data loaded into it. Note how the earlier syntax of field/value=something is used to filter out the result and the aggregation is performed on the resultant subset.
 ```
-http://<mydigurl>/mydig/search/sage?_group-by=event_date&_interval=year&website/value=acleddata.com
+http://<mydigurl>/mydig/projects/sage/search/conjunctive?_group-by=event_date&_interval=year&website/value=acleddata.com
 ```
 
 ```
@@ -873,7 +874,7 @@ http://<mydigurl>/mydig/search/sage?_group-by=event_date&_interval=year&website/
 
 Example 2 : Performing bucket aggregation with a string field
 ```
-http://<mydigurl>/mydig/search/sage?_group-by=website
+http://<mydigurl>/mydig/projects/sage/search/conjunctive?_group-by=website
 ```
 
 ```
@@ -912,7 +913,7 @@ http://<mydigurl>/mydig/search/sage?_group-by=website
 Another example : 
 
 ```
-http://<mydigurl>/mydig/search/sage?_group-by=event_type
+http://<mydigurl>/mydig/projects/sage/search/conjunctive?_group-by=event_type
 ```
 
 ```

@@ -46,6 +46,6 @@
     -v $(pwd)/../mydig-projects:/shared_data/projects \
     uscisii2/mydig_ws:1.0.0 /bin/bash
        
-## Conjunctive query API
+## Search API
 
-[Conjunctive query API document](conjunctive_query_doc.md)
+[Search API document](search_api_doc.md)
