@@ -50,7 +50,7 @@ class ConjunctiveQueryProcessor(object):
             res_filtered = self.setNestedDocuments(res_filtered)
         if self.response_format =="json_lines":
             return rest.ok('\n'.join(str(x) for x in res_filtered['hits']['hits']))
-        else:
+        elif self.group_by is None:
             if self.verbosity == "minimal":
                 if self.field_names is None:
                     self.field_names = ','.join(self.config_fields)
@@ -59,6 +59,8 @@ class ConjunctiveQueryProcessor(object):
                 resp = res_filtered['hits']['hits']
             else:
                 resp = res_filtered
+        else:
+            resp = res_filtered
 
         return rest.ok(resp)
 
