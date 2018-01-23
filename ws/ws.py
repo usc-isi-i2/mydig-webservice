@@ -242,7 +242,7 @@ class Search(Resource):
                                         data[project_name]['master_config']['root_name'], es)
             return query.process_ts_query()
         else:
-            return rest.not_found()
+            return rest.not_found('invalid search type')
 
 
 @api.route('/projects')

@@ -3,7 +3,7 @@ The first API is the Conjuctive Query API -
 
 A typical invocation looks like this:
 ```
-<digurl>/search?name=fred&city="los angeles"&date$less-equal-than=2017-12-15&country/key=france&_fields=name,email,phone&_format=jsonlines
+http://<mydigurl>/mydig/projects/<project_name>/search/conjunctive?name=fred&city="los angeles"&date$less-equal-than=2017-12-15&country/key=france&_fields=name,email,phone&_format=jsonlines
 ```
 
 There are two types of query parameters:

@@ -49,7 +49,7 @@ class EventQueryProcessor(object):
                 dimensions = []
                 dimensions.append("DATE")
                 dimensions.append(dims)
-                ts_obj = TimeSeries(ts,meta, dimensions).to_dict()
+                ts_obj = TimeSeries(ts, dict(), dimensions).to_dict()
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("Time series not found")
