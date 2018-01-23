@@ -473,6 +473,7 @@ poly = Polymer({
         // this.$.tldTable.sort = this.sortCaseInsensitive;
 
         $(document).on('tap', '.btnAddToLandmark', this.addToLandmark);
+        $(document).on('tap', '.btnDeleteFileData', this.deleteFileData)
 
         this.colorSet = {
             "#ffb300": "amber",
@@ -1367,13 +1368,15 @@ poly = Polymer({
                 newTldTableData = [];
                 data["tld_statistics"].forEach(function(obj) {
                     var disable_landmark_btn = obj["total_num"] < 10 ? " disabled" : "";
+                    var disable_delete_btn = obj["total_num"] < 1 ? " disabled" : "";
                     newObj = {
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
                         "es_original_num": obj["es_original_num"],
                         "desired_num": obj["desired_num"],
-                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\"" + disable_landmark_btn + ">Add</paper-icon-button>"
+                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\"" + disable_landmark_btn + ">Add</paper-icon-button>",
+                        "delete": "<paper-icon-button icon=\"icons:delete-forever\" raised class=\"btnDeleteFileData\" data-tld=\""+obj["tld"]+"\"" + disable_delete_btn + ">Delete</paper-icon-button>"
                     };
                     total_tld += 1;
                     total_total_num += obj["total_num"];
@@ -1515,6 +1518,28 @@ poly = Polymer({
             }
         });
         // console.log(tld);
+    },
+    deleteFileData: function(e) {
+
+        if(window.confirm("Are you sure to data of this TLD?") == false) {
+            return;
+        }
+
+        var tld = $(e.currentTarget).attr("data-tld");
+        payload = {"tlds":[tld]};
+
+        $.ajax({
+            type: "DELETE",
+            url: backend_url + "projects/" + projectName + '/data',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            success: function (msg) {
+            }
+        });
     },
     openDIGUI: function() {
         var url = digui_url + "?project=" + projectName;
@@ -1729,7 +1754,7 @@ poly = Polymer({
             data: JSON.stringify(payload),
             success: function (msg) {
                 // console.log(msg);
-                this.refreshTldTable();
+                // this.refreshTldTable();
             }
         });
     },

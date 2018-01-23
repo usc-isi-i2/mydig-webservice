@@ -198,18 +198,20 @@
                 <div style="margin: 1em; width:75%; float: left">
                     <paper-datatable id="tldTable" data="{{tldTableData}}" multi-selection>
                         <!-- remember to change header name in javascript -->
-                        <paper-datatable-column id="tldTableTLD" header="TLD" property="tld" sortable sorted type="String" style="width:15%;" align="left">
+                        <paper-datatable-column id="tldTableTLD" header="TLD" property="tld" sortable sorted type="String" style="width:20%;" align="left">
                         </paper-datatable-column>
-                        <paper-datatable-column header="Total" property="total_num" sortable type="Number" style="width:10%;" align="right">
+                        <paper-datatable-column header="Total" property="total_num" sortable type="Number" style="width:15%;" align="right">
                         </paper-datatable-column>
-                        <paper-datatable-column header="KG" property="es_num" sortable type="Number" style="width:10%;" align="right">
+                        <paper-datatable-column header="KG" property="es_num" sortable type="Number" style="width:15%;" align="right">
                         </paper-datatable-column>
-                        <paper-datatable-column header="KG Original" property="es_original_num" sortable type="Number" style="width:10%;" align="right">
+                        <paper-datatable-column header="KG Original" property="es_original_num" sortable type="Number" style="width:15%;" align="right">
                         </paper-datatable-column>
                         <paper-datatable-column header="Desired" property="desired_num" sortable
-                                                type="Number" style="width:10%;" align="right">
+                                                type="Number" style="width:15%;" align="right">
                         </paper-datatable-column>
                         <paper-datatable-column header="Landmark" property="landmark" style="width:10%;" align="center">
+                        </paper-datatable-column>
+                        <paper-datatable-column header="" property="delete" style="width:10%;" align="right">
                         </paper-datatable-column>
                     </paper-datatable>
                 </div>
