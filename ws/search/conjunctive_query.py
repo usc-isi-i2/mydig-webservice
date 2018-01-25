@@ -1,7 +1,7 @@
 import requests
 import urllib
 import traceback,sys
-
+import json
 import rest
 
 
@@ -80,9 +80,10 @@ class ConjunctiveQueryProcessor(object):
         for json_doc in resp['hits']['hits']:
             for field in list_of_fields:
                 try:
-                    temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
-                    if temp_id not in ids_to_query[field]:
-                        ids_to_query[field].append(temp_id)
+                    for nest_doc in json_doc[self.SOURCE][self.KG_PREFIX][field]:
+                        temp_id = nest_doc['value']
+                        if temp_id not in ids_to_query[field]:
+                            ids_to_query[field].append(temp_id)
                 except Exception as e: 
                     print e
                     pass
@@ -90,13 +91,10 @@ class ConjunctiveQueryProcessor(object):
         for json_doc in resp['hits']['hits']:
             for field in list_of_fields:
                 try:
-                    temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
-                    if temp_id in result_map:
-                        new_list = []
-                        new_doc = json_doc[self.SOURCE][self.KG_PREFIX][field][0]
-                        new_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
-                        new_list.append(new_doc)
-                        json_doc[self.SOURCE][self.KG_PREFIX][field]= new_list
+                    for nest_doc in json_doc[self.SOURCE][self.KG_PREFIX][field]:
+                        temp_id = nest_doc['value']
+                        if temp_id in result_map:
+                            nest_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
                 except Exception as e: 
                     print e
                     pass
@@ -158,7 +156,7 @@ class ConjunctiveQueryProcessor(object):
                     new_list = []
                     for element in json_doc[self.SOURCE][self.KG_PREFIX][field]:
                         if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-                            nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
+                            nested_kg = json.loads(json.dumps(json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]))
                             min_nested_kg = {}
                             for inner_field in nested_kg.keys():
                                 nest_list = []
@@ -175,6 +173,10 @@ class ConjunctiveQueryProcessor(object):
                            new_list.append(element['value'])
                     minidoc[field] = new_list
                 except Exception as e:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                    lines = ''.join(lines)
+                    print lines
                     print e
                     pass
             minified_docs.append(minidoc)
