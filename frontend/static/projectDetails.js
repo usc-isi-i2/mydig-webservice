@@ -1325,7 +1325,7 @@ poly = Polymer({
         // });
 
 
-        var url = backend_url + "projects/" + projectName + '/actions/project_config';
+        var url = backend_url + "projects/" + projectName + '/actions/project_config?_t=' + Date.now().toString();
         var request = new XMLHttpRequest();
         request.open("GET", url);
         request.setRequestHeader("Content-type", "application/gzip");

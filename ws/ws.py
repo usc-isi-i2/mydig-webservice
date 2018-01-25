@@ -2097,8 +2097,9 @@ class ActionProjectConfig(Resource):
                 write_to_file(json.dumps(landmark_config), landmark_config_path)
                 tar.add(landmark_config_path, arcname='working_dir/_landmark_config.json')
 
+        export_file_name = project_name + '_' + time.strftime("%Y%m%d%H%M%S") + '.tar.gz'
         ret = send_file(export_path, mimetype='application/gzip',
-                        as_attachment=True, attachment_filename=project_name + '.tar.gz')
+                        as_attachment=True, attachment_filename=export_file_name)
         ret.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return ret
 
