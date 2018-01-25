@@ -1,7 +1,7 @@
 import requests
 import urllib
 import traceback,sys
-
+import json
 import rest
 
 
@@ -80,9 +80,10 @@ class ConjunctiveQueryProcessor(object):
         for json_doc in resp['hits']['hits']:
             for field in list_of_fields:
                 try:
-                    temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
-                    if temp_id not in ids_to_query[field]:
-                        ids_to_query[field].append(temp_id)
+                    for nest_doc in json_doc[self.SOURCE][self.KG_PREFIX][field]:
+                        temp_id = nest_doc['value']
+                        if temp_id not in ids_to_query[field]:
+                            ids_to_query[field].append(temp_id)
                 except Exception as e: 
                     print e
                     pass
@@ -90,13 +91,10 @@ class ConjunctiveQueryProcessor(object):
         for json_doc in resp['hits']['hits']:
             for field in list_of_fields:
                 try:
-                    temp_id = json_doc[self.SOURCE][self.KG_PREFIX][field][0]['value']
-                    if temp_id in result_map:
-                        new_list = []
-                        new_doc = json_doc[self.SOURCE][self.KG_PREFIX][field][0]
-                        new_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
-                        new_list.append(new_doc)
-                        json_doc[self.SOURCE][self.KG_PREFIX][field]= new_list
+                    for nest_doc in json_doc[self.SOURCE][self.KG_PREFIX][field]:
+                        temp_id = nest_doc['value']
+                        if temp_id in result_map:
+                            nest_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
                 except Exception as e: 
                     print e
                     pass
@@ -134,9 +132,9 @@ class ConjunctiveQueryProcessor(object):
                     return False
         if self.interval is not None and self.interval not in self.intervals:
             return False
-        elif self.group_by is not None and self.group_by not in self.config_fields:
+        elif self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
             return False
-        elif self.aggregation_field is not None and self.aggregation_field not in self.config_fields:
+        elif self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:
             return False
         elif self.aggregation is not None and self.aggregation not in self.aggregations:
             return False
@@ -158,7 +156,7 @@ class ConjunctiveQueryProcessor(object):
                     new_list = []
                     for element in json_doc[self.SOURCE][self.KG_PREFIX][field]:
                         if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-                            nested_kg = json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]
+                            nested_kg = json.loads(json.dumps(json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]))
                             min_nested_kg = {}
                             for inner_field in nested_kg.keys():
                                 nest_list = []
@@ -175,6 +173,10 @@ class ConjunctiveQueryProcessor(object):
                            new_list.append(element['value'])
                     minidoc[field] = new_list
                 except Exception as e:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                    lines = ''.join(lines)
+                    print lines
                     print e
                     pass
             minified_docs.append(minidoc)
@@ -280,7 +282,7 @@ class ConjunctiveQueryProcessor(object):
             full_query['sort'] = self.get_sort_order()
         if self.group_by is not None:
             full_query['size'] = 0
-            if self.config[self.group_by]['type'] == "date":
+            if "." not in self.group_by and self.config[self.group_by]['type'] == "date":
                 query = self._addDateClause()
                 full_query['aggs'] = query
             else:
@@ -307,6 +309,9 @@ class ConjunctiveQueryProcessor(object):
             return resp
             
     def _addGroupByClause(self):
+        if "." in self.group_by:
+            params = self.group_by.split('.')
+            self.group_by = params[0] + "__" + params[1]
         full_clause =  {
                   self.group_by: {
                    "terms": {
@@ -315,6 +320,9 @@ class ConjunctiveQueryProcessor(object):
             }
         }
         if self.aggregation_field is not None:
+            if "." in self.aggregation_field:
+                params = self.aggregation_field.split('.')
+                self.aggregation_field = params[0] + "__" + params[1]
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
@@ -322,7 +330,7 @@ class ConjunctiveQueryProcessor(object):
                     }
                 }
             }
-            full_clause['agg'] = agg_clause
+            full_clause['aggs'] = agg_clause
         return full_clause
         
 
@@ -335,4 +343,16 @@ class ConjunctiveQueryProcessor(object):
                 }
             }
         }
-        return date_clause  
+        if self.aggregation_field is not None:
+            if "." in self.aggregation_field:
+                params = self.aggregation_field.split('.')
+                self.aggregation_field = params[0] + "__" + params[1]
+            agg_clause = {
+                    self.aggregation_field: {
+                     self.aggregation : {
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.value'
+                    }
+                }
+            }
+            date_clause[self.group_by]['aggs'] = agg_clause
+        return date_clause
