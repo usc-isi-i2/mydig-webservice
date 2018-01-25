@@ -63,7 +63,7 @@ class EventQueryProcessor(object):
             lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
             lines = ''.join(lines)
             print lines
-            return rest.bad_request("Enter valid query for measure document")
+            return rest.bad_request("Enter valid query")
 
     def process_event_query(self):
         '''
