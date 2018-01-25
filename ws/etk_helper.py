@@ -160,6 +160,13 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
         except:
             pass
         data_e_object['input_path'] = ["*.{}.*.text.`parent`".format(inferlink_field_name)]
+        data_e_object['guards'] = [
+            {
+              "type": "doc",
+              "path": "$.disable_default_extractors",
+              "regex": "(?!yes)"
+            }
+          ]
         data_e_object['fields'] = dict()
         for field_name in mapping.keys():
             data_e_object['fields'][field_name] = create_landmark_data_extractor_for_field(mapping[field_name],
@@ -175,6 +182,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
     etk_config = add_default_field_extractors(project_master_config, etk_config)
     etk_config = create_kg_enhancement(etk_config)
 
+    etk_config = add_default_extractors_guard(etk_config)
     # Adding additional etk configs
     additional_etk_config_path = os.path.join(project_local_path, project_name, 'working_dir/additional_etk_config/')
     if os.path.isdir(additional_etk_config_path):
@@ -259,6 +267,19 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
             print e
             print 'Error in merging additional ETK configs'
 
+    return etk_config
+
+
+def add_default_extractors_guard(etk_config):
+    if 'data_extraction' in etk_config:
+        for ex in etk_config['data_extraction']:
+            ex['guards'] = [
+            {
+              "type": "doc",
+              "path": "$.disable_default_extractors",
+              "regex": "(?!yes)"
+            }
+          ]
     return etk_config
 
 

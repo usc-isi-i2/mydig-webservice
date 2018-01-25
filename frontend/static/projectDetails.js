@@ -473,7 +473,7 @@ poly = Polymer({
         // this.$.tldTable.sort = this.sortCaseInsensitive;
 
         $(document).on('tap', '.btnAddToLandmark', this.addToLandmark);
-        $(document).on('tap', '.btnDeleteFileData', this.deleteFileData)
+        $(document).on('tap', '.btnDeleteFileData', this.deleteFileData);
 
         this.colorSet = {
             "#ffb300": "amber",
