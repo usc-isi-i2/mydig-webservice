@@ -134,9 +134,9 @@ class ConjunctiveQueryProcessor(object):
                     return False
         if self.interval is not None and self.interval not in self.intervals:
             return False
-        elif self.group_by is not None and self.group_by not in self.config_fields:
+        elif self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
             return False
-        elif self.aggregation_field is not None and self.aggregation_field not in self.config_fields:
+        elif self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:
             return False
         elif self.aggregation is not None and self.aggregation not in self.aggregations:
             return False
@@ -280,7 +280,7 @@ class ConjunctiveQueryProcessor(object):
             full_query['sort'] = self.get_sort_order()
         if self.group_by is not None:
             full_query['size'] = 0
-            if self.config[self.group_by]['type'] == "date":
+            if "." not in self.group_by and self.config[self.group_by]['type'] == "date":
                 query = self._addDateClause()
                 full_query['aggs'] = query
             else:
@@ -307,6 +307,9 @@ class ConjunctiveQueryProcessor(object):
             return resp
             
     def _addGroupByClause(self):
+        if "." in self.group_by:
+            params = self.group_by.split('.')
+            self.group_by = params[0] + "__" + params[1]
         full_clause =  {
                   self.group_by: {
                    "terms": {
@@ -315,6 +318,9 @@ class ConjunctiveQueryProcessor(object):
             }
         }
         if self.aggregation_field is not None:
+            if "." in self.aggregation_field:
+                params = self.aggregation_field.split('.')
+                self.aggregation_field = params[0] + "__" + params[1]
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
@@ -322,7 +328,7 @@ class ConjunctiveQueryProcessor(object):
                     }
                 }
             }
-            full_clause['agg'] = agg_clause
+            full_clause['aggs'] = agg_clause
         return full_clause
         
 
@@ -335,4 +341,16 @@ class ConjunctiveQueryProcessor(object):
                 }
             }
         }
-        return date_clause  
+        if self.aggregation_field is not None:
+            if "." in self.aggregation_field:
+                params = self.aggregation_field.split('.')
+                self.aggregation_field = params[0] + "__" + params[1]
+            agg_clause = {
+                    self.aggregation_field: {
+                     self.aggregation : {
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.value'
+                    }
+                }
+            }
+            date_clause[self.group_by]['aggs'] = agg_clause
+        return date_clause
