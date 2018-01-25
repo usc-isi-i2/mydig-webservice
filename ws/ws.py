@@ -742,6 +742,12 @@ class ProjectFields(Resource):
         if 'blacklists' not in field_obj or \
                 not isinstance(field_obj['blacklists'], list):
             field_obj['blacklists'] = list()
+        if 'field_order' in field_obj:
+            if not isinstance(field_obj['field_order'], int):
+                del field_obj['field_order']
+        if 'group_order' in field_obj:
+            if not isinstance(field_obj['group_order'], int):
+                del field_obj['group_order']
         return True, None
 
 
