@@ -350,6 +350,13 @@
                                 <span style="width: 17em;display: inline-block;"><strong disabled="disabled">Show as Link:</strong> {{item.0.show_as_link}}</span>
                             </div>
 
+
+                            <div style="padding: 8px;">
+                                <span style="width: 15em;display: inline-block;"><strong disabled="disabled">Group Order:</strong>
+                                    {{item.0.group_order}}</span>
+                                <span style="width: 17em;display: inline-block;"><strong disabled="disabled">Field Order:</strong> {{item.0.field_order}}</span>
+                            </div>
+
                             <div style="padding: 8px;">
                                 <strong disabled="disabled">Predefined Extractor:</strong>
                                 {{item.0.predefined_extractor}}
@@ -751,6 +758,21 @@
                     </paper-tooltip>
 
                     <div>
+                        <paper-input style="margin:0; float:left; width: 191px"
+                                     class="projectInputStyle"
+                                     label="Group order" type="number" size="5"
+                                     value="{{fieldForm.group_order}}"
+                                     id="groupOrderInput"></paper-input>
+                        <paper-input style="margin:0;float:left; width: 191px; padding-left: 8px;"
+                                     class="projectInputStyle"
+                                     label="Field order" type="number"
+                                     size="5"
+                                     value="{{fieldForm.field_order}}"
+                                     id="fieldOrderInput"></paper-input>
+                        <div style="clear:both"></div>
+                    </div>
+
+                    <div>
                         <paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields
                         </paper-checkbox>
 
@@ -1116,6 +1138,20 @@
 
 
                     <div>
+                        <paper-input style="margin:0; float:left; width: 191px"
+                                     class="projectInputStyle"
+                                     label="Group order" type="number" size="5"
+                                     value="{{fieldForm.group_order}}"></paper-input>
+                        <paper-input style="margin:0;float:left; width: 191px; padding-left: 8px;"
+                                     class="projectInputStyle"
+                                     label="Field order" type="number"
+                                     size="5"
+                                     value="{{fieldForm.field_order}}"></paper-input>
+                        <div style="clear:both"></div>
+                    </div>
+
+
+                    <div>
 
 
                         <paper-checkbox id="combineEditField" class="projectInputStyle"
@@ -1152,7 +1188,9 @@
                         </paper-tooltip>
 
                     </div>
+
                 </paper-dialog-scrollable>
+
 
                 <br>
 

@@ -364,6 +364,8 @@ function addNewField() {
     var networksearch = document.getElementById("fieldnetworkinput").checked;
     var ruleextractTarget = document.getElementById("fieldRuleExtractorTarget").selectedItem.value;
     var caseSense = document.getElementById("getCaseSenstive").checked;
+    var groupOrder = parseInt(document.getElementById("groupOrderInput").value);
+    var fieldOrder = parseInt(document.getElementById("fieldOrderInput").value);
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
     // xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
@@ -397,6 +399,9 @@ function addNewField() {
             document.getElementById("fieldnetworkinput").checked = false;
             document.getElementById("fieldRuleExtractorTarget").selected = "2";
 
+            document.getElementById("groupOrderInput").value = "";
+            document.getElementById("fieldOrderInput").value = "";
+
         }
     };
 
@@ -423,7 +428,9 @@ function addNewField() {
             "use_in_network_search": networksearch,
             "rule_extractor_enabled": ruleExtractor,
             "predefined_extractor": predefinedExtractor,
-            "rule_extraction_target": ruleextractTarget
+            "rule_extraction_target": ruleextractTarget,
+            "group_order": groupOrder,
+            "field_order": fieldOrder
         }
     });
 
@@ -792,7 +799,9 @@ poly = Polymer({
                 "rule_extractor_enabled": this.fieldForm.rule_extractor_enabled,
                 "type": this.$$('#editTypeValue').selectedItem.value,
                 "use_in_network_search": this.fieldForm.use_in_network_search,
-                "predefined_extractor": predefinedExtr
+                "predefined_extractor": predefinedExtr,
+                "group_order": parseInt(this.fieldForm.group_order),
+                "field_order": parseInt(this.fieldForm.field_order)
             }
         });
         this.$.updateSavedFields.generateRequest();
@@ -1316,7 +1325,7 @@ poly = Polymer({
         // });
 
 
-        var url = backend_url + "projects/" + projectName + '/actions/project_config';
+        var url = backend_url + "projects/" + projectName + '/actions/project_config?_t=' + Date.now().toString();
         var request = new XMLHttpRequest();
         request.open("GET", url);
         request.setRequestHeader("Content-type", "application/gzip");
