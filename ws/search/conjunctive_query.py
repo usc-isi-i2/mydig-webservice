@@ -3,6 +3,7 @@ import urllib
 import traceback,sys
 import json
 import rest
+import re
 
 
 class ConjunctiveQueryProcessor(object):
@@ -47,6 +48,7 @@ class ConjunctiveQueryProcessor(object):
         res_filtered = self.filter_response(res,self.field_names)
         resp={}
         print query
+        #print res_filtered
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
         if self.response_format =="json_lines":
@@ -130,8 +132,9 @@ class ConjunctiveQueryProcessor(object):
                     continue
                 elif key not in self.config_fields:
                     return False
-        if self.interval is not None and self.interval not in self.intervals:
-            return False
+        if self.interval is not None:
+            if len(re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.interval).groups()) == 0 and self.interval not in self.intervals:
+                return False
         elif self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
             return False
         elif self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:

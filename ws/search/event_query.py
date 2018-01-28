@@ -78,7 +78,7 @@ class EventQueryProcessor(object):
             return rest.bad_request(err_json)
         try:
             resp = self.cquery.process()[0]
-            if len(resp['aggregations'][self.field]['buckets']) > 0:
+            if resp is not None and len(resp['aggregations'][self.field]['buckets']) > 0:
                 ts,dims = DigOutputProcessor(resp['aggregations'][self.field],self.agg_field).process()
                 ts_obj = TimeSeries(ts, {}, dims).to_dict()
                 return rest.ok(ts_obj)
