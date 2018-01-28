@@ -40,7 +40,7 @@ class DigOutputProcessor():
             if self.field is None:
                 new_ts.append([ts_item[self.DIG_KEY_AS_STRING], ts_item[self.DIG_VALUE]])
             else:
-                new_ts.append([ts_item[self.DIG_KEY_AS_STRING], ts_item[self.DIG_VALUE],ts_item[self.field]])
+                new_ts.append([ts_item[self.DIG_KEY_AS_STRING], ts_item[self.DIG_VALUE],ts_item[self.field]['value']])
         types = []
         types.append(self.make_dig_dimension(type(ts_item[self.DIG_VALUE]).__name__, "count"))
         if self.field is not None:
