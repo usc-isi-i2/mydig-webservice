@@ -133,7 +133,8 @@ class ConjunctiveQueryProcessor(object):
                 elif key not in self.config_fields:
                     return False
         if self.interval is not None:
-            if len(re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.interval).groups()) == 0 and self.interval not in self.intervals:
+            gp = re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.interval)
+            if gp is None and self.interval not in self.intervals:
                 return False
         elif self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
             return False
