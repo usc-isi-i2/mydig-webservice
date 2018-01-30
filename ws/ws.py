@@ -46,6 +46,10 @@ from search.conjunctive_query import ConjunctiveQueryProcessor
 from search.event_query import EventQueryProcessor
 import requests.packages.urllib3
 
+sys.path.append(os.path.join(config['etk']['path'],
+                             'etk/structured_extractors/digTokenizerExtractor/digCrfTokenizer'))
+from crf_tokenizer import CrfTokenizer
+
 requests.packages.urllib3.disable_warnings()
 
 # logger
@@ -932,7 +936,7 @@ class ProjectGlossaries(Resource):
         write_to_file(content, file_path)
         # file.save(file_path)
 
-        self.compute_statistics(project_name, name, file_path)
+        self.compute_statistics(project_name, name, json_file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='create a glossary: project {}, glossary {}'.format(project_name, name))
 
@@ -964,23 +968,19 @@ class ProjectGlossaries(Resource):
         return rest.deleted()
 
     @staticmethod
-    def compute_statistics(project_name, glossary_name, file_path):
+    def compute_statistics(project_name, glossary_name, json_file_path):
         THRESHOLD = 5
         ngram = {}
-        with codecs.open(file_path, 'r') as f:
-            line_count = 0
-            for line in f:
-                line = line.rstrip()
-                t = len(line.split(' '))
-                if t == 0:
-                    continue
-                line_count += 1
+        with gzip.open(json_file_path, 'r') as f:
+            obj = json.loads(f.read())
+            for item in obj:
+                t = len(item.split(' '))
                 if t > THRESHOLD:
                     continue
                 ngram[t] = ngram.get(t, 0) + 1
             data[project_name]['master_config']['glossaries'][glossary_name] = {
                 'ngram_distribution': ngram,
-                'entry_count': line_count,
+                'entry_count': len(obj),
                 'path': glossary_name + '.json.gz'
             }
             update_master_config_file(project_name)
@@ -990,10 +990,17 @@ class ProjectGlossaries(Resource):
         glossary = list()
         lines = lines.replace('\r', '\n')  # convert
         lines = lines.split('\n')
+
+        t = CrfTokenizer()
+        t.setRecognizeHtmlEntities(True)
+        t.setRecognizeHtmlTags(True)
+        t.setSkipHtmlTags(True)
+
         for line in lines:
             line = line.strip()
             if len(line) == 0:  # trim empty line
                 continue
+            line = ' '.join(t.tokenize(line))
             glossary.append(line)
         return json.dumps(glossary)
 
@@ -1033,7 +1040,7 @@ class Glossary(Resource):
             f.write(ProjectGlossaries.convert_glossary_to_json(content))
         write_to_file(content, file_path)
 
-        ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path)
+        ProjectGlossaries.compute_statistics(project_name, glossary_name, json_file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='update a glossary: project {}, glossary {}'.format(project_name, name))
         return rest.created()
