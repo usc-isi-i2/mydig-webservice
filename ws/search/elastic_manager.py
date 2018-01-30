@@ -80,6 +80,13 @@ class ES(object):
         except Exception as e:
             print e
 
+    def es_search(self, index, doc_type, query, ignore_no_index=False, **other_params):
+        # print query
+        try:
+            return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
+        except Exception as e:
+            return e
+
     def mget(self,index,doc_type,body):
         try:
             return self.es.mget(index=index,doc_type=doc_type,body=body)

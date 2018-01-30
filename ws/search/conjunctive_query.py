@@ -4,6 +4,7 @@ import traceback,sys
 import json
 import rest
 import re
+from elasticsearch import RequestError
 
 
 class ConjunctiveQueryProcessor(object):
@@ -44,11 +45,12 @@ class ConjunctiveQueryProcessor(object):
             err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
             return rest.bad_request(err_json)
         query = self._build_query("must")
-        res = self.es.search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
+        res = self.es.es_search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
+        if type(res) == RequestError:
+            return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
         resp={}
         print query
-        #print res_filtered
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
         if self.response_format =="json_lines":

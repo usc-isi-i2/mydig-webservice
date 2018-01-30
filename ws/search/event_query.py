@@ -42,6 +42,8 @@ class EventQueryProcessor(object):
             return rest.bad_request(err_json)
 
         resp = self.cquery.process()[0]
+        if resp[1] == 400:
+            return resp
         try:
             if len(resp['hits']['hits']) > 0 and 'doc_id' in resp['hits']['hits'][0]['_source'].keys():
                 docid = resp['hits']['hits'][0]['_source']['doc_id']
@@ -51,7 +53,11 @@ class EventQueryProcessor(object):
                 argmap['_interval'] = self.agg
                 self.request.args = argmap
                 newquery = ConjunctiveQueryProcessor(self.request, self.project_name, self.config, self.project_root_name, self.es)
-                resp = newquery.process()[0]
+                resp = newquery.process()
+                if resp[1] == 400:
+                    return resp
+                else:
+                    resp = resp[0]
                 print resp
                 ts,dims = DigOutputProcessor(resp['aggregations'][self.field],self.agg_field).process()
                 ts_obj = TimeSeries(ts, dict(), dims).to_dict()
@@ -77,7 +83,11 @@ class EventQueryProcessor(object):
             err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
             return rest.bad_request(err_json)
         try:
-            resp = self.cquery.process()[0]
+            resp = self.cquery.process()
+            if resp[1] == 400:
+                return resp
+            else:
+                resp = resp[0]
             if resp is not None and len(resp['aggregations'][self.field]['buckets']) > 0:
                 ts,dims = DigOutputProcessor(resp['aggregations'][self.field],self.agg_field).process()
                 ts_obj = TimeSeries(ts, {}, dims).to_dict()
