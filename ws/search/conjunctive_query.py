@@ -3,6 +3,8 @@ import urllib
 import traceback,sys
 import json
 import rest
+import re
+from elasticsearch import RequestError
 
 
 class ConjunctiveQueryProcessor(object):
@@ -43,7 +45,9 @@ class ConjunctiveQueryProcessor(object):
             err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
             return rest.bad_request(err_json)
         query = self._build_query("must")
-        res = self.es.search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
+        res = self.es.es_search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
+        if type(res) == RequestError:
+            return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
         resp={}
         print query
@@ -130,8 +134,10 @@ class ConjunctiveQueryProcessor(object):
                     continue
                 elif key not in self.config_fields:
                     return False
-        if self.interval is not None and self.interval not in self.intervals:
-            return False
+        if self.interval is not None:
+            gp = re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.interval)
+            if gp is None and self.interval not in self.intervals:
+                return False
         elif self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
             return False
         elif self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:
