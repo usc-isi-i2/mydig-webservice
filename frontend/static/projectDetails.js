@@ -1665,7 +1665,7 @@ poly = Polymer({
             context: this,
             success: function (msg) {
                 // console.log(msg);
-                alert("KG data reloaded to queue.");
+                alert("KG data is reloading...");
                 this.updatePipelineBtn(true);
             },
             error: function(msg) {
