@@ -2097,7 +2097,7 @@ class ActionProjectConfig(Resource):
                 tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
 
             landmark_config = ActionProjectConfig.landmark_export(project_name)
-            print 'config', landmark_config
+            # print 'config', len(landmark_config)
             if len(landmark_config) > 0:
                 landmark_config_path = os.path.join(
                     _get_project_dir_path(project_name), 'working_dir/_landmark_config.json')
