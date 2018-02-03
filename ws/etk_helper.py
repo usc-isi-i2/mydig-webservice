@@ -164,7 +164,7 @@ def generate_etk_config(project_master_config, webservice_config, project_name, 
             {
               "type": "doc",
               "path": "$.disable_default_extractors",
-              "regex": "(?!yes)"
+              "regex": "no"
             }
           ]
         data_e_object['fields'] = dict()
@@ -277,7 +277,7 @@ def add_default_extractors_guard(etk_config):
             {
               "type": "doc",
               "path": "$.disable_default_extractors",
-              "regex": "(?!yes)"
+              "regex": "no"
             }
           ]
     return etk_config
