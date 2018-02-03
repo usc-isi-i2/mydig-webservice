@@ -185,6 +185,7 @@ class ConjunctiveQueryProcessor(object):
                     print lines
                     print e
                     pass
+            minidoc['doc_id'] = json_doc[self.SOURCE]['document_id']
             minified_docs.append(minidoc)
         return minified_docs
 
