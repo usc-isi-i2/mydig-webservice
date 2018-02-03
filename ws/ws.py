@@ -46,6 +46,10 @@ from search.conjunctive_query import ConjunctiveQueryProcessor
 from search.event_query import EventQueryProcessor
 import requests.packages.urllib3
 
+sys.path.append(os.path.join(config['etk']['path'],
+                             'etk/structured_extractors/digTokenizerExtractor/digCrfTokenizer'))
+from crf_tokenizer import CrfTokenizer
+
 requests.packages.urllib3.disable_warnings()
 
 # logger
@@ -932,7 +936,7 @@ class ProjectGlossaries(Resource):
         write_to_file(content, file_path)
         # file.save(file_path)
 
-        self.compute_statistics(project_name, name, file_path)
+        self.compute_statistics(project_name, name, json_file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='create a glossary: project {}, glossary {}'.format(project_name, name))
 
@@ -964,23 +968,19 @@ class ProjectGlossaries(Resource):
         return rest.deleted()
 
     @staticmethod
-    def compute_statistics(project_name, glossary_name, file_path):
+    def compute_statistics(project_name, glossary_name, json_file_path):
         THRESHOLD = 5
         ngram = {}
-        with codecs.open(file_path, 'r') as f:
-            line_count = 0
-            for line in f:
-                line = line.rstrip()
-                t = len(line.split(' '))
-                if t == 0:
-                    continue
-                line_count += 1
+        with gzip.open(json_file_path, 'r') as f:
+            obj = json.loads(f.read())
+            for item in obj:
+                t = len(item.split(' '))
                 if t > THRESHOLD:
                     continue
                 ngram[t] = ngram.get(t, 0) + 1
             data[project_name]['master_config']['glossaries'][glossary_name] = {
                 'ngram_distribution': ngram,
-                'entry_count': line_count,
+                'entry_count': len(obj),
                 'path': glossary_name + '.json.gz'
             }
             update_master_config_file(project_name)
@@ -990,10 +990,17 @@ class ProjectGlossaries(Resource):
         glossary = list()
         lines = lines.replace('\r', '\n')  # convert
         lines = lines.split('\n')
+
+        t = CrfTokenizer()
+        t.setRecognizeHtmlEntities(True)
+        t.setRecognizeHtmlTags(True)
+        t.setSkipHtmlTags(True)
+
         for line in lines:
             line = line.strip()
             if len(line) == 0:  # trim empty line
                 continue
+            line = ' '.join(t.tokenize(line))
             glossary.append(line)
         return json.dumps(glossary)
 
@@ -1033,7 +1040,7 @@ class Glossary(Resource):
             f.write(ProjectGlossaries.convert_glossary_to_json(content))
         write_to_file(content, file_path)
 
-        ProjectGlossaries.compute_statistics(project_name, glossary_name, file_path)
+        ProjectGlossaries.compute_statistics(project_name, glossary_name, json_file_path)
         git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
                           message='update a glossary: project {}, glossary {}'.format(project_name, name))
         return rest.created()
@@ -2090,7 +2097,7 @@ class ActionProjectConfig(Resource):
                 tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
 
             landmark_config = ActionProjectConfig.landmark_export(project_name)
-            print 'config', landmark_config
+            # print 'config', len(landmark_config)
             if len(landmark_config) > 0:
                 landmark_config_path = os.path.join(
                     _get_project_dir_path(project_name), 'working_dir/_landmark_config.json')
@@ -2262,14 +2269,16 @@ class Actions(Resource):
                     "aggs": {
                       "grouped": {
                         "terms": {
-                          "field": "tld.raw"
+                          "field": "tld.raw",
+                          "size": 2147483647
                         }
                       }
                     }
                   },
                   "group_by_tld": {
                     "terms": {
-                      "field": "tld.raw"
+                      "field": "tld.raw",
+                      "size": 2147483647
                     }
                   }
               },
@@ -2577,13 +2586,19 @@ class Actions(Resource):
         Actions._generate_etk_config(project_name)
 
         # 3. fetch and re-add data
+        thread.start_new_thread(Actions._reload_blacklist_worker, (project_name,))
+
+        return rest.accepted()
+
+    @staticmethod
+    def _reload_blacklist_worker(project_name):
         # copy here to avoid modification while iteration
         for field_name, field_obj in data[project_name]['master_config']['fields'].items():
 
             if 'blacklists' not in field_obj or len(field_obj['blacklists']) == 0:
                 continue
 
-            # 3.1 get all stop words and generate query
+            # get all stop words and generate query
             # only use the last blacklist if there are multiple blacklists
             blacklist = data[project_name]['master_config']['fields'][field_name]['blacklists'][-1]
             file_path = os.path.join(_get_project_dir_path(project_name),
@@ -2613,7 +2628,7 @@ class Actions(Resource):
             print query_conditions
             print query
 
-            # 3.2 init query
+            # init query
             scroll_alive_time = '1m'
             es = ES(config['es']['sample_url'])
             r = es.search(project_name, data[project_name]['master_config']['root_name'], query,
@@ -2625,7 +2640,7 @@ class Actions(Resource):
             scroll_id = r['_scroll_id']
             Actions._re_add_docs(r, project_name)
 
-            # 3.3 scroll queries
+            # scroll queries
             while True:
                 # use the es object here directly
                 r = es.es.scroll(scroll_id=scroll_id, scroll=scroll_alive_time)
@@ -2636,8 +2651,7 @@ class Actions(Resource):
 
                 Actions._re_add_docs(r, project_name)
 
-        # 4. restart etk
-        return Actions.etk_extract(project_name)
+        Actions.etk_extract(project_name)
 
     @staticmethod
     def _re_add_docs(resp, project_name):

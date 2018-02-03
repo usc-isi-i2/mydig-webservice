@@ -37,7 +37,8 @@ if __name__ == '__main__':
                         'file_type': 'json_lines'
                     }
                     files = {
-                        'file_data': ('', json.dumps(data), 'application/octet-stream')
+                        'file_data': (config['rss_feed_crawler']['upload']['file_name'],
+                                      json.dumps(data), 'application/octet-stream')
                     }
                     # print url, payload
                     resp = requests.post(url, data=payload, files=files, timeout=10)
