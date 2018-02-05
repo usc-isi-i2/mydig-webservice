@@ -92,16 +92,17 @@ class ConjunctiveQueryProcessor(object):
                     print e
                     pass
         result_map = self.executeNestedQuery(ids_to_query)
-        for json_doc in resp['hits']['hits']:
-            for field in list_of_fields:
-                try:
-                    for nest_doc in json_doc[self.SOURCE][self.KG_PREFIX][field]:
-                        temp_id = nest_doc['value']
-                        if temp_id in result_map:
-                            nest_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
-                except Exception as e: 
-                    print e
-                    pass
+        if len(result_map.keys()) > 0:
+            for json_doc in resp['hits']['hits']:
+                for field in list_of_fields:
+                    try:
+                        for nest_doc in json_doc[self.SOURCE][self.KG_PREFIX][field]:
+                            temp_id = nest_doc['value']
+                            if temp_id in result_map:
+                                nest_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
+                    except Exception as e: 
+                        print e
+                        pass
         return resp
 
 
@@ -115,7 +116,7 @@ class ConjunctiveQueryProcessor(object):
             "ids" : idMap[key]
             }
             resp = self.es.mget(index=self.project_name,body=query,doc_type=self.project_root_name)
-            if len(resp['docs']) > 0:
+            if resp is not None and len(resp['docs']) > 0:
                 for json_doc in resp['docs']:
                     result_map[json_doc['_source']['document_id']] = json_doc
         return result_map
