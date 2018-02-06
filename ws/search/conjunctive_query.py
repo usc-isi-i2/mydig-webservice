@@ -11,6 +11,7 @@ from flask import Response
 class ConjunctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.myargs = request.args
+        self.preprocess()
         self.field_names = self.myargs.get("_fields",None)
         self.num_results =  self.myargs.get("_size",20)
         self.ordering = self.myargs.get("_order-by",None)
@@ -33,6 +34,11 @@ class ConjunctiveQueryProcessor(object):
         self.interval = self.myargs.get("_interval","day")
         self.intervals = ["day","month","week","year","quarter","hour","minute","second"]
         self.aggregations = ["min","max","avg","count","sum"]
+
+    def preprocess(self):
+        for arg in self.myargs:
+            arg = urllib.unquote(arg)
+        return
 
     def process(self):
         '''
@@ -345,7 +351,7 @@ class ConjunctiveQueryProcessor(object):
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
-                      "field": 'knowledge_graph.'+self.aggregation_field+'.value'
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.key'
                     }
                 }
             }
@@ -369,7 +375,7 @@ class ConjunctiveQueryProcessor(object):
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
-                      "field": 'knowledge_graph.'+self.aggregation_field+'.value'
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.key'
                     }
                 }
             }
