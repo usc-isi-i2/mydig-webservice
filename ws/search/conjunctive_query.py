@@ -74,7 +74,7 @@ class ConjunctiveQueryProcessor(object):
 
     def create_json_lines_response(self,resp):
         docs = resp if self.verbosity is not None and self.verbosity =="minimal" else resp['hits']['hits']
-        json_lines = '\r\n'.join([json.dumps(x) for x in docs])
+        json_lines = '\n'.join([json.dumps(x) for x in docs])
         return json_lines
 
 
