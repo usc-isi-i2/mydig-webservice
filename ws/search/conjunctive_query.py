@@ -5,6 +5,7 @@ import json
 import rest
 import re
 from elasticsearch import RequestError
+from flask import Response
 
 
 class ConjunctiveQueryProcessor(object):
@@ -49,13 +50,13 @@ class ConjunctiveQueryProcessor(object):
         if type(res) == RequestError:
             return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
+        print "Filtered response"
         resp={}
         print query
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
-        if self.response_format =="json_lines":
-            return rest.ok('\n'.join(str(x) for x in res_filtered['hits']['hits']))
-        elif self.group_by is None:
+            print "Sucessfully set nested components"
+        if self.group_by is None:
             if self.verbosity == "minimal":
                 if self.field_names is None:
                     self.field_names = ','.join(self.config_fields)
@@ -66,8 +67,16 @@ class ConjunctiveQueryProcessor(object):
                 resp = res_filtered
         else:
             resp = res_filtered
-
+        print "Returning response "
+        if self.response_format =="json_lines":
+            return Response(self.create_json_lines_response(resp),mimetype='application/x-jsonlines')
         return rest.ok(resp)
+
+    def create_json_lines_response(self,resp):
+        docs = resp if self.verbosity is not None and self.verbosity =="minimal" else resp['hits']['hits']
+        json_lines = '\r\n'.join([json.dumps(x) for x in docs])
+        return json_lines
+
 
     def setNestedDocuments(self,resp):
         '''
