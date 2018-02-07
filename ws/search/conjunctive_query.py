@@ -11,10 +11,11 @@ from flask import Response
 class ConjunctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.myargs = request.args
+        self.preprocess()
         self.field_names = self.myargs.get("_fields",None)
         self.num_results =  self.myargs.get("_size",20)
         self.ordering = self.myargs.get("_order-by",None)
-        self.page = self.myargs.get("_page",0)
+        self.fr = self.myargs.get("_from",0)
         self.verbosity = self.myargs.get("_verbosity","es")
         self.response_format = self.myargs.get("_format","json")
         self.config_fields = config_fields.keys()
@@ -34,6 +35,11 @@ class ConjunctiveQueryProcessor(object):
         self.intervals = ["day","month","week","year","quarter","hour","minute","second"]
         self.aggregations = ["min","max","avg","count","sum"]
 
+    def preprocess(self):
+        for arg in self.myargs:
+            arg = urllib.unquote(arg)
+        return
+
     def process(self):
         '''
         This is the main function in this class. This calls several functions to validate input, set match clauses, set filter clauses
@@ -46,7 +52,11 @@ class ConjunctiveQueryProcessor(object):
             err_json['message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
             return rest.bad_request(err_json)
         query = self._build_query("must")
-        res = self.es.es_search(self.project_name, self.project_root_name ,query, ignore_no_index=True)
+        res = None
+        if self.num_results+self.fr > 10000:
+            res = self.es.es_search(self.project_name, self.project_root_name ,query,True, ignore_no_index=True)
+        else:
+            res = self.es.es_search(self.project_name, self.project_root_name ,query,False, ignore_no_index=True)
         if type(res) == RequestError:
             return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
@@ -172,7 +182,9 @@ class ConjunctiveQueryProcessor(object):
                     new_list = []
                     for element in json_doc[self.SOURCE][self.KG_PREFIX][field]:
                         if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
-                            nested_kg = json.loads(json.dumps(json_doc[self.SOURCE][self.KG_PREFIX][field][0][self.KG_PREFIX]))
+                            nested_doc = json.loads(json.dumps(json_doc[self.SOURCE][self.KG_PREFIX][field][0]))
+                            print nested_doc
+                            nested_kg = nested_doc[self.KG_PREFIX]
                             min_nested_kg = {}
                             for inner_field in nested_kg.keys():
                                 nest_list = []
@@ -182,6 +194,9 @@ class ConjunctiveQueryProcessor(object):
                                     else:
                                         nest_list.append(nested_element['value'])
                                 nested_kg[inner_field] = nest_list
+                            nested_doc_id = []
+                            nested_doc_id.append(nested_doc['value'])
+                            nested_kg['doc_id'] = nested_doc_id
                             new_list.append(nested_kg)
                         elif 'data' in element.keys():
                            new_list.append(element['data'])
@@ -189,11 +204,10 @@ class ConjunctiveQueryProcessor(object):
                            new_list.append(element['value'])
                     minidoc[field] = new_list
                 except Exception as e:
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                    lines = ''.join(lines)
-                    print lines
-                    print e
+                    # exc_type, exc_value, exc_traceback = sys.exc_info()
+                    # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                    # lines = ''.join(lines)
+                    # print lines
                     pass
             doc_id = []
             doc_id.append(json_doc[self.SOURCE]['document_id'])
@@ -280,7 +294,7 @@ class ConjunctiveQueryProcessor(object):
         @rtype: dict
         """
         self.num_results = int(self.num_results)
-        self.page = int(self.page)
+        self.fr = int(self.fr)
         clause_list = []
         for query_term in self.myargs:
             if not query_term.startswith("_") and "$" not in query_term:
@@ -296,7 +310,7 @@ class ConjunctiveQueryProcessor(object):
             }
 
         full_query['size'] = self.num_results
-        full_query['from'] = self.page*self.num_results
+        full_query['from'] = self.fr
         if self.ordering is not None:
             full_query['sort'] = self.get_sort_order()
         if self.group_by is not None:
@@ -345,7 +359,7 @@ class ConjunctiveQueryProcessor(object):
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
-                      "field": 'knowledge_graph.'+self.aggregation_field+'.value'
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.key'
                     }
                 }
             }
@@ -369,7 +383,7 @@ class ConjunctiveQueryProcessor(object):
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
-                      "field": 'knowledge_graph.'+self.aggregation_field+'.value'
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.key'
                     }
                 }
             }
