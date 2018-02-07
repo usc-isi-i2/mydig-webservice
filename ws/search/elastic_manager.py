@@ -107,7 +107,7 @@ class ES(object):
                     scroll_size = len(new_data['hits']['hits'])
                     docs_count = docs_count + scroll_size
 
-                data['hits']['hits'] = docs[:total_docs]
+                data['hits']['hits'] = docs[:total_docs+1]
                 data['hits']['total'] = docs_count
                 print "scroll complete with " + str(docs_count)
                 return data
