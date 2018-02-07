@@ -80,12 +80,41 @@ class ES(object):
         except Exception as e:
             print e
 
-    def es_search(self, index, doc_type, query, ignore_no_index=False, **other_params):
+    def es_search(self, index, doc_type, query, scroll, ignore_no_index=False, **other_params):
         # print query
-        try:
-            return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
-        except Exception as e:
-            return e
+        if not scroll:
+            try:
+                return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
+            except Exception as e:
+                return e
+        else:
+            #Initiating scroll
+            try:
+                total_docs = query['size']
+                query['size'] = 0
+                query['from'] = 0
+                data = self.es.search(index=index, doc_type=doc_type, body=query,scroll='1m',size=1000, **other_params)
+                print "starting scroll"
+                docs = list(data['hits']['hits'])
+                docs_count = len(data['hits']['hits'])
+                print "Init docs" + str(docs_count)
+                sid = data['_scroll_id']
+                scroll_size = len(data['hits']['hits'])
+                while scroll_size > 0 or docs_count > total_docs:
+                    new_data = self.es.scroll(sid,scroll='1m')
+                    sid = data['_scroll_id']
+                    docs.append(list(new_data['hits']['hits']))
+                    scroll_size = len(new_data['hits']['hits'])
+                    docs_count = docs_count + scroll_size
+
+                data['hits']['hits'] = docs[:total_docs]
+                data['hits']['total'] = docs_count
+                print "scroll complete with " + str(docs_count)
+                return data
+            except Exception as e:
+                return e
+            
+
 
     def mget(self,index,doc_type,body):
         try:
