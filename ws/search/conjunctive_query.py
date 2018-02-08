@@ -60,12 +60,10 @@ class ConjunctiveQueryProcessor(object):
         if type(res) == RequestError:
             return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
-        print "Filtered response"
         resp={}
         print query
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
-            print "Sucessfully set nested components"
         if self.group_by is None:
             if self.verbosity == "minimal":
                 if self.field_names is None:
@@ -77,7 +75,6 @@ class ConjunctiveQueryProcessor(object):
                 resp = res_filtered
         else:
             resp = res_filtered
-        print "Returning response "
         if self.response_format =="json_lines":
             return Response(self.create_json_lines_response(resp),mimetype='application/x-jsonlines')
         return rest.ok(resp)
@@ -335,9 +332,9 @@ class ConjunctiveQueryProcessor(object):
         else:
             docs = resp['hits']['hits']
             for json_doc in docs:
-                for field in json_doc['_source']['knowledge_graph'].keys():
+                for field in json_doc[self.SOURCE][self.KG_PREFIX].keys():
                     if field not in fields:
-                        del json_doc['_source']['knowledge_graph'][field]
+                        del json_doc[self.SOURCE][self.KG_PREFIX][field]
             resp['hits']['hits'] = docs
             return resp
             
