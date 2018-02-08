@@ -180,7 +180,6 @@ class ConjunctiveQueryProcessor(object):
                     for element in json_doc[self.SOURCE][self.KG_PREFIX][field]:
                         if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
                             nested_doc = json.loads(json.dumps(json_doc[self.SOURCE][self.KG_PREFIX][field][0]))
-                            print nested_doc
                             nested_kg = nested_doc[self.KG_PREFIX]
                             min_nested_kg = {}
                             for inner_field in nested_kg.keys():
@@ -318,7 +317,6 @@ class ConjunctiveQueryProcessor(object):
             else:
                 query = self._addGroupByClause()
                 full_query['aggs'] = query
-        print full_query    
         return full_query
 
     def filter_response(self,resp,fields):
