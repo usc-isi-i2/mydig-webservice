@@ -60,12 +60,10 @@ class ConjunctiveQueryProcessor(object):
         if type(res) == RequestError:
             return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
-        print "Filtered response"
         resp={}
         print query
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
-            print "Sucessfully set nested components"
         if self.group_by is None:
             if self.verbosity == "minimal":
                 if self.field_names is None:
@@ -77,7 +75,6 @@ class ConjunctiveQueryProcessor(object):
                 resp = res_filtered
         else:
             resp = res_filtered
-        print "Returning response "
         if self.response_format =="json_lines":
             return Response(self.create_json_lines_response(resp),mimetype='application/x-jsonlines')
         return rest.ok(resp)
@@ -183,7 +180,6 @@ class ConjunctiveQueryProcessor(object):
                     for element in json_doc[self.SOURCE][self.KG_PREFIX][field]:
                         if self.KG_PREFIX in json_doc[self.SOURCE][self.KG_PREFIX][field][0].keys():
                             nested_doc = json.loads(json.dumps(json_doc[self.SOURCE][self.KG_PREFIX][field][0]))
-                            print nested_doc
                             nested_kg = nested_doc[self.KG_PREFIX]
                             min_nested_kg = {}
                             for inner_field in nested_kg.keys():
@@ -321,7 +317,6 @@ class ConjunctiveQueryProcessor(object):
             else:
                 query = self._addGroupByClause()
                 full_query['aggs'] = query
-        print full_query    
         return full_query
 
     def filter_response(self,resp,fields):
@@ -335,9 +330,9 @@ class ConjunctiveQueryProcessor(object):
         else:
             docs = resp['hits']['hits']
             for json_doc in docs:
-                for field in json_doc['_source']['knowledge_graph'].keys():
+                for field in json_doc[self.SOURCE][self.KG_PREFIX].keys():
                     if field not in fields:
-                        del json_doc['_source']['knowledge_graph'][field]
+                        del json_doc[self.SOURCE][self.KG_PREFIX][field]
             resp['hits']['hits'] = docs
             return resp
             
