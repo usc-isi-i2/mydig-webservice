@@ -268,6 +268,7 @@ class AllProjects(Resource):
         #     if k not in project_config or len(project_config[k].strip()) == 0:
         #         project_config[k] = v
         image_prefix = input.get('image_prefix', '')
+        default_desired_num = input.get('default_desired_num', '')
 
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
@@ -319,6 +320,7 @@ class AllProjects(Resource):
         }
         # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
+        data[project_name]['master_config']['default_desired_num'] = default_desired_num
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -439,6 +441,7 @@ class Project(Resource):
         #     if k not in project_config or len(project_config[k].strip()) == 0:
         #         project_config[k] = v
         image_prefix = input.get('image_prefix', '')
+        default_desired_num = input.get('default_desired_num', 0)
         # es_index = input.get('index', {})
         # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
         #     return rest.bad_request('Invalid index.')
@@ -451,6 +454,7 @@ class Project(Resource):
         # data[project_name]['master_config']['sources'] = AllProjects.trim_empty_tld_in_sources(project_sources)
         # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
+        data[project_name]['master_config']['default_desired_num'] = default_desired_num
         # data[project_name]['master_config']['index'] = es_index
         # write to file
         update_master_config_file(project_name)
@@ -2366,7 +2370,8 @@ class Actions(Resource):
                     if tld not in data[project_name]['status']['added_docs']:
                         data[project_name]['status']['added_docs'][tld] = 0
                     if tld not in data[project_name]['status']['desired_docs']:
-                        data[project_name]['status']['desired_docs'][tld] = 0
+                        data[project_name]['status']['desired_docs'][tld] = \
+                            data[project_name]['master_config'].get('default_desired_num', 0)
                     if tld not in data[project_name]['status']['total_docs']:
                         data[project_name]['status']['total_docs'][tld] = 0
 
