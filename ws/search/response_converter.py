@@ -26,9 +26,10 @@ class DigOutputProcessor():
     SPEC_TYPE = "type"
     SPEC_SEMANTIC_TYPE = "semantic_type"
 
-    def __init__(self, fn,field):
+    def __init__(self, fn,field,date):
         self.ts = self.load(fn)
         self.field = field
+        self.date = date
 
     def make_dig_dimension(self, dtype, spec_type):
         return {self.SPEC_TYPE: dtype, self.SPEC_SEMANTIC_TYPE: spec_type}
@@ -36,11 +37,12 @@ class DigOutputProcessor():
     # Processes a dig timeseries output and generates a new version timeseries
     def process(self):
         new_ts = []
+        key = self.DIG_KEY_AS_STRING if self.date else self.DIG_KEY
         for ts_item in self.ts:
             if self.field is None:
-                new_ts.append([ts_item[self.DIG_KEY_AS_STRING], ts_item[self.DIG_VALUE]])
+                new_ts.append([ts_item[key], ts_item[self.DIG_VALUE]])
             else:
-                new_ts.append([ts_item[self.DIG_KEY_AS_STRING], ts_item[self.DIG_VALUE],ts_item[self.field]['value']])
+                new_ts.append([ts_item[key], ts_item[self.DIG_VALUE],ts_item[self.field]['value']])
         types = []
         types.append(self.make_dig_dimension(type(ts_item[self.DIG_VALUE]).__name__, "count"))
         if self.field is not None:

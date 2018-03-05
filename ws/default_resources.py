@@ -176,7 +176,8 @@ default_fields = {
         'use_in_network_search': False,
         'rule_extractor_enabled': False,
         'number_of_rules': 0,
-        'predefined_extractor': 'none'
+        'predefined_extractor': 'none',
+        'free_text_search': True
     },
     'phone': {
         'name': 'phone',

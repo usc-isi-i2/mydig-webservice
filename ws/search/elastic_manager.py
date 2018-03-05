@@ -2,7 +2,7 @@ import json
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from elasticsearch import TransportError
-import requests
+import requests,sys,traceback
 
 class ES(object):
     def __init__(self, es_url, http_auth=None):
@@ -80,12 +80,45 @@ class ES(object):
         except Exception as e:
             print e
 
-    def es_search(self, index, doc_type, query, ignore_no_index=False, **other_params):
+    def es_search(self, index, doc_type, query, scroll, ignore_no_index=False, **other_params):
         # print query
-        try:
-            return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
-        except Exception as e:
-            return e
+        if not scroll:
+            try:
+                return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
+            except Exception as e:
+                return e
+        else:
+            #Initiating scroll
+            try:
+                total_docs = query['size']
+                query['size'] = 0
+                query['from'] = 0
+                data = self.es.search(index=index, doc_type=doc_type, body=query,scroll='1m',size=1000, **other_params)
+                docs = []
+                docs = data['hits']['hits']
+                docs_count = len(data['hits']['hits'])
+                sid = data['_scroll_id']
+                scroll_size = len(data['hits']['hits'])
+                while docs_count > total_docs or scroll_size > 0:
+                    new_data = self.es.scroll(sid,scroll='1m')
+                    sid = data['_scroll_id']
+                    for doc in new_data['hits']['hits']:
+                        docs.append(doc)
+                    scroll_size = len(new_data['hits']['hits'])
+                    docs_count = docs_count + scroll_size
+
+                data['hits']['hits'] = docs[:docs_count]
+                data['hits']['total'] = docs_count
+                print "scroll complete with " + str(docs_count)
+                return data
+            except Exception as e:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                lines = ''.join(lines)
+                print lines
+                return e
+            
+
 
     def mget(self,index,doc_type,body):
         try:

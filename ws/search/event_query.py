@@ -10,6 +10,7 @@ import json,sys,traceback
 class EventQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.request = request
+        self.preprocess()
         self.config = config_fields
         self.es = es
         self.project_root_name = project_root_name
@@ -24,6 +25,11 @@ class EventQueryProcessor(object):
             self.agg_field = self.convert_to_nested_field(self.agg_field)
         if self.field is not None and "." in self.field:
             self.field = self.convert_to_nested_field(self.field)
+
+    def preprocess(self):
+        for arg in self.request.args:
+            arg = urllib.unquote(arg)
+        return
 
     def convert_to_nested_field(self,field):
         params = field.split('.')
@@ -89,20 +95,27 @@ class EventQueryProcessor(object):
             else:
                 resp = resp[0]
             if resp is not None and len(resp['aggregations'][self.field]['buckets']) > 0:
-                ts,dims = DigOutputProcessor(resp['aggregations'][self.field],self.agg_field).process()
-                ts_obj = TimeSeries(ts, {}, dims).to_dict()
+                if "." not in self.field and self.config[self.field]['type'] == "date":
+                    ts,dims = DigOutputProcessor(resp['aggregations'][self.field],self.agg_field,True).process()
+                    ts_obj = TimeSeries(ts, {}, dims).to_dict()
+                else:
+                    ts,dims = DigOutputProcessor(resp['aggregations'][self.field],self.agg_field,False).process()
+                    ts_obj = TimeSeries(ts, {}, dims).to_dict()
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("No Time series found for query")
         except Exception as e:
-            print e
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            lines = ''.join(lines)
+            print lines
             return rest.internal_error("Internal Error occured")
 
     def validate_input(self):
         field = self.request.args.get('_group-by',None)
         if field is None:
             return False
-        elif "." not in field and not self.config[field]['type'] == "date":
+        elif "." not in field and field not in self.config.keys():
             return False
 
         return True
