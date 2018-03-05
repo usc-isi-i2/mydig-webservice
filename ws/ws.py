@@ -766,6 +766,8 @@ class ProjectFields(Resource):
                 or not isinstance(field_obj['free_text_search'], bool):
                 field_obj['free_text_search'] = False
 
+        return True, None
+
 
 @api.route('/projects/<project_name>/fields/<field_name>')
 class Field(Resource):
