@@ -366,9 +366,9 @@ function addNewField() {
     var caseSense = document.getElementById("getCaseSenstive").checked;
     var groupOrder = parseInt(document.getElementById("groupOrderInput").value);
     var fieldOrder = parseInt(document.getElementById("fieldOrderInput").value);
-    var show_images_in_facets = document.getElementById("show_images_in_facets").selectedItem.checked;
-    var show_images_in_search_form = document.getElementById("show_images_in_search_form").selectedItem.checked;
-    var free_text_search = document.getElementById("free_text_search").selectedItem.checked;
+    var show_images_in_facets = document.getElementById("field_show_images_in_facets").checked;
+    var show_images_in_search_form = document.getElementById("field_show_images_in_search_form").checked;
+    var free_text_search = document.getElementById("field_free_text_search").checked;
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
     // xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
