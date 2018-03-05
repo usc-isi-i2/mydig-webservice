@@ -756,7 +756,15 @@ class ProjectFields(Resource):
         if 'group_order' in field_obj:
             if not isinstance(field_obj['group_order'], int):
                 del field_obj['group_order']
-        return True, None
+        if 'show_images_in_facets' not in field_obj \
+                or not isinstance(field_obj['show_images_in_facets'], bool):
+                field_obj['show_images_in_facets'] = False
+        if 'show_images_in_search_form' in field_obj \
+                or not isinstance(field_obj['show_images_in_search_form'], bool):
+                field_obj['show_images_in_search_form'] = False
+        if 'free_text_search' in field_obj \
+                or not isinstance(field_obj['free_text_search'], bool):
+                field_obj['free_text_search'] = False
 
 
 @api.route('/projects/<project_name>/fields/<field_name>')

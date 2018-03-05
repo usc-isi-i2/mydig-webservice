@@ -366,6 +366,9 @@ function addNewField() {
     var caseSense = document.getElementById("getCaseSenstive").checked;
     var groupOrder = parseInt(document.getElementById("groupOrderInput").value);
     var fieldOrder = parseInt(document.getElementById("fieldOrderInput").value);
+    var show_images_in_facets = document.getElementById("show_images_in_facets").selectedItem.checked;
+    var show_images_in_search_form = document.getElementById("show_images_in_search_form").selectedItem.checked;
+    var free_text_search = document.getElementById("free_text_search").selectedItem.checked;
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
     // xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
@@ -402,6 +405,10 @@ function addNewField() {
             document.getElementById("groupOrderInput").value = "";
             document.getElementById("fieldOrderInput").value = "";
 
+            document.getElementById("show_images_in_facets").checked = false;
+            document.getElementById("show_images_in_search_form").checked = false;
+            document.getElementById("free_text_search").checked = false;
+
         }
     };
 
@@ -430,7 +437,10 @@ function addNewField() {
             "predefined_extractor": predefinedExtractor,
             "rule_extraction_target": ruleextractTarget,
             "group_order": groupOrder,
-            "field_order": fieldOrder
+            "field_order": fieldOrder,
+            "show_images_in_facets": show_images_in_facets,
+            "show_images_in_search_form": show_images_in_search_form,
+            "free_text_search": free_text_search
         }
     });
 
@@ -801,7 +811,10 @@ poly = Polymer({
                 "use_in_network_search": this.fieldForm.use_in_network_search,
                 "predefined_extractor": predefinedExtr,
                 "group_order": parseInt(this.fieldForm.group_order),
-                "field_order": parseInt(this.fieldForm.field_order)
+                "field_order": parseInt(this.fieldForm.field_order),
+                "show_images_in_facets": this.fieldForm.show_images_in_facets,
+                "show_images_in_search_form": this.fieldForm.show_images_in_search_form,
+                "free_text_search": this.fieldForm.free_text_search
             }
         });
         this.$.updateSavedFields.generateRequest();

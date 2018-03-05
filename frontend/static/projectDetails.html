@@ -367,23 +367,41 @@
                             </div>
 
                             <div style="padding: 8px;">
-                                <paper-checkbox disabled="disabled" checked="{{item.0.combine_fields}}">Combine Fields
+                                <paper-checkbox disabled="disabled" checked="{{item.0.combine_fields}}"
+                                                style="width: 250px">Combine Fields
                                 </paper-checkbox>
                                 <paper-checkbox disabled="disabled" checked="{{item.0.show_in_facets}}"
-                                                style="float:center;margin-left:53px;">Show in Facets
+                                                style="width: 250px">Show in Facets
                                 </paper-checkbox>
-                                <paper-checkbox disabled="disabled" style="float:center;margin-left:53px;"
-                                                checked="{{item.0.rule_extractor_enabled}}"> Rule Extractor Enabled
+                                <paper-checkbox disabled="disabled" checked="{{item.0.rule_extractor_enabled}}"
+                                                style="width: 250px"> Rule
+                                    Extractor Enabled
                                 </paper-checkbox>
 
                             </div>
                             <div style="padding: 8px;">
-                                <paper-checkbox disabled="disabled" checked="{{item.0.show_in_search}}">Show in Search
+                                <paper-checkbox disabled="disabled" checked="{{item.0.show_in_search}}"
+                                                style="width: 250px">Show in Search
                                 </paper-checkbox>
                                 <paper-checkbox disabled="disabled" checked="{{item.0.use_in_network_search}}"
-                                                style="float:center;margin-left:53px;">Use in Network Search
+                                                style="width: 250px">Use in Network Search
                                 </paper-checkbox>
                             </div>
+                            <div style="padding: 8px;">
+                                <paper-checkbox disabled="disabled" checked="{{item.0.show_images_in_facets}}"
+                                                style="width: 250px">Show Images in Facets
+                                </paper-checkbox>
+                                <paper-checkbox disabled="disabled" checked="{{item.0.show_images_in_search_form}}"
+                                                style="width: 250px">Show
+                                Images in Search Form
+                                </paper-checkbox>
+                                <paper-checkbox disabled="disabled" checked="{{item.0.free_text_search}}"
+                                                style="width: 250px">Free Text
+                                Search
+                                </paper-checkbox>
+                            </div>
+
+
 
                             <div style="padding: 8px;">
                                 <strong disabled="disabled">Glossaries:</strong>
@@ -773,29 +791,52 @@
                     </div>
 
                     <div>
-                        <paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput">Combine Fields
+                        <paper-checkbox class="projectInputStyle" id="fieldcombinedfieldsinput"
+                                        style="width: 250px">Combine Fields
                         </paper-checkbox>
 
-                        <paper-checkbox class="projectInputStyle" id="fieldfacetinput">Show in Facets</paper-checkbox>
+                        <paper-checkbox class="projectInputStyle" id="fieldfacetinput"
+                                        style="width: 250px">Show in Facets</paper-checkbox>
                         <paper-tooltip for="fieldfacetinput">When true, the field appears in the facets section
                         </paper-tooltip>
 
-                        <paper-checkbox class="projectInputStyle" id="fieldnetworkinput">Show in Network Search
+                        <paper-checkbox class="projectInputStyle" id="fieldnetworkinput"
+                                        style="width: 250px">Show in Network Search
                         </paper-checkbox>
                         <paper-tooltip for="fieldnetworkinput">Support network creation using the values from a field
                         </paper-tooltip>
 
 
-                        <paper-checkbox class="projectInputStyle" id="fieldsearchinput2">Show in Search</paper-checkbox>
+                        <paper-checkbox class="projectInputStyle" id="fieldsearchinput2"
+                                        style="width: 250px">Show in Search</paper-checkbox>
                         <paper-tooltip for="fieldsearchinput2">When true, the field appears in the query form
                         </paper-tooltip>
 
 
-                        <paper-checkbox class="projectInputStyle" id="fieldRuleExtractor">Rule Extractor Enabled
+                        <paper-checkbox class="projectInputStyle" id="fieldRuleExtractor"
+                                        style="width: 250px">Rule Extractor Enabled
                         </paper-checkbox>
                         <paper-tooltip for="fieldRuleExtractor">When true, use the custom rule extractor for this field,
                             if one is defined
                         </paper-tooltip>
+
+
+                        <paper-checkbox class="projectInputStyle" id="show_images_in_facets"
+                                        style="width: 250px">Show Images in Facets
+                        </paper-checkbox>
+                        <paper-tooltip for="show_images_in_facets"></paper-tooltip>
+
+
+                        <paper-checkbox class="projectInputStyle" id="show_images_in_search_form"
+                                        style="width: 250px">Show
+                            Images in Search Form</paper-checkbox>
+                        <paper-tooltip for="show_images_in_search_form"></paper-tooltip>
+
+
+                        <paper-checkbox class="projectInputStyle" id="free_text_search"
+                                        style="width: 250px">Free Text
+                            Search</paper-checkbox>
+                        <paper-tooltip for="free_text_search"></paper-tooltip>
 
                     </div>
                 </paper-dialog-scrollable>
@@ -1155,37 +1196,62 @@
 
 
                         <paper-checkbox id="combineEditField" class="projectInputStyle"
-                                        checked="{{fieldForm.combine_fields}}">Combine Fields
+                                        checked="{{fieldForm.combine_fields}}"
+                                        style="width: 250px">Combine Fields
                         </paper-checkbox>
 
 
                         <paper-checkbox id="facetFieldEdit" class="projectInputStyle"
-                                        checked="{{fieldForm.show_in_facets}}">Show in Facets
+                                        checked="{{fieldForm.show_in_facets}}"
+                        style="width: 250px">Show in Facets
                         </paper-checkbox>
                         <paper-tooltip fit-to-visible-bounds="true" position="top" for="facetFieldEdit">When true, the
                             field appears in the facets section
                         </paper-tooltip>
 
                         <paper-checkbox id="networkFieldEdit" class="projectInputStyle"
-                                        checked="{{fieldForm.use_in_network_search}}">Show in Network Search
+                                        checked="{{fieldForm.use_in_network_search}}"
+                                        style="width: 250px">Show in Network Search
                         </paper-checkbox>
                         <paper-tooltip fit-to-visible-bounds="true" position="top" for="networkFieldEdit">Support
                             network creation using the values from a field
                         </paper-tooltip>
 
                         <paper-checkbox id="searcheditField2" class="projectInputStyle"
-                                        checked="{{fieldForm.show_in_search}}">Show in Search
+                                        checked="{{fieldForm.show_in_search}}"
+                                        style="width: 250px">Show in Search
                         </paper-checkbox>
                         <paper-tooltip fit-to-visible-bounds="true" position="top" for="searcheditField2">When true, the
                             field appears in the query form
                         </paper-tooltip>
 
                         <paper-checkbox id="ruleExtractorEditField" class="projectInputStyle"
-                                        checked="{{fieldForm.rule_extractor_enabled}}">Rule Extractor Enabled
+                                        checked="{{fieldForm.rule_extractor_enabled}}"
+                                        style="width: 250px">Rule Extractor Enabled
                         </paper-checkbox>
                         <paper-tooltip fit-to-visible-bounds="true" position="top" for="ruleExtractorEditField">When
                             true, use the custom rule extractor for this field, if one is defined
                         </paper-tooltip>
+
+                        <paper-checkbox class="projectInputStyle" id="show_images_in_facets"
+                                        checked="{{fieldForm.show_images_in_facets}}"
+                                        style="width: 250px">Show Images in Facets
+                        </paper-checkbox>
+                        <paper-tooltip for="show_images_in_facets"></paper-tooltip>
+
+
+                        <paper-checkbox class="projectInputStyle" id="show_images_in_search_form"
+                                        checked="{{fieldForm.show_images_in_search_form}}"
+                                        style="width: 250px">Show
+                            Images in Search Form</paper-checkbox>
+                        <paper-tooltip for="show_images_in_search_form"></paper-tooltip>
+
+
+                        <paper-checkbox class="projectInputStyle" id="free_text_search"
+                                        checked="{{fieldForm.free_text_search}}"
+                                        style="width: 250px">Free Text
+                            Search</paper-checkbox>
+                        <paper-tooltip for="free_text_search"></paper-tooltip>
 
                     </div>
 
