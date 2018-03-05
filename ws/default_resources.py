@@ -15,9 +15,9 @@ default_glossary_dicts = {
     'populated_cities': {
         'path': 'populated_cities.json'
     },
-    'cities': {
-        'path': 'cities.json.gz'
-    },
+    # 'cities': {
+    #     'path': 'cities.json.gz'
+    # },
     'countries': {
         'path': 'countries.json.gz'
     },
@@ -28,15 +28,15 @@ default_glossary_dicts = {
 
 default_glossaries = {
     'cities': {
-        'path': 'cities.json.gz',
-        'entry_count': 13156,
-        'ngram_distribution': {
-            '1': 11333,
-            '2': 1485,
-            '3': 229,
-            '4': 93,
-            '5': 15
-        }
+      'path': 'cities.json.gz',
+      'entry_count': 13132,
+      'ngram_distribution': {
+        '1': 11114,
+        '2': 1463,
+        '3': 352,
+        '4': 111,
+        '5': 79
+      }
     },
     'countries': {
         'path': 'countries.json.gz',
