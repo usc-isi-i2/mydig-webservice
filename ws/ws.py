@@ -260,32 +260,13 @@ class AllProjects(Resource):
             return rest.bad_request('Invalid project name.')
         if project_name in data:
             return rest.exists('Project name already exists.')
-        # project_sources = input.get('sources', [])
-        # if len(project_sources) == 0:
-        #     return rest.bad_request('Invalid sources.')
-        # project_config = input.get('configuration', {})
-        # for k, v in templates.default_configurations.iteritems():
-        #     if k not in project_config or len(project_config[k].strip()) == 0:
-        #         project_config[k] = v
+
         image_prefix = input.get('image_prefix', '')
         default_desired_num = input.get('default_desired_num', '')
-
-        # es_index = input.get('index', {})
-        # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
-        #     return rest.bad_request('Invalid index.')
-
-        # add default credentials to source if it's not there
-        # with open(config['default_source_credentials_path'], 'r') as f:
-        #     default_source_credentials = json.loads(f.read())
-        # for s in project_sources:
-        #     if 'url' not in s or len(s['url']) == 0:
-        #         s['url'] = default_source_credentials['url']
-        #         s['username'] = default_source_credentials['username']
-        #         s['password'] = default_source_credentials['password']
-        #     if 'index' not in s or len(s['index']) == 0:
-        #         s['index'] = default_source_credentials['index']
-        #     if 'type' not in s or len(s['type']) == 0:
-        #         s['type'] = default_source_credentials['type']
+        show_images_in_facets = input.get('show_images_in_facets', False)
+        show_images_in_search_form = input.get('show_images_in_search_form', False)
+        show_timelines = input.get('show_timelines', False)
+        new_linebreak = input.get('new_linebreak', 'break')
 
         # create topics in etl engine
         url = config['etl']['url'] + '/create_project'
@@ -303,16 +284,11 @@ class AllProjects(Resource):
             os.makedirs(project_dir_path)
 
         # create global gitignore file
-        write_to_file('credentials.json\n', os.path.join(project_dir_path, '.gitignore'))
-
-        # extract credentials to a separated file
-        # credentials = self.extract_credentials_from_sources(project_sources)
-        # write_to_file(json.dumps(credentials, indent=4), os.path.join(project_dir_path, 'credentials.json'))
+        write_to_file('', os.path.join(project_dir_path, '.gitignore'))
 
         # initialize data structure
         data[project_name] = templates.get('project')
         data[project_name]['master_config'] = templates.get('master_config')
-        # data[project_name]['master_config']['sources'] = self.trim_empty_tld_in_sources(project_sources)
         data[project_name]['master_config']['index'] = {
             'sample': project_name,
             'full': project_name + '_deployed',
@@ -321,6 +297,10 @@ class AllProjects(Resource):
         # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
         data[project_name]['master_config']['default_desired_num'] = default_desired_num
+        data[project_name]['master_config']['show_images_in_facets'] = show_images_in_facets
+        data[project_name]['master_config']['show_images_in_search_form'] = show_images_in_search_form
+        data[project_name]['master_config']['show_timelines'] = show_timelines
+        data[project_name]['master_config']['new_linebreak'] = new_linebreak
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -381,50 +361,6 @@ class AllProjects(Resource):
         git_helper.commit(message='delete all projects')
         return rest.deleted()
 
-        # @staticmethod
-        # def extract_credentials_from_sources(sources):
-        #     # add credential_id to source if there's username & password there
-        #     # store them to credentials dict
-        #     # and remove them from source
-        #     idx = 0
-        #     credentials = {}
-        #     for s in sources:
-        #         if 'username' in s:
-        #             s['credential_id'] = str(idx)
-        #             credentials[idx] = dict()
-        #             credentials[idx]['username'] = s['username'].strip()
-        #             credentials[idx]['password'] = s['password'].strip()
-        #             del s['username']
-        #             del s['password']
-        #             idx += 1
-        #     return credentials
-
-        # @staticmethod
-        # def get_authenticated_sources(project_name):
-        #     """don't store authenticated source"""
-        #     sources = copy.deepcopy(data[project_name]['master_config']['sources'])
-        #     with open(os.path.join(_get_project_dir_path(project_name), 'credentials.json'), 'r') as f:
-        #         j = json.loads(f.read())
-        #         for s in sources:
-        #             if 'credential_id' in s:
-        #                 id = s['credential_id']
-        #                 s['http_auth'] = (j[id]['username'], j[id]['password'])
-        #     return sources
-        #
-        # @staticmethod
-        # def trim_empty_tld_in_sources(sources):
-        #     for i in xrange(len(sources)):
-        #         s = sources[i]
-        #         tlds = []
-        #         if 'tlds' in s:
-        #             for tld in s['tlds']:
-        #                 tld = tld.strip()
-        #                 if len(tld) == 0:
-        #                     continue
-        #                 tlds.append(tld)
-        #         s['tlds'] = tlds
-        #     return sources
-
 
 @api.route('/projects/<project_name>')
 class Project(Resource):
@@ -433,29 +369,23 @@ class Project(Resource):
         if project_name not in data:
             return rest.not_found()
         input = request.get_json(force=True)
-        # project_sources = input.get('sources', [])
-        # if len(project_sources) == 0:
-        #     return rest.bad_request('Invalid sources.')
-        # project_config = input.get('configuration', {})
-        # for k, v in templates.default_configurations.iteritems():
-        #     if k not in project_config or len(project_config[k].strip()) == 0:
-        #         project_config[k] = v
+
         image_prefix = input.get('image_prefix', '')
-        default_desired_num = input.get('default_desired_num', 0)
-        # es_index = input.get('index', {})
-        # if len(es_index) == 0 or 'full' not in es_index or 'sample' not in es_index:
-        #     return rest.bad_request('Invalid index.')
+        default_desired_num = input.get('default_desired_num', '')
+        show_images_in_facets = input.get('show_images_in_facets', False)
+        show_images_in_search_form = input.get('show_images_in_search_form', False)
+        show_timelines = input.get('show_timelines', False)
+        new_linebreak = input.get('new_linebreak', 'break')
 
-        # extract credentials to a separated file
-        # credentials = AllProjects.extract_credentials_from_sources(project_sources)
-        # write_to_file(json.dumps(credentials, indent=4),
-        #               os.path.join(_get_project_dir_path(project_name), 'credentials.json'))
-
-        # data[project_name]['master_config']['sources'] = AllProjects.trim_empty_tld_in_sources(project_sources)
         # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
         data[project_name]['master_config']['default_desired_num'] = default_desired_num
+        data[project_name]['master_config']['show_images_in_facets'] = show_images_in_facets
+        data[project_name]['master_config']['show_images_in_search_form'] = show_images_in_search_form
+        data[project_name]['master_config']['show_timelines'] = show_timelines
+        data[project_name]['master_config']['new_linebreak'] = new_linebreak
         # data[project_name]['master_config']['index'] = es_index
+
         # write to file
         update_master_config_file(project_name)
         git_helper.commit(files=[project_name + '/master_config.json'],
@@ -470,16 +400,6 @@ class Project(Resource):
     def get(self, project_name):
         if project_name not in data:
             return rest.not_found()
-        # # construct return structure
-        # ret = copy.deepcopy(data[project_name]['master_config'])
-        # ret['sources'] = AllProjects.get_authenticated_sources(project_name)
-        # for s in ret['sources']:
-        #     if 'http_auth' in s:
-        #         s['username'] = s['http_auth'][0]
-        #         s['password'] = s['http_auth'][1]
-        #         del s['http_auth']
-        #         del s['credential_id']
-        # return ret
         return data[project_name]['master_config']
 
     @requires_auth
@@ -756,12 +676,6 @@ class ProjectFields(Resource):
         if 'group_order' in field_obj:
             if not isinstance(field_obj['group_order'], int):
                 del field_obj['group_order']
-        if 'show_images_in_facets' not in field_obj \
-                or not isinstance(field_obj['show_images_in_facets'], bool):
-                field_obj['show_images_in_facets'] = False
-        if 'show_images_in_search_form' not in field_obj \
-                or not isinstance(field_obj['show_images_in_search_form'], bool):
-                field_obj['show_images_in_search_form'] = False
         if 'free_text_search' not in field_obj \
                 or not isinstance(field_obj['free_text_search'], bool):
                 field_obj['free_text_search'] = False
