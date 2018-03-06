@@ -31,7 +31,7 @@ default_glossaries = {
       'path': 'cities.json.gz',
       'entry_count': 13132,
       'ngram_distribution': {
-        '1': 11114,
+        '1': 11113,
         '2': 1463,
         '3': 352,
         '4': 111,
