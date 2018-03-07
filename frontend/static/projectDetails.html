@@ -276,9 +276,7 @@
                         <vaadin-grid-column>
                             <template class="header"><vaadin-grid-sorter path="es_original_num" style="font-weight:bold;padding-top:10px;padding-bottom:10px"> <div> 
                                     <div style="float:left;height:35px;text-align: center;display: flex;flex-direction: column;justify-content: center;">KG Original <br>   ({{total_es_original_num}}) </div>
-<!--                                     <div style="float:right;">
-                                        <paper-icon-button icon="autorenew" on-tap="recreateMapping" id="btnRecreateMapping" style="width:35px;height:35px;color:#263238;background-color: #D8D8D8;border-radius: 20px"></paper-icon-button>
-                                    </div> -->
+
                                     
                                 </div>
                               
@@ -362,55 +360,6 @@
         
             </iron-collapse>
 
-            <!--  <iron-collapse id="tabTag">
-                <div style="margin-bottom: 2em;">
-                    <br>
-           s         <paper-button onclick="addTagsDialog.toggle()" raised
-                                  style="float:right;text-transform:none"><strong>Add Tag</strong></paper-button>
-                    <br> <br><br>
-                    <template is="dom-repeat" items="{{tags}}">
-                        <paper-styles class="addPaddingToSections"
-                                        style="padding-left:0.6em;width:98%;margin-left:auto;margin-right:auto">
-                            <div>
-                                <strong>Name:</strong> {{item.0.name}}
-                                <div style="float: right">
-                                    <paper-button style="text-transform:none" on-tap="deleteTagsFunction" raised>
-                                        <strong>Delete</strong></paper-button>
-                                    <paper-button style="text-transform:none" on-tap="editTagFunction" raised>
-                                        <strong>Edit</strong></paper-button>
-                                </div>
-                                <br>
-                                <div>
-                                    <br> <strong style="clear: left">Label:</strong>
-                                    {{item.0.screen_label}}
-                                </div>
-                                <div>
-
-                                    <br> <strong style="clear: left">Description:</strong>
-                                    {{item.0.description}}
-                                </div>
-                                <div>
-                                    <br> <strong style="clear: left">Negative class precision:</strong>
-                                    {{item.0.negative_class_precision}}
-                                    <strong style="margin-left: 17em">Positive class precision:</strong>
-                                    {{item.0.positive_class_precision}}
-                                </div>
-                                <div>
-                                    <br>
-                                    <paper-checkbox disabled="disabled" checked="{{item.0.include_in_menu}}"><strong>Include
-                                        in Menu</strong>
-                                    </paper-checkbox>
-                                </div>
-
-                                <br>
-                            </div>
-                        </paper-styles>
-                        <br><br>
-                    </template>
-                </div>
-            </iron-collapse>
- -->
-
             <iron-collapse id="tabGlossary">
 
             <div style="width:94%;margin-left:3%;margin-right:auto;margin-top: 20px">
@@ -439,53 +388,6 @@
 
             </iron-collapse>
 
-             <!--  <iron-collapse id="tabTable">
-                <br>
-                <paper-button
-                        style="text-transform:none;float:right;;margin-right:20px;"
-                        on-tap="addNewAttribute" raised><strong>Add</strong></paper-button>
-                <br><br>
-                <table class="paperDatableClass">
-                    <tr>
-                        <th style="width:20%;border: 1.5px solid black;">Attribute</th>
-                        <th style="width:30%;border: 1.5px solid black;">Field</th>
-                        <th style="width:30%;border: 1.5px solid black;">Values</th>
-                        <th style="border: 1.5px solid black;">Action</th>
-                    </tr>
-                    <template is="dom-repeat" items="{{tableAttributes}}" as="item">
-                        <tr>
-                            <td>
-                                <paper-item value={{item}}>{{item.0.name}}</paper-item>
-                            </td>
-                            <td>
-                                <paper-dropdown-menu style="margin:0px;margin-left: 2em;padding-bottom: 15px"
-                                                     class="projectInputStyle">
-                                    <paper-menu id="tableFieldInput" on-iron-select="_itemSelected"
-                                                class="dropdown-content"
-                                                selected="{{_getTableDropDown(item.0.field_name)}}">
-                                        <template is="dom-repeat" items="{{fieldNames}}" as="item">
-                                            <paper-item value={{item}}>{{item}}</paper-item>
-                                        </template>
-                                    </paper-menu>
-                                </paper-dropdown-menu>
-
-                            </td>
-                            <td>
-                                <template is="dom-repeat" items="{{item.0.value}}" as="item">
-                                    {{item}} &nbsp
-                                </template>
-
-                            </td>
-                            <td>
-                                <paper-button style="text-transform:none;margin-left:3em" on-tap="deleteAttribute"
-                                              raised><strong>Delete</strong></paper-button>
-                            </td>
-
-                        </tr>
-                    </template>
-
-                </table>
-            </iron-collapse> -->
 
 
 
@@ -1149,58 +1051,6 @@
                  <paper-button id={{functionButton}} dialog-confirm autofocus>CANCEL</paper-button>
             </div>
             </paper-dialog>
-
-
-
-
-
-<!--        <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
-                          on-iron-overlay-closed="_restoreDocumentScrolling" id="addTagsDialog"
-                          style="width:50%;margin-left:auto;margin-right:auto">
-                <paper-dialog-scrollable>
-                    <paper-input auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" required
-                                 class="projectInputStyle" label="Name:*" id="tagNameInput"></paper-input>
-                    <paper-input class="projectInputStyle" label="Screen Label:" id="tagSceenLabelInput"></paper-input>
-                    <paper-input class="projectInputStyle" label="Description" id="tagDescriptionInput"></paper-input>
-                    <paper-input type="number" class="projectInputStyle" label="Negative class precision"
-                                 id="tagNegativeInput"></paper-input>
-                    <paper-input type="number" minlength="0" maxlength="1" class="projectInputStyle"
-                                 label="Positive class precision" id="tagPositiveInput"></paper-input>
-                    <paper-checkbox class="projectInputStyle" id="tagCheckBoxInput">Include in Menu</paper-checkbox>
-                    <br>
-                </paper-dialog-scrollable>
-                <paper-button
-                        style="float:right;margin-top:20px;margin-left:10px;"
-                        onclick="addNewTag()" raised><strong>Save</strong></paper-button>
-                <paper-button style="float:right;margin-top:20px"
-                              dialog-dismiss raised><strong>Cancel</strong></paper-button>
-            </paper-dialog> -->
-
-<!--        <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
-                          on-iron-overlay-closed="_restoreDocumentScrolling" id="editTagsDialog"
-                          style="width:50%;margin-left:auto;margin-right:auto">
-                <paper-dialog-scrollable>
-
-                    <h4>Tag : {{tagForm.name}}</h4>
-                    <paper-input class="projectInputStyle" label="Screen Label:"
-                                 value="{{tagForm.screen_label}}"></paper-input>
-                    <paper-input class="projectInputStyle" label="Description"
-                                 value="{{tagForm.description}}"></paper-input>
-                    <paper-input class="projectInputStyle" label="Negative class precision"
-                                 value="{{tagForm.negative_class_precision}}"></paper-input>
-                    <paper-input class="projectInputStyle" label="Positive class precision"
-                                 value="{{tagForm.positive_class_precision}}"></paper-input>
-                    <paper-checkbox class="projectInputStyle" checked="{{tagForm.include_in_menu}}">Include in Menu
-                    </paper-checkbox>
-                    <br>
-                </paper-dialog-scrollable>
-
-                <paper-button
-                        style="float:right;margin-top:20px;margin-left:10px;"
-                        on-tap="updateTag" raised><strong>Save</strong></paper-button>
-                <paper-button style="float:right;margin-top:20px"
-                              dialog-dismiss raised><strong>Cancel</strong></paper-button>
-            </paper-dialog> -->
 
 
             
