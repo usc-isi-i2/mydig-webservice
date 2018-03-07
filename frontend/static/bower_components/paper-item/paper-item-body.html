@@ -9,7 +9,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-styles/typography.html">
 
 <!--
 Use `<paper-item-body>` in a `<paper-item>` or `<paper-icon-item>` to make two- or
@@ -42,9 +44,9 @@ Custom property | Description | Default
     <style>
       :host {
         overflow: hidden; /* needed for text-overflow: ellipsis to work on ff */
-        @apply(--layout-vertical);
-        @apply(--layout-center-justified);
-        @apply(--layout-flex);
+        @apply --layout-vertical;
+        @apply --layout-center-justified;
+        @apply --layout-flex;
       }
 
       :host([two-line]) {
@@ -55,21 +57,22 @@ Custom property | Description | Default
         min-height: var(--paper-item-body-three-line-min-height, 88px);
       }
 
-      :host > ::content > * {
-        white-space: nowrap;
+      :host > ::slotted(*) {
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      :host > ::content [secondary] {
-        color: var(--paper-item-body-secondary-color, --secondary-text-color);
-        @apply(--paper-font-body1);
+      :host > ::slotted([secondary]) {
+        @apply --paper-font-body1;
 
-        @apply(--paper-item-body-secondary);
+        color: var(--paper-item-body-secondary-color, var(--secondary-text-color));
+
+        @apply --paper-item-body-secondary;
       }
     </style>
 
-    <content></content>
+    <slot></slot>
   </template>
 
   <script>

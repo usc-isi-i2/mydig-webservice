@@ -1,44 +1,160 @@
+<script src="../static/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 <link rel="import" href="../constants">
 <link rel="stylesheet" href="../static/styles/main.css">
-<script src="../static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 <link rel="import" href="../static/bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../static/bower_components/app-layout/app-layout.html">
+<link rel="import" href="../static/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../static/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../static/bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../static/bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../static/bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../static/bower_components/paper-card/paper-card.html">
 <link rel="import" href="../static/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../static/bower_components/paper-tooltip/paper-tooltip.html">
-	
-
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <link rel="import" href="../static/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="import" href="../static/bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../static/bower_components/paper-styles/color.html">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
 <link rel="import" href="../static/elements/elements.html">
 <link rel="import" href="../static/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../static/bower_components/paper-date-picker-item/paper-date-picker-item.html">
 <script src="../static/bower_components/moment/min/locales.js"></script>
 <link rel="import" href="../static/bower_components/polymer/polymer.html">
-<style is="custom-style" include="shared-styles"></style>
-<style is="custom-style" include="search-styles"></style>
-<link rel="import" href="theme.css">
+<link rel="stylesheet" href="theme.css">
 <link rel="import" href="../static/technology.html">
 <link href="https://fonts.googleapis.com/css?family=Kurale" rel="stylesheet">
+<link rel="import" href="../static/technology_upgraded.html">
+<link rel="import" href="../static/styles/search-styles.html">
+<link rel="import" href="../static/styles/shared-styles.html">
+
+<dom-module id="user-demo"> 
+<template>
+
+
+	     <style include="technology"></style>
+	     <style include="shared-styles"></style>
+         <style include="search-styles"></style>
+		 <iron-ajax id="ajaxCall" method="GET" content-type="application/json" handle-as="json"
+		  on-response="handleResponse"></iron-ajax>
+		 
+		 <iron-ajax id="projectData" method="GET" content-type="application/json" handle-as="json"
+		  on-response="projectDataResponse"></iron-ajax>
+		 
+		 <iron-ajax id="updateEditDataRequest" method="POST" content-type="application/json" handle-as="json"
+		  on-response="updatedEditData"></iron-ajax>
+		 
+		 <iron-ajax id="getSamplePages" method="GET" content-type="application/json" handle-as="json"
+		  on-response="dropDownData"></iron-ajax>
+     <iron-ajax id="deleteProjectRequest"  method="DELETE" handle-as = "json" on-response = "deleteSuccess"></iron-ajax>
+
+
+       <app-header-layout style="z-index: 2">
+         <app-header slot="header" class="main-header" fixed>
+         	<app-toolbar class="main-toolbar">
+          		<div main-title>  
+          		<div style="display:flex;align-items: :center"> 
+          		<div>        		
+          			<img src="./static/images/dig-logo-original.png" alt="Poor Network"> 
+          		</div>
+          		    <div style=" display: flex;flex-direction: column;justify-content: center;margin-left:10px;font-size:20px;font-weight:bold">
+            	      Search Engine Builder</div>
+                </div>
+            </div>
+  			</app-toolbar>
+		</app-header>
+	</app-header-layout>
+
+<br><br>
+
+
+
+<div style="width:94%;margin-left:3%;margin-right:auto;display: block;">
+ <div style="float:left">          	
+   <h3 style="margin-bottom:3px;margin-top: 2%;font-weight: bold">All Projects</h3>
+</div>
+<!-- <div style="float:right;margin-bottom:3px;text-align: right; ">
+<paper-icon-button icon="add-circle" id="add_icon" on-click="toggle" style="height: 45px!important;width:45px!important;color:#263238;"></paper-icon-button>
+<iron-collapse style="float: right;" id="add_project">
+    <div style="width:100%;background-color:white;display:inline-block;text-align:left;margin:3px;padding:5px">
+    	<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Name:" id="saveProjectFormName" style="width:30%;float:left"></paper-input>
+		<paper-button style="float:right;margin-top:20px;text-align:center;margin-right:20px;padding:1%" on-click="addProject" raised><strong>Save</strong></paper-button>
+	</div>
+</iron-collapse>
+</div> -->
+<div style="float:right;margin-bottom:3px;text-align: right;width:30%">
+<iron-icon icon="add-circle" id="add_icon" on-click="toggle" style="height: 35px;width:35px;"></iron-icon>
+<iron-collapse style="float: right; width:100%" id="add_project">
+    <div style="width:100%;background-color:white;display:inline-block;text-align:left;margin:3px;padding:5px">
+      <paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Name:" id="saveProjectFormName" style="width:100%;float:left"></paper-input>
+    <paper-button style="float:right;margin-top:20px;text-align:center;margin-right:20px;padding:1%" on-click="addProject" raised><strong>Save</strong></paper-button>
+  </div>
+</iron-collapse>
+</div>
+</div>
+
+
+
+
+ <paper-card style="width:94%;margin-left:3%;margin-right:auto; margin-top: 5px;padding: 0px;z-index:1;">
+		<template is="dom-repeat" items="{{projectDatas}}" sort="sortProject">     
+              <div  id = "projectSection" style="height:65px;margin-left:20px;margin-right:20px" >
+              <div style="margin-top:1em;float:left;"><span><h4><b>{{item.name}}</b></h4></span></div>
+              <div style="margin-bottom:1em">
+	              <a style="color:black" href="details?{{item.name}}">
+	              	<div class="border">
+	              <iron-icon icon="chevron-right" style="float:right;height:38px;width:38px;"></iron-icon>
+	              </div>
+                </a>
+                <div class="border">
+                <iron-icon icon="delete" on-tap="deleteProject" style="margin-right:8px;float:right;height:35px;"></iron-icon>
+                </div>
+
+	          </div>
+	      </div>
+              <hr color="#DCDCDC" style="padding:0px;margin-top:0px;margin-bottom:0px">
+          
+        </template>
+         </paper-card>
+
+</template> 
+</dom-module> 
 
 <script>
-//var username =localStorage.getItem("username");
-//var password =localStorage.getItem("password");
 
 
 
-function enable() {
-	document.getElementById("isDisabled").removeAttribute("style");
-}
+Polymer({
+    is: 'user-demo',
+    properties: {
+       
+        projects: {
+	          type: Array,
+	          notify: true,
+	    },
+	    projectData: {
+	          type: String,
+	          notify: true,
+	    },
+	    name: {
+	          type: String,
+	          notify: true,
+	    },
+	    toggleVal:{
+	    	type: Number,
+	    	notify: true,
+	    },
+	    
+      
+    },
 
-function addProject(data)  {
+
+    addProject: function ()  {
 		var tlds = [];
 		var xhr = new XMLHttpRequest();
 		var url = backend_url +"projects";
-		var name=document.getElementById("saveProjectFormName").value.toLowerCase();
+
+	   //alert(document.getElementById("saveProjectFormName"));
+		var name=this.$.saveProjectFormName.value.toLowerCase();
 //		if (/\s/.test(name)) {return;}
 //		var userN = document.getElementById("saveProjectFormUserName").value;
 //		var passWd = document.getElementById("saveProjectFormPassword").value ;
@@ -80,180 +196,42 @@ function addProject(data)  {
 		var data = JSON.stringify({"project_name":name});
 		xhr.send(data);
 	
-}
-</script>
-<dom-module id="user-demo"> 
-<link rel="import" href="../static/technology.css" type="css">
-<template>
-		 <iron-ajax id="ajaxCall" method="GET" content-type="application/json" handle-as="json"
-		  on-response="handleResponse"></iron-ajax>
-		 
-		 <iron-ajax id="projectData" method="GET" content-type="application/json" handle-as="json"
-		  on-response="projectDataResponse"></iron-ajax>
-		 
-		 <iron-ajax id="updateEditDataRequest" method="POST" content-type="application/json" handle-as="json"
-		  on-response="updatedEditData"></iron-ajax>
-		 
-		 <iron-ajax id="getSamplePages" method="GET" content-type="application/json" handle-as="json"
-		  on-response="dropDownData"></iron-ajax>
-		 
-		  <paper-toolbar> <img src="../static/images/dig-logo-original.png" alt=""></paper-toolbar>
-		  <paper-header-panel>
-		  
-          <section class="adjustProjectSection">
-            <div class="search-results-header">
-              <div class="paper-font-title flex">DIG Projects</div>
-            </div>
-            <div class="h-divider"></div>
-          </section>
-          </paper-header-panel>
-          <br>
-          <h4 style="padding:0em;margin-left:10px">DIG Projects</h4>
-		<template is="dom-repeat" items="{{projectDatas}}" sort="sortProject">
-		 <br><br>
-	     <paper-material style="width:94%;margin-left:auto;margin-right:auto;height:10%">
-              <section id = "projectSection" style="width:96%;margin-left:auto;margin-right:auto;" class="main-search-results">
-              <div style="margin-top:1.0em;float:left;"><span><h4><b>{{item.name}}</b></h4></span></div>
-              <div style="margin-bottom:2.0em">
-	              <a style="color:black" href="details?{{item.name}}">
-	              <paper-button style="float:right;text-transform: none;" raised ><strong>Open</strong></paper-button>
-	              </a>
-
-	              <paper-button style="float:right;text-transform: none;" raised on-tap="deleteProject"><strong>Delete</strong></paper-button>
-	              <!--<paper-button on-tap="editProjectData" style="float:right;color:black;text-transform: none;" raised><strong>Edit</strong></paper-button>-->
-	          </div>
-              </section>
-            </paper-material>
-          
-        </template>
-        <br>
-	    <center><paper-button onclick="projectDialog.toggle()" raised><strong>Add Project</strong></paper-button></center>
-	    <br><br>
-	    <paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="projectDialog" style="width:50%;margin-left:auto;margin-right:auto">
-	    		<paper-dialog-scrollable>
-	    			<paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Name:" id=saveProjectFormName></paper-input>
-			        <!--<paper-input  class="addProjClass"label="Type:" id=saveProjectFormType_name></paper-input>-->
-			        <!--<paper-input class="addProjClass" label="Index Name:" id=saveProjectFormIndex_name></paper-input>-->
-			        <!--<paper-input class="addProjClass" label="Image Prefix:" id=saveProjectFormImagePrefix></paper-input>-->
-			        <!---->
-			        <!--<div>-->
-			        <!--<span>TLDs</span>-->
-			        <!--<textarea id=saveProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>-->
-			        <!--</div>-->
-			        <!--<div>-->
-			        <!--<span>Start Date:</span>-->
-			        <!--<paper-date-picker-item class="projectInputStyle"-->
-					     <!--date-format="YYYY-MM-DD"-->
-					    <!--placeholder="Select:"-->
-					    <!--id=saveProjectFormStart_date>-->
-					<!--</paper-date-picker-item>-->
-					<!--</div>-->
-					<!--<div>-->
-			        <!--<span>End Date:</span>-->
-					<!--<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"-->
-					    <!--placeholder="Select:"-->
-					    <!--id=saveProjectFormEnd_date>-->
-					<!--</paper-date-picker-item>-->
-					<!--</div>-->
-					<!--<paper-input  class="addProjClass" label="UserName:" id=saveProjectFormUserName></paper-input>-->
-			        <!--<paper-input  class="addProjClass" label="Password:" id=saveProjectFormPassword></paper-input>-->
-			        <!--<paper-input  class="addProjClass" label="URL:" id=saveProjectURL></paper-input>-->
-			        
-			        
-		        </paper-dialog-scrollable>
-		        	<paper-button style="float:right;margin-top:20px;margin-right:20px" onclick="addProject();" raised><strong>Save</strong></paper-button>
-			        <paper-button style="float:right;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
-		</paper-dialog>
-		
-		
-		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editprojectDialog" style="width:50%;margin-left:auto;margin-right:auto">
-           		<paper-dialog-scrollable>    
-           		    <h4>Project: {{editProjectForm.name}}</h4>
-           		    <div>
-			        <span>TLDs</span>
-			        <textarea id=editProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
-			        
-			        </div>
-			        <div>
-			        
-			        <span>Start Date:</span>
-					<paper-date-picker-item class="projectInputStyle"   date-format="YYYY-MM-DD"
-    				placeholder="Select:" date="{{editProjectForm.value.sources.0.start_date}}"
-    					id=editProjectFormStart_date>
-					</paper-date-picker-item>
-					
-					<span>End Date:</span>
-					<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
-					   date="{{editProjectForm.value.sources.0.end_date}}"
-					    placeholder="Select:"
-					    id=editProjectFormEnd_date>
-					</paper-date-picker-item>
-					</div>	
-					<img onclick="enable()" id="auth" style="height: 20px;float:right" src="../static/images/Authorize.png" alt="">
-					<paper-tooltip fit-to-visible-bounds="true" position="left" for="auth" >Click Here to edit Authorized data</paper-tooltip>
-				
-					<div id="isDisabled" style="pointer-events:none;opacity:0.4">
-					<paper-input class="addProjClass" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index}}"></paper-input>
-			        <paper-input class="addProjClass" label="Image Prefix:" id=editProjectFormImgePrefix value="{{editProjectForm.value.image_prefix}}"></paper-input>
-			        
-			        <div>
-			        
-						<paper-input style="float:right;margin-right:10em" class="addProjClass" label="Root Name:" id=editProjectFormRoot_name value="{{editProjectForm.value.root_name}}"></paper-input>
-				        <paper-input  class="addProjClass" label="Type Name:" id=editProjectFormType_name value="{{editProjectForm.value.sources.0.type}}"></paper-input>
-				       
-			        </div>
-			        <div>
-				        <paper-input  style="float:right;margin-right:10em" class="addProjClass" label="Password:" value="{{editProjectForm.value.sources.0.password}}"></paper-input>
-				        <paper-input  class="addProjClass" label="UserName:" value="{{editProjectForm.value.sources.0.username}}"></paper-input>
-				        
-			        </div>
-			        <paper-input  class="addProjClass" label="URL:" value="{{editProjectForm.value.sources.0.url}}"></paper-input>
-			        
-			        <paper-input  class="addProjClass" label="DigApp Sample URL:" value="{{editProjectForm.value.configuration.digapp_sample_url}}"></paper-input>
-			        <paper-input  class="addProjClass" label="DigApp Full URL:" value="{{editProjectForm.value.configuration.digapp_full_url}}"></paper-input>
-			        <paper-input  class="addProjClass" label="Sandpaper Sample URL" value="{{editProjectForm.value.configuration.sandpaper_sample_url}}"></paper-input>
-			       	
-			        <paper-input  class="addProjClass" label="Sandpaper Full URL" value="{{editProjectForm.value.configuration.sandpaper_full_url}}"></paper-input>
-			       	</div>        
-			        
-		       </paper-dialog-scrollable>
-		       		<paper-button on-tap="updateEditData" style="float:right;margin-top:20px;margin-right:20px" raised><strong>Save</strong></paper-button>
-			        <paper-button style="float:right;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
-		 
-		   </paper-dialog>
-</template> 
-</dom-module>
-<user-demo></user-demo>
-<script>
-Polymer({
-    is: 'user-demo',
-    properties: {
-       
-        projects: {
-	          type: Array,
-	          notify: true,
-	    },
-	    projectData: {
-	          type: String,
-	          notify: true,
-	    },
-	    name: {
-	          type: String,
-	          notify: true,
-	    },
-	    
-      
     },
+
+
+    toggle: function(){
+
+    	
+        if(!this.toggleVal)
+        {
+    	   this.$.add_icon.icon = "remove-circle";
+    	   this.toggleVal =1;
+    	   this.$.saveProjectFormName.value ="";
+        }
+        else{
+        	this.$.add_icon.icon = "add-circle";
+        	this.toggleVal =0;
+        }
+        this.$.add_project.toggle();
+
+    },
+
+    feedback: function () {
+            var dialog = document.querySelector('#projectDialog');
+            this.$.projectDialog.open();
+        },
    
     ready : function() {
     	var obj = {};
-        this.$.ajaxCall.headers = obj;
+//        obj.Authorization = "Basic " + btoa(username+":"+password);
+    	this.$.ajaxCall.headers = obj;
     	this.$.ajaxCall.url=backend_url +"projects";
     	this.$.ajaxCall.generateRequest();
     	this.projects=[];
     	this.arrayData=[];
     	this.projectDatas=[];
     	this.dataFinal = [];
+    	this.toggleVal = 0;
     	this.name = "";
     	this.i=0;
     	this.editProjectForm = {};
@@ -276,17 +254,17 @@ Polymer({
     	var projectName = (data.detail.url).split("/");
     	var obj = {"name":projectName[projectName.length-1],"value":data.detail.response};
     	this.push('projectDatas',obj);
-//    	console.log(this.projectDatas);
     	this.i++;
+    	
     },
 
-	sortProject: function(obj1, obj2) {
-		var a = obj1["name"].toLowerCase();
-		var b = obj2["name"].toLowerCase();
-		if (a < b) return -1;
-		else if (a > b) return 1;
-		else return 0;
-	},
+    sortProject: function(obj1, obj2) {
+    var a = obj1["name"].toLowerCase();
+    var b = obj2["name"].toLowerCase();
+    if (a < b) return -1;
+    else if (a > b) return 1;
+    else return 0;
+    },
     
     editProjectData: function(e) {
     	this.tlds=[];
@@ -341,14 +319,18 @@ Polymer({
   	_restoreDocumentScrolling: function() {
   		  document.body.style.overflow = '';
   	},
-	deleteProject: function(e) {
+    deleteProject: function(e) {
         project_name = e.model.item.name;
 
         if(window.confirm("Are you sure to delete project: " + project_name + "?") == false) {
             return;
         }
 
-        $.ajax({
+        this.$.deleteProjectRequest.url = backend_url + "projects/" + project_name;
+        this.$.deleteProjectRequest.generateRequest();
+        console.log("here");
+
+        /*ajax({
             type: "DELETE",
             url: backend_url + "projects/" + project_name,
             async: true,
@@ -357,18 +339,151 @@ Polymer({
             processData: false,
             context: this,
             success: function (msg) {
-    			location.reload();
+          location.reload();
             },
             error: function(msg) {
                 alert("Can not delete project: " + project_name);
                 console.log(msg);
             }
-        });
+        });*/
+    },
+    deleteSuccess: function()
+    {
+      console.log("success");
+      location.reload();
     }
+
+
 });
-
-
-
-
 </script>
 
+
+ <!--<paper-button on-tap="editProjectData" style="float:right;color:black;text-transform: none;" raised><strong>Edit</strong></paper-button>-->       
+<!--         <br><br><br>
+			    <center><paper-button on-click='feedback' raised style="margin-top:20px"><strong>Add Project</strong></paper-button></center>
+	    <br><br>
+
+	    	<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="projectDialog" style="width:50%;margin-left:auto;margin-right:auto">
+	    		
+             <paper-input  required auto-validate pattern="[A-Za-z0-9_]*" maxlength="255" class="addProjClass" label="Name:" id="saveProjectFormName"></paper-input>
+		           <paper-button style="float:right;margin-top:20px;text-align:center;margin-right:20px;padding:1%" onclick="addProject();" raised><strong>Save</strong></paper-button>
+			        <paper-button style="float:right;margin-top:20px;padding:1%" dialog-dismiss raised><strong>Cancel</strong></paper-button>	        	
+		</paper-dialog> -->
+
+
+		 
+		 <!--   <app-toolbar> <img src="./static/images/dig-logo-original.png" alt="hello"><app-toolbar>
+		  <!-- <paper-header-panel>
+		  
+          <section class="adjustProjectSection">
+            <div class="search-results-header">
+              <div class="paper-font-title flex">DIG Projects</div>
+            </div>
+            <div class="h-divider"></div>
+          </section>
+          </paper-header-panel>
+          <br>
+          <h4 style="padding:0em;margin-left:10px">DIG Projects</h4>
+           <br><br> -->
+
+ <!--	<paper-dialog-scrollable style="width:100%;height:100%;margin-left:auto;margin-right:auto">	        <!--<paper-input  class="addProjClass"label="Type:" id=saveProjectFormType_name></paper-input>-->
+			        <!--<paper-input class="addProjClass" label="Index Name:" id=saveProjectFormIndex_name></paper-input>-->
+			        <!--<paper-input class="addProjClass" label="Image Prefix:" id=saveProjectFormImagePrefix></paper-input>-->
+			        <!---->
+			        <!--<div>-->
+			        <!--<span>TLDs</span>-->
+			        <!--<textarea id=saveProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>-->
+			        <!--</div>-->
+			        <!--<div>-->
+			        <!--<span>Start Date:</span>-->
+			        <!--<paper-date-picker-item class="projectInputStyle"-->
+					     <!--date-format="YYYY-MM-DD"-->
+					    <!--placeholder="Select:"-->
+					    <!--id=saveProjectFormStart_date>-->
+					<!--</paper-date-picker-item>-->
+					<!--</div>-->
+					<!--<div>-->
+			        <!--<span>End Date:</span>-->
+					<!--<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"-->
+					    <!--placeholder="Select:"-->
+					    <!--id=saveProjectFormEnd_date>-->
+					<!--</paper-date-picker-item>-->
+					<!--</div>-->
+					<!--<paper-input  class="addProjClass" label="UserName:" id=saveProjectFormUserName></paper-input>-->
+			        <!--<paper-input  class="addProjClass" label="Password:" id=saveProjectFormPassword></paper-input>-->
+			        <!--<paper-input  class="addProjClass" label="URL:" id=saveProjectURL></paper-input>-->
+			        
+		       <!--   </paper-dialog-scrollable> -->
+		
+<!-- 		<paper-dialog with-backdrop on-iron-overlay-opened="_disableDocumentScrolling" on-iron-overlay-closed="_restoreDocumentScrolling" id="editprojectDialog" style="width:50%;margin-left:auto;margin-right:auto">
+           		<paper-dialog-scrollable>    
+           		    <h4>Project: {{editProjectForm.name}}</h4>
+           		    <div>
+			        <span>TLDs</span>
+			        <textarea id=editProjectFormTLD_name style="height:18em;clear:left;width:100%;resize:none"></textarea>
+			        
+			        </div>
+			        <div>
+			        
+			        <span>Start Date:</span>
+					<paper-date-picker-item class="projectInputStyle"   date-format="YYYY-MM-DD"
+    				placeholder="Select:" date="{{editProjectForm.value.sources.0.start_date}}"
+    					id=editProjectFormStart_date>
+					</paper-date-picker-item>
+					
+					<span>End Date:</span>
+					<paper-date-picker-item class="projectInputStyle" date-format="YYYY-MM-DD"
+					   date="{{editProjectForm.value.sources.0.end_date}}"
+					    placeholder="Select:"
+					    id=editProjectFormEnd_date>
+					</paper-date-picker-item>
+					</div>	
+					<img onclick="enable()" id="auth" style="height: 20px;float:right" src="./static/images/Authorize.png" alt="">
+					<paper-tooltip fit-to-visible-bounds="true" position="left" for="auth" >Click Here to edit Authorized data</paper-tooltip>
+				
+					<div id="isDisabled" style="pointer-events:none;opacity:0.4">
+					<paper-input class="addProjClass" label="Index Name:" id=editProjectFormIndex_name value="{{editProjectForm.value.sources.0.index}}"></paper-input>
+			        <paper-input class="addProjClass" label="Image Prefix:" id=editProjectFormImgePrefix value="{{editProjectForm.value.image_prefix}}"></paper-input>
+			        
+			        <div>
+			        
+						<paper-input style="float:right;margin-right:10em" class="addProjClass" label="Root Name:" id=editProjectFormRoot_name value="{{editProjectForm.value.root_name}}"></paper-input>
+				        <paper-input  class="addProjClass" label="Type Name:" id=editProjectFormType_name value="{{editProjectForm.value.sources.0.type}}"></paper-input>
+				       
+			        </div>
+			        <div>
+				        <paper-input  style="float:right;margin-right:10em" class="addProjClass" label="Password:" value="{{editProjectForm.value.sources.0.password}}"></paper-input>
+				        <paper-input  class="addProjClass" label="UserName:" value="{{editProjectForm.value.sources.0.username}}"></paper-input>
+				        
+			        </div>
+			        <paper-input  class="addProjClass" label="URL:" value="{{editProjectForm.value.sources.0.url}}"></paper-input>
+			        
+			        <paper-input  class="addProjClass" label="DigApp Sample URL:" value="{{editProjectForm.value.configuration.digapp_sample_url}}"></paper-input>
+			        <paper-input  class="addProjClass" label="DigApp Full URL:" value="{{editProjectForm.value.configuration.digapp_full_url}}"></paper-input>
+			        <paper-input  class="addProjClass" label="Sandpaper Sample URL" value="{{editProjectForm.value.configuration.sandpaper_sample_url}}"></paper-input>
+			       	
+			        <paper-input  class="addProjClass" label="Sandpaper Full URL" value="{{editProjectForm.value.configuration.sandpaper_full_url}}"></paper-input>
+			       	</div>        
+			        
+		       </paper-dialog-scrollable>
+		       		<paper-button on-tap="updateEditData" style="float:right;margin-top:20px;margin-right:20px" raised><strong>Save</strong></paper-button>
+			        <paper-button style="float:right;margin-top:20px" dialog-dismiss raised><strong>Cancel</strong></paper-button>
+		 
+		   </paper-dialog>
+		   -->
+		   <!-- <user-demo></user-demo> -->
+
+<!-- <script>
+//var username =localStorage.getItem("username");
+//var password =localStorage.getItem("password");
+
+
+
+function enable() {
+	document.getElementById("isDisabled").removeAttribute("style");
+}
+
+
+
+
+</script> -->

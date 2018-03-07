@@ -2,7 +2,7 @@
 <!---
 
 This README is automatically generated from the comments in these files:
-paper-icon-button.html
+paper-icon-button-light.html  paper-icon-button.html
 
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
@@ -17,21 +17,36 @@ thing! https://github.com/PolymerLabs/tedium/issues
 _[Demo and API docs](https://elements.polymer-project.org/elements/paper-icon-button)_
 
 
-##&lt;paper-icon-button&gt;
+## &lt;paper-icon-button&gt;
 
 Material design: [Icon toggles](https://www.google.com/design/spec/components/buttons.html#buttons-toggle-buttons)
 
 `paper-icon-button` is a button with an image placed at the center. When the user touches
 the button, a ripple effect emanates from the center of the button.
 
-`paper-icon-button` includes a default icon set.  Use `icon` to specify which icon
+`paper-icon-button` does not include a default icon set. To use icons from the default
+set, include `PolymerElements/iron-icons/iron-icons.html`, and use the `icon` attribute to specify which icon
 from the icon set to use.
 
+<!---
 ```html
+<custom-element-demo>
+  <template>
+    <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="paper-icon-button.html">
+    <link rel="import" href="../iron-icons/iron-icons.html">
+    <next-code-block></next-code-block>
+  </template>
+</custom-element-demo>
+```
+-->
+```html
+<paper-icon-button icon="favorite"></paper-icon-button>
 <paper-icon-button icon="menu"></paper-icon-button>
+<paper-icon-button icon="star"></paper-icon-button>
 ```
 
-See [`iron-iconset`](iron-iconset) for more information about
+See [`iron-iconset`](https://github.com/PolymerElements/iron-iconset) for more information about
 how to use a custom icon set.
 
 Example:
@@ -77,3 +92,5 @@ The following custom properties and mixins are available for styling:
 | `--paper-icon-button-hover` | Mixin for button on hover | `{}` |
 
 
+
+<!-- No docs for <paper-icon-button-light> found. -->
