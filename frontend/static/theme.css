@@ -1,6 +1,4 @@
-<dom-module id="search-styles">
-  <template>
-    <style>
+
       .search-results-header{
         padding: 0 20px;
         @apply(--layout-horizontal);
@@ -37,31 +35,31 @@
 
       @media all and (min-height: 701px) and (max-height: 800px) { 
         .main-search-results {
-          height: 450px;
+          height: 65px;
         }
       }
 
       @media all and (min-height: 801px) and (max-height: 900px) { 
         .main-search-results {
-          height: 550px;
+          height: 65px;
         }
       }
 
       @media all and (min-height: 901px) and (max-height: 1000px) { 
         .main-search-results {
-          height: 650px;
+          height: 65px;
         }
       }
 
       @media all and (min-height: 1001px) and (max-height: 1100px) {
         .main-search-results {
-          height: 750px;
+          height: 65px;
         }
       }
 
       @media all and (min-height: 1101px) {
         .main-search-results {
-          height: 850px;
+          height: 65px;
         }
       }
       
@@ -235,8 +233,6 @@
       /*table, th, td {*/
     		/*border: 1px solid black;*/
 		/*}	*/
-    </style>
-  </template>
-</dom-module>
+
 
 

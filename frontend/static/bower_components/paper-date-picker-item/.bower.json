@@ -28,7 +28,7 @@
     "paper-ripple": "PolymerElements/paper-ripple#1 - 2",
     "paper-styles": "PolymerElements/paper-styles#1 - 2",
     "neon-animation": "PolymerElements/neon-animation#1 - 2",
-    "paper-date-picker": "bendavis78/paper-date-picker#^1.2.0",
+    "paper-date-picker": "Collaborne/paper-date-picker#pr/date-picker-no-locales",
     "paper-time-picker": "bendavis78/paper-time-picker#^1.1.4",
     "moment-element": "bendavis78/moment-element#^1.1.1",
     "iron-behaviors": "PolymerElements/iron-behaviors#1 - 2"
@@ -41,15 +41,18 @@
     "paper-listbox": "PolymerElements/paper-listbox#1 - 2",
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#1 - 2"
   },
-  "version": "1.6.0",
-  "_release": "1.6.0",
+  "resolutions": {
+    "webcomponentsjs": "^v1.0.0"
+  },
+  "version": "1.7.0",
+  "_release": "1.7.0",
   "_resolution": {
     "type": "version",
-    "tag": "1.6.0",
-    "commit": "712a7ad4354d91a30cb1815df7382a751928d98b"
+    "tag": "1.7.0",
+    "commit": "49eb90834a757da2532261b0db02cdaae791b9e0"
   },
   "_source": "https://github.com/Collaborne/paper-date-picker-item.git",
-  "_target": "^1.6.0",
+  "_target": "^1.7.0",
   "_originalSource": "paper-date-picker-item",
   "_direct": true
 }

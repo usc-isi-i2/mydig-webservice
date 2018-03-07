@@ -8,7 +8,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-meta/iron-meta.html">
 <link rel="import" href="neon-animatable-behavior.html">
 
 <script>
@@ -32,7 +31,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             try {
               result = neonAnimation.configure(config);
               // Check if we have an Effect rather than an Animation
-              if (typeof result.cancel != 'function') { 
+              if (typeof result.cancel != 'function') {
                 result = document.timeline.play(result);
               }
             } catch (e) {
