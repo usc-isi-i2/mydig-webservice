@@ -821,7 +821,7 @@ poly = Polymer({
     updateDone: function () {
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
-        console.log("im here");
+        // console.log("im here");
         this.$.getFields.headers = obj;
         this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
         this.$.getFields.generateRequest();
@@ -2060,8 +2060,8 @@ poly = Polymer({
          if($(e.currentTarget)[0].value!=1)
             this.updatePipelineBtn(this.etkStatus);
 
-        console.log(this.etkStatus);
-        console.log(this.confirmValue);
+        //console.log(this.etkStatus);
+        //console.log(this.confirmValue);
         
        
 
