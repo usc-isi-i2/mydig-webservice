@@ -102,20 +102,22 @@ def update_master_config_file(project_name):
     write_to_file(json.dumps(data[project_name]['master_config'], indent=4), file_path)
 
 
-def update_status_file(project_name, lock=True):
-    status_file_path = os.path.join(
-        _get_project_dir_path(project_name), 'working_dir/status.json')
-    if not lock:
-        write_to_file(json.dumps(data[project_name]['status'], indent=4), status_file_path)
-    else:
-        with data[project_name]['locks']['status_file_write_lock']:
-            data_persistence.dump_data(json.dumps(data[project_name]['status'], indent=4), status_file_path)
+def set_status_dirty(project_name):
+    data[project_name]['status_memory_dump_worker'].memory_timestamp = time.time()
 
 
-def update_data_db_file(project_name):
+def update_status_file(project_name):
+    status_file_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/status.json')
+    data_persistence.dump_data(json.dumps(data[project_name]['status'], indent=4), status_file_path)
+
+
+def set_catalog_dirty(project_name):
+    data[project_name]['catalog_memory_dump_worker'].memory_timestamp = time.time()
+
+
+def update_catalog_file(project_name):
     data_db_path = os.path.join(_get_project_dir_path(project_name), 'data/_db.json')
-    with data[project_name]['locks']['data_file_write_lock']:
-        data_persistence.dump_data(json.dumps(data[project_name]['data']), data_db_path)
+    data_persistence.dump_data(json.dumps(data[project_name]['data']), data_db_path)
 
 
 def _get_project_dir_path(project_name):
@@ -333,7 +335,7 @@ class AllProjects(Resource):
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
         write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
 
-        update_status_file(project_name, lock=False)  # create status file after creating the working_dir
+        update_status_file(project_name)  # create status file after creating the working_dir
 
         start_threads_and_locks(project_name)
 
@@ -1797,11 +1799,11 @@ class Data(Resource):
                             data[project_name]['status']['total_docs'][tld] = \
                                 data[project_name]['status']['total_docs'].get(tld, 0) + 1
 
-                f.close()
+                    # update data db & status file
+                    set_catalog_dirty(project_name)
+                    set_status_dirty(project_name)
 
-                # update data db & status file
-                update_data_db_file(project_name)
-                update_status_file(project_name)
+                f.close()
 
             elif file_type == 'html':
                 pass
@@ -1874,7 +1876,7 @@ class Data(Resource):
                     del data[project_name]['status']['added_docs'][tld]
                 if tld in data[project_name]['status']['total_docs']:
                     del data[project_name]['status']['total_docs'][tld]
-            update_status_file(project_name)
+                set_status_dirty(project_name)
 
             # update data
             with data[project_name]['locks']['data']:
@@ -1891,7 +1893,7 @@ class Data(Resource):
                             pass
                     # remove from catalog
                     del data[project_name]['data'][tld]
-            update_data_db_file(project_name)
+                    set_catalog_dirty(project_name)
 
     @staticmethod
     def generate_tld(file_name):
@@ -2276,7 +2278,7 @@ class Actions(Resource):
                     data[project_name]['status']['desired_docs'][tld] = dict()
                 data[project_name]['status']['desired_docs'][tld] = desired_num
 
-        update_status_file(project_name)
+        set_status_dirty(project_name)
         return rest.created()
 
     @staticmethod
@@ -2336,8 +2338,8 @@ class Actions(Resource):
                             added_num_this_round -= 1
 
                     data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
-                    update_data_db_file(project_name)
-                    update_status_file(project_name)
+                    set_catalog_dirty(project_name)
+                    set_status_dirty(project_name)
         except Exception as e:
             print 'exception in Actions._add_data_worker() data lock', e
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -2494,7 +2496,7 @@ class Actions(Resource):
             for tld in data[project_name]['data'].iterkeys():
                 for doc_id in data[project_name]['data'][tld]:
                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
-        update_status_file(project_name)
+        set_status_dirty(project_name)
 
         # 5. restart extraction
         # still need to do clean_up_queue here
@@ -2688,11 +2690,45 @@ class DataPushingWorker(threading.Thread):
         self.input_topic = project_name + '_in'
 
     def run(self):
-        print 'thread run....', self.project_name
+        print 'thread DataPushingWorker running....', self.project_name
         while not self.exit_signal:
             # print 'DataPushingWorker.exit_signal', self.exit_signal
             Actions._add_data_worker(self.project_name, self.producer, self.input_topic)
-            time.sleep(config['data_pushing_worker_backoff_time'])
+
+            # wait interval
+            t = config['data_pushing_worker_backoff_time'] * 10
+            while t > 0 and not self.exit_signal:
+                time.sleep(0.1)
+                t -= 1
+
+
+class MemoryDumpWorker(threading.Thread):
+    def __init__(self, project_name, sleep_interval, function, kwargs=dict()):
+        super(MemoryDumpWorker, self).__init__()
+        self.project_name = project_name
+        self.exit_signal = False
+        init_time = time.time()
+        self.file_timestamp = init_time
+        self.memory_timestamp = init_time
+
+        self.sleep_interval = sleep_interval
+        self.function = function
+        self.kwargs = kwargs
+
+    def run(self):
+        print 'thread MemoryDumpWorker running....', self.project_name
+        while not self.exit_signal:
+            # print self.memory_timestamp, self.file_timestamp
+            memory_timestamp = self.memory_timestamp
+            if self.file_timestamp < memory_timestamp:
+                self.function(**self.kwargs)
+                self.file_timestamp = memory_timestamp
+
+            # wait interval
+            t = self.sleep_interval * 10
+            while t > 0 and not self.exit_signal:
+                time.sleep(0.1)
+                t -= 1
 
 
 def ensure_sandpaper_is_on():
@@ -2740,9 +2776,7 @@ def graceful_killer(signum, frame):
     print 'SIGNAL #{} received, notifying threads to exit...'.format(signum)
     for project_name in data.iterkeys():
         try:
-            data[project_name]['data_pushing_worker'].exit_signal = True
-            # print data[project_name]['data_pushing_worker'].exit_signal
-            data[project_name]['data_pushing_worker'].join()
+            stop_threads_and_locks(project_name)
         except:
             pass
     print 'threads exited, exiting main thread...'
@@ -2753,16 +2787,27 @@ def start_threads_and_locks(project_name):
     data[project_name]['locks']['data'] = threading.Lock()
     data[project_name]['locks']['status'] = threading.Lock()
     data[project_name]['locks']['catalog_log'] = threading.Lock()
-    data[project_name]['locks']['status_file_write_lock'] = threading.Lock()
-    data[project_name]['locks']['data_file_write_lock'] = threading.Lock()
+
     data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
     data[project_name]['data_pushing_worker'].start()
+    data[project_name]['status_memory_dump_worker'] = MemoryDumpWorker(
+        project_name, config['status_memory_dump_backoff_time'],
+        update_status_file, kwargs={'project_name': project_name})
+    data[project_name]['status_memory_dump_worker'].start()
+    data[project_name]['catalog_memory_dump_worker'] = MemoryDumpWorker(
+        project_name, config['catalog_memory_dump_backoff_time'],
+        update_catalog_file, kwargs={'project_name': project_name})
+    data[project_name]['catalog_memory_dump_worker'].start()
 
 
 def stop_threads_and_locks(project_name):
     try:
         data[project_name]['data_pushing_worker'].exit_signal = True
         data[project_name]['data_pushing_worker'].join()
+        data[project_name]['status_memory_dump_worker'].exit_signal = True
+        data[project_name]['status_memory_dump_worker'].join()
+        data[project_name]['catalog_memory_dump_worker'].exit_signal = True
+        data[project_name]['catalog_memory_dump_worker'].join()
         print 'threads of project {} exited'.format(project_name)
     except:
         pass
@@ -2829,7 +2874,7 @@ if __name__ == '__main__':
                 for tld in data[project_name]['data'].iterkeys():
                     data[project_name]['status']['total_docs'][tld] \
                         = len(data[project_name]['data'][tld])
-                update_status_file(project_name, lock=False)
+                update_status_file(project_name)
 
                 # re-config sandpaper
                 url = '{}/config?project={}&index={}&endpoint={}'.format(

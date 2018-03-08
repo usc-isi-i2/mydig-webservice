@@ -31,10 +31,10 @@ project = {
         'data': None, # for data[project_name]['data']
         'status': None, # for data[project_name]['status']
         'catalog_log': None,
-        'status_file_write_lock': None,
-        'data_file_write_lock': None
     },
-    'data_pushing_worker': None # daemon to periodically check if data needs to push to kafka
+    'data_pushing_worker': None, # daemon to periodically check if data needs to push to kafka,
+    'status_memory_dump_worker': None,
+    'catalog_memory_dump_worker': None,
 }
 
 master_config = {
