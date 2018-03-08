@@ -265,7 +265,7 @@ class AllProjects(Resource):
         default_desired_num = input.get('default_desired_num', '')
         show_images_in_facets = input.get('show_images_in_facets', False)
         show_images_in_search_form = input.get('show_images_in_search_form', False)
-        show_timelines = input.get('show_timelines', False)
+        hide_timelines = input.get('hide_timelines', False)
         new_linebreak = input.get('new_linebreak', 'break')
 
         # create topics in etl engine
@@ -299,7 +299,7 @@ class AllProjects(Resource):
         data[project_name]['master_config']['default_desired_num'] = default_desired_num
         data[project_name]['master_config']['show_images_in_facets'] = show_images_in_facets
         data[project_name]['master_config']['show_images_in_search_form'] = show_images_in_search_form
-        data[project_name]['master_config']['show_timelines'] = show_timelines
+        data[project_name]['master_config']['hide_timelines'] = hide_timelines
         data[project_name]['master_config']['new_linebreak'] = new_linebreak
         update_master_config_file(project_name)
 
@@ -374,7 +374,7 @@ class Project(Resource):
         default_desired_num = input.get('default_desired_num', '')
         show_images_in_facets = input.get('show_images_in_facets', False)
         show_images_in_search_form = input.get('show_images_in_search_form', False)
-        show_timelines = input.get('show_timelines', False)
+        hide_timelines = input.get('hide_timelines', False)
         new_linebreak = input.get('new_linebreak', 'break')
 
         # data[project_name]['master_config']['configuration'] = project_config
@@ -382,7 +382,7 @@ class Project(Resource):
         data[project_name]['master_config']['default_desired_num'] = default_desired_num
         data[project_name]['master_config']['show_images_in_facets'] = show_images_in_facets
         data[project_name]['master_config']['show_images_in_search_form'] = show_images_in_search_form
-        data[project_name]['master_config']['show_timelines'] = show_timelines
+        data[project_name]['master_config']['hide_timelines'] = hide_timelines
         data[project_name]['master_config']['new_linebreak'] = new_linebreak
         # data[project_name]['master_config']['index'] = es_index
 
