@@ -195,31 +195,24 @@ class Authentication(Resource):
         return rest.ok()
 
 
-@api.route('/debug/<mode>')
-class Debug(Resource):
+@api.route('/projects/<project_name>/debug/<mode>')
+class ProjectDebug(Resource):
     @requires_auth
-    def get(self, mode):
-        if not config['debug']:
-            return abort(404)
-
-        if mode == 'data':
-            debug_info = {
-                # 'lock': {k: v.locked() for k, v in project_lock._lock.iteritems()},
-                'data': data
+    def get(self, project_name, mode):
+        ret = dict()
+        if mode == 'thread':
+            ret = {
+                'threads': dict(),
+                'data_pushing_worker': data[project_name]['data_pushing_worker'].ident,
+                'status_memory_dump_worker': data[project_name]['status_memory_dump_worker'].ident,
+                'catalog_memory_dump_worker': data[project_name]['catalog_memory_dump_worker'].ident
             }
-            return debug_info
-        elif mode == 'log':
-            with codecs.open(config['logging']['file_path'], 'r') as f:
-                content = f.read()
-            return make_response(content)
-        elif mode == 'nohup':
-            nohup_file_path = 'nohup.out'
-            if os.path.exists(nohup_file_path):
-                with codecs.open(nohup_file_path, 'r') as f:
-                    content = f.read()
-                return make_response(content)
-
-        return rest.bad_request()
+            for t in data[project_name]['threads']:
+                ret['threads'][t.ident] = {
+                    'is_alive': t.is_alive(),
+                    'name': t.name
+                }
+        return ret
 
 
 @api.route('/projects/<project_name>/search/<type>')
@@ -1689,9 +1682,11 @@ class Data(Resource):
             os.mkdir(dest_dir_path)
 
         if not args['sync']:
-            thread.start_new_thread(Data._update_catalog_worker,
-                                    (project_name, file_name, args['file_type'], src_file_path, dest_dir_path,
-                                     args['log'],))
+            t = threading.Thread(target=Data._update_catalog_worker,
+                args=(project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'],),
+                name='data_upload')
+            t.start()
+            data[project_name]['threads'].append(t)
 
             return rest.accepted()
         else:
@@ -1860,7 +1855,9 @@ class Data(Resource):
         input = request.get_json(force=True)
         tld_list = input.get('tlds', list())
 
-        thread.start_new_thread(Data._delete_file_worker, (project_name, tld_list,))
+        t = threading.Thread(target=Data._delete_file_worker, args=(project_name, tld_list,), name='data_delete')
+        t.start()
+        data[project_name]['threads'].append(t)
 
         return rest.accepted()
 
@@ -2517,7 +2514,9 @@ class Actions(Resource):
         Actions._generate_etk_config(project_name)
 
         # 3. fetch and re-add data
-        thread.start_new_thread(Actions._reload_blacklist_worker, (project_name,))
+        t = threading.Thread(target=Data._reload_blacklist_worker, args=(project_name,), name='reload_blacklist')
+        t.start()
+        data[project_name]['threads'].append(t)
 
         return rest.accepted()
 

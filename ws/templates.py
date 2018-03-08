@@ -35,6 +35,7 @@ project = {
     'data_pushing_worker': None, # daemon to periodically check if data needs to push to kafka,
     'status_memory_dump_worker': None,
     'catalog_memory_dump_worker': None,
+    'threads': [] # all threads exclude above workers
 }
 
 master_config = {
