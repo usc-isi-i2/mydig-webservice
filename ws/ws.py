@@ -2680,10 +2680,11 @@ class Actions(Resource):
 
 
 class DataPushingWorker(threading.Thread):
-    def __init__(self, project_name):
+    def __init__(self, project_name, sleep_interval):
         super(DataPushingWorker, self).__init__()
         self.project_name = project_name
         self.exit_signal = False
+        self.sleep_interval = sleep_interval
 
         # set up input kafka
         self.producer = kafka_producer
@@ -2696,7 +2697,7 @@ class DataPushingWorker(threading.Thread):
             Actions._add_data_worker(self.project_name, self.producer, self.input_topic)
 
             # wait interval
-            t = config['data_pushing_worker_backoff_time'] * 10
+            t = self.sleep_interval * 10
             while t > 0 and not self.exit_signal:
                 time.sleep(0.1)
                 t -= 1
@@ -2715,20 +2716,26 @@ class MemoryDumpWorker(threading.Thread):
         self.function = function
         self.kwargs = kwargs
 
+    def run_function(self):
+        # print self.memory_timestamp, self.file_timestamp
+        memory_timestamp = self.memory_timestamp
+        if self.file_timestamp < memory_timestamp:
+            self.function(**self.kwargs)
+            self.file_timestamp = memory_timestamp
+
     def run(self):
         print 'thread MemoryDumpWorker running....', self.project_name
         while not self.exit_signal:
-            # print self.memory_timestamp, self.file_timestamp
-            memory_timestamp = self.memory_timestamp
-            if self.file_timestamp < memory_timestamp:
-                self.function(**self.kwargs)
-                self.file_timestamp = memory_timestamp
+            self.run_function()
 
             # wait interval
             t = self.sleep_interval * 10
             while t > 0 and not self.exit_signal:
                 time.sleep(0.1)
                 t -= 1
+
+        # make sure memory data is dumped
+        self.run_function()
 
 
 def ensure_sandpaper_is_on():
@@ -2788,7 +2795,8 @@ def start_threads_and_locks(project_name):
     data[project_name]['locks']['status'] = threading.Lock()
     data[project_name]['locks']['catalog_log'] = threading.Lock()
 
-    data[project_name]['data_pushing_worker'] = DataPushingWorker(project_name)
+    data[project_name]['data_pushing_worker'] = DataPushingWorker(
+        project_name, config['data_pushing_worker_backoff_time'])
     data[project_name]['data_pushing_worker'].start()
     data[project_name]['status_memory_dump_worker'] = MemoryDumpWorker(
         project_name, config['status_memory_dump_backoff_time'],
