@@ -1340,7 +1340,7 @@ poly = Polymer({
 
         if($(e.currentTarget)[0].id != "yes")
         {
-            this.confirmText = "Are you sure to data of this TLD?"
+            this.confirmText = "Are you sure to delete the data of this TLD?"
             this.confirmButton = "DELETE"
             this.confirmValue = $(e.currentTarget)[0].value
             this.listen(this.$$("#yes"), 'tap', 'deleteFileData');
@@ -1591,7 +1591,7 @@ poly = Polymer({
                 // //console.log(msg);
                 this.dialogText = "Added";
                 this.$$('#alertDialog').toggle();
-            }
+            }.bind(this)
         });
         // //console.log(tld);
     },

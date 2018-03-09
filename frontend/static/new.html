@@ -96,8 +96,8 @@
 
 
  <paper-card style="width:94%;margin-left:3%;margin-right:auto; margin-top: 5px;padding: 0px;z-index:1;">
-		<template is="dom-repeat" items="{{projectDatas}}" sort="sortProject">     
-              <div  id = "projectSection" style="height:65px;margin-left:20px;margin-right:20px" >
+		<template is="dom-repeat" items="{{projectDatas}}" sort="sortProject">  
+              <div  on-tap="goToProject" id = "{{item.name}}" class="clickable" style="z-index=-1;pointer-events: auto;height:65px;margin-left:20px;margin-right:20px" >
               <div style="margin-top:1em;float:left;"><span><h4><b>{{item.name}}</b></h4></span></div>
               <div style="margin-bottom:1em">
 	              <a style="color:black" href="details?{{item.name}}">
@@ -106,7 +106,7 @@
 	              </div>
                 </a>
                 <div class="border">
-                <iron-icon icon="delete" on-tap="deleteProject" style="margin-right:8px;float:right;height:35px;"></iron-icon>
+                <iron-icon icon="delete" on-tap="deleteProject" style="margin-right:8px;float:right;height:35px;z-index: 1"></iron-icon>
                 </div>
 
 	          </div>
@@ -115,6 +115,16 @@
           
         </template>
          </paper-card>
+
+
+
+<paper-dialog id="confirmDialog" modal>
+                <p>{{confirmText}}</p>
+            <div class="buttons">
+                <paper-button id="yes" value={{confirmValue}} dialog-confirm autofocus>{{confirmButton}}</paper-button>
+                 <paper-button id={{functionButton}} dialog-confirm autofocus>CANCEL</paper-button>
+            </div>
+            </paper-dialog>
 
 </template> 
 </dom-module> 
@@ -146,7 +156,11 @@ Polymer({
 	    
       
     },
-
+    goToProject(e)
+    {
+        name = e.currentTarget.id;
+        window.open('details?'+ name,"_self");
+    },
 
     addProject: function ()  {
 		var tlds = [];
@@ -235,6 +249,9 @@ Polymer({
     	this.name = "";
     	this.i=0;
     	this.editProjectForm = {};
+        this.confirmText="";
+        this.confirmButton ="";
+        this.confirmValue ="";
     	
     },
     
@@ -320,11 +337,22 @@ Polymer({
   		  document.body.style.overflow = '';
   	},
     deleteProject: function(e) {
-        project_name = e.model.item.name;
+        if(e.model)
+            project_name = e.model.item.name;
+        e.cancelBubble =true;
+        if(e.stopPropagation) e.stopPropagation();
 
-        if(window.confirm("Are you sure to delete project: " + project_name + "?") == false) {
-            return;
+        id = e.currentTarget.id 
+        if(id != "yes")
+        {
+            this.confirmText = "Are you sure to delete project: " + project_name + "?"
+            this.confirmButton = "YES"
+            this.confirmValue = project_name
+            this.listen(this.$$("#yes"), 'tap', 'deleteProject');
+            this.$$('#confirmDialog').toggle();
+            return
         }
+        project_name = e.currentTarget.value
 
         this.$.deleteProjectRequest.url = backend_url + "projects/" + project_name;
         this.$.deleteProjectRequest.generateRequest();
