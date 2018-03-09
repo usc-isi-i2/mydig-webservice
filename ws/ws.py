@@ -2719,7 +2719,8 @@ class MemoryDumpWorker(threading.Thread):
         return {
             'sleep_interval': self.sleep_interval,
             'file_timestamp': self.file_timestamp,
-            'memory_timestamp': self.memory_timestamp
+            'memory_timestamp': self.memory_timestamp,
+            'is_dirty': self.file_timestamp != self.memory_timestamp
         }
 
     def run_function(self):
@@ -2730,7 +2731,7 @@ class MemoryDumpWorker(threading.Thread):
             self.file_timestamp = memory_timestamp
 
     def run(self):
-        print 'thread MemoryDumpWorker running....', self.project_name
+        print 'thread MemoryDumpWorker ({}) running....'.format(self.function.__name__), self.project_name
         while not self.exit_signal:
             self.run_function()
 
