@@ -200,12 +200,12 @@ class ProjectDebug(Resource):
     @requires_auth
     def get(self, project_name, mode):
         ret = dict()
-        if mode == 'thread':
+        if mode == 'threads':
             ret = {
                 'threads': dict(),
                 'data_pushing_worker': data[project_name]['data_pushing_worker'].ident,
-                'status_memory_dump_worker': data[project_name]['status_memory_dump_worker'].get_memebers(),
-                'catalog_memory_dump_worker': data[project_name]['catalog_memory_dump_worker'].get_memebers()
+                'status_memory_dump_worker': data[project_name]['status_memory_dump_worker'].get_members(),
+                'catalog_memory_dump_worker': data[project_name]['catalog_memory_dump_worker'].get_members()
             }
             for t in data[project_name]['threads']:
                 ret['threads'][t.ident] = {
@@ -2715,7 +2715,7 @@ class MemoryDumpWorker(threading.Thread):
         self.function = function
         self.kwargs = kwargs
 
-    def get_memebers(self):
+    def get_members(self):
         return {
             'sleep_interval': self.sleep_interval,
             'file_timestamp': self.file_timestamp,
