@@ -261,7 +261,7 @@ class AllProjects(Resource):
         show_images_in_facets = input.get('show_images_in_facets', False)
         show_images_in_search_form = input.get('show_images_in_search_form', False)
         hide_timelines = input.get('hide_timelines', False)
-        new_linebreak = input.get('new_linebreak', 'break')
+        new_linetype = input.get('new_linetype', 'break')
 
         # create topics in etl engine
         url = config['etl']['url'] + '/create_project'
@@ -295,7 +295,7 @@ class AllProjects(Resource):
         data[project_name]['master_config']['show_images_in_facets'] = show_images_in_facets
         data[project_name]['master_config']['show_images_in_search_form'] = show_images_in_search_form
         data[project_name]['master_config']['hide_timelines'] = hide_timelines
-        data[project_name]['master_config']['new_linebreak'] = new_linebreak
+        data[project_name]['master_config']['new_linetype'] = new_linetype
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -370,7 +370,7 @@ class Project(Resource):
         show_images_in_facets = input.get('show_images_in_facets', False)
         show_images_in_search_form = input.get('show_images_in_search_form', False)
         hide_timelines = input.get('hide_timelines', False)
-        new_linebreak = input.get('new_linebreak', 'break')
+        new_linetype = input.get('new_linetype', 'break')
 
         # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = image_prefix
@@ -378,7 +378,7 @@ class Project(Resource):
         data[project_name]['master_config']['show_images_in_facets'] = show_images_in_facets
         data[project_name]['master_config']['show_images_in_search_form'] = show_images_in_search_form
         data[project_name]['master_config']['hide_timelines'] = hide_timelines
-        data[project_name]['master_config']['new_linebreak'] = new_linebreak
+        data[project_name]['master_config']['new_linetype'] = new_linetype
         # data[project_name]['master_config']['index'] = es_index
 
         # write to file
