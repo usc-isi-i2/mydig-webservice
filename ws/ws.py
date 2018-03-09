@@ -54,11 +54,18 @@ requests.packages.urllib3.disable_warnings()
 
 # logger
 logger = logging.getLogger('mydig-webservice.log')
-log_file = logging.FileHandler(config['logging']['file_path'])
-logger.addHandler(log_file)
-log_file.setFormatter(logging.Formatter(config['logging']['format']))
+log_formatter = logging.Formatter(config['logging']['format'])
+if 'file_path' in config['logging'] and config['logging']['file_path'] != '':
+    log_file = logging.FileHandler(config['logging']['file_path'])
+    log_file.setFormatter(log_formatter)
+    logger.addHandler(log_file)
+else:
+    log_stdout = logging.StreamHandler(sys.stdout)
+    log_stdout.setFormatter(log_formatter)
+    logger.addHandler(log_stdout)
+
 logger.setLevel(config['logging']['level'])
-# logging.getLogger('werkzeug').setLevel(logging.WARNING) # turn off werkzeug logger for normal info
+logging.getLogger('werkzeug').setLevel(config['logging']['werkzeug_log_level'])
 
 # flask app
 app = Flask(__name__)
@@ -199,7 +206,6 @@ class Authentication(Resource):
 class ProjectDebug(Resource):
     @requires_auth
     def get(self, project_name, mode):
-        ret = dict()
         if mode == 'threads':
             ret = {
                 'threads': dict(),
@@ -212,7 +218,19 @@ class ProjectDebug(Resource):
                     'is_alive': t.is_alive(),
                     'name': t.name
                 }
-        return ret
+            return ret
+        elif mode == 'etk_stdout':
+            size = request.args.get('size', '20')
+            worker_id = request.args.get('worker_id', '*')
+            cmd = 'tail -n {size} {dir_path}/etk_stdout_{worker_id}.txt'.format(
+                    size=size,
+                    dir_path=os.path.join(_get_project_dir_path(project_name),'working_dir'),
+                    worker_id=worker_id)
+            logger.debug(cmd)
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+            return Response(proc.stdout.read(), mimetype='text/plain')
+
+        return dict()
 
 
 @api.route('/projects/<project_name>/search/<type>')
@@ -1760,7 +1778,7 @@ class Data(Resource):
                             if len(obj['raw_content']) != 0:
                                 obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
                             else:
-                                obj['doc_id'] = Data.generate_doc_id(json.dumps(obj))
+                                obj['doc_id'] = Data.generate_doc_id(json.dumps(obj, sort_keys=True))
                             _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
 
                     # url
