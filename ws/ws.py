@@ -257,7 +257,7 @@ class AllProjects(Resource):
             return rest.exists('Project name already exists.')
 
         image_prefix = input.get('image_prefix', '')
-        default_desired_num = input.get('default_desired_num', '')
+        default_desired_num = input.get('default_desired_num', 0)
         show_images_in_facets = input.get('show_images_in_facets', False)
         show_images_in_search_form = input.get('show_images_in_search_form', False)
         hide_timelines = input.get('hide_timelines', False)
@@ -366,7 +366,7 @@ class Project(Resource):
         input = request.get_json(force=True)
 
         image_prefix = input.get('image_prefix', '')
-        default_desired_num = input.get('default_desired_num', '')
+        default_desired_num = input.get('default_desired_num', 0)
         show_images_in_facets = input.get('show_images_in_facets', False)
         show_images_in_search_form = input.get('show_images_in_search_form', False)
         hide_timelines = input.get('hide_timelines', False)
