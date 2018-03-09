@@ -256,9 +256,10 @@ class AllProjects(Resource):
         if project_name in data:
             return rest.exists('Project name already exists.')
 
-        is_valid, message = self.validate(input)
-        if not is_valid:
-            return rest.bad_request(message)
+        # only use default settings when creating project
+        # is_valid, message = self.validate(input)
+        # if not is_valid:
+        #     return rest.bad_request(message)
 
         # create topics in etl engine
         url = config['etl']['url'] + '/create_project'
@@ -287,12 +288,13 @@ class AllProjects(Resource):
             'version': 0
         }
         # data[project_name]['master_config']['configuration'] = project_config
-        data[project_name]['master_config']['image_prefix'] = input.get('image_prefix')
-        data[project_name]['master_config']['default_desired_num'] = input.get('default_desired_num')
-        data[project_name]['master_config']['show_images_in_facets'] = input.get('show_images_in_facets')
-        data[project_name]['master_config']['show_images_in_search_form'] = input.get('show_images_in_search_form')
-        data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines')
-        data[project_name]['master_config']['new_linetype'] = input.get('new_linetype')
+        data[project_name]['master_config']['image_prefix'] = input.get('image_prefix', '')
+        data[project_name]['master_config']['default_desired_num'] = input.get('default_desired_num', 0)
+        data[project_name]['master_config']['show_images_in_facets'] = input.get('show_images_in_facets', False)
+        data[project_name]['master_config']['show_images_in_search_form'] = \
+            input.get('show_images_in_search_form', False)
+        data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines', False)
+        data[project_name]['master_config']['new_linetype'] = input.get('new_linetype', 'break')
         update_master_config_file(project_name)
 
         # create other dirs and files
