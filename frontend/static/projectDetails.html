@@ -295,7 +295,7 @@
                                 
                             </vaadin-grid-sorter>
                             </template>
-                            <template><input value="{{item.desired_num::input}}" id={{item.tld}} on-input="updateSingleDesired" ></template>
+                            <template><input value="{{item.desired_num::input}}" id={{item.tld}} on-blur="updateSingleDesired" ></template>
                         </vaadin-grid-column>
                         <vaadin-grid-column>
                             <template class="header" style="text-align: center;">
@@ -303,7 +303,7 @@
                             </template>
                             <template style="text-align: center;">
                             <div style="text-align: center;width: 100%">
-                                <paper-icon-button icon="launch" title="Go to Landmark" style$=" color:{{item.color_l}}" on-click="goToLandMark" id="website" value="{{item.tld}}" active="{{item.disable_Landmark}}" disabled="{{item.disable_Landmark}}"></paper-icon-button>
+                                <paper-icon-button icon="add" title="Go to Landmark" style$=" color:{{item.color_l}}" on-click="addToLandmark" id="website" value="{{item.tld}}" active="{{item.disable_Landmark}}" disabled="{{item.disable_Landmark}}"></paper-icon-button>
                                 </div>
                             </template>
                         </vaadin-grid-column>
