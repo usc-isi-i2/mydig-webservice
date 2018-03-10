@@ -141,11 +141,11 @@ class ConjunctiveQueryProcessor(object):
     def validate_input(self):
         for key in self.myargs.keys():
             if not key.startswith("_"):
-                if "/" in key:
+                if "." in key:
+                    continue
+                elif "/" in key:
                     if key.split('/')[0] not in self.config_fields:
                         return False
-                elif "." in key:
-                    continue
                 elif "$" in key:
                     if key.split('$')[0] not in self.config_fields:
                         return False
@@ -219,13 +219,11 @@ class ConjunctiveQueryProcessor(object):
         must_clause = dict()
         if "/" in term:
             extraction['field_name'],rest = term.split('/')
+            extraction['field_name'] = extraction['field_name'].replace(".","__")
             extraction['valueorkey'] = rest
-        elif "." in term:
-            temp,rest = term.split('.')
-            extraction['field_name'] = temp + '__' + rest
-            extraction['valueorkey'] = "value"
         else:
             extraction['field_name'] = term
+            extraction['field_name'] = extraction['field_name'].replace(".","__")
             extraction['valueorkey'] = "value"
         if "/" in term or "." in term:
             must_clause = {
