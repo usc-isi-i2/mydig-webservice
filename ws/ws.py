@@ -63,9 +63,10 @@ else:
     log_stdout = logging.StreamHandler(sys.stdout)
     log_stdout.setFormatter(log_formatter)
     logger.addHandler(log_stdout)
-
 logger.setLevel(config['logging']['level'])
-logging.getLogger('werkzeug').setLevel(config['logging']['werkzeug_log_level'])
+# no handler will be there before creating app
+# logging.getLogger('werkzeug').setLevel(config['logging']['werkzeug'])
+# print logging.Logger.manager.loggerDict.get('werkzeug')
 
 # flask app
 app = Flask(__name__)
@@ -219,6 +220,7 @@ class ProjectDebug(Resource):
                     'name': t.name
                 }
             return ret
+
         elif mode == 'etk_stdout':
             size = request.args.get('size', '20')
             worker_id = request.args.get('worker_id', '*')
@@ -226,7 +228,7 @@ class ProjectDebug(Resource):
                     size=size,
                     dir_path=os.path.join(_get_project_dir_path(project_name),'working_dir'),
                     worker_id=worker_id)
-            logger.debug(cmd)
+            logger.debug('getting etk_stdout: %s', cmd)
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
             return Response(proc.stdout.read(), mimetype='text/plain')
 
@@ -465,7 +467,7 @@ class Project(Resource):
             del data[project_name]
             shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
         except Exception as e:
-            print 'delete project error', e
+            logger.error('delete project error: %s', e)
             return rest.internal_error('delete project error')
 
         return rest.deleted()
@@ -1297,7 +1299,6 @@ class FieldAnnotations(Resource):
             ))
             return
         except Exception as e:
-            print e
             logger.warning('Fail to update annotation to {}: project {}, kg_id {}, field {}, key {}'.format(
                 index_version, project_name, kg_id, field_name, key
             ))
@@ -1329,7 +1330,6 @@ class FieldAnnotations(Resource):
 
             return False
         except Exception as e:
-            print e
             logger.warning('Fail to remove annotation from {}: project {}, kg_id {}, field {}, key {}'.format(
                 index_version, project_name, kg_id, field_name, key
             ))
@@ -1526,7 +1526,6 @@ class TagAnnotationsForEntityType(Resource):
                         .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
-            print e
             logger.warning('Fail to update annotation to {}: project {}, kg_id {}, tag {}'
                            .format(index_version, project_name, kg_id, tag_name))
 
@@ -1560,7 +1559,6 @@ class TagAnnotationsForEntityType(Resource):
                         .format(index_version, project_name, kg_id, tag_name, index, type))
             return
         except Exception as e:
-            print e
             logger.warning('Fail to remove annotation from {}: project {}, kg_id {}, tag {}'.format(
                 index_version, project_name, kg_id, tag_name
             ))
@@ -1678,7 +1676,6 @@ class TagAnnotationsForEntity(Resource):
 
             return None
         except Exception as e:
-            print e
             logger.warning('Fail to update annotation to: project {}, kg_id {}, tag {}'.format(
                 project_name, kg_id, tag_name
             ))
@@ -1844,11 +1841,7 @@ class Data(Resource):
                 # Actions._add_data(project_name)
 
         except Exception as e:
-            print 'exception in _update_catalog_worker', e
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            lines = ''.join(lines)
-            print lines
+            logger.exception('exception in _update_catalog_worker')
             _write_log('Invalid file format')
 
         finally:
@@ -2023,7 +2016,7 @@ class ActionProjectConfig(Resource):
 
             return rest.created()
         except Exception as e:
-            print e
+            logger.exception('fail to import project config')
             return rest.internal_error('fail to import project config')
 
         finally:
@@ -2081,7 +2074,7 @@ class ActionProjectConfig(Resource):
             resp = requests.post(url)
             return resp.json()
         except Exception as e:
-            print 'landmark export error', e
+            logger.exception('landmark export error')
             return list()
 
     @staticmethod
@@ -2090,7 +2083,7 @@ class ActionProjectConfig(Resource):
             url = config['landmark']['import'].format(project_name=project_name)
             resp = requests.post(url, data=landmark_config)
         except Exception as e:
-            print 'landmark import error', e
+            logger.exception('landmark import error')
 
 
 @api.route('/projects/<project_name>/actions/etk_filters')
@@ -2130,7 +2123,7 @@ class ActionProjectEtkFilters(Resource):
             write_to_file(json.dumps(input), config_path)
             return rest.created()
         except Exception as e:
-            print e
+            logger.exception('fail to import ETK filters')
             return rest.internal_error('fail to import ETK filters')
 
     def get(self, project_name):
@@ -2365,7 +2358,7 @@ class Actions(Resource):
                         ret, msg = Actions._publish_to_kafka_input_queue(
                             doc_id, data[project_name]['data'][tld][doc_id], producer, input_topic)
                         if not ret:
-                            print 'Error of pushing data to Kafka: {}'.format(msg)
+                            logger.error('Error of pushing data to Kafka: %s', msg)
                             # roll back
                             data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
                             num_to_add += 1
@@ -2375,11 +2368,7 @@ class Actions(Resource):
                     set_catalog_dirty(project_name)
                     set_status_dirty(project_name)
         except Exception as e:
-            print 'exception in Actions._add_data_worker() data lock', e
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            lines = ''.join(lines)
-            print lines
+            logger.exception('exception in Actions._add_data_worker() data lock')
         finally:
             if got_lock:
                 data[project_name]['locks']['data'].release()
@@ -2459,7 +2448,7 @@ class Actions(Resource):
 
     @staticmethod
     def recreate_mapping(project_name):
-        print 'recreate_mapping'
+        logger.info('recreate_mapping')
 
         # 1. kill etk (and clean up previous queue)
         if not Actions._etk_stop(project_name, clean_up_queue=True):
@@ -2520,7 +2509,7 @@ class Actions(Resource):
             return rest.internal_error('failed to switch index in sandpaper')
 
         # 4. clean up added data status
-        print 're-add data'
+        logger.info('re-add data')
         with data[project_name]['locks']['status']:
             if 'added_docs' not in data[project_name]['status']:
                 data[project_name]['status']['added_docs'] = dict()
@@ -2592,8 +2581,7 @@ class Actions(Resource):
                 "_source": ["doc_id", "tld"]
             }}
             """.format(conditions=','.join(query_conditions))
-            print query_conditions
-            print query
+            logger.debug(query)
 
             # init query
             scroll_alive_time = '1m'
@@ -2629,14 +2617,13 @@ class Actions(Resource):
             tld = obj['_source']['tld']
 
             try:
-                print 're-add doc', doc_id, '({})'.format(tld)
+                logger.info('re-add doc %s (%s)', doc_id, tld)
                 ret, msg = Actions._publish_to_kafka_input_queue(
                     doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
                 if not ret:
-                    print 'Error of re-adding data to Kafka: {}'.format(msg)
+                    logger.error('Error of re-adding data to Kafka: %s', msg)
             except Exception as e:
-                print e
-                print 'error in re_add_docs'
+                logger.exception('error in re_add_docs')
 
     @staticmethod
     def etk_extract(project_name, clean_up_queue=False):
@@ -2684,7 +2671,7 @@ class Actions(Resource):
             payload['output_offset'] = 'seek_to_end'
         resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
         if resp.status_code // 100 != 2:
-            print 'failed to kill_etk in ETL'
+            logger.error('failed to kill_etk in ETL')
             return False
 
         if wait_till_kill:
@@ -2702,14 +2689,14 @@ class Actions(Resource):
             with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
                 doc_obj['raw_content'] = f.read()  # .decode('utf-8', 'ignore')
         except Exception as e:
-            print e
+            logger.exception('error in reading file from catalog')
             return False, 'error in reading file from catalog'
         try:
             r = producer.send(topic, doc_obj)
             r.get(timeout=60)  # wait till sent
-            print 'sent {} to topic {}'.format(doc_id, topic)
+            logger.info('sent %s to topic %s', doc_id, topic)
         except Exception as e:
-            print e
+            logger.exception('error in sending data to kafka queue')
             return False, 'error in sending data to kafka queue'
 
         return True, ''
@@ -2727,9 +2714,8 @@ class DataPushingWorker(threading.Thread):
         self.input_topic = project_name + '_in'
 
     def run(self):
-        print 'thread DataPushingWorker running....', self.project_name
+        logger.info('thread DataPushingWorker running... %s', self.project_name)
         while not self.exit_signal:
-            # print 'DataPushingWorker.exit_signal', self.exit_signal
             Actions._add_data_worker(self.project_name, self.producer, self.input_topic)
 
             # wait interval
@@ -2768,7 +2754,7 @@ class MemoryDumpWorker(threading.Thread):
             self.file_timestamp = memory_timestamp
 
     def run(self):
-        print 'thread MemoryDumpWorker ({}) running....'.format(self.function.__name__), self.project_name
+        logger.info('thread MemoryDumpWorker (%s) running... %s', self.function.__name__, self.project_name)
         while not self.exit_signal:
             self.run_function()
 
@@ -2824,13 +2810,13 @@ def ensure_kafka_is_on():
 
 
 def graceful_killer(signum, frame):
-    print 'SIGNAL #{} received, notifying threads to exit...'.format(signum)
+    logger.info('SIGNAL #%s received, notifying threads to exit...', signum)
     for project_name in data.iterkeys():
         try:
             stop_threads_and_locks(project_name)
         except:
             pass
-    print 'threads exited, exiting main thread...'
+        logger.info('threads exited, exiting main thread...')
     sys.exit()
 
 
@@ -2860,26 +2846,22 @@ def stop_threads_and_locks(project_name):
         data[project_name]['status_memory_dump_worker'].join()
         data[project_name]['catalog_memory_dump_worker'].exit_signal = True
         data[project_name]['catalog_memory_dump_worker'].join()
-        print 'threads of project {} exited'.format(project_name)
+        logger.info('threads of project %s exited', project_name)
     except:
         pass
 
 
 if __name__ == '__main__':
     try:
-
-        # if git_helper.pull() == 'ERROR':
-        #     raise Exception('Git pull error')
-
         # prerequisites
-        print 'ensure sandpaper is on...'
+        logger.info('ensure sandpaper is on...')
         ensure_sandpaper_is_on()
-        print 'ensure etl engine is on...'
+        logger.info('ensure etl engine is on...')
         ensure_etl_engine_is_on()
-        print 'ensure kafka is on...'
+        logger.info('ensure kafka is on...')
         ensure_kafka_is_on()
 
-        print 'register signal handler...'
+        logger.info('register signal handler...')
         signal.signal(signal.SIGINT, graceful_killer)
         signal.signal(signal.SIGTERM, graceful_killer)
 
@@ -2890,7 +2872,7 @@ if __name__ == '__main__':
             if os.path.isdir(project_dir_path) and \
                     not (project_name.startswith('.') or project_name.startswith('_')):
                 data[project_name] = templates.get('project')
-                print 'loading project {}...'.format(project_name)
+                logger.info('loading project %s...', project_name)
 
                 # master config
                 master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
@@ -2937,7 +2919,7 @@ if __name__ == '__main__':
                 )
                 resp = requests.post(url, json=data[project_name]['master_config'], timeout=10)
                 if resp.status_code // 100 != 2:
-                    print 'failed to re-config sandpaper for {}'.format(project_name)
+                    logger.error('failed to re-config sandpaper for project %s', project_name)
 
                 # re-config etl engine
                 url = config['etl']['url'] + '/create_project'
@@ -2946,22 +2928,16 @@ if __name__ == '__main__':
                 }
                 resp = requests.post(url, json.dumps(payload), timeout=config['etl']['timeout'])
                 if resp.status_code // 100 != 2:
-                    print 'failed to re-config ETL Engine for {}'.format(project_name)
+                    logger.error('failed to re-config ETL Engine for project %s', project_name)
 
                 # create project daemon thread
                 start_threads_and_locks(project_name)
 
-        # print json.dumps(data, indent=4)
         # run app
-        print 'starting web service...'
+        logger.info('starting web service...')
         app.run(debug=config['debug'], host=config['server']['host'], port=config['server']['port'], threaded=True)
 
     except KeyboardInterrupt:
         graceful_killer()
     except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-        lines = ''.join(lines)
-        print lines
-        print e
-        logger.error(e.message)
+        logger.exception('exception in main function')
