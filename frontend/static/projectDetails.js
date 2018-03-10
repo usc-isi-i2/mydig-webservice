@@ -29,7 +29,7 @@ poly = Polymer({
         this.iconsetRepeat ={}
         this.newField = {}
         this.fieldForm = {}
-        this.newFieldColor = "#263238"
+        this.newFieldColor = "#ffb300"
         this.editFieldColor = "#263238"
         this.disablelandMark = false;
         this.disableDelete =false;
@@ -161,7 +161,7 @@ poly = Polymer({
        window.open("http://www."+e.target.value, '_blank');
     },
     _getColor: function () {
-        if (this.$$('#colorSelect').color == undefined) return "amber";
+        if (this.$$('#colorSelect').color == undefined) return "#ffb300";
         this.$$('#fieldcolorinput').value = this.colorSet[this.$$('#colorSelect').color];
         return this.colorSet[this.$$('#colorSelect').color];
     },
@@ -478,6 +478,9 @@ poly = Polymer({
     },
     editFieldFunction: function (e) {
         var fieldFormName = e.model.item[0].name;
+         this.$.editFieldsDialog.toggle();
+
+        console.log(fieldFormName);
 
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
@@ -488,7 +491,7 @@ poly = Polymer({
 
        /* //console.log(fieldForm.icon);*/
 
-        this.$$('#editFieldsDialog').toggle();
+       
 
     },
     editGlossaryFunction: function (e) {
@@ -577,7 +580,7 @@ poly = Polymer({
                 "show_as_link": this.$$('#editlinkValue').selectedItem.value,
                 "show_in_facets": this.fieldForm.show_in_facets,
                 "show_in_result": this.$$('#editResultValue').selectedItem.value,
-                "rule_extraction_target": this.$$('#editRuleExtractionTargetValue').selectedItem.value,
+                /*"rule_extraction_target": this.$$('#editRuleExtractionTargetValue').selectedItem.value,*/
                 "show_in_search": this.fieldForm.show_in_search,
                 "rule_extractor_enabled": this.fieldForm.rule_extractor_enabled,
                 "type": this.$$('#editTypeValue').selectedItem.value,
@@ -1099,9 +1102,10 @@ poly = Polymer({
     if (screenlabel == "") screenlabel = name;
     if (screen_label_plural == "") screen_label_plural = screenlabel;
 
-
-    var color = this.colorSet[this.newFieldColor];
-    //console.log(color);
+    if (this.colorSet[this.newFieldColor] ==undefined)
+        var color = "#ffb300";
+    else
+        var color = this.colorSet[this.newFieldColor];
     var type = this.$$("#fieldtypeinput").selectedItem.value;
     var predefinedExtractor = "";
     if (this.$$("#fieldpredefinedExtractor").selectedItem) {
@@ -1138,7 +1142,7 @@ poly = Polymer({
             this.$$("#fieldscreenlabelinput").value = "";
             this.$$("#fieldscreenlabelPluralinput").value = "";
            /* this.$$("#fieldcolorinput").value = "amber";*/
-           this.newFieldColor = "#263238";
+           this.newFieldColor = "#ffb300";
            this.$$('#newColorSelect').color = this.newFieldColor;
 
             this.$$("#getCaseSenstive").checked = "";
