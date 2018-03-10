@@ -470,11 +470,22 @@ poly = Polymer({
 
     },
     deleteGlossaryFunction: function (e) {
+        if($(e.currentTarget)[0].id != "yes")
+        {
+            this.confirmText = "Are you sure to delete this glossary ?"
+            this.confirmButton = "Delete"
+            this.confirmValue = e.model.item[0];
+            this.listen(this.$$("#yes"), 'tap', 'deleteGlossaryFunction');
+            this.$$('#confirmDialog').toggle();
+            return
+        }
+
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteGlossaries.headers = obj;
-        this.$.deleteGlossaries.url = backend_url + "projects/" + projectName + "/glossaries/" + (e.model.item[0]).split(":")[0];
+        this.$.deleteGlossaries.url = backend_url + "projects/" + projectName + "/glossaries/" + (e.currentTarget.value).split(":")[0];
         this.$.deleteGlossaries.generateRequest();
+        this.unlisten(this.$$("#yes"), 'tap', 'deleteGlossaryFunction');
     },
     editFieldFunction: function (e) {
         var fieldFormName = e.model.item[0].name;
