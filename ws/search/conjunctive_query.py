@@ -53,6 +53,7 @@ class ConjunctiveQueryProcessor(object):
             return rest.bad_request(err_json)
         query = self._build_query("must")
         res = None
+        print query
         if self.num_results+self.fr > 10000:
             res = self.es.es_search(self.project_name, self.project_root_name ,query,True, ignore_no_index=True)
         else:
@@ -61,7 +62,6 @@ class ConjunctiveQueryProcessor(object):
             return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
         resp={}
-        print query
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
         if self.group_by is None:
@@ -141,14 +141,14 @@ class ConjunctiveQueryProcessor(object):
     def validate_input(self):
         for key in self.myargs.keys():
             if not key.startswith("_"):
-                if "/" in key:
+                if "." in key:
+                    continue
+                elif "/" in key:
                     if key.split('/')[0] not in self.config_fields:
                         return False
                 elif "$" in key:
                     if key.split('$')[0] not in self.config_fields:
                         return False
-                elif "." in key:
-                    continue
                 elif key not in self.config_fields:
                     return False
         if self.interval is not None:
@@ -219,23 +219,16 @@ class ConjunctiveQueryProcessor(object):
         must_clause = dict()
         if "/" in term:
             extraction['field_name'],rest = term.split('/')
-            extraction['valueorkey'] = rest
-        elif "." in term:
-            extraction['field_name'],rest = term.split('.')
+            extraction['field_name'] = extraction['field_name'].replace(".","__")
             extraction['valueorkey'] = rest
         else:
             extraction['field_name'] = term
+            extraction['field_name'] = extraction['field_name'].replace(".","__")
             extraction['valueorkey'] = "value"
-        if "/" in term:
+        if "/" in term or "." in term:
             must_clause = {
                 "match": {
                     "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(args[term])
-                }
-            }
-        elif "." in term:
-            must_clause = {
-                "match": {
-                    "knowledge_graph." + extraction['field_name'] + "__" + extraction['valueorkey']: urllib.unquote(args[term])
                 }
             }
         else:
@@ -256,6 +249,8 @@ class ConjunctiveQueryProcessor(object):
         field_suffix = ".value"
         for order in self.ordering.split(','):
             order_key,order_val = order.split('$')
+            if "." in order_key:
+                order_key = order_key.replace(".","__")
             sort_clause =  { field_prefix + order_key + field_suffix : {"order" : order_val}}
             sort_clauses.append(sort_clause)
         return sort_clauses
@@ -270,6 +265,8 @@ class ConjunctiveQueryProcessor(object):
         '''
         conversions = { "less-than": "lt", "less-equal-than" : "lte", "greater-than": "gt","greater-equal-than": "gte"}
         extracted_term = term.split('$')
+        if "." in extracted_term[0]:
+            extracted_term[0] = extracted_term[0].replace(".","__")
         range_clause = {
                     "range" : {
                          "knowledge_graph."+extracted_term[0]+".value" : {
