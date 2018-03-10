@@ -344,12 +344,12 @@
               <div  style="height:65px;margin-left:20px;margin-right:20px" >
               <div style="margin-top:1em;float:left;"><span><h4><b>{{item.0.name}}</b></h4></span></div>
               <div style="margin-bottom:1em">
-                  <a style="color:black" href="#">
+                 
                     <div class="border" id="inner-top-nav" style="float:right;">
-                  <paper-icon-button icon="create" on-tap="editFieldFunction" style="height:35px;width:35px;color:#263238;border-radius: 10px; "></paper-icon-button>
-                  <paper-icon-button icon="delete" on-tap="sureToDeleteDialogFunction" style="margin-right:8px;height:35px;width:35px;color:#263238;border-radius: 10px;"></paper-icon-button>
+                  <paper-icon-button icon="create" on-click="editFieldFunction" style="height:35px;width:35px;color:#263238;border-radius: 10px; "></paper-icon-button>
+                  <paper-icon-button icon="delete" on-click="sureToDeleteDialogFunction" style="margin-right:8px;height:35px;width:35px;color:#263238;border-radius: 10px;"></paper-icon-button>
                   </div>
-                  </a>
+             
 
               </div>
           </div>
@@ -465,7 +465,7 @@
 
         <!-- DIALOG FOR FIELD EDIT FIELD -->
             <paper-dialog id="editFieldsDialog" with-backdrop on-iron-overlay-opened="_disableDocumentScrolling"
-                          on-iron-overlay-closed="_restoreDocumentScrolling" style="width:50%;margin-left:auto;margin-right:auto" modal>
+                          on-iron-overlay-closed="_restoreDocumentScrolling" style="width:50%;margin-left:auto;margin-right:auto">
                 <paper-dialog-scrollable>
 
                     <div>
@@ -736,7 +736,7 @@
                     <div style="margin-top:0px;">
                     <iron-label>Icon : </iron-label><br><paper-icon-button  id="fieldInputIcon" icon="star" title="Change Icon" on-click="toggleIcons" style$=" height:48px; width:48px; color:{{newFieldColor}}"></paper-icon-button>
                     <paper-swatch-picker id="newColorSelect" on-iron-select="setNewIconColor" column-count=2
-                                             style="padding-left: 2px" on-tap="setNewIconColor"
+                                             style="padding-left: 2px" color="#ffb300" on-tap="setNewIconColor"
                                              color-list="[&quot;#ffb300&quot;, &quot;#1e88e5&quot;, &quot;#546e7a&quot;, &quot;#6d4c41&quot;, &quot;#00acc1&quot;, &quot;#f4511e&quot;, &quot;#5e35b1&quot;, &quot;#43a047&quot;, &quot;#1b5e20&quot;, &quot;#757575&quot;, &quot;#3949ab&quot;, &quot;#039be5&quot;, &quot;#7cb342&quot;, &quot;#c0ca33&quot;, &quot;#fb8c00&quot;, &quot;#d81b60&quot;, &quot;#8e24aa&quot;, &quot;#e53935&quot;, &quot;#b71c1c&quot;, &quot;#00897b&quot;, &quot;#fdd835&quot;]"></paper-swatch-picker>
                                         <paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldiconinput">The icon to
                         decorate the field in DIG
