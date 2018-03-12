@@ -2662,10 +2662,12 @@ class Actions(Resource):
         if Actions._is_etk_running(project_name):
             return rest.exists('already running')
 
-        etk_config_file_path = os.path.join(
-            _get_project_dir_path(project_name), 'working_dir/etk_config.json')
-        if not os.path.exists(etk_config_file_path):
-            return rest.not_found('No etk config')
+        # etk_config_file_path = os.path.join(
+        #     _get_project_dir_path(project_name), 'working_dir/etk_config.json')
+        # if not os.path.exists(etk_config_file_path):
+        #     return rest.not_found('No etk config')
+        # recreate etk config every time
+        Actions._generate_etk_config(project_name)
 
         url = '{}/{}'.format(
             config['es']['sample_url'],
