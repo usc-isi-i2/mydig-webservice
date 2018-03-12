@@ -425,7 +425,7 @@ poly = Polymer({
        
         
 
-        payload = {"tlds":[]};
+        payload = {"tlds":[], "from": "file"};
         this.tldTableData.forEach(function(obj){
             payload["tlds"].push(obj["tld"]);
         });
@@ -1368,7 +1368,7 @@ poly = Polymer({
 
         var tld = $(e.currentTarget)[0].value;
         //console.log($(e.currentTarget)[0].value);
-        payload = {"tlds":[tld]};
+        payload = {"tlds":[tld], "from": "file"};
 
         $.ajax({
             type: "DELETE",

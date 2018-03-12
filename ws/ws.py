@@ -1884,10 +1884,23 @@ class Data(Resource):
 
         input = request.get_json(force=True)
         tld_list = input.get('tlds', list())
+        delete_from = input.get('from')
+        print 'delete', delete_from
+        if delete_from is None:
+            return rest.bad_request('invalid attribute: from')
 
-        t = threading.Thread(target=Data._delete_file_worker, args=(project_name, tld_list,), name='data_delete')
-        t.start()
-        data[project_name]['threads'].append(t)
+        if delete_from == 'file':
+            t = threading.Thread(target=Data._delete_file_worker,
+                                 args=(project_name, tld_list,),
+                                 name='data_file_delete')
+            t.start()
+            data[project_name]['threads'].append(t)
+        elif delete_from == 'kg':
+            t = threading.Thread(target=Data._delete_es_worker,
+                                 args=(project_name, tld_list,),
+                                 name='data_kg_delete')
+            t.start()
+            data[project_name]['threads'].append(t)
 
         return rest.accepted()
 
@@ -1921,6 +1934,26 @@ class Data(Resource):
                     # remove from catalog
                     del data[project_name]['data'][tld]
                     set_catalog_dirty(project_name)
+
+    @staticmethod
+    def _delete_es_worker(project_name, tld_list):
+        query = '''
+        {{
+            "query": {{
+                "match": {{
+                    "tld.raw": "{tld}"
+                }}
+            }}
+        }}
+        '''
+        es = ES(config['es']['sample_url'])
+        for tld in tld_list:
+            try:
+                es.es.delete_by_query(index=project_name,
+                                      doc_type=data[project_name]['master_config']['root_name'],
+                                      body=query.format(tld=tld))
+            except:
+                logger.exception('error in _delete_es_worker')
 
     @staticmethod
     def generate_tld(file_name):
