@@ -1885,7 +1885,6 @@ class Data(Resource):
         input = request.get_json(force=True)
         tld_list = input.get('tlds', list())
         delete_from = input.get('from')
-        print 'delete', delete_from
         if delete_from is None:
             return rest.bad_request('invalid attribute: from')
 
