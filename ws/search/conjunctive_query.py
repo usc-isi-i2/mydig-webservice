@@ -6,7 +6,9 @@ import rest
 import re
 from elasticsearch import RequestError
 from flask import Response
- 
+import logging
+
+logger = logging.getLogger('mydig-webservice.log')
 class ConjunctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.myargs = request.args
@@ -52,17 +54,19 @@ class ConjunctiveQueryProcessor(object):
             return rest.bad_request(err_json)
         query = self._build_query("must")
         res = None
-        print query
+        logger.debug('Query {}'.format(query))
         if self.num_results+self.fr > 10000:
             res = self.es.es_search(self.project_name, self.project_root_name ,query,True, ignore_no_index=True)
         else:
             res = self.es.es_search(self.project_name, self.project_root_name ,query,False, ignore_no_index=True)
         if type(res) == RequestError:
+            logger.warning('problem with query\n  {}'.format(str(res)))
             return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
         resp={}
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
+            logger.debug('Completed setting nested documents')
         if self.group_by is None:
             if self.verbosity == "minimal":
                 if self.field_names is None:
@@ -74,7 +78,9 @@ class ConjunctiveQueryProcessor(object):
                 resp = res_filtered
         else:
             resp = res_filtered
+        logger.debug('Minifying documents complete')
         if self.response_format =="json_lines":
+            logger.debug("Returning json lines response")
             return Response(self.create_json_lines_response(resp),mimetype='application/x-jsonlines')
         return rest.ok(resp)
 
@@ -104,7 +110,6 @@ class ConjunctiveQueryProcessor(object):
                         if temp_id not in ids_to_query[field]:
                             ids_to_query[field].append(temp_id)
                 except Exception as e: 
-                    print e
                     pass
         result_map = self.executeNestedQuery(ids_to_query)
         if len(result_map.keys()) > 0:
@@ -116,7 +121,6 @@ class ConjunctiveQueryProcessor(object):
                             if temp_id in result_map:
                                 nest_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
                     except Exception as e: 
-                        print e
                         pass
         return resp
 
@@ -199,10 +203,6 @@ class ConjunctiveQueryProcessor(object):
                            new_list.append(element['value'])
                     minidoc[field] = new_list
                 except Exception as e:
-                    # exc_type, exc_value, exc_traceback = sys.exc_info()
-                    # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                    # lines = ''.join(lines)
-                    # print lines
                     pass
             doc_id = []
             doc_id.append(json_doc[self.SOURCE]['document_id'])
