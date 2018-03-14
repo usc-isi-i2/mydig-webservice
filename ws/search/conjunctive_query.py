@@ -6,8 +6,7 @@ import rest
 import re
 from elasticsearch import RequestError
 from flask import Response
-
-
+ 
 class ConjunctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.myargs = request.args
@@ -340,7 +339,8 @@ class ConjunctiveQueryProcessor(object):
         full_clause =  {
                   self.group_by: {
                    "terms": {
-                    "field":  'knowledge_graph.'+self.group_by+'.key'
+                    "field":  'knowledge_graph.'+self.group_by+'.key',
+                    "size" : self.num_results
                 }
             }
         }
@@ -351,7 +351,8 @@ class ConjunctiveQueryProcessor(object):
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
-                      "field": 'knowledge_graph.'+self.aggregation_field+'.key'
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.key',
+                      "size" : self.num_results
                     }
                 }
             }
