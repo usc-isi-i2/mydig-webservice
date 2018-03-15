@@ -141,6 +141,10 @@
                 id="editField" method="GET" content-type="application/json"
                 handle-as="json" on-response="setEditFieldForm" on-error="done"></iron-ajax>
 
+        <iron-ajax
+                id="getProjectSettings" method="GET" content-type="application/json"
+                handle-as="json" on-response="ProjectSettingsDialogSetup" on-error="done"></iron-ajax>
+
         <!--<iron-ajax-->
                 <!--id="updateIndex" method="POST" content-type="application/json"-->
                 <!--handle-as="json" on-error="done" on-response="successDoneIndex"></iron-ajax>-->
@@ -177,6 +181,10 @@
 
         <iron-ajax
                 id="updateTableAttribute" method="POST" content-type="application/json"
+                on-error="done" on-response="updateDone"></iron-ajax>
+
+        <iron-ajax
+                id="updateProjectSettings" method="POST" content-type="application/json"
                 on-error="done" on-response="updateDone"></iron-ajax>
 
 
@@ -222,6 +230,7 @@
                                     <paper-item on-tap="importProjectFunction" id="menuImportProject"><iron-icon icon="file-download" style="float:left;padding-right: 5px"></iron-icon><div style="float: right;text-align: right;">Import Project</div></paper-item>
                                     <paper-item on-tap="getToHome"><iron-icon icon="arrow-back" style="float:left;padding-right: 5px"></iron-icon><div style="float: right;text-align: right;">All Projects</div></paper-item>
                                     <paper-item on-tap="openKibana"><img src="./static/images/kibana.png" style="float:left;padding-right: 5px;height:24px;width:24px"></img><div style="float: right;text-align: right;">Kibana</div></paper-item>
+                                    <paper-item on-tap="projectSettingsFunction"><iron-icon icon="settings" style="float:left;padding-right: 5px"></iron-icon><div style="float: right;text-align: right;">Project Settings</div></paper-item>
                                     </paper-listbox>
                                 </paper-menu-button>
                               </div>
@@ -1046,6 +1055,37 @@
                 <p>{{confirmText}}</p>
             <div class="buttons">
                 <paper-button  class="{{functionButton}}" id="yes" value={{confirmValue}} dialog-confirm autofocus>{{confirmButton}}</paper-button>
+                 <paper-button id={{functionButton}} dialog-confirm autofocus>CANCEL</paper-button>
+            </div>
+            </paper-dialog>
+
+            <!-- DIALOG FOR PROJECT SETTINGS -->
+            <paper-dialog id="projectSettingsDialog" modal>
+                <paper-input label="Image Prefix : " value="{{projectSettingsObject.image_prefix}}" id="imagePrefix"></paper-input>
+                <paper-input label="Default Desired Number : " value="{{projectSettingsObject.default_desired_num}}" id="defaultDesiredNum" error-message="Numbers only!" auto-validate pattern="[0-9]*"></paper-input>
+
+
+                <paper-checkbox class="projectInputStyle" id="hideTimelines">Hide Timelines</paper-checkbox>
+                <paper-checkbox class="projectInputStyle" id="searchFormImages">Show Images in Search Form</paper-checkbox>
+                <paper-checkbox class="projectInputStyle" id="imageFacets">Show Images in Facets</paper-checkbox>
+                        <paper-tooltip for="field_free_text_search"></paper-tooltip>
+
+                <paper-dropdown-menu id="newlineType" style="margin:0px;" class="projectInputStyle"
+                                         label="Newline Type : " >
+                        <paper-listbox id="newlineTypeListbox"
+                                    selected={{get_newlineType(projectSettingsObject.new_linetype)}}
+                                    slot="dropdown-content">
+                                <paper-item value="break">Break</paper-item>
+                                <paper-item value="newline">Newline</paper-item>
+                        </paper-listbox>
+                </paper-dropdown-menu>
+
+
+<!--                     <paper-tooltip fit-to-visible-bounds="true" position="top" for="searchFieldEdit">High numbers make
+                        results matching in a field push documents up in the ranking
+                    </paper-tooltip> -->
+            <div class="buttons">
+                <paper-button  on-click="saveProjectSettings" id="save" dialog-confirm autofocus>SAVE</paper-button>
                  <paper-button id={{functionButton}} dialog-confirm autofocus>CANCEL</paper-button>
             </div>
             </paper-dialog>
