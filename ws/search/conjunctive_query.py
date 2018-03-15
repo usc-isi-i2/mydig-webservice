@@ -35,6 +35,7 @@ class ConjunctiveQueryProcessor(object):
         self.interval = self.myargs.get("_interval","day")
         self.intervals = ["day","month","week","year","quarter","hour","minute","second"]
         self.aggregations = ["min","max","avg","count","sum"]
+        self.offset = self.myargs.get("_offset",None)
 
     def preprocess(self):
         for arg in self.myargs:
@@ -155,14 +156,18 @@ class ConjunctiveQueryProcessor(object):
                 elif key not in self.config_fields:
                     return False
         if self.interval is not None:
-            gp = re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.interval)
+            gp = re.search(r"(\+|-)?(\d+d|\d+m|\d+s|\d+h)",self.interval)
             if gp is None and self.interval not in self.intervals:
                 return False
-        elif self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
+        if self.offset is not None:
+            gp = re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.offset)
+            if gp is None and self.offset is not None:
+                return False
+        if self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
             return False
-        elif self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:
+        if self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:
             return False
-        elif self.aggregation is not None and self.aggregation not in self.aggregations:
+        if self.aggregation is not None and self.aggregation not in self.aggregations:
             return False
 
         return True
@@ -381,4 +386,7 @@ class ConjunctiveQueryProcessor(object):
                 }
             }
             date_clause[self.group_by]['aggs'] = agg_clause
+
+        if self.offset is not None:
+            date_clause[self.group_by]['date_histogram']['offset'] = self.offset
         return date_clause
