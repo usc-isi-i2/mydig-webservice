@@ -1,11 +1,8 @@
 var dataText;
 var glossariesNewField = [];
 var blacklistsNewField = [];
-var username = localStorage.getItem("username");
-var password = localStorage.getItem("password");
 var projectName = window.location.href.split('?')[1];
 var NAV_BG_COLOR = "rgba(255, 255, 0, 0.22)";
-var AUTH_HEADER = "Basic " + btoa(username + ":" + password);
 var REFRESH_TLD_TABLE_INTERVAL = 10000; // 10s
 var REFRESH_PIPELINE_STATUS_INTERVAL = 10000; // 10s
 
@@ -132,7 +129,6 @@ poly = Polymer({
     var request = new XMLHttpRequest()
     request.open("POST", url);
 //  request.setRequestHeader("Content-type", "application/json");
-//     request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
     request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 201) {
  
@@ -244,7 +240,6 @@ poly = Polymer({
     },
     _itemSelected: function (e) {
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         var selectedValue = this.$$('#tableFieldInput').selectedItem.value;
         if (selectedValue == "none") selectedValue = "";
         this.$.updateTableAttribute.headers = obj;
@@ -313,7 +308,6 @@ poly = Polymer({
             this.push('fieldNames', "none");
         }
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.tableAttributes.headers = obj;
         this.$.tableAttributes.url = backend_url + "projects/" + projectName + "/table_attributes";
         this.$.tableAttributes.generateRequest();
@@ -332,7 +326,6 @@ poly = Polymer({
     },
     deleteTagsFunction: function (e) {
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteTags.headers = obj;
         this.$.deleteTags.url = backend_url + "projects/" + projectName + "/tags/" + (e.model.item[0].name).split(":")[0];
         this.$.deleteTags.generateRequest();
@@ -342,7 +335,6 @@ poly = Polymer({
         this.tagForm = {};
         var tagName = e.model.item[0].name;
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.editTag.headers = obj;
         this.$.editTag.url = backend_url + "projects/" + projectName + "/tags/" + tagName;
 
@@ -351,7 +343,6 @@ poly = Polymer({
     },
     updateTag: function (e) {
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.updateSavedTags.headers = obj;
         this.$.updateSavedTags.url = backend_url + "projects/" + projectName + "/tags/" + this.tagForm.name;
         this.$.updateSavedTags.body = JSON.stringify({
@@ -374,7 +365,6 @@ poly = Polymer({
     },
     updateDone: function () {
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         // console.log("im here");
         this.$.getFields.headers = obj;
         this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
@@ -425,7 +415,7 @@ poly = Polymer({
        
         
 
-        payload = {"tlds":[]};
+        payload = {"tlds":[], "from": "file"};
         this.tldTableData.forEach(function(obj){
             payload["tlds"].push(obj["tld"]);
         });
@@ -463,7 +453,6 @@ poly = Polymer({
     deleteFieldFunction: function () {
         this.$$('#sureToDeleteDialog').toggle();
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteFields.headers = obj;
         this.$.deleteFields.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldName;
         this.$.deleteFields.generateRequest();
@@ -481,7 +470,6 @@ poly = Polymer({
         }
 
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.deleteGlossaries.headers = obj;
         this.$.deleteGlossaries.url = backend_url + "projects/" + projectName + "/glossaries/" + (e.currentTarget.value).split(":")[0];
         this.$.deleteGlossaries.generateRequest();
@@ -494,7 +482,6 @@ poly = Polymer({
         console.log(fieldFormName);
 
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.editField.headers = obj;
         this.$.editField.url = backend_url + "projects/" + projectName + "/fields/" + fieldFormName;
 
@@ -538,7 +525,6 @@ poly = Polymer({
     var request = new XMLHttpRequest();
     request.open("POST", url);
     //  request.setRequestHeader("Content-type", "application/json");
-    // request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
 
     request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 201) {
@@ -551,7 +537,6 @@ poly = Polymer({
     },
     updateField: function (e) {
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         var predefinedExtr = "";
 
         //Save Glossaries
@@ -606,52 +591,6 @@ poly = Polymer({
         this.$$('#editFieldsDialog').toggle();
 
     },
-//	 inferlink:function() {
-//		 var obj = {};
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//		 this.$.inferlink.headers = obj;
-//		 var perPage = 0;
-//		 var extraPage=0;
-//
-//		 perPage = this.$$('#perPage').value;
-//		 extraPage = this.$$('#extraPage').value;
-//		 var force=this.$$('#samplePageForce').checked;
-//		 this.$.inferlink.url = backend_url +"projects/"+projectName+"/actions/get_sample_pages?pages_per_tld="+perPage+"&pages_extra="+extraPage+"&force_getting_sample_pages="+force;
-//
-//		 this.$.inferlink.generateRequest();
-//	 },
-//	 etk:function() {
-//		 var obj = {};
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//		 this.$.etk.headers = obj;
-//		 var force=this.$$('#etkForce').checked;
-//		  this.$.etk.url = backend_url +"projects/"+projectName+"/actions/extract_and_load_test_data?force_start_new_extraction="+force;
-//		  this.$.etk.body = JSON.stringify({
-//			  "pages_per_tld_to_run": parseInt(this.$$("#etkTLD").value),
-//			  "pages_extra_to_run": parseInt(this.$$("#etkExtraTLD").value),
-//			  "lines_user_data_to_run":parseInt(this.$$("#etkLineField").value)
-//		  });
-//		 this.$.etk.generateRequest();
-//	 },
-//	 etkDeployed:function() {
-//		 sureToContinueExtraction.toggle();
-//		 var obj = {};
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//		 this.$.etkDeployed.headers = obj;
-//		  this.$.etkDeployed.url = backend_url +"projects/"+projectName+"/actions/extract_and_load_deployed_data";
-//
-//		 this.$.etkDeployed.generateRequest();
-//	 },
-//
-//	 publish:function() {
-//		 var obj = {};
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//		 this.$.publish.headers = obj;
-//
-//		 this.$.publish.url = backend_url +"projects/"+projectName+"/actions/publish";
-//
-//		 this.$.publish.generateRequest();
-//	 },
     done: function (data) {
         /*this.$$('#samplePageForce').checked = "";
         this.$$('#etkForce').checked = "";*/
@@ -667,7 +606,6 @@ poly = Polymer({
     deletedGlossary: function () {
         this.glossaries = [];
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
 
         this.$.getFields.headers = obj;
         this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
@@ -677,59 +615,6 @@ poly = Polymer({
         this.$.getGlossary.url = backend_url + "projects/" + projectName + "/glossaries";
         this.$.getGlossary.generateRequest();
     },
-//	 inferlinkGet:function() {
-//
-//
-//		 var obj = {};
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//
-//		 this.$.getAction1.headers = obj;
-//		 this.$.getAction1.url = backend_url +"projects/"+projectName+"/actions/get_sample_pages";
-//		 this.$.getAction1.generateRequest();
-//
-//	 },
-//     getTLDInferlink: function (data) {
-//         this.tldResponse = [];
-//         this.tldResponse = Object.keys(data.detail.response).map(function (e) {
-//             return [e, data.detail.response[e]];
-//         });
-//         if (this.tldResponse) showTLDsDialog.toggle();
-//     },
-//	 etkStatus:function() {
-//		 var obj = {};
-//		 this.$$("#etkForce").checked="";
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//
-//
-//		 this.$.etkGet.headers = obj;
-//		 this.$.etkGet.url = backend_url +"projects/"+projectName+"/actions/extract_and_load_test_data";
-//		 this.async(function() {
-//			 this.$.etkGet.generateRequest();
-//		   }, 2000);
-//
-//
-//	 },
-//	 etkdetails:function(data) {
-//		 this.etkFields=[];
-//		 this.etkFields = data.detail.response;
-//
-//		 if(this.etkFields.is_running ==false && this.etkFields.last_message=="done") {
-//			 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "green";
-//		 }
-//		 if(this.etkFields.is_running != false) {
-//			 var obj = {};
-//			 obj.Authorization = "Basic " + btoa(username+":"+password);
-//
-//
-//			 this.$.etkGet.headers = obj;
-//			 this.$.etkGet.url = backend_url +"projects/"+projectName+"/actions/extract_and_load_test_data";
-//			 this.async(function() {
-//				 this.$.etkGet.generateRequest();
-//			   }, 2000);
-//			 this.$.progr.querySelector("#primaryProgress").style.backgroundColor  = "#641ba7";
-//
-//		 }
-//	 },
     _disableDocumentScrolling: function () {
         document.body.style.overflow = 'hidden';
     },
@@ -857,22 +742,6 @@ poly = Polymer({
             }
         }
     },
-//	updateToNewIndex:function() {
-//		 var obj = {};
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//
-//		 this.$.updateIndex.headers = obj;
-//		 this.$.updateIndex.url = backend_url +"projects/"+projectName+"/actions/update_to_new_index";
-//		 this.$.updateIndex.generateRequest();
-//	},
-//	updateToNewIndexNew:function() {
-//		 var obj = {};
-//		 obj.Authorization = "Basic " + btoa(username+":"+password);
-//
-//		 this.$.updateIndexNew.headers = obj;
-//		 this.$.updateIndexNew.url = backend_url +"projects/"+projectName+"/actions/update_to_new_index_deployed";
-//		 this.$.updateIndexNew.generateRequest();
-//	},
 
     getIconNames: function (iconset) {
         return iconset.getIconNames();
@@ -885,7 +754,6 @@ poly = Polymer({
         request.open("GET", url);
         request.setRequestHeader("Content-type", "application/gzip");
         request.setRequestHeader("Content-Transfer-Encoding", "binary");
-        // request.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
         request.responseType = "blob";
         request.onreadystatechange = function () {
             if (request.readyState === 4 && request.status === 200) {
@@ -910,7 +778,6 @@ poly = Polymer({
     },
     editRules: function (e) {
         // var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         // this.$.editSpacyRules.headers = obj;
 
         this.$.editSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules?type=all";
@@ -928,7 +795,6 @@ poly = Polymer({
     },
     editRulesNext: function (e) {
         var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         // this.$.editSpacyRulesNext.headers = obj;
 
         this.$.editSpacyRulesNext.url = spacy_ui_url + "#/" + spacy_backend_auth_base64 + "/" + spacy_backend_sever_name_base64 + "/" + projectName + "/" + this.fieldForm.name;
@@ -943,7 +809,6 @@ poly = Polymer({
     },
     updateFieldSpacyRules: function () {
         // var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         // this.$.updateSpacyRules.headers = obj;
 
         this.$.updateSpacyRules.url = backend_url + "projects/" + projectName + "/fields/" + this.fieldForm.name + "/spacy_rules";
@@ -1141,7 +1006,6 @@ poly = Polymer({
     var caseSense = this.$$("#getCaseSenstive").checked;
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
-    // xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 201) {
@@ -1244,7 +1108,6 @@ poly = Polymer({
     },
     deleteAttribute: function (e) {
         // var obj = {};
-        // obj.Authorization = "Basic " + btoa(username + ":" + password);
         // this.$.deleteTableAttribute.headers = obj;
 
         this.$.deleteTableAttribute.url = backend_url + "projects/" + projectName + "/table_attributes/" + e.model.item[0].name;
@@ -1368,7 +1231,7 @@ poly = Polymer({
 
         var tld = $(e.currentTarget)[0].value;
         //console.log($(e.currentTarget)[0].value);
-        payload = {"tlds":[tld]};
+        payload = {"tlds":[tld], "from": "file"};
 
         $.ajax({
             type: "DELETE",
@@ -1403,9 +1266,6 @@ poly = Polymer({
             context: this,
             async: true,
             processData: false,
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (data) {
                 // //console.log(data);
                 var total_tld = 0;
@@ -1415,20 +1275,15 @@ poly = Polymer({
                 var total_es_original_num=0;
                 newTldTableData = [];
                 data["tld_statistics"].forEach(function(obj) {
-                    // if(obj["tld"] == "asexyservice.com") {
-                    //     obj["tld"] = "ddd.com";
-                    // }
                     var disable_landmark_btn = obj["total_num"] < 10 ? true : false;
                     var disable_delete_btn = obj["total_num"] < 1 ? true : false;
                     cbt = "#263238";
                     cl = "#263238";
 
                     if (disable_delete_btn) {
-
                        cbt = "#B0B0B0";
                     }
-                    if (disable_landmark_btn)
-                    {
+                    if (disable_landmark_btn) {
                         cl = "#B0B0B0";
                     }
                     //console.log(disable_delete_btn);
@@ -1441,8 +1296,7 @@ poly = Polymer({
                         "disable_Landmark": disable_landmark_btn,
                         "color_l": cl,
                         "color_btn": cbt,
-                        "disable_Delete" : disable_delete_btn,
-                        "landmark": "<paper-icon-button icon=\"icons:add-box\" raised class=\"btnAddToLandmark\" data-tld=\""+obj["tld"]+"\"" + disable_landmark_btn + ">Add</paper-icon-button>"
+                        "disable_Delete" : disable_delete_btn
                     };
                     total_tld += 1;
                     total_total_num += obj["total_num"];
@@ -1518,9 +1372,6 @@ poly = Polymer({
             context: this,
             async: true,
             processData: false,
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (data) {
                 // //console.log(data);
                 if(data["etk_status"]) {
@@ -1550,9 +1401,6 @@ poly = Polymer({
             async: true,
             processData: false,
             contentType: false,
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             xhr: function() {
                 // //console.log(this.context);
                 var xhr = new window.XMLHttpRequest();
@@ -1599,9 +1447,6 @@ poly = Polymer({
             processData: false,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (msg) {
                 // //console.log(msg);
                 this.dialogText = "Added";
@@ -1743,9 +1588,6 @@ poly = Polymer({
             contentType: false,
             processData: false,
             context: this,
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (msg) {
                 // //console.log(msg);
                 this.dialogText = "Mapping recreated and data is adding in the backend.";
@@ -1781,9 +1623,6 @@ poly = Polymer({
             context: this,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (msg) {
                  ////console.log("updated");
                 this.refreshTldTable();
@@ -1814,9 +1653,6 @@ poly = Polymer({
             context: this,
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (msg) {
                 // //console.log(msg);
                 this.refreshTldTable();
@@ -1837,9 +1673,6 @@ poly = Polymer({
             processData: false,
             context: this,
             contentType: 'application/json; charset=utf-8',
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (msg) {
                 this.dialogText = "Adding data to queue in the backend";
                 this.$$('#alertDialog').toggle();
@@ -1858,9 +1691,6 @@ poly = Polymer({
             context: this,
             async: true,
             processData: false,
-            // headers: {
-            //     "Authorization": AUTH_HEADER
-            // },
             success: function (msg) {
                 // //console.log(msg["error_log"]);
               Polymer.dom(this.$$("#logDialogContent")).innerHTML ="";

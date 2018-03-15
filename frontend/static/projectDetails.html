@@ -188,9 +188,11 @@
                 on-error="done" on-response="updateDone"></iron-ajax>
 
 
-
+<!-- 
     <app-drawer-layout>  
-        <app-drawer slot="drawer" id="options" style="background-color: #686868">
+        <app-drawer slot="drawer" id="options" style="background-color: #686868"> -->
+    <app-drawer-layout force-narrow>
+        <app-drawer slot="drawer" id="options" swipeOpen>
                 <app-toolbar style="margin-top: 120px" >
                     <div>
                       <paper-item  id="navTabAction" on-tap="navAction">Actions</paper-item>
