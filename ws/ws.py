@@ -2679,6 +2679,7 @@ class DataPushingWorker(threading.Thread):
         self.project_name = project_name
         self.exit_signal = False
         self.stop_adding_data = False
+        self.is_adding_data = False
         self.sleep_interval = sleep_interval
 
         # set up input kafka
@@ -2688,6 +2689,7 @@ class DataPushingWorker(threading.Thread):
     def get_status(self):
         return {
             'stop_adding_data': self.stop_adding_data,
+            'is_adding_data': self.is_adding_data,
             'sleep_interval': self.sleep_interval
         }
 
@@ -2731,6 +2733,7 @@ class DataPushingWorker(threading.Thread):
 
                 # only add docs to queue if desired num is larger than added num
                 if desired_num > added_num:
+                    self.is_adding_data = True
 
                     # update mark in catalog
                     num_to_add = desired_num - added_num
@@ -2761,6 +2764,8 @@ class DataPushingWorker(threading.Thread):
                                 data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
                                 num_to_add += 1
                                 added_num_this_round -= 1
+
+                    self.is_adding_data = False
 
                     if added_num_this_round > 0:
                         with data[project_name]['locks']['status']:
