@@ -7,8 +7,9 @@ import re
 from elasticsearch import RequestError
 from flask import Response
 import logging
+from config import config
 
-logger = logging.getLogger('mydig-webservice.log')
+logger = logging.getLogger(config['logging']['name'])
 class ConjunctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.myargs = request.args

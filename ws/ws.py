@@ -53,9 +53,9 @@ from crf_tokenizer import CrfTokenizer
 requests.packages.urllib3.disable_warnings()
 
 # logger
-logger = logging.getLogger('mydig-webservice.log')
+logger = logging.getLogger(config['logging']['name'])
 log_formatter = logging.Formatter(config['logging']['format'])
-if 'file_path' in config['logging'] and config['logging']['file_path'] != '':
+if config['logging'].get('file_path') and config['logging']['file_path'] != '':
     log_file = logging.FileHandler(config['logging']['file_path'])
     log_file.setFormatter(log_formatter)
     logger.addHandler(log_file)
@@ -64,7 +64,6 @@ else:
     log_stdout.setFormatter(log_formatter)
     logger.addHandler(log_stdout)
 logger.setLevel(config['logging']['level'])
-# no handler will be there before creating app
 logging.getLogger('werkzeug').setLevel(config['logging']['werkzeug'])
 # print logging.Logger.manager.loggerDict.get('werkzeug')
 
