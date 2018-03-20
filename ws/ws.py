@@ -65,7 +65,7 @@ else:
     logger.addHandler(log_stdout)
 logger.setLevel(config['logging']['level'])
 # no handler will be there before creating app
-# logging.getLogger('werkzeug').setLevel(config['logging']['werkzeug'])
+logging.getLogger('werkzeug').setLevel(config['logging']['werkzeug'])
 # print logging.Logger.manager.loggerDict.get('werkzeug')
 
 # flask app
