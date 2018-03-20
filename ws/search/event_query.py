@@ -5,8 +5,9 @@ import traceback,sys
 from conjunctive_query import ConjunctiveQueryProcessor
 from response_converter import DigOutputProcessor,TimeSeries
 import json,sys,traceback
+import logging
 
-
+logger = logging.getLogger('mydig-webservice.log')
 class EventQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.request = request
@@ -64,17 +65,14 @@ class EventQueryProcessor(object):
                     return resp
                 else:
                     resp = resp[0]
-                print resp
+                logger.debug("Response for query is {}".format(resp))
                 ts,dims = DigOutputProcessor(resp['aggregations'][self.field],self.agg_field).process()
                 ts_obj = TimeSeries(ts, dict(), dims).to_dict()
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("Time series not found")
         except Exception as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            lines = ''.join(lines)
-            print lines
+            logger.exception("Exception encountered while performing time series query")
             return rest.bad_request("Enter valid query")
 
     def process_event_query(self):
@@ -91,6 +89,7 @@ class EventQueryProcessor(object):
         try:
             resp = self.cquery.process()
             if resp[1] == 400:
+                logger.warning("Request generated 4xx response. Check request again")
                 return resp
             else:
                 resp = resp[0]
@@ -105,10 +104,7 @@ class EventQueryProcessor(object):
             else:
                 return rest.not_found("No Time series found for query")
         except Exception as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            lines = ''.join(lines)
-            print lines
+            logger.exception("Exception encountered while performing Event query")
             return rest.internal_error("Internal Error occured")
 
     def validate_input(self):

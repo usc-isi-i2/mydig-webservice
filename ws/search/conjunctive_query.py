@@ -6,8 +6,9 @@ import rest
 import re
 from elasticsearch import RequestError
 from flask import Response
+import logging
 
-
+logger = logging.getLogger('mydig-webservice.log')
 class ConjunctiveQueryProcessor(object):
     def __init__(self,request,project_name,config_fields,project_root_name,es):
         self.myargs = request.args
@@ -34,6 +35,7 @@ class ConjunctiveQueryProcessor(object):
         self.interval = self.myargs.get("_interval","day")
         self.intervals = ["day","month","week","year","quarter","hour","minute","second"]
         self.aggregations = ["min","max","avg","count","sum"]
+        self.offset = self.myargs.get("_offset",None)
 
     def preprocess(self):
         for arg in self.myargs:
@@ -53,17 +55,19 @@ class ConjunctiveQueryProcessor(object):
             return rest.bad_request(err_json)
         query = self._build_query("must")
         res = None
-        print query
+        logger.debug('Query {}'.format(query))
         if self.num_results+self.fr > 10000:
             res = self.es.es_search(self.project_name, self.project_root_name ,query,True, ignore_no_index=True)
         else:
             res = self.es.es_search(self.project_name, self.project_root_name ,query,False, ignore_no_index=True)
         if type(res) == RequestError:
+            logger.warning('problem with query\n  {}'.format(str(res)))
             return rest.bad_request(str(res))
         res_filtered = self.filter_response(res,self.field_names)
         resp={}
         if self.nested_query is not None and len(res_filtered['hits']['hits']) > 0:
             res_filtered = self.setNestedDocuments(res_filtered)
+            logger.debug('Completed setting nested documents')
         if self.group_by is None:
             if self.verbosity == "minimal":
                 if self.field_names is None:
@@ -75,7 +79,9 @@ class ConjunctiveQueryProcessor(object):
                 resp = res_filtered
         else:
             resp = res_filtered
+        logger.debug('Minifying documents complete')
         if self.response_format =="json_lines":
+            logger.debug("Returning json lines response")
             return Response(self.create_json_lines_response(resp),mimetype='application/x-jsonlines')
         return rest.ok(resp)
 
@@ -105,7 +111,6 @@ class ConjunctiveQueryProcessor(object):
                         if temp_id not in ids_to_query[field]:
                             ids_to_query[field].append(temp_id)
                 except Exception as e: 
-                    print e
                     pass
         result_map = self.executeNestedQuery(ids_to_query)
         if len(result_map.keys()) > 0:
@@ -117,7 +122,6 @@ class ConjunctiveQueryProcessor(object):
                             if temp_id in result_map:
                                 nest_doc['knowledge_graph'] = result_map[temp_id][self.SOURCE][self.KG_PREFIX]
                     except Exception as e: 
-                        print e
                         pass
         return resp
 
@@ -152,14 +156,18 @@ class ConjunctiveQueryProcessor(object):
                 elif key not in self.config_fields:
                     return False
         if self.interval is not None:
-            gp = re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.interval)
+            gp = re.search(r"(\+|-)?(\d+d|\d+m|\d+s|\d+h)",self.interval)
             if gp is None and self.interval not in self.intervals:
                 return False
-        elif self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
+        if self.offset is not None:
+            gp = re.search(r"(\d+d|\d+m|\d+s|\d+h)",self.offset)
+            if gp is None and self.offset is not None:
+                return False
+        if self.group_by is not None and "." not in self.group_by and self.group_by not in self.config_fields:
             return False
-        elif self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:
+        if self.aggregation_field is not None and "." not in self.aggregation_field and self.aggregation_field not in self.config_fields:
             return False
-        elif self.aggregation is not None and self.aggregation not in self.aggregations:
+        if self.aggregation is not None and self.aggregation not in self.aggregations:
             return False
 
         return True
@@ -200,10 +208,6 @@ class ConjunctiveQueryProcessor(object):
                            new_list.append(element['value'])
                     minidoc[field] = new_list
                 except Exception as e:
-                    # exc_type, exc_value, exc_traceback = sys.exc_info()
-                    # lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                    # lines = ''.join(lines)
-                    # print lines
                     pass
             doc_id = []
             doc_id.append(json_doc[self.SOURCE]['document_id'])
@@ -340,7 +344,8 @@ class ConjunctiveQueryProcessor(object):
         full_clause =  {
                   self.group_by: {
                    "terms": {
-                    "field":  'knowledge_graph.'+self.group_by+'.key'
+                    "field":  'knowledge_graph.'+self.group_by+'.key',
+                    "size" : self.num_results
                 }
             }
         }
@@ -351,7 +356,8 @@ class ConjunctiveQueryProcessor(object):
             agg_clause = {
                     self.aggregation_field: {
                      self.aggregation : {
-                      "field": 'knowledge_graph.'+self.aggregation_field+'.key'
+                      "field": 'knowledge_graph.'+self.aggregation_field+'.key',
+                      "size" : self.num_results
                     }
                 }
             }
@@ -380,4 +386,7 @@ class ConjunctiveQueryProcessor(object):
                 }
             }
             date_clause[self.group_by]['aggs'] = agg_clause
+
+        if self.offset is not None:
+            date_clause[self.group_by]['date_histogram']['offset'] = self.offset
         return date_clause
