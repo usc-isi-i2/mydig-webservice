@@ -210,9 +210,9 @@ class ProjectDebug(Resource):
         if mode == 'threads':
             ret = {
                 'threads': dict(),
-                'data_pushing_worker': data[project_name]['data_pushing_worker'].ident,
-                'status_memory_dump_worker': data[project_name]['status_memory_dump_worker'].get_members(),
-                'catalog_memory_dump_worker': data[project_name]['catalog_memory_dump_worker'].get_members()
+                'data_pushing_worker': data[project_name]['data_pushing_worker'].get_status(),
+                'status_memory_dump_worker': data[project_name]['status_memory_dump_worker'].get_status(),
+                'catalog_memory_dump_worker': data[project_name]['catalog_memory_dump_worker'].get_status()
             }
             for t in data[project_name]['threads']:
                 ret['threads'][t.ident] = {
@@ -442,6 +442,7 @@ class Project(Resource):
             return rest.not_found()
 
         # 1. stop etk (and clean up previous queue)
+        data[project_name]['data_pushing_worker'].stop_adding_data = True
         if not Actions._etk_stop(project_name, clean_up_queue=True):
             return rest.internal_error('failed to kill_etk in ETL')
 
@@ -2341,71 +2342,6 @@ class Actions(Resource):
         return rest.created()
 
     @staticmethod
-    def _add_data_worker(project_name, producer, input_topic):
-        # this method is used by CatelogWorker in daemon thread
-        got_lock = data[project_name]['locks']['data'].acquire(False)
-        try:
-            # print '_add_data_worker got data lock?', got_lock
-            if not got_lock:
-                return
-
-            for tld in data[project_name]['data'].iterkeys():
-
-                with data[project_name]['locks']['status']:
-                    if tld not in data[project_name]['status']['added_docs']:
-                        data[project_name]['status']['added_docs'][tld] = 0
-                    if tld not in data[project_name]['status']['desired_docs']:
-                        data[project_name]['status']['desired_docs'][tld] = \
-                            data[project_name]['master_config'].get('default_desired_num', 0)
-                    if tld not in data[project_name]['status']['total_docs']:
-                        data[project_name]['status']['total_docs'][tld] = 0
-
-                added_num = data[project_name]['status']['added_docs'][tld]
-                total_num = data[project_name]['status']['total_docs'][tld]
-                desired_num = data[project_name]['status']['desired_docs'][tld]
-                desired_num = min(desired_num, total_num)
-
-                # only add docs to queue if desired num is larger than added num
-                if desired_num > added_num:
-
-                    # update mark in catalog
-                    num_to_add = desired_num - added_num
-                    added_num_this_round = 0
-                    for doc_id in data[project_name]['data'][tld].iterkeys():
-
-                        # finished
-                        if num_to_add <= 0:
-                            break
-
-                        # already added
-                        if data[project_name]['data'][tld][doc_id]['add_to_queue']:
-                            continue
-
-                        # mark data
-                        data[project_name]['data'][tld][doc_id]['add_to_queue'] = True
-                        num_to_add -= 1
-                        added_num_this_round += 1
-
-                        # publish to kafka queue
-                        ret, msg = Actions._publish_to_kafka_input_queue(
-                            doc_id, data[project_name]['data'][tld][doc_id], producer, input_topic)
-                        if not ret:
-                            logger.error('Error of pushing data to Kafka: %s', msg)
-                            # roll back
-                            data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
-                            num_to_add += 1
-                            added_num_this_round -= 1
-
-                    data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
-                    set_catalog_dirty(project_name)
-                    set_status_dirty(project_name)
-        except Exception as e:
-            logger.exception('exception in Actions._add_data_worker() data lock')
-        finally:
-            if got_lock:
-                data[project_name]['locks']['data'].release()
-
-    @staticmethod
     def landmark_extract(project_name):
         # {
         #     "tlds": {
@@ -2483,6 +2419,7 @@ class Actions(Resource):
         logger.info('recreate_mapping')
 
         # 1. kill etk (and clean up previous queue)
+        data[project_name]['data_pushing_worker'].stop_adding_data = True
         if not Actions._etk_stop(project_name, clean_up_queue=True):
             return rest.internal_error('failed to kill_etk in ETL')
 
@@ -2554,9 +2491,8 @@ class Actions(Resource):
         set_status_dirty(project_name)
 
         # 5. restart extraction
-        # still need to do clean_up_queue here
-        # because etk process may not be running at that time
-        return Actions.etk_extract(project_name, clean_up_queue=True)
+        data[project_name]['data_pushing_worker'].stop_adding_data = False
+        return Actions.etk_extract(project_name)
 
     @staticmethod
     def reload_blacklist(project_name):
@@ -2696,6 +2632,7 @@ class Actions(Resource):
 
     @staticmethod
     def _etk_stop(project_name, wait_till_kill=True, clean_up_queue=False):
+
         url = config['etl']['url'] + '/kill_etk'
         payload = {
             'project_name': project_name
@@ -2741,22 +2678,101 @@ class DataPushingWorker(threading.Thread):
         super(DataPushingWorker, self).__init__()
         self.project_name = project_name
         self.exit_signal = False
+        self.stop_adding_data = False
         self.sleep_interval = sleep_interval
 
         # set up input kafka
         self.producer = kafka_producer
         self.input_topic = project_name + '_in'
 
+    def get_status(self):
+        return {
+            'stop_adding_data': self.stop_adding_data,
+            'sleep_interval': self.sleep_interval
+        }
+
     def run(self):
         logger.info('thread DataPushingWorker running... %s', self.project_name)
         while not self.exit_signal:
-            Actions._add_data_worker(self.project_name, self.producer, self.input_topic)
+            if not self.stop_adding_data:
+                self._add_data_worker(self.project_name, self.producer, self.input_topic)
 
             # wait interval
             t = self.sleep_interval * 10
             while t > 0 and not self.exit_signal:
                 time.sleep(0.1)
                 t -= 1
+
+    def _add_data_worker(self, project_name, producer, input_topic):
+
+        got_lock = data[project_name]['locks']['data'].acquire(False)
+        try:
+            # print '_add_data_worker got data lock?', got_lock
+            if not got_lock or self.stop_adding_data:
+                return
+
+            for tld in data[project_name]['data'].iterkeys():
+                if self.stop_adding_data:
+                    break
+
+                with data[project_name]['locks']['status']:
+                    if tld not in data[project_name]['status']['added_docs']:
+                        data[project_name]['status']['added_docs'][tld] = 0
+                    if tld not in data[project_name]['status']['desired_docs']:
+                        data[project_name]['status']['desired_docs'][tld] = \
+                            data[project_name]['master_config'].get('default_desired_num', 0)
+                    if tld not in data[project_name]['status']['total_docs']:
+                        data[project_name]['status']['total_docs'][tld] = 0
+
+                added_num = data[project_name]['status']['added_docs'][tld]
+                total_num = data[project_name]['status']['total_docs'][tld]
+                desired_num = data[project_name]['status']['desired_docs'][tld]
+                desired_num = min(desired_num, total_num)
+
+                # only add docs to queue if desired num is larger than added num
+                if desired_num > added_num:
+
+                    # update mark in catalog
+                    num_to_add = desired_num - added_num
+                    added_num_this_round = 0
+                    for doc_id in data[project_name]['data'][tld].iterkeys():
+
+                        if not self.stop_adding_data:
+
+                            # finished
+                            if num_to_add <= 0:
+                                break
+
+                            # already added
+                            if data[project_name]['data'][tld][doc_id]['add_to_queue']:
+                                continue
+
+                            # mark data
+                            data[project_name]['data'][tld][doc_id]['add_to_queue'] = True
+                            num_to_add -= 1
+                            added_num_this_round += 1
+
+                            # publish to kafka queue
+                            ret, msg = Actions._publish_to_kafka_input_queue(
+                                doc_id, data[project_name]['data'][tld][doc_id], producer, input_topic)
+                            if not ret:
+                                logger.error('Error of pushing data to Kafka: %s', msg)
+                                # roll back
+                                data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+                                num_to_add += 1
+                                added_num_this_round -= 1
+
+                    if added_num_this_round > 0:
+                        with data[project_name]['locks']['status']:
+                            data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
+                        set_catalog_dirty(project_name)
+                        set_status_dirty(project_name)
+
+        except Exception as e:
+            logger.exception('exception in Actions._add_data_worker() data lock')
+        finally:
+            if got_lock:
+                data[project_name]['locks']['data'].release()
 
 
 class MemoryDumpWorker(threading.Thread):
@@ -2772,7 +2788,7 @@ class MemoryDumpWorker(threading.Thread):
         self.function = function
         self.kwargs = kwargs
 
-    def get_members(self):
+    def get_status(self):
         return {
             'sleep_interval': self.sleep_interval,
             'file_timestamp': self.file_timestamp,
