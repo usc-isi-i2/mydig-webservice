@@ -1820,5 +1820,110 @@ poly = Polymer({
         this.$.tabTag.opened = true;
         this.$.tabAction.opened = false;
         this.$.tabTable.opened = false;
+    },
+    projectSettingsFunction : function() {
+        var url = "/mydig/projects/" +projectName;
+
+        var obj = {};
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
+        this.$.getProjectSettings.headers = obj;
+        this.$.getProjectSettings.url = "/mydig/projects/" +projectName;
+
+        this.$.getProjectSettings.generateRequest();
+
+        this.$$('#projectSettingsDialog').toggle();
+    },
+    ProjectSettingsDialogSetup: function(data) {
+
+        this.projectSettingsObject = [];
+        this.projectSettingsObject = data.detail.response;
+        //console.log(this.projectSettingsObject);
+
+
+        if(this.projectSettingsObject.show_images_in_facets)
+            this.$$('#imageFacets').checked=true;
+        else this.$$('#imageFacets').checked=false;
+        if(this.projectSettingsObject.show_images_in_search_form)
+            this.$$('#searchFormImages').checked=true;
+        else this.$$('#searchFormImages').checked=false;
+        if(this.projectSettingsObject.hide_timelines)
+            this.$$('#hideTimelines').checked=true;
+        else this.$$('#hideTimelines').checked=false;
+
+
+
+        /*for (var j = 0; j < this.glossaries.length; j++) {
+            this.$$('#' + this.glossaries[j][0]).checked = "";
+
+        }*/
+        /*if (this.fieldForm) {
+            if (this.fieldForm.glossaries) {
+                for (var i = 0; i < this.fieldForm.glossaries.length; i++) {
+                    for (var j = 0; j < this.glossaries.length; j++) {
+                        if (this.fieldForm.glossaries[i] == this.glossaries[j][0]) {
+                            this.$$('#' + this.glossaries[j][0]).checked = "true";
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (this.fieldForm.blacklists) {
+                for (var i = 0; i < this.fieldForm.blacklists.length; i++) {
+                    for (var j = 0; j < this.glossaries.length; j++) {
+                        if (this.fieldForm.blacklists[i] == this.glossaries[j][0]) {
+                            this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+                            break;
+                        }
+                    }
+                }
+            }
+        }*/
+
+
+    },
+    saveProjectSettings: function() {
+        var obj = {};
+        // obj.Authorization = "Basic " + btoa(username + ":" + password);
+        var predefinedExtr = "";
+
+
+
+        //console
+
+        this.$.updateProjectSettings.headers = obj;
+        this.$.updateProjectSettings.url = backend_url + "/projects/" + projectName;
+        /*console.log(this.projectSettingsObject.show_images_in_facets)*/
+        this.projectSettingsObject.new_linetype = this.$$("#newlineType").value
+        //console.log(this.projectSettingsObject.new_linetype);
+        this.projectSettingsObject.image_prefix = this.$$("#imagePrefix").value;
+        this.projectSettingsObject.default_desired_num =  parseInt(this.$$('#defaultDesiredNum').value);
+        this.projectSettingsObject.show_images_in_facets = this.$$('#imageFacets').checked;
+        this.projectSettingsObject.show_images_in_search_form =this.$$('#searchFormImages').checked;
+        this.projectSettingsObject.hide_timelines =this.$$('#hideTimelines').checked;
+
+        /*if(projectSettingsObject.imagePrefix == undefined)
+        {
+            projectSettingsObject.imagePrefix = ""
+        }*/
+        this.$.updateProjectSettings.body = JSON.stringify({
+            "image_prefix": this.projectSettingsObject.image_prefix == undefined ? "" : this.projectSettingsObject.image_prefix ,
+            "default_desired_num": this.projectSettingsObject.default_desired_num == undefined ? 0 : this.projectSettingsObject.default_desired_num,
+            "show_images_in_facets": this.projectSettingsObject.show_images_in_facets == undefined ? false : this.projectSettingsObject.show_images_in_facets,
+            "show_images_in_search_form": this.projectSettingsObject.show_images_in_search_form == undefined ? false : this.projectSettingsObject.show_images_in_search_form,
+            "hide_timelines": this.projectSettingsObject.hide_timelines ==undefined ? false : this.projectSettingsObject.hide_timelines,
+            "new_linetype": this.projectSettingsObject.new_linetype ==undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase()
+        });
+        this.$.updateProjectSettings.generateRequest();
+        this.$$('#projectSettingsDialog').toggle();
+
+
+    },
+    get_newlineType: function(value)
+    {
+        arr = ["break", "newline"]
+        //console.log(value);
+       if (value != undefined && value != "") return arr.indexOf(value);
+        else return 0;
     }
 });
