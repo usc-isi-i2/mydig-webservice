@@ -185,7 +185,7 @@
 
         <iron-ajax
                 id="updateProjectSettings" method="POST" content-type="application/json"
-                on-error="done" on-response="updateDone"></iron-ajax>
+                on-error="done" on-response="projectUpdateDone"></iron-ajax>
 
 
 <!-- 
@@ -266,7 +266,7 @@
                                     
                                 </div>
                             </vaadin-grid-sorter></template>
-                            <template>{{item.tld}}</template>
+                            <template><div style="float:left">{{item.tld}}</div><div style="float:right"><paper-icon-button icon="delete" title="Delete TLD" style$="color:{{item.color_btn}}"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button></div></template>
                         </vaadin-grid-column>
                         <vaadin-grid-column>
                             <template class="header"><vaadin-grid-sorter path="total_num" style="font-weight:bold;padding-top:10px;padding-bottom:10px"><div style="float:left;height:35px;text-align: center;display: flex;flex-direction: column;justify-content: center;" >Total <br>({{total_num}}) </div></vaadin-grid-sorter></template>
@@ -323,7 +323,8 @@
                             </template>
                             <template style="text-align: center;">
                             <div style="text-align: center;width: 100%">
-                                <paper-icon-button icon="delete" title="Delete TLD" style$="color:{{item.color_btn}}"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button></div>
+                            <paper-icon-button icon="delete" title="Delete " style$="color:{{item.color_btn}}"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button>
+                                </div>
                             </template>
                         </vaadin-grid-column>
                     </vaadin-grid>

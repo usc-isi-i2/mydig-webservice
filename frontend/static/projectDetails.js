@@ -1882,6 +1882,9 @@ poly = Polymer({
 
 
     },
+    projectUpdateDone: function(){
+        
+    },
     saveProjectSettings: function() {
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
@@ -1914,8 +1917,9 @@ poly = Polymer({
             "hide_timelines": this.projectSettingsObject.hide_timelines ==undefined ? false : this.projectSettingsObject.hide_timelines,
             "new_linetype": this.projectSettingsObject.new_linetype ==undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase()
         });
+        this.$$('#projectSettingsDialog').close();
         this.$.updateProjectSettings.generateRequest();
-        this.$$('#projectSettingsDialog').toggle();
+        
 
 
     },
