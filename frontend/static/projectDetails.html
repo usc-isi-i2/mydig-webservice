@@ -254,7 +254,7 @@
                         <vaadin-grid  style="height:100%;" items="{{tldTableData}}" size=200 multi-sort="[[multiSort]]" >
 
                         <!-- <vaadin-grid-selection-column frozen auto-select></vaadin-grid-selection-column> -->
-                        <vaadin-grid-column style="padding-right:2px;padding-top:2px;padding-bottom:2px;padding-left: 5px;background-color:#E8E8E8">
+                        <vaadin-grid-column style="padding-right:2px;padding-top:2px;padding-bottom:2px;padding-left: 5px;background-color:#E8E8E8"  >
                             <template class="header" syle="background-color:#E8E8E8">
                             <vaadin-grid-sorter path="tld" id="tldHeader" style="font-weight:bold;padding-top:10px;padding-bottom:10px;">
                                 <div > 
@@ -266,7 +266,7 @@
                                     
                                 </div>
                             </vaadin-grid-sorter></template>
-                            <template><div style="float:left">{{item.tld}}</div><div style="float:right"><paper-icon-button icon="delete" title="Delete TLD" style$="color:{{item.color_btn}}"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button></div></template>
+                            <template><div style="height: 100%"><div style="float:left;height:100%;text-align: center;display: flex;flex-direction: column;justify-content: center;">{{item.tld}}</div><div style="float:right;height:100%"><paper-icon-button icon="delete" title="Delete TLD" style$="color:{{item.color_btn}}"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button></div></div></template>
                         </vaadin-grid-column>
                         <vaadin-grid-column>
                             <template class="header"><vaadin-grid-sorter path="total_num" style="font-weight:bold;padding-top:10px;padding-bottom:10px"><div style="float:left;height:35px;text-align: center;display: flex;flex-direction: column;justify-content: center;" >Total <br>({{total_num}}) </div></vaadin-grid-sorter></template>
@@ -282,7 +282,12 @@
                                 </div>
                                 
                             </vaadin-grid-sorter></template>
-                            <template>{{item.es_num}}</template>
+                            <template><div style="height: 100%"> 
+                            <div style="float:left;height:100%;text-align: center;display: flex;flex-direction: column;justify-content: center">{{item.es_num}}</div>
+                            <div style="float:right"> 
+                            <paper-icon-button icon="delete" title="Delete KG" style$="color:{{item.color_kg}}"  on-click="deleteKG" id="delete" value="{{item.tld}}" disabled="{{item.disable_kg}}"></paper-icon-button>
+                            </div>
+                            </div></template>
                         </vaadin-grid-column>
                         <vaadin-grid-column>
                             <template class="header"><vaadin-grid-sorter path="es_original_num" style="font-weight:bold;padding-top:10px;padding-bottom:10px"> <div> 
@@ -315,15 +320,6 @@
                             <template style="text-align: center;">
                             <div style="text-align: center;width: 100%">
                                 <paper-icon-button icon="add" title="Go to Landmark" style$=" color:{{item.color_l}}" on-click="addToLandmark" id="website" value="{{item.tld}}" active="{{item.disable_Landmark}}" disabled="{{item.disable_Landmark}}"></paper-icon-button>
-                                </div>
-                            </template>
-                        </vaadin-grid-column>
-                    <vaadin-grid-column flexGrow>
-                            <template class="header">
-                            </template>
-                            <template style="text-align: center;">
-                            <div style="text-align: center;width: 100%">
-                            <paper-icon-button icon="delete" title="Delete " style$="color:{{item.color_btn}}"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button>
                                 </div>
                             </template>
                         </vaadin-grid-column>
