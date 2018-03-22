@@ -1218,7 +1218,7 @@ poly = Polymer({
 
         if($(e.currentTarget)[0].id != "yes")
         {
-            this.confirmText = "Are you sure to delete the data of this TLD?"
+            this.confirmText = "Are you sure to delete the data of "+$(e.currentTarget)[0].value+" TLD?"
             this.confirmButton = "DELETE"
             this.confirmValue = $(e.currentTarget)[0].value
             this.listen(this.$$("#yes"), 'tap', 'deleteFileData');
@@ -1274,17 +1274,24 @@ poly = Polymer({
                 var total_desired_num = 0;
                 var total_es_original_num=0;
                 newTldTableData = [];
+                console.log(data);
                 data["tld_statistics"].forEach(function(obj) {
                     var disable_landmark_btn = obj["total_num"] < 10 ? true : false;
                     var disable_delete_btn = obj["total_num"] < 1 ? true : false;
+                    var disable_kg_btn = obj["es_num"] < 1 ? true : false;
                     cbt = "#263238";
                     cl = "#263238";
+                    ckg = "#263238";
 
                     if (disable_delete_btn) {
                        cbt = "#B0B0B0";
                     }
                     if (disable_landmark_btn) {
                         cl = "#B0B0B0";
+                    }
+                    if (disable_kg_btn)
+                    {
+                        ckg = "#B0B0B0";
                     }
                     //console.log(disable_delete_btn);
                     //console.log(disable_landmark_btn);
@@ -1296,7 +1303,9 @@ poly = Polymer({
                         "disable_Landmark": disable_landmark_btn,
                         "color_l": cl,
                         "color_btn": cbt,
-                        "disable_Delete" : disable_delete_btn
+                        "disable_Delete" : disable_delete_btn,
+                        "disable_kg" : disable_kg_btn,
+                        "color_kg" : ckg
                     };
                     total_tld += 1;
                     total_total_num += obj["total_num"];
@@ -1593,6 +1602,7 @@ poly = Polymer({
                 this.dialogText = "Mapping recreated and data is adding in the backend.";
                 this.$$('#alertDialog').toggle();
                 this.updatePipelineBtn(true);
+                console.log(msg);
                 this.unlisten(this.$$("#yes"), 'tap', 'recreateMapping');
             },
             error: function(msg) {
@@ -1929,5 +1939,52 @@ poly = Polymer({
         //console.log(value);
        if (value != undefined && value != "") return arr.indexOf(value);
         else return 0;
+    },
+    deleteKG:function(e)
+    {
+        if($(e.currentTarget)[0].id != "yes")
+        {
+            this.confirmText = "Are you sure to delete the KG of "+$(e.currentTarget)[0].value+" TLD?"
+            this.confirmButton = "DELETE"
+            this.confirmValue = $(e.currentTarget)[0].value
+            this.listen(this.$$("#yes"), 'tap', 'deleteKG');
+            this.$$('#confirmDialog').toggle();
+            return
+        }
+        /*if(window.confirm("Are you sure to data of this TLD?") == false) {
+            return;
+        }*/
+
+        var tld = $(e.currentTarget)[0].value;
+        //console.log($(e.currentTarget)[0].value);
+        payload = {"tlds":[tld], "from": "kg"};
+
+        $.ajax({
+            type: "DELETE",
+            url: backend_url + "projects/" + projectName + '/data',
+            async: true,
+            dataType: "json",
+            processData: false,
+            context: this,
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            success: function (msg) {
+                console.log("success");
+                this.unlisten(this.$$("#yes"), 'tap', 'deleteKG');
+            },
+            error :function(xhr, ajaxOptions, thrownError)
+            {
+                this.unlisten(this.$$("#yes"), 'tap', 'deleteKG');
+                console.log("error");
+                //console.log(xhr);
+            }
+        });
+
+/*        backend_url + "projects/" + projectName + '/data'
+payload:
+{
+  "tlds": [...],
+  "from": "kg"
+}*/
     }
 });
