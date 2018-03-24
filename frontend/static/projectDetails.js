@@ -46,11 +46,11 @@ poly = Polymer({
 
         this.scope.getIconNames = function(iconset) {
         return iconset.getIconNames();
-        //console.log("heree");
+        ////console("heree");
       };
 
       this.iconsetRepeat = new Polymer.IronMeta({type: 'iconset'}).list;
-      //console.log(this.iconsetRepeat[0]._icons);
+      ////console(this.iconsetRepeat[0]._icons);
 
       /*for(var i=0;i<iconsetRepeat.size();i++)
       {
@@ -64,8 +64,8 @@ poly = Polymer({
         this.scope.parentNode.getIconNames = this.scope.getIconNames;
 
        /* this.iconsets = this.iconset;*/
-       /* //console.log(iconset.getOwnPropertyNames());
-        //console.log(Polymer.getOwnPropertyNames())*/
+       /* ////console(iconset.getOwnPropertyNames());
+        ////console(Polymer.getOwnPropertyNames())*/
 
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
@@ -124,7 +124,7 @@ poly = Polymer({
 
     formData.append("glossary_name", glossName);
     formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
-    // //console.log(formData);
+    // ////console(formData);
 
     var request = new XMLHttpRequest()
     request.open("POST", url);
@@ -146,14 +146,14 @@ poly = Polymer({
       },
     setNewIconColor: function()
     {
-        /*//console.log(this.$$('#newColorSelect').node);
+        /*////console(this.$$('#newColorSelect').node);
 */        if (this.$$('#newColorSelect').color == undefined) return "amber";
         this.newFieldColor= this.$$('#newColorSelect').color;
         return this.$$('#newColorSelect').color
     },
     goToLandMark: function(e)
     {
-        ////console.log("there" + e.target.value);
+        //////console("there" + e.target.value);
        window.open("http://www."+e.target.value, '_blank');
     },
     _getColor: function () {
@@ -168,7 +168,7 @@ poly = Polymer({
             return "amber";
         }
         this.editFieldColor = this.$$('#colorSelect2').color;
-        //console.log(this.editFieldColor);
+        ////console(this.editFieldColor);
 
         this.$$('#papericonEditSet').style.fill = this.editFieldColor;
        /* getComputedStyle(this.$$('#iconField'))*/
@@ -182,10 +182,10 @@ poly = Polymer({
         
         if (color!= undefined)
         {
-            //console.log("color is "+this.colorSet[color]);
+            ////console("color is "+this.colorSet[color]);
             if(this.colorSet[color] == undefined){
 
-                //console.log("here");
+                ////console("here");
                 this.editFieldColor = Object.keys(this.colorSet).find(key => this.colorSet[key] === color);
             return Object.keys(this.colorSet).find(key => this.colorSet[key] === color)}
              else{
@@ -311,7 +311,7 @@ poly = Polymer({
         this.$.tableAttributes.headers = obj;
         this.$.tableAttributes.url = backend_url + "projects/" + projectName + "/table_attributes";
         this.$.tableAttributes.generateRequest();
-        //console.log(this.fields);
+        ////console(this.fields);
     },
     fillGlossary: function (data) {
 
@@ -365,7 +365,7 @@ poly = Polymer({
     },
     updateDone: function () {
         var obj = {};
-        // console.log("im here");
+        // //console("im here");
         this.$.getFields.headers = obj;
         this.$.getFields.url = backend_url + "projects/" + projectName + "/fields";
         this.$.getFields.generateRequest();
@@ -431,7 +431,7 @@ poly = Polymer({
             data: JSON.stringify(payload),
             success: function (msg) {
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteAllFileData');
-                // //console.log(msg);
+                // ////console(msg);
                 // this.refreshTldTable();
             }
         });
@@ -479,7 +479,7 @@ poly = Polymer({
         var fieldFormName = e.model.item[0].name;
          this.$.editFieldsDialog.toggle();
 
-        console.log(fieldFormName);
+        //console(fieldFormName);
 
         var obj = {};
         this.$.editField.headers = obj;
@@ -487,7 +487,7 @@ poly = Polymer({
 
         this.$.editField.generateRequest();
 
-       /* //console.log(fieldForm.icon);*/
+       /* ////console(fieldForm.icon);*/
 
        
 
@@ -511,7 +511,7 @@ poly = Polymer({
     {
         var glossName = this.$$('#glossary_name').value;
         var file = this.$$('#glossary_file').inputElement.inputElement.files[0]
-        /*//console.log($('#glossInput')[0].files[0]);*/
+        /*////console($('#glossInput')[0].files[0]);*/
 
 
     var url = backend_url + "projects/" + projectName + "/glossaries/" + glossName;
@@ -520,7 +520,7 @@ poly = Polymer({
 
     formData.append("glossary_name", glossName);
     formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
-    // //console.log(formData);
+    // ////console(formData);
 
     var request = new XMLHttpRequest();
     request.open("POST", url);
@@ -652,7 +652,10 @@ poly = Polymer({
             }
         }
     },
+    updateProgress: function()
+    {
 
+    },
     getFieldGlossariesForAdd: function () {
         this.$$('#EditFieldGlossaries').toggle();
 
@@ -678,11 +681,11 @@ poly = Polymer({
         }
     },
     getFieldBlacklist: function () {
-        // //console.log('getFieldBlacklist');
-        // //console.log(this.glossaries);
-        // //console.log(this.fieldForm);
-        // //console.log(this.fieldForm.blacklists);
-        // //console.log(this.fieldFormBlacklists);
+        // ////console('getFieldBlacklist');
+        // ////console(this.glossaries);
+        // ////console(this.fieldForm);
+        // ////console(this.fieldForm.blacklists);
+        // ////console(this.fieldFormBlacklists);
 
         EditFieldBlacklists.toggle();
 
@@ -821,9 +824,9 @@ poly = Polymer({
         this.$$('#spacyRulesTextArea').value = '{"rules": [],"test_text": "string"}';
     },
     setIcon: function (e) {
-       /* //console.log($(e.currentTarget));
-        //console.log($(e.currentTarget)[0]);
-        //console.log($(e.currentTarget)[0].__data.icon);*/
+       /* ////console($(e.currentTarget));
+        ////console($(e.currentTarget)[0]);
+        ////console($(e.currentTarget)[0].__data.icon);*/
         this.$$('#fieldInputIcon').icon = $(e.currentTarget)[0].__data.icon;
         this.$$('#papericonSet').toggle();
     },
@@ -900,11 +903,11 @@ poly = Polymer({
         /*this.$$("#fieldRuleExtractorTarget").selected = "2";*/
     },
     getFieldBlacklist: function () {
-        // //console.log('getFieldBlacklist');
-        // //console.log(this.glossaries);
-        // //console.log(this.fieldForm);
-        // //console.log(this.fieldForm.blacklists);
-        // //console.log(this.fieldFormBlacklists);
+        // ////console('getFieldBlacklist');
+        // ////console(this.glossaries);
+        // ////console(this.fieldForm);
+        // ////console(this.fieldForm.blacklists);
+        // ////console(this.fieldFormBlacklists);
 
         
 
@@ -1138,7 +1141,7 @@ poly = Polymer({
 
         var importFileFormData = new FormData();
         var file = this.$$('#projectInput').inputElement.inputElement.files[0]
-       /* //console.log($("#importProjectConfigDialog paper-input[type=file] input")[0].files[0]);*/
+       /* ////console($("#importProjectConfigDialog paper-input[type=file] input")[0].files[0]);*/
         importFileFormData.append("file_data", file);
 
         $.ajax({
@@ -1230,7 +1233,7 @@ poly = Polymer({
         }*/
 
         var tld = $(e.currentTarget)[0].value;
-        //console.log($(e.currentTarget)[0].value);
+        ////console($(e.currentTarget)[0].value);
         payload = {"tlds":[tld], "from": "file"};
 
         $.ajax({
@@ -1243,14 +1246,14 @@ poly = Polymer({
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
             success: function (msg) {
-                //console.log("success");
+                ////console("success");
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteFileData');
             },
             error :function(xhr, ajaxOptions, thrownError)
             {
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteFileData');
-                //console.log("error");
-                //console.log(xhr);
+                ////console("error");
+                ////console(xhr);
             }
         });
     },
@@ -1258,7 +1261,7 @@ poly = Polymer({
         if(useTimeout) {
             setTimeout($.proxy(this.refreshTldTable, this, {useTimeout: true}), REFRESH_TLD_TABLE_INTERVAL);
         }
-        //console.log("refresh tld table");
+        ////console("refresh tld table");
         $.ajax({
             type: "GET",
             url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
@@ -1267,14 +1270,14 @@ poly = Polymer({
             async: true,
             processData: false,
             success: function (data) {
-                // //console.log(data);
+                // ////console(data);
                 var total_tld = 0;
                 var total_total_num = 0;
                 var total_es_num = 0;
                 var total_desired_num = 0;
                 var total_es_original_num=0;
                 newTldTableData = [];
-                console.log(data);
+                //console(data);
                 data["tld_statistics"].forEach(function(obj) {
                     var disable_landmark_btn = obj["total_num"] < 10 ? true : false;
                     var disable_delete_btn = obj["total_num"] < 1 ? true : false;
@@ -1293,8 +1296,8 @@ poly = Polymer({
                     {
                         ckg = "#B0B0B0";
                     }
-                    //console.log(disable_delete_btn);
-                    //console.log(disable_landmark_btn);
+                    ////console(disable_delete_btn);
+                    ////console(disable_landmark_btn);
                     newObj = {
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
@@ -1325,7 +1328,7 @@ poly = Polymer({
                 this.total_es_original_num = total_es_original_num;
                 this.tldTableData = newTldTableData;
 
-                //console.log(this.tldTableData);
+                ////console(this.tldTableData);
 
                 if(this.loadFlag==0)
                     {
@@ -1334,12 +1337,12 @@ poly = Polymer({
                     }
 
                 //Polymer.dom(this.$$('#tldHeader')).click();
-                /*//console.log(Polymer.dom(*//*));*/
+                /*////console(Polymer.dom(*//*));*/
                 //this.$.tldTable.reload();
 
                 // because default paper-datatable doesn't support dynamic headera
                 // this is a hacking, need to change if there's a good way
-                // //console.log(this.$.tldTableTLD.header);
+                // ////console(this.$.tldTableTLD.header);
                 // this.$.tldTableTLD.header = 'TLD (' + total_tld.toString() + ')';
                /* $("#tldTable div#container table thead tr th span").each(function(index) {
                     if(index == 0) {
@@ -1373,7 +1376,7 @@ poly = Polymer({
         if(useTimeout) {
             setTimeout($.proxy(this.refreshPipelineStatus, this, {useTimeout: true}), REFRESH_PIPELINE_STATUS_INTERVAL);
         }
-        //console.log("refresh pipeline status");
+        ////console("refresh pipeline status");
         $.ajax({
             type: "GET",
             url: backend_url + "projects/" + projectName + '/actions/extract?value=etk_status',
@@ -1382,7 +1385,7 @@ poly = Polymer({
             async: true,
             processData: false,
             success: function (data) {
-                // //console.log(data);
+                // ////console(data);
                 if(data["etk_status"]) {
                     this.updatePipelineBtn(true);
                 } else {
@@ -1399,7 +1402,7 @@ poly = Polymer({
         importFileFormData.append("file_type", "json_lines");
 
         this.updateProgressBar(0);
-        this.$.progressDialog.toggle();
+        this.$$('#progressDialog').toggle();
 
         $.ajax({
             type: "POST",
@@ -1411,15 +1414,15 @@ poly = Polymer({
             processData: false,
             contentType: false,
             xhr: function() {
-                // //console.log(this.context);
+                // ////console(this.context);
                 var xhr = new window.XMLHttpRequest();
                 xhr.upload.context = this.context;
                 xhr.upload.addEventListener("progress", function(evt) {
-                    // //console.log(evt.target.context);
+                    // ////console(evt.target.context);
                     if (evt.lengthComputable) {
                         var percentComplete = evt.loaded / evt.total;
                         percentComplete = parseInt(percentComplete * 100);
-                        // //console.log(percentComplete);
+                        // ////console(percentComplete);
                         evt.target.context.updateProgressBar(percentComplete);
 
                         if (percentComplete === 100) {
@@ -1438,7 +1441,7 @@ poly = Polymer({
         });
     },
     updateProgressBar: function(percentage) {
-        $("#progressDialog paper-progress").first().attr("value", percentage)
+        this.$$("#fileProgress").value =percentage;
     },
     addToLandmark: function(e) {
         var tld = $(e.currentTarget).attr("data-tld");
@@ -1447,7 +1450,7 @@ poly = Polymer({
                [tld] : 100
             }
         };
-        // //console.log(payload);
+        // ////console(payload);
         $.ajax({
             type: "POST",
             url: backend_url + "projects/" + projectName + '/actions/landmark_extract',
@@ -1457,12 +1460,12 @@ poly = Polymer({
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
             success: function (msg) {
-                // //console.log(msg);
+                // ////console(msg);
                 this.dialogText = "Added";
                 this.$$('#alertDialog').toggle();
             }.bind(this)
         });
-        // //console.log(tld);
+        // ////console(tld);
     },
     openDIGUI: function() {
         var url = digui_url + "?project=" + projectName;
@@ -1477,14 +1480,14 @@ poly = Polymer({
         window.open(url, '_blank');
     },
     switchPipeline: function(e) {
-        //console.log("current pipeline status: " + this.etkStatus);
+        ////console("current pipeline status: " + this.etkStatus);
         // force to update button status
         // //(overwrite default behavior of paper-toggle-button)
          if($(e.currentTarget)[0].value!=1)
             this.updatePipelineBtn(this.etkStatus);
 
-        //console.log(this.etkStatus);
-        //console.log(this.confirmValue);
+        ////console(this.etkStatus);
+        ////console(this.confirmValue);
         
        
 
@@ -1519,7 +1522,7 @@ poly = Polymer({
                     this.dialogText = "Can not turn off pipeline";
                 this.$$('#alertDialog').toggle();
                 this.pipelineCall =0
-                    //console.log(msg);
+                    ////console(msg);
                 }
             });
 
@@ -1532,7 +1535,7 @@ poly = Polymer({
             this.confirmText = "Turn on pipeline ?"
             this.confirmButton = "YES"
             this.confirmValue =1
-            console.log("here")
+            //console("here")
             /*this.confirmValue = $(e.currentTarget)[0].value*/
             this.listen(this.$$("#yes"), 'tap', 'switchPipeline');
             /*this.functionButton = "switchPipeline"*/
@@ -1556,7 +1559,7 @@ poly = Polymer({
                     this.dialogText = "Can not turn on pipeline (Make sure you've created config and mapping)";
                 this.$$('#alertDialog').toggle();
                 this.pipelineCall =0
-                    //console.log(msg);
+                    ////console(msg);
                 }
             });
             this.confirmValue =0
@@ -1588,7 +1591,7 @@ poly = Polymer({
             return;
         }*/
         // loadingDialog.toggle();
-        // //console.log("recreate");
+        // ////console("recreate");
         $.ajax({
             type: "POST",
             url: backend_url + "projects/" + projectName + '/actions/recreate_mapping',
@@ -1598,31 +1601,31 @@ poly = Polymer({
             processData: false,
             context: this,
             success: function (msg) {
-                // //console.log(msg);
+                // ////console(msg);
                 this.dialogText = "Mapping recreated and data is adding in the backend.";
                 this.$$('#alertDialog').toggle();
                 this.updatePipelineBtn(true);
-                console.log(msg);
+                //console(msg);
                 this.unlisten(this.$$("#yes"), 'tap', 'recreateMapping');
             },
             error: function(msg) {
                 this.dialogText = "Cannot recreate Mapping";
                 this.$$('#alertDialog').toggle();
                 this.unlisten(this.$$("#yes"), 'tap', 'recreateMapping');
-                //console.log(msg);
+                ////console(msg);
             }
         });
     },
     updateSingleDesired: function(e)
     {
         num = parseInt(e.srcElement.value);
-        //console.log(e.srcElement.id);
+        ////console(e.srcElement.id);
         id = e.srcElement.id;
         /*num = num <= 9999999999 ? num : 999999999;
         num = num >= 0 ? num : 0;*/
         payload = {"tlds":{}};
         payload["tlds"][[id]]= num;
-        ////console.log(payload)
+        //////console(payload)
 
          $.ajax({
             type: "POST",
@@ -1634,7 +1637,7 @@ poly = Polymer({
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
             success: function (msg) {
-                 ////console.log("updated");
+                 //////console("updated");
                 this.refreshTldTable();
             }
         });
@@ -1644,15 +1647,15 @@ poly = Polymer({
         this.$$('#updateDesiredDialog').toggle();
         num = num <= 9999999999 ? num : 999999999;
         num = num >= 0 ? num : 0;
-        //console.log("im here")
+        ////console("im here")
 
         payload = {"tlds":{}};
         this.tldTableData.forEach(function(obj){
             payload["tlds"][[obj["tld"]]] = num;
-            ////console.log(obj["tld"]);
+            //////console(obj["tld"]);
         });
 
-        ////console.log(payload)
+        //////console(payload)
 
         $.ajax({
             type: "POST",
@@ -1664,7 +1667,7 @@ poly = Polymer({
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
             success: function (msg) {
-                // //console.log(msg);
+                // ////console(msg);
                 this.refreshTldTable();
             }
         });
@@ -1702,7 +1705,7 @@ poly = Polymer({
             async: true,
             processData: false,
             success: function (msg) {
-                // //console.log(msg["error_log"]);
+                // ////console(msg["error_log"]);
               Polymer.dom(this.$$("#logDialogContent")).innerHTML ="";
               var s="";
                 msg["error_log"].forEach(function(ele) {
@@ -1722,7 +1725,7 @@ poly = Polymer({
                 this.$$('#alertDialog').toggle();
             return;
         }
-        // //console.log(JSON.stringify(payload));
+        // ////console(JSON.stringify(payload));
         $.ajax({
             type: "POST",
             url: backend_url + "projects/" + projectName + '/actions/etk_filters',
@@ -1736,7 +1739,7 @@ poly = Polymer({
                 this.$.editFiltersDialog.toggle();
             },
             error: function (data) {
-                // //console.log(data);
+                // ////console(data);
                 if(data.status === 400) {
                     this.dialogText = 'Invalid filters: ' + data.responseJSON.error_message;
                     this.$$('#alertDialog').toggle();
@@ -1847,7 +1850,7 @@ poly = Polymer({
 
         this.projectSettingsObject = [];
         this.projectSettingsObject = data.detail.response;
-        //console.log(this.projectSettingsObject);
+        ////console(this.projectSettingsObject);
 
 
         if(this.projectSettingsObject.show_images_in_facets)
@@ -1906,9 +1909,9 @@ poly = Polymer({
 
         this.$.updateProjectSettings.headers = obj;
         this.$.updateProjectSettings.url = backend_url + "/projects/" + projectName;
-        /*console.log(this.projectSettingsObject.show_images_in_facets)*/
+        /*//console(this.projectSettingsObject.show_images_in_facets)*/
         this.projectSettingsObject.new_linetype = this.$$("#newlineType").value
-        //console.log(this.projectSettingsObject.new_linetype);
+        ////console(this.projectSettingsObject.new_linetype);
         this.projectSettingsObject.image_prefix = this.$$("#imagePrefix").value;
         this.projectSettingsObject.default_desired_num =  parseInt(this.$$('#defaultDesiredNum').value);
         this.projectSettingsObject.show_images_in_facets = this.$$('#imageFacets').checked;
@@ -1936,7 +1939,7 @@ poly = Polymer({
     get_newlineType: function(value)
     {
         arr = ["break", "newline"]
-        //console.log(value);
+        ////console(value);
        if (value != undefined && value != "") return arr.indexOf(value);
         else return 0;
     },
@@ -1951,12 +1954,13 @@ poly = Polymer({
             this.$$('#confirmDialog').toggle();
             return
         }
+
         /*if(window.confirm("Are you sure to data of this TLD?") == false) {
             return;
         }*/
 
         var tld = $(e.currentTarget)[0].value;
-        //console.log($(e.currentTarget)[0].value);
+        ////console($(e.currentTarget)[0].value);
         payload = {"tlds":[tld], "from": "kg"};
 
         $.ajax({
@@ -1969,14 +1973,14 @@ poly = Polymer({
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
             success: function (msg) {
-                console.log("success");
+                //console("success");
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteKG');
             },
             error :function(xhr, ajaxOptions, thrownError)
             {
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteKG');
-                console.log("error");
-                //console.log(xhr);
+                //console("error");
+                ////console(xhr);
             }
         });
 
