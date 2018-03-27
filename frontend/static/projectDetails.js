@@ -1302,6 +1302,7 @@ poly = Polymer({
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
+                        "es_original_num":obj["es_original_num"],
                         "desired_num": obj["desired_num"],
                         "disable_Landmark": disable_landmark_btn,
                         "color_l": cl,
