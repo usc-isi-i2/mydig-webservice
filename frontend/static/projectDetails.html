@@ -507,6 +507,13 @@
                     <paper-input style="margin:0px;" class="projectInputStyle" label="Group name:"
                                  value="{{fieldForm.group_name}}"></paper-input>
 
+                    <div  style="margin:0px;" >
+                    <paper-input style="float:left;width: 50%" class="projectInputStyle" label="Group name:"
+                                 value="{{fieldForm.group_name}}"></paper-input>
+                    <paper-input style="float:right;width:50%;" class="projectInputStyle" label="Scoring Coefficient:"  value="{{fieldForm.scoring_coefficient}}" id="rankingm" auto-validate pattern="([0-9]*[.])?[0-9]+" error-message="Numbers or Floats only!"></paper-input>
+                    <paper-tooltip fit-to-visible-bounds="true" position="left" for="rankingm">Affects search ranking by multiplying the elastic search score by value of this field times the value of the scoring coefficient.</paper-tooltip>
+                    </div>
+
                     <div style="margin-top:0px;">
                         <iron-label>Icon : </iron-label><br><paper-icon-button  id="iconField" 
                         icon="{{fieldForm.icon}}" on-click="toggleEditIcons" style$=" height:48px; width:48px; color:{{_getColorSelected(fieldForm.color)}}"></paper-icon-button>
@@ -685,6 +692,12 @@
                             Search</paper-checkbox>
                         <paper-tooltip for="free_text_search"></paper-tooltip>
 
+                        <paper-checkbox class="projectInputStyle" id="enableScoringCoefficientEdit"
+                                        checked="{{fieldForm.enable_scoring_coefficient}}"
+                                        style="width: 250px">Ranked
+                            Search</paper-checkbox>
+                        <paper-tooltip for="enable_scoring_coefficient">Enable ranked Search</paper-tooltip>
+
                     </div>
                 </paper-dialog-scrollable>
 
@@ -738,8 +751,12 @@
 
                     </div>
                     
-                    <paper-input style="margin:0px;" class="projectInputStyle" label="Group name:"
+                    <div  style="margin:0px;" >
+                    <paper-input style="float:left;width: 50%" class="projectInputStyle" label="Group name:"
                                  id="fieldgroupnameinput"></paper-input>
+                    <paper-input style="float:right;width:50%;" class="projectInputStyle" label="Scoring Coefficient:"  id="fieldRankingMultiplierInput" value="1" auto-validate pattern="([0-9]*[.])?[0-9]+" error-message="Numbers or Floats only!" ></paper-input>
+                    <paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldRankingMultiplierInput">Affects search ranking by multiplying the elastic search score by value of this field times the value of the scoring coefficient.</paper-tooltip>
+                    </div>
                     <div style="margin-top:0px;">
                     <iron-label>Icon : </iron-label><br><paper-icon-button  id="fieldInputIcon" icon="star" title="Change Icon" on-click="toggleIcons" style$=" height:48px; width:48px; color:{{newFieldColor}}"></paper-icon-button>
                     <paper-swatch-picker id="newColorSelect" on-iron-select="setNewIconColor" column-count=2
@@ -863,6 +880,11 @@
                                         style="width: 250px">Free Text
                             Search</paper-checkbox>
                         <paper-tooltip for="field_free_text_search"></paper-tooltip>
+
+                        <paper-checkbox class="projectInputStyle" id="enable_scoring_coefficient"
+                                        style="width: 250px">Ranked
+                            Search</paper-checkbox>
+                        <paper-tooltip for="enable_scoring_coefficient">Enable ranked Search</paper-tooltip>
 
                     </div>
                 </paper-dialog-scrollable>
