@@ -655,7 +655,7 @@ class ProjectFields(Resource):
         if 'description' not in field_obj:
             field_obj['description'] = ''
         if 'type' not in field_obj or field_obj['type'] not in \
-                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number'):
+                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number', 'text'):
             return False, 'Invalid field attribute: type'
         if 'show_in_search' not in field_obj or \
                 not isinstance(field_obj['show_in_search'], bool):
@@ -713,7 +713,16 @@ class ProjectFields(Resource):
         if 'free_text_search' not in field_obj \
                 or not isinstance(field_obj['free_text_search'], bool):
                 field_obj['free_text_search'] = False
-
+        if 'scoring_coefficient' not in field_obj:
+                field_obj['scoring_coefficient'] = float(1.0)
+        if 'enable_scoring_coefficient' not in field_obj:
+                field_obj['enable_scoring_coefficient'] = False
+        if 'enable_scoring_coefficient' in field_obj and not isinstance(field_obj['enable_scoring_coefficient'],bool):
+                return False, 'Invalid field attribute: enable_scoring_coefficient'
+        if 'scoring_coefficient' in field_obj and not isinstance(field_obj['scoring_coefficient'],float):
+                return False, 'Invalid field attribute: scoring_coefficient'
+        # if 'scoring_coefficient' not isinstance(field_obj['scoring_coefficient'], float):
+        #         return False, 'Invalid field attribute: scoring_coefficient'
         return True, None
 
 

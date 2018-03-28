@@ -107,7 +107,7 @@ poly = Polymer({
         this.searchImportance = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
         this.show_as_linkArray = ["text", "entity"];
         this.show_in_resultArray = ["header", "detail", "description", "no", "title", "nested"];
-        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id", "number"];
+        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id", "number","text"];
         this.predefined_extractor_Array = ["none", "address", "country", "email", "posting_date", "phone", "review_id", "social_media", "TLD"];
         this.extractionTargetArray = ["title_only", "description_only", "title_and_description"];
         //this.$.actions.focus();
@@ -584,7 +584,9 @@ poly = Polymer({
                 "predefined_extractor": predefinedExtr,
                 "group_order": parseInt(this.fieldForm.group_order),
                 "field_order": parseInt(this.fieldForm.field_order),
-                "free_text_search": this.fieldForm.free_text_search
+                "free_text_search": this.fieldForm.free_text_search,
+                "scoring_coefficient": parseFloat(this.fieldForm.scoring_coefficient),
+                "enable_scoring_coefficient": this.fieldForm.enable_scoring_coefficient
             }
         });
         this.$.updateSavedFields.generateRequest();
@@ -847,6 +849,8 @@ poly = Polymer({
             this.$$('#' + this.glossaries[j][0]).checked = "";
 
         }
+
+
         if (this.fieldForm) {
             if (this.fieldForm.glossaries) {
                 for (var i = 0; i < this.fieldForm.glossaries.length; i++) {
@@ -868,6 +872,14 @@ poly = Polymer({
                         }
                     }
                 }
+            }
+
+            //console.log(this.fieldForm.scoring_coefficient)
+
+            if(this.fieldForm.scoring_coefficient == undefined || this.fieldForm.scoring_coefficient == ""){
+                this.fieldForm.scoring_coefficient =1
+                this.$$('#rankingm').value = "1.0"
+                /*console.log("hereee");*/
             }
         }
     },
@@ -900,6 +912,8 @@ poly = Polymer({
         this.$$('#groupOrderInput').value="";
         this.$$('#fieldOrderInput').value="";
         this.$$("#free_text_search").checked = false;
+        this.$$('#fieldRankingMultiplierInput').value="1.0";
+
         /*this.$$("#fieldRuleExtractorTarget").selected = "2";*/
     },
     getFieldBlacklist: function () {
@@ -1004,6 +1018,8 @@ poly = Polymer({
     var groupOrder = parseInt(this.$$("#groupOrderInput").value);
     var fieldOrder = parseInt(this.$$("#fieldOrderInput").value);
      var free_text_search = this.$$("#field_free_text_search").checked;
+     var rankingMultiplier = parseFloat(this.$$('#fieldRankingMultiplierInput').value);
+     var esc = this.$$("#enable_scoring_coefficient").checked;
 
    /* var ruleextractTarget = this.$$("#fieldRuleExtractorTarget").selectedItem.value;*/
     var caseSense = this.$$("#getCaseSenstive").checked;
@@ -1042,6 +1058,8 @@ poly = Polymer({
             this.$$("#groupOrderInput").value = "";
             this.$$("#fieldOrderInput").value = "";
             this.$$("#free_text_search").checked = false;
+            this.$$('#fieldRankingMultiplierInput').value="";
+            this.$$('#enable_scoring_coefficient').checked =false;
             
             /*document.getElementById("fieldRuleExtractorTarget").selected = "2";*/
 
@@ -1072,7 +1090,9 @@ poly = Polymer({
             "predefined_extractor": predefinedExtractor,
             "group_order": groupOrder,
             "field_order": fieldOrder,
-            "free_text_search": free_text_search
+            "free_text_search": free_text_search,
+            "scoring_coefficient": rankingMultiplier,
+            "enable_scoring_coefficient": esc
             /*"rule_extraction_target": ruleextractTarget*/
         }
     });
@@ -1302,6 +1322,7 @@ poly = Polymer({
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
                         "es_num": obj["es_num"],
+                        "es_original_num":obj["es_original_num"],
                         "desired_num": obj["desired_num"],
                         "disable_Landmark": disable_landmark_btn,
                         "color_l": cl,
