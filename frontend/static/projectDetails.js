@@ -111,6 +111,20 @@ poly = Polymer({
         this.predefined_extractor_Array = ["none", "address", "country", "email", "posting_date", "phone", "review_id", "social_media", "TLD"];
         this.extractionTargetArray = ["title_only", "description_only", "title_and_description"];
         //this.$.actions.focus();
+
+        var drawerLayout = this.$$('#drawerLayout');
+      /*  this.listen(this.$$("#yes"), 'tap', 'deleteAllFileData');*/
+        this.listen(this.$$("#menuToggle"),'click', "toggleDrawer");
+    },
+    toggleDrawer: function() {
+
+        if (this.$$("#drawerLayout").forceNarrow || !this.$$("#drawerLayout").narrow) {
+            this.$$("#drawerLayout").forceNarrow = !this.$$("#drawerLayout").forceNarrow;
+            this.$$("#menuToggle").style.color = "#ffff";
+        }  else {
+            this.$$("#drawerLayout").drawer.toggle();
+            this.$$("#menuToggle").style.color = "#00000";
+        }
     },
     submitGlossaryFormData: function(){
         var glossName = this.$$("#glossary_nameInput").value;

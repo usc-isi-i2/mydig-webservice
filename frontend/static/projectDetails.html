@@ -192,25 +192,16 @@
 <!-- 
     <app-drawer-layout>  
         <app-drawer slot="drawer" id="options" style="background-color: #686868"> -->
-    <app-drawer-layout force-narrow>
-        <app-drawer slot="drawer" id="options" swipeOpen>
-                <app-toolbar style="margin-top: 120px" >
-                    <div>
-                      <paper-item  id="navTabAction" on-tap="navAction">Actions</paper-item>
-                      <!-- <paper-item id="navTabTable" on-tap="navTable">Tables</paper-item> -->
-                      <paper-item id="navTabField" on-tap="navField">Fields</paper-item>
-                      <!-- <paper-item id="navTabTag" on-tap="navTag">Tags</paper-item> -->
-                      <paper-item id="navTabGlossary" on-tap="navGlossary">Glossaries</paper-item>               
-                    </div>
-                </app-toolbar>
-            </app-drawer>
+   
 
+
+        
 
        <app-header-layout full-bleed>
          <app-header slot="header" class="app-header main-header" fixed>
             
             <app-toolbar class="main-toolbar" style="display:flex;">
-                <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                <paper-icon-button icon="menu" id="menuToggle" drawer-toggle></paper-icon-button>
                 <div main-title>  
                 <div style="display:flex;float:left">                  
                 <div>               
@@ -240,6 +231,22 @@
             </app-toolbar>
         </app-header>
 
+      <app-drawer-layout id ="drawerLayout" force-narrow>
+        <app-drawer slot="drawer" id="options" swipeOpen>
+                <app-toolbar style="margin-top: 170px" >
+                    <div>
+                      <paper-item  id="navTabAction" on-tap="navAction">Actions</paper-item>
+                      <!-- <paper-item id="navTabTable" on-tap="navTable">Tables</paper-item> -->
+                      <paper-item id="navTabField" on-tap="navField">Fields</paper-item>
+                      <!-- <paper-item id="navTabTag" on-tap="navTag">Tags</paper-item> -->
+                      <paper-item id="navTabGlossary" on-tap="navGlossary">Glossaries</paper-item>               
+                    </div>
+                </app-toolbar>
+        </app-drawer>
+
+
+
+ 
           <iron-collapse id="tabAction">
                 
 
@@ -398,10 +405,12 @@
 
 
 
-            
+   
+ </app-drawer-layout> 
 
-    </app-header-layout>
-      </app-drawer-layout>
+    </app-header-layout>    
+
+  
 
 
 
