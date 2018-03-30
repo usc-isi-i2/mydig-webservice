@@ -3,12 +3,13 @@ import urllib
 from conjunctive_query import ConjunctiveQueryProcessor
 from response_converter import DigOutputProcessor, TimeSeries
 import logging
+import numbers
 
 logger = logging.getLogger('mydig-webservice.log')
 
 
 class EventQueryProcessor(object):
-    def __init__(self, request, project_name, config_fields, project_root_name, es):
+    def __init__(self, request, project_name, config_fields, project_root_name, es, percent_change=False):
         self.request = request
         self.preprocess()
         self.config = config_fields
@@ -25,6 +26,7 @@ class EventQueryProcessor(object):
             self.agg_field = self.convert_to_nested_field(self.agg_field)
         if self.field is not None and "." in self.field:
             self.field = self.convert_to_nested_field(self.field)
+        self.percent_change = percent_change
 
     def preprocess(self):
         for arg in self.request.args:
@@ -102,6 +104,8 @@ class EventQueryProcessor(object):
                 else:
                     ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, False).process()
                     ts_obj = TimeSeries(ts, {}, dims).to_dict()
+                if self.percent_change:
+                    ts_obj['ts'] = self.pct_change(ts_obj['ts'])
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("No Time series found for query")
@@ -117,3 +121,48 @@ class EventQueryProcessor(object):
             return False
 
         return True
+
+    @staticmethod
+    def pct_change(ts):
+        """
+        This function calculates the percentage for the aggregations calculated by ES
+        :param ts: ts as calculated by this class
+        :return: ts with values as percentage change
+        """
+        new_ts = list()
+        new_ts.append(ts[0])
+        for i in range(len(ts) - 1):
+            j = i + 1
+            new_ts.append(EventQueryProcessor.calculate_change_tuples(ts[i], ts[j]))
+        return new_ts
+
+    @staticmethod
+    def calculate_change_tuples(tup_a, tup_b):
+        """
+
+        :param tup_a: tuple with format ["2011-12-01T00:00:00.000Z",34]
+        :param tup_b: tuple with format ["2011-12-01T00:00:00.000Z",67]
+        :return: tup_b with updated value as the percentage change
+        """
+        if tup_a[1] == 0:
+            return tup_b
+
+        return tup_b[0], EventQueryProcessor.calculate_percent_change(tup_a[1], tup_b[1])
+
+    @staticmethod
+    def calculate_percent_change(value_a, value_b):
+        """
+        This function calculates the percentage change in from value_a to value_b
+        :param value_a: valid number
+        :param value_b: valid number
+        :return: percentage change calculated according to formula: abs((a-b)/a)
+        """
+        if not (isinstance(value_a, numbers.Number) and isinstance(value_b, numbers.Number)):
+            message = "Input parameters to the function \"calculate_percentage_change\" should be a valid number, " \
+                      "but was instead: {} and {}".format(value_a, value_b)
+            logger.exception(message)
+            raise ValueError(message)
+
+        if value_a == 0:
+            raise ValueError('First parameter can not be zero')
+        return abs((float(value_a) - float(value_b)) / float(value_a)) * 100
