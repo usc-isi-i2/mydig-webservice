@@ -4,9 +4,9 @@ from conjunctive_query import ConjunctiveQueryProcessor
 from response_converter import DigOutputProcessor, TimeSeries
 import logging
 import numbers
+from config import config
 
-logger = logging.getLogger('mydig-webservice.log')
-
+logger = logging.getLogger(config['logging']['name'])
 
 class EventQueryProcessor(object):
     def __init__(self, request, project_name, config_fields, project_root_name, es, percent_change=False):
