@@ -9,6 +9,7 @@ logger = logging.getLogger('mydig-webservice.log')
 
 
 class EventQueryProcessor(object):
+
     def __init__(self, request, project_name, config_fields, project_root_name, es, percent_change=False):
         self.request = request
         self.preprocess()
@@ -123,6 +124,10 @@ class EventQueryProcessor(object):
         return True
 
     @staticmethod
+    def get_sub_tuple(tup):
+        return tup[0], tup[len(tup) - 1]
+
+    @staticmethod
     def pct_change(ts):
         """
         This function calculates the percentage for the aggregations calculated by ES
@@ -130,7 +135,6 @@ class EventQueryProcessor(object):
         :return: ts with values as percentage change
         """
         new_ts = list()
-        new_ts.append(ts[0])
         for i in range(len(ts) - 1):
             j = i + 1
             new_ts.append(EventQueryProcessor.calculate_change_tuples(ts[i], ts[j]))
@@ -140,14 +144,13 @@ class EventQueryProcessor(object):
     def calculate_change_tuples(tup_a, tup_b):
         """
 
-        :param tup_a: tuple with format ["2011-12-01T00:00:00.000Z",34]
-        :param tup_b: tuple with format ["2011-12-01T00:00:00.000Z",67]
+        :param tup_a: tuple with format ["2011-12-01T00:00:00.000Z",34] or ["2011-12-01T00:00:00.000Z",1,34]
+        :param tup_b: tuple with format ["2011-12-01T00:00:00.000Z",67] or ["2011-12-01T00:00:00.000Z",2, 67]
         :return: tup_b with updated value as the percentage change
         """
-        if tup_a[1] == 0:
-            return tup_b
-
-        return tup_b[0], EventQueryProcessor.calculate_percent_change(tup_a[1], tup_b[1])
+        ret = tup_b[:-1]
+        ret.append(EventQueryProcessor.calculate_percent_change(tup_a[len(tup_a) - 1], tup_b[len(tup_b) - 1]))
+        return ret
 
     @staticmethod
     def calculate_percent_change(value_a, value_b):
@@ -157,6 +160,9 @@ class EventQueryProcessor(object):
         :param value_b: valid number
         :return: percentage change calculated according to formula: abs((a-b)/a)
         """
+        if not value_a or not value_b:
+            return None
+
         if not (isinstance(value_a, numbers.Number) and isinstance(value_b, numbers.Number)):
             message = "Input parameters to the function \"calculate_percentage_change\" should be a valid number, " \
                       "but was instead: {} and {}".format(value_a, value_b)
@@ -164,5 +170,16 @@ class EventQueryProcessor(object):
             raise ValueError(message)
 
         if value_a == 0:
-            raise ValueError('First parameter can not be zero')
+            raise None
         return abs((float(value_a) - float(value_b)) / float(value_a)) * 100
+
+
+# import json, codecs
+#
+# ts_o = json.load(codecs.open('/tmp/timeseries_2.json'))
+# print json.dumps(ts_o['ts'])
+# ts = ts_o['ts']
+# import requests
+#
+# eqp = EventQueryProcessor()
+# print json.dumps(eqp.pct_change(ts))
