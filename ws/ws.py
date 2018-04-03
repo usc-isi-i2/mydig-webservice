@@ -314,6 +314,7 @@ class AllProjects(Resource):
             input.get('show_images_in_search_form', False)
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines', False)
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype', 'break')
+        data[project_name]['master_config']['show_original_search'] = input.get('show_original_search', 'V2')
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -393,6 +394,10 @@ class AllProjects(Resource):
             return False, 'invalid hide_timelines'
         if 'new_linetype' not in pro_obj or pro_obj['new_linetype'] not in ('break', 'newline'):
             return False, 'invalid new_linetype'
+        if 'show_original_search' not in pro_obj:
+            pro_obj['show_original_search'] = 'V2'
+        if pro_obj['show_original_search'] not in ('V2','V1'):
+            return False, 'invalid show_original_search'
 
         return True, None
 
@@ -417,6 +422,7 @@ class Project(Resource):
         data[project_name]['master_config']['show_images_in_search_form'] = input.get('show_images_in_search_form')
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines')
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype')
+        data[project_name]['master_config']['show_original_search'] = input.get('show_original_search')
         # data[project_name]['master_config']['index'] = es_index
 
         # write to file
@@ -719,7 +725,7 @@ class ProjectFields(Resource):
                 field_obj['enable_scoring_coefficient'] = False
         if 'enable_scoring_coefficient' in field_obj and not isinstance(field_obj['enable_scoring_coefficient'],bool):
                 return False, 'Invalid field attribute: enable_scoring_coefficient'
-        if 'scoring_coefficient' in field_obj and not isinstance(field_obj['scoring_coefficient'],float):
+        if 'scoring_coefficient' in field_obj and not (isinstance(field_obj['scoring_coefficient'],float) or isinstance(field_obj['scoring_coefficient'],int)):
                 return False, 'Invalid field attribute: scoring_coefficient'
         # if 'scoring_coefficient' not isinstance(field_obj['scoring_coefficient'], float):
         #         return False, 'Invalid field attribute: scoring_coefficient'

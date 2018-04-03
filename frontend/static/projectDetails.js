@@ -895,6 +895,15 @@ poly = Polymer({
                 this.$$('#rankingm').value = "1.0"
                 /*console.log("hereee");*/
             }
+
+            if(this.fieldForm.enable_scoring_coefficient)
+            {
+                this.fieldForm.visibility = "visible";
+            }
+            else
+            {
+                this.fieldForm.visibility = "hidden"
+            }
         }
     },
     addNewFieldSetup: function () {
@@ -1945,7 +1954,8 @@ poly = Polymer({
         this.$.updateProjectSettings.headers = obj;
         this.$.updateProjectSettings.url = backend_url + "/projects/" + projectName;
         /*//console(this.projectSettingsObject.show_images_in_facets)*/
-        this.projectSettingsObject.new_linetype = this.$$("#newlineType").value
+        this.projectSettingsObject.new_linetype = this.$$("#newlineType").value;
+        this.projectSettingsObject.show_original_search = this.$$('#showOriginalSearch').value;
         ////console(this.projectSettingsObject.new_linetype);
         this.projectSettingsObject.image_prefix = this.$$("#imagePrefix").value;
         this.projectSettingsObject.default_desired_num =  parseInt(this.$$('#defaultDesiredNum').value);
@@ -1963,7 +1973,8 @@ poly = Polymer({
             "show_images_in_facets": this.projectSettingsObject.show_images_in_facets == undefined ? false : this.projectSettingsObject.show_images_in_facets,
             "show_images_in_search_form": this.projectSettingsObject.show_images_in_search_form == undefined ? false : this.projectSettingsObject.show_images_in_search_form,
             "hide_timelines": this.projectSettingsObject.hide_timelines ==undefined ? false : this.projectSettingsObject.hide_timelines,
-            "new_linetype": this.projectSettingsObject.new_linetype ==undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase()
+            "new_linetype": this.projectSettingsObject.new_linetype ==undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase(),
+            "show_original_search" : this.projectSettingsObject.show_original_search == undefined ? "V2" : this.projectSettingsObject.show_original_search
         });
         this.$$('#projectSettingsDialog').close();
         this.$.updateProjectSettings.generateRequest();
@@ -1975,6 +1986,13 @@ poly = Polymer({
     {
         arr = ["break", "newline"]
         ////console(value);
+       if (value != undefined && value != "") return arr.indexOf(value);
+        else return 0;
+    },
+    get_OriginalSearch: function(value)
+    {
+        arr = ["V2", "V1"]
+       /* console.log(value);*/
        if (value != undefined && value != "") return arr.indexOf(value);
         else return 0;
     },
@@ -2025,5 +2043,25 @@ payload:
   "tlds": [...],
   "from": "kg"
 }*/
+    },
+    displayField : function()
+    {
+        if(this.$$('#enableScoringCoefficientEdit').checked){
+         this.$$('#rankingm').style.visibility = "visible";
+     }
+     else
+     {
+        this.$$('#rankingm').style.visibility = "hidden";
+     }
+    },
+    displayAddField : function()
+    {
+        if(this.$$('#enable_scoring_coefficient').checked){
+         this.$$('#fieldRankingMultiplierInput').style.visibility = "visible";
+     }
+     else
+     {
+        this.$$('#fieldRankingMultiplierInput').style.visibility = "hidden";
+     }
     }
 });
