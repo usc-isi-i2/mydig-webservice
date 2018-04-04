@@ -243,21 +243,22 @@ class Search(Resource):
         logger.error('API Request received for %s' % (project_name))
 
         es = ES(config['es']['sample_url'])
+        myargs = request.args
         if type == 'conjunctive':
-            query = ConjunctiveQueryProcessor(request, project_name,
+            query = ConjunctiveQueryProcessor(project_name,
                                           data[project_name]['master_config']['fields'],
-                                          data[project_name]['master_config']['root_name'], es)
+                                          data[project_name]['master_config']['root_name'], es, myargs=myargs)
             return query.process()
         elif type == 'event':
-            query = EventQueryProcessor(request, project_name,
+            query = EventQueryProcessor(project_name,
                                         data[project_name]['master_config']['fields'],
-                                        data[project_name]['master_config']['root_name'], es)
+                                        data[project_name]['master_config']['root_name'], es, myargs=myargs)
             return query.process_event_query()
         elif type == 'time_series':
 
-            query = EventQueryProcessor(request, project_name,
+            query = EventQueryProcessor(project_name,
                                         data[project_name]['master_config']['fields'],
-                                        data[project_name]['master_config']['root_name'], es)
+                                        data[project_name]['master_config']['root_name'], es, myargs=myargs)
             return query.process_ts_query()
         else:
             return rest.not_found('invalid search type')

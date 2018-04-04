@@ -11,9 +11,8 @@ logger = logging.getLogger(config['logging']['name'])
 
 
 class ConjunctiveQueryProcessor(object):
-    def __init__(self, request, project_name, config_fields, project_root_name, es):
-        self.myargs = request.args
-        self.preprocess()
+    def __init__(self, project_name, config_fields, project_root_name, es, myargs=None):
+        self.myargs = myargs if myargs else dict()
         self.field_names = self.myargs.get("_fields", None)
         self.num_results = self.myargs.get("_size", 20)
         self.ordering = self.myargs.get("_order-by", None)
@@ -38,10 +37,10 @@ class ConjunctiveQueryProcessor(object):
         self.aggregations = ["min", "max", "avg", "count", "sum"]
         self.offset = self.myargs.get("_offset", None)
 
-    def preprocess(self):
-        for arg in self.myargs:
-            arg = urllib.unquote(arg)
-        return
+    # def preprocess(self):
+    #     for arg in self.myargs:
+    #         arg = urllib.unquote(arg)
+    #     return
 
     def process(self):
         """

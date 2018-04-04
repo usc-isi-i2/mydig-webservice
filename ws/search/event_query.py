@@ -10,29 +10,28 @@ logger = logging.getLogger(config['logging']['name'])
 
 class EventQueryProcessor(object):
 
-    def __init__(self, request, project_name, config_fields, project_root_name, es, percent_change=False):
-        self.request = request
-        self.preprocess()
+    def __init__(self, project_name, config_fields, project_root_name, es, myargs=None):
+        self.myargs = myargs if myargs else dict()
         self.config = config_fields
         self.es = es
         self.project_root_name = project_root_name
         self.project_name = project_name
-        self.cquery = ConjunctiveQueryProcessor(self.request, self.project_name,
+        self.cquery = ConjunctiveQueryProcessor(self.project_name,
                                                 self.config,
-                                                self.project_root_name, self.es)
-        self.field = request.args.get('_group-by', "event_date")
-        self.agg = request.args.get('_interval', "month")
-        self.agg_field = request.args.get('_aggregation-field', None)
+                                                self.project_root_name, self.es, myargs=self.myargs)
+        self.field = self.myargs.get('_group-by', "event_date")
+        self.agg = self.myargs.get('_interval', "month")
+        self.agg_field = self.myargs.get('_aggregation-field', None)
         if self.agg_field is not None and "." in self.agg_field:
             self.agg_field = self.convert_to_nested_field(self.agg_field)
         if self.field is not None and "." in self.field:
             self.field = self.convert_to_nested_field(self.field)
-        self.percent_change = percent_change
+        self.percent_change = self.myargs.get('_percent_change', False)
 
-    def preprocess(self):
-        for arg in self.request.args:
-            arg = urllib.unquote(arg)
-        return
+    # def preprocess(self):
+    #     for arg in self.request.args:
+    #         arg = urllib.unquote(arg)
+    #     return
 
     def convert_to_nested_field(self, field):
         params = field.split('.')
@@ -46,9 +45,10 @@ class EventQueryProcessor(object):
         """
         valid_input = self.validate_input()
         if not valid_input:
-            err_json = {}
-            err_json[
-                'message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
+            err_json = dict()
+            err_json['message'] = "Please enter valid query params. Fields must exist for the given project. " \
+                                  "If not sure, please access http://mydigurl/projects/<project_name>/fields API for " \
+                                  "reference"
             return rest.bad_request(err_json)
 
         resp = self.cquery.process()[0]
@@ -57,13 +57,13 @@ class EventQueryProcessor(object):
         try:
             if len(resp['hits']['hits']) > 0 and 'doc_id' in resp['hits']['hits'][0]['_source'].keys():
                 docid = resp['hits']['hits'][0]['_source']['doc_id']
-                argmap = {}
+                argmap = dict()
                 argmap['measure/value'] = docid
                 argmap['_group-by'] = 'event_date'
                 argmap['_interval'] = self.agg
-                self.request.args = argmap
-                newquery = ConjunctiveQueryProcessor(self.request, self.project_name, self.config,
-                                                     self.project_root_name, self.es)
+                self.myargs = argmap
+                newquery = ConjunctiveQueryProcessor(self.project_name, self.config,
+                                                     self.project_root_name, self.es, myargs=self.myargs)
                 resp = newquery.process()
                 if resp[1] == 400:
                     return resp
@@ -87,9 +87,10 @@ class EventQueryProcessor(object):
         """
         valid_input = self.validate_input()
         if not valid_input:
-            err_json = {}
-            err_json[
-                'message'] = "Please enter valid query params. Fields must exist for the given project. If not sure, please access http://mydigurl/projects/<project_name>/fields API for reference"
+            err_json = dict()
+            err_json['message'] = "Please enter valid query params. Fields must exist for the given project. " \
+                                  "If not sure, please access http://mydigurl/projects/<project_name>/fields " \
+                                  "API for reference"
             return rest.bad_request(err_json)
         try:
             resp = self.cquery.process()
@@ -115,7 +116,7 @@ class EventQueryProcessor(object):
             return rest.internal_error("Internal Error occured")
 
     def validate_input(self):
-        field = self.request.args.get('_group-by', None)
+        field = self.myargs.get('_group-by', None)
         if field is None:
             return False
         elif "." not in field and field not in self.config.keys():

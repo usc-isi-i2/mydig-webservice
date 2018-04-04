@@ -26,7 +26,7 @@ class DigOutputProcessor():
     SPEC_TYPE = "type"
     SPEC_SEMANTIC_TYPE = "semantic_type"
 
-    def __init__(self, fn,field,date):
+    def __init__(self, fn, field, date):
         self.ts = self.load(fn)
         self.field = field
         self.date = date
@@ -42,11 +42,11 @@ class DigOutputProcessor():
             if self.field is None:
                 new_ts.append([ts_item[key], ts_item[self.DIG_VALUE]])
             else:
-                new_ts.append([ts_item[key], ts_item[self.DIG_VALUE],ts_item[self.field]['value']])
+                new_ts.append([ts_item[key], ts_item[self.DIG_VALUE], ts_item[self.field]['value']])
         types = []
         types.append(self.make_dig_dimension(type(ts_item[self.DIG_VALUE]).__name__, "count"))
         if self.field is not None:
-            types.append(self.make_dig_dimension(type(ts_item[self.field]['value']).__name__,str(self.field)))
+            types.append(self.make_dig_dimension(type(ts_item[self.field]['value']).__name__, str(self.field)))
         return new_ts, types
 
     @staticmethod
