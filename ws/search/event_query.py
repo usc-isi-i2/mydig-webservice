@@ -3,10 +3,10 @@ import urllib
 from conjunctive_query import ConjunctiveQueryProcessor
 from response_converter import DigOutputProcessor, TimeSeries
 import logging
-import numbers
 from config import config
 
 logger = logging.getLogger(config['logging']['name'])
+
 
 class EventQueryProcessor(object):
 
@@ -71,7 +71,7 @@ class EventQueryProcessor(object):
                     resp = resp[0]
                 logger.debug("Response for query is {}".format(resp))
                 ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field).process()
-                ts_obj = TimeSeries(ts, dict(), dims).to_dict()
+                ts_obj = TimeSeries(ts, dict(), dims, percent_change=self.percent_change).to_dict()
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("Time series not found")
@@ -102,12 +102,10 @@ class EventQueryProcessor(object):
             if resp is not None and len(resp['aggregations'][self.field]['buckets']) > 0:
                 if "." not in self.field and self.config[self.field]['type'] == "date":
                     ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, True).process()
-                    ts_obj = TimeSeries(ts, {}, dims).to_dict()
+                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change).to_dict()
                 else:
                     ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, False).process()
-                    ts_obj = TimeSeries(ts, {}, dims).to_dict()
-                if self.percent_change:
-                    ts_obj['ts'] = self.pct_change(ts_obj['ts'])
+                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change).to_dict()
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("No Time series found for query")
@@ -123,64 +121,3 @@ class EventQueryProcessor(object):
             return False
 
         return True
-
-    @staticmethod
-    def get_sub_tuple(tup):
-        return tup[0], tup[len(tup) - 1]
-
-    @staticmethod
-    def pct_change(ts):
-        """
-        This function calculates the percentage for the aggregations calculated by ES
-        :param ts: ts as calculated by this class
-        :return: ts with values as percentage change
-        """
-        new_ts = list()
-        for i in range(len(ts) - 1):
-            j = i + 1
-            new_ts.append(EventQueryProcessor.calculate_change_tuples(ts[i], ts[j]))
-        return new_ts
-
-    @staticmethod
-    def calculate_change_tuples(tup_a, tup_b):
-        """
-
-        :param tup_a: tuple with format ["2011-12-01T00:00:00.000Z",34] or ["2011-12-01T00:00:00.000Z",1,34]
-        :param tup_b: tuple with format ["2011-12-01T00:00:00.000Z",67] or ["2011-12-01T00:00:00.000Z",2, 67]
-        :return: tup_b with updated value as the percentage change
-        """
-        ret = tup_b[:-1]
-        ret.append(EventQueryProcessor.calculate_percent_change(tup_a[len(tup_a) - 1], tup_b[len(tup_b) - 1]))
-        return ret
-
-    @staticmethod
-    def calculate_percent_change(value_a, value_b):
-        """
-        This function calculates the percentage change in from value_a to value_b
-        :param value_a: valid number
-        :param value_b: valid number
-        :return: percentage change calculated according to formula: abs((a-b)/a)
-        """
-        if not value_a or not value_b:
-            return None
-
-        if not (isinstance(value_a, numbers.Number) and isinstance(value_b, numbers.Number)):
-            message = "Input parameters to the function \"calculate_percentage_change\" should be a valid number, " \
-                      "but was instead: {} and {}".format(value_a, value_b)
-            logger.exception(message)
-            raise ValueError(message)
-
-        if value_a == 0:
-            raise None
-        return abs((float(value_a) - float(value_b)) / float(value_a)) * 100
-
-
-# import json, codecs
-#
-# ts_o = json.load(codecs.open('/tmp/timeseries_2.json'))
-# print json.dumps(ts_o['ts'])
-# ts = ts_o['ts']
-# import requests
-#
-# eqp = EventQueryProcessor()
-# print json.dumps(eqp.pct_change(ts))
