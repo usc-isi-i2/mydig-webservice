@@ -26,7 +26,7 @@ class EventQueryProcessor(object):
             self.agg_field = self.convert_to_nested_field(self.agg_field)
         if self.field is not None and "." in self.field:
             self.field = self.convert_to_nested_field(self.field)
-        self.percent_change = self.myargs.get('_percent_change', False)
+        self.percent_change = True if '_percent_change' in self.myargs else False
 
     # def preprocess(self):
     #     for arg in self.request.args:
