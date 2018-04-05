@@ -2,17 +2,18 @@ import numbers
 
 
 class TimeSeries(object):
-    def __init__(self, ts, metadata, dimensions, percent_change=False, impute_method='previous'):
+    def __init__(self, ts, metadata, dimensions, percent_change=False, impute_method='previous',
+                 maximum_value=999999.9):
         self.ts = ts
         self.metadata = metadata
         self.dimensions = dimensions
         self.percent_change = percent_change
         self.impute_method = impute_method
+        self.maximum_value = maximum_value
 
         self.impute_values()
         if self.percent_change:
-            self.ts = self.pct_change(self.ts)
-        self.ts = self.impute_values()
+            self.ts = self.pct_change()
 
     def to_dict(self):
         dct = dict()
@@ -34,36 +35,53 @@ class TimeSeries(object):
                 next_tup = ts[i + 1]
                 if this_tup[len(this_tup) - 1] and not next_tup[len(next_tup) - 1]:
                     next_tup[len(next_tup) - 1] = this_tup[len(this_tup) - 1]
+        if self.impute_method == 'average':
+            ts = self.impute_values_average()
 
         return self.remove_nulls(ts)
+
+    def impute_values_average(self):
+        ts = self.ts
+        for i in range(1, len(ts) - 1):
+            p = i - 1
+            n = i + 1
+            if ts[i][len(ts[i]) - 1] is None:
+                ts[i][len(ts[i]) - 1] = self.calculate_average(ts[p][len(ts[p]) - 1], ts[i][len(ts[i]) - 1],
+                                                               ts[n][len(ts[n]) - 1])
+        return ts
+
+    @staticmethod
+    def calculate_average(value_a, value_b, value_c):
+        # is we do not have the values, return the origin value_b for which we are trying to impute value anyway
+        if value_a is None or value_c is None:
+            return value_b
+
+        return (float(value_a) + float(value_c)) / 2.0
 
     @staticmethod
     def remove_nulls(ts):
         for tup in ts:
-            if not tup[len(tup)-1]:
+            if tup[len(tup) - 1] is None:
                 ts.remove(tup)
         return ts
-
 
     @staticmethod
     def get_sub_tuple(tup):
         return tup[0], tup[len(tup) - 1]
 
-    @staticmethod
-    def pct_change(ts):
+    def pct_change(self):
         """
-        This function calculates the percentage for the aggregations calculated by ES
+        This function calculates the percentage change for the aggregations calculated by ES
         :param ts: ts as calculated by this class
         :return: ts with values as percentage change
         """
         new_ts = list()
-        for i in range(len(ts) - 1):
+        for i in range(len(self.ts) - 1):
             j = i + 1
-            new_ts.append(TimeSeries.calculate_change_tuples(ts[i], ts[j]))
+            new_ts.append(self.calculate_change_tuples(self.ts[i], self.ts[j]))
         return new_ts
 
-    @staticmethod
-    def calculate_change_tuples(tup_a, tup_b):
+    def calculate_change_tuples(self, tup_a, tup_b):
         """
 
         :param tup_a: tuple with format ["2011-12-01T00:00:00.000Z",34] or ["2011-12-01T00:00:00.000Z",1,34]
@@ -71,28 +89,29 @@ class TimeSeries(object):
         :return: tup_b with updated value as the percentage change
         """
         ret = tup_b[:-1]
-        ret.append(TimeSeries.calculate_percent_change(tup_a[len(tup_a) - 1], tup_b[len(tup_b) - 1]))
+        ret.append(self.calculate_percent_change(tup_a[len(tup_a) - 1], tup_b[len(tup_b) - 1]))
         return ret
 
-    @staticmethod
-    def calculate_percent_change(value_a, value_b):
+    def calculate_percent_change(self, value_a, value_b):
         """
         This function calculates the percentage change in from value_a to value_b
         :param value_a: valid number
         :param value_b: valid number
         :return: percentage change calculated according to formula: abs((a-b)/a)
         """
-        if not value_a or not value_b:
-            return None
 
         if not (isinstance(value_a, numbers.Number) and isinstance(value_b, numbers.Number)):
             message = "Input parameters to the function \"calculate_percentage_change\" should be a valid number, " \
                       "but was instead: {} and {}".format(value_a, value_b)
             raise ValueError(message)
 
-        if value_a == 0:
-            raise None
-        return abs((float(value_a) - float(value_b)) / float(value_a)) * 100
+        if float(value_a) == 0.0 and float(value_b) == 0.0:
+            return 0.0
+
+        if float(value_a) == 0.0:
+            return self.maximum_value
+
+        return ((float(value_b) - float(value_a)) / float(value_a)) * 100
 
 
 class DigOutputProcessor():
@@ -132,13 +151,14 @@ class DigOutputProcessor():
         json_decoded = dig_output_fn
         return json_decoded['buckets']
 
-
-import json, codecs
-
-ts_o = json.load(codecs.open('/tmp/timeseries.json'))
-print json.dumps(ts_o['ts'])
-ts = ts_o['ts']
-import requests
-
-timeseries=TimeSeries(ts, None, None)
-print json.dumps(timeseries.ts)
+#
+# import json, codecs
+#
+# # ts_o = json.load(codecs.open('/tmp/timeseries.json'))
+# # print json.dumps(ts_o['ts'])
+# # ts = ts_o['ts']
+#
+# ts = [['a', 1], ['b', 2], ['c', 3], ['d', 0], ['e', 97]]
+#
+# timeseries = TimeSeries(ts, None, None, impute_method='average', percent_change=True)
+# print json.dumps(timeseries.ts)

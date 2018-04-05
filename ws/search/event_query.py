@@ -27,6 +27,7 @@ class EventQueryProcessor(object):
         if self.field is not None and "." in self.field:
             self.field = self.convert_to_nested_field(self.field)
         self.percent_change = True if '_percent_change' in self.myargs else False
+        self.impute_method = self.myargs.get('_impute_method', 'previous')
 
     # def preprocess(self):
     #     for arg in self.request.args:
@@ -71,7 +72,7 @@ class EventQueryProcessor(object):
                     resp = resp[0]
                 logger.debug("Response for query is {}".format(resp))
                 ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field).process()
-                ts_obj = TimeSeries(ts, dict(), dims, percent_change=self.percent_change).to_dict()
+                ts_obj = TimeSeries(ts, dict(), dims, percent_change=self.percent_change, impute_method=self.impute_method).to_dict()
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("Time series not found")
@@ -102,10 +103,12 @@ class EventQueryProcessor(object):
             if resp is not None and len(resp['aggregations'][self.field]['buckets']) > 0:
                 if "." not in self.field and self.config[self.field]['type'] == "date":
                     ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, True).process()
-                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change).to_dict()
+                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change,
+                                        impute_method=self.impute_method).to_dict()
                 else:
                     ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, False).process()
-                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change).to_dict()
+                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change,
+                                        impute_method=self.impute_method).to_dict()
                 return rest.ok(ts_obj)
             else:
                 return rest.not_found("No Time series found for query")
