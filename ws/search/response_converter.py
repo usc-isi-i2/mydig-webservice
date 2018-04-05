@@ -155,15 +155,3 @@ class DigOutputProcessor():
         # for now it is a text file. It may change in the future
         json_decoded = dig_output_fn
         return json_decoded['buckets']
-
-#
-# import json, codecs
-#
-# # ts_o = json.load(codecs.open('/tmp/timeseries.json'))
-# # print json.dumps(ts_o['ts'])
-# # ts = ts_o['ts']
-#
-# ts = [['a', 1], ['b', 2], ['c', 3], ['d', 0], ['e', 97]]
-#
-# timeseries = TimeSeries(ts, None, None, impute_method='average', percent_change=True)
-# print json.dumps(timeseries.ts)
