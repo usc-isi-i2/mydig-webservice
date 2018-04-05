@@ -25,20 +25,25 @@ class TimeSeries(object):
     def impute_values(self):
         """
         ["2011-12-01T00:00:00.000Z",34] or ["2011-12-01T00:00:00.000Z",1,34]
-        :param ts:
-        :return:
+        :param ts: time series in above format
+        :return: time series with values imputed
         """
         ts = self.ts
         if self.impute_method == 'previous':
-            for i in range(len(ts) - 1):
-                this_tup = ts[i]
-                next_tup = ts[i + 1]
-                if this_tup[len(this_tup) - 1] and not next_tup[len(next_tup) - 1]:
-                    next_tup[len(next_tup) - 1] = this_tup[len(this_tup) - 1]
+            self.impute_values_previous()
         if self.impute_method == 'average':
             ts = self.impute_values_average()
 
         return self.remove_nulls(ts)
+
+    def impute_values_previous(self):
+        ts = self.ts
+        for i in range(len(ts) - 1):
+            this_tup = ts[i]
+            next_tup = ts[i + 1]
+            if this_tup[len(this_tup) - 1] and not next_tup[len(next_tup) - 1]:
+                next_tup[len(next_tup) - 1] = this_tup[len(this_tup) - 1]
+        return ts
 
     def impute_values_average(self):
         ts = self.ts
