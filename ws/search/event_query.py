@@ -52,10 +52,11 @@ class EventQueryProcessor(object):
                                   "reference"
             return rest.bad_request(err_json)
 
-        resp = self.cquery.process()[0]
-        if resp[1] == 400:
+        resp = self.cquery.process()
+        if resp is None or resp[1] == 400:
             return resp
         try:
+            resp = resp[0]
             if len(resp['hits']['hits']) > 0 and 'doc_id' in resp['hits']['hits'][0]['_source'].keys():
                 docid = resp['hits']['hits'][0]['_source']['doc_id']
                 argmap = dict()
@@ -71,7 +72,8 @@ class EventQueryProcessor(object):
                 else:
                     resp = resp[0]
                 logger.debug("Response for query is {}".format(resp))
-                ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field).process()
+                isDateAggregation = True if "." not in self.field and self.config[self.field]['type'] == "date" else False
+                ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, isDateAggregation).process()
                 ts_obj = TimeSeries(ts, dict(), dims, percent_change=self.percent_change, impute_method=self.impute_method).to_dict()
                 return rest.ok(ts_obj)
             else:
@@ -101,13 +103,9 @@ class EventQueryProcessor(object):
             else:
                 resp = resp[0]
             if resp is not None and len(resp['aggregations'][self.field]['buckets']) > 0:
-                if "." not in self.field and self.config[self.field]['type'] == "date":
-                    ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, True).process()
-                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change,
-                                        impute_method=self.impute_method).to_dict()
-                else:
-                    ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, False).process()
-                    ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change,
+                isDateAggregation = True if "." not in self.field and self.config[self.field]['type'] == "date" else False
+                ts, dims = DigOutputProcessor(resp['aggregations'][self.field], self.agg_field, isDateAggregation).process()
+                ts_obj = TimeSeries(ts, {}, dims, percent_change=self.percent_change,
                                         impute_method=self.impute_method).to_dict()
                 return rest.ok(ts_obj)
             else:
