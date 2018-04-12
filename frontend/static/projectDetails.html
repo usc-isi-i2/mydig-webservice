@@ -274,7 +274,7 @@
                                     
                                 </div>
                             </vaadin-grid-sorter></template>
-                            <template><div style="height: 100%"><div style="float:left;height:100%;text-align: center;display: flex;flex-direction: column;justify-content: center;">{{item.tld}}</div><div style="float:right;height:100%"><paper-icon-button icon="delete" title="Delete TLD" style$="color:{{item.color_btn}}"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button></div></div></template>
+                            <template><div style="height: 100%;width: 100%"><div style="float:left;height:100%;text-align: left;display: flex;flex-direction: column;justify-content: center;overflow:hidden;word-break: break-word;white-space:pre-wrap;width: 85%">{{item.tld}}</div><div style="float:right;height:100%;width: 15%"><paper-icon-button icon="delete" title="Delete TLD" style$="color:{{item.color_btn}};"  on-click="deleteFileData" id="delete" value="{{item.tld}}" disabled="{{item.disable_Delete}}"></paper-icon-button></div></div></template>
                         </vaadin-grid-column>
                         <vaadin-grid-column>
                             <template class="header"><vaadin-grid-sorter path="total_num" style="font-weight:bold;padding-top:10px;padding-bottom:10px"><div style="float:left;height:35px;text-align: center;display: flex;flex-direction: column;justify-content: center;" >Total <br>({{total_num}}) </div></vaadin-grid-sorter></template>
