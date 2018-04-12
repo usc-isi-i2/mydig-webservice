@@ -572,37 +572,73 @@ poly = Polymer({
         if (this.fieldForm.screen_label == "") this.fieldForm.screen_label = this.fieldForm.name;
         if (this.fieldForm.screen_label_plural == "") this.fieldForm.screen_label_plural = this.fieldForm.screen_label;
         if (!this.fieldForm.group_name) this.fieldForm.group_name = "";
-        this.$.updateSavedFields.body = JSON.stringify({
-            "field_name": this.fieldForm.name,
-            "field_object": {
-                "color": this.colorSet[this.editFieldColor],
-                "case_sensitive": this.fieldFormGlossaries.length > 0 ? this.fieldForm.case_sensitive : false,
-                "combine_fields": this.fieldForm.combine_fields,
-                "description": this.fieldForm.description,
-                "glossaries": this.fieldFormGlossaries,
-                "blacklists": this.fieldFormBlacklists,
-                "group_name": this.fieldForm.group_name,
-                "icon": this.$$('#iconField').icon,
-                "name": this.fieldForm.name,
-                "screen_label": this.fieldForm.screen_label,
-                "screen_label_plural": this.fieldForm.screen_label_plural,
-                "search_importance": parseInt(this.$$('#editSearchImpValue').selectedItem.value),
-                "show_as_link": this.$$('#editlinkValue').selectedItem.value,
-                "show_in_facets": this.fieldForm.show_in_facets,
-                "show_in_result": this.$$('#editResultValue').selectedItem.value,
-                /*"rule_extraction_target": this.$$('#editRuleExtractionTargetValue').selectedItem.value,*/
-                "show_in_search": this.fieldForm.show_in_search,
-                "rule_extractor_enabled": this.fieldForm.rule_extractor_enabled,
-                "type": this.$$('#editTypeValue').selectedItem.value,
-                "use_in_network_search": this.fieldForm.use_in_network_search,
-                "predefined_extractor": predefinedExtr,
-                "group_order": parseInt(this.fieldForm.group_order),
-                "field_order": parseInt(this.fieldForm.field_order),
-                "free_text_search": this.fieldForm.free_text_search,
-                "scoring_coefficient": parseFloat(this.fieldForm.scoring_coefficient),
-                "enable_scoring_coefficient": this.fieldForm.enable_scoring_coefficient
-            }
-        });
+        if (this.fieldForm.enable_scoring_coefficient){
+            this.$.updateSavedFields.body = JSON.stringify({
+                "field_name": this.fieldForm.name,
+                "field_object": {
+                    "color": this.colorSet[this.editFieldColor],
+                    "case_sensitive": this.fieldFormGlossaries.length > 0 ? this.fieldForm.case_sensitive : false,
+                    "combine_fields": this.fieldForm.combine_fields,
+                    "description": this.fieldForm.description,
+                    "glossaries": this.fieldFormGlossaries,
+                    "blacklists": this.fieldFormBlacklists,
+                    "group_name": this.fieldForm.group_name,
+                    "icon": this.$$('#iconField').icon,
+                    "name": this.fieldForm.name,
+                    "screen_label": this.fieldForm.screen_label,
+                    "screen_label_plural": this.fieldForm.screen_label_plural,
+                    "search_importance": parseInt(this.$$('#editSearchImpValue').selectedItem.value),
+                    "show_as_link": this.$$('#editlinkValue').selectedItem.value,
+                    "show_in_facets": this.fieldForm.show_in_facets,
+                    "show_in_result": this.$$('#editResultValue').selectedItem.value,
+                    /*"rule_extraction_target": this.$$('#editRuleExtractionTargetValue').selectedItem.value,*/
+                    "show_in_search": this.fieldForm.show_in_search,
+                    "rule_extractor_enabled": this.fieldForm.rule_extractor_enabled,
+                    "type": this.$$('#editTypeValue').selectedItem.value,
+                    "use_in_network_search": this.fieldForm.use_in_network_search,
+                    "predefined_extractor": predefinedExtr,
+                    "group_order": parseInt(this.fieldForm.group_order),
+                    "field_order": parseInt(this.fieldForm.field_order),
+                    "free_text_search": this.fieldForm.free_text_search,
+                    "scoring_coefficient": parseFloat(this.fieldForm.scoring_coefficient),
+                    "enable_scoring_coefficient": this.fieldForm.enable_scoring_coefficient
+                }
+            });
+        }
+        else
+        {
+            this.$.updateSavedFields.body = JSON.stringify({
+                "field_name": this.fieldForm.name,
+                "field_object": {
+                    "color": this.colorSet[this.editFieldColor],
+                    "case_sensitive": this.fieldFormGlossaries.length > 0 ? this.fieldForm.case_sensitive : false,
+                    "combine_fields": this.fieldForm.combine_fields,
+                    "description": this.fieldForm.description,
+                    "glossaries": this.fieldFormGlossaries,
+                    "blacklists": this.fieldFormBlacklists,
+                    "group_name": this.fieldForm.group_name,
+                    "icon": this.$$('#iconField').icon,
+                    "name": this.fieldForm.name,
+                    "screen_label": this.fieldForm.screen_label,
+                    "screen_label_plural": this.fieldForm.screen_label_plural,
+                    "search_importance": parseInt(this.$$('#editSearchImpValue').selectedItem.value),
+                    "show_as_link": this.$$('#editlinkValue').selectedItem.value,
+                    "show_in_facets": this.fieldForm.show_in_facets,
+                    "show_in_result": this.$$('#editResultValue').selectedItem.value,
+                    /*"rule_extraction_target": this.$$('#editRuleExtractionTargetValue').selectedItem.value,*/
+                    "show_in_search": this.fieldForm.show_in_search,
+                    "rule_extractor_enabled": this.fieldForm.rule_extractor_enabled,
+                    "type": this.$$('#editTypeValue').selectedItem.value,
+                    "use_in_network_search": this.fieldForm.use_in_network_search,
+                    "predefined_extractor": predefinedExtr,
+                    "group_order": parseInt(this.fieldForm.group_order),
+                    "field_order": parseInt(this.fieldForm.field_order),
+                    "free_text_search": this.fieldForm.free_text_search,
+                    "enable_scoring_coefficient": this.fieldForm.enable_scoring_coefficient
+                }
+            });
+        }
+
         this.$.updateSavedFields.generateRequest();
         this.$$('#editFieldsDialog').toggle();
 
@@ -834,7 +870,7 @@ poly = Polymer({
 
         this.$.updateSpacyRules.body = (this.$$('#spacyRulesTextArea').value);
         this.$.updateSpacyRules.generateRequest();
-        spacyRulesDialog.toggle();
+        this.$$('#spacyRulesDialog').toggle();
     },
     showSpacyRuleDummy: function () {
         this.$$('#spacyRulesTextArea').value = '{"rules": [],"test_text": "string"}';
@@ -936,6 +972,7 @@ poly = Polymer({
         this.$$('#fieldOrderInput').value="";
         this.$$("#free_text_search").checked = false;
         this.$$('#fieldRankingMultiplierInput').value="1.0";
+        this.$$('#enable_scoring_coefficient').checked =false;
 
         /*this.$$("#fieldRuleExtractorTarget").selected = "2";*/
     },
@@ -1089,36 +1126,72 @@ poly = Polymer({
         }
     }.bind(this);
 
-    var data = JSON.stringify({
-        "field_name": name,
-        "field_object": {
-            "color": color,
-            "case_sensitive": caseSense,
-            "combine_fields": combinefields,
-            "description": description,
-            "glossaries": glossariesNewField,
-            "group_name": groupname,
-            "icon": icon,
-            "name": name,
-            "screen_label": screenlabel,
-            "screen_label_plural": screen_label_plural,
-            "search_importance": searchimp,
-            "show_as_link": link,
-            "show_in_facets": facet,
-            "show_in_result": result,
-            "show_in_search": search,
-            "type": type,
-            "use_in_network_search": networksearch,
-            "rule_extractor_enabled": ruleExtractor,
-            "predefined_extractor": predefinedExtractor,
-            "group_order": groupOrder,
-            "field_order": fieldOrder,
-            "free_text_search": free_text_search,
-            "scoring_coefficient": rankingMultiplier,
-            "enable_scoring_coefficient": esc
-            /*"rule_extraction_target": ruleextractTarget*/
-        }
-    });
+    if(esc){
+        var data = JSON.stringify({
+            "field_name": name,
+            "field_object": {
+                "color": color,
+                "case_sensitive": caseSense,
+                "combine_fields": combinefields,
+                "description": description,
+                "glossaries": glossariesNewField,
+                "group_name": groupname,
+                "icon": icon,
+                "name": name,
+                "screen_label": screenlabel,
+                "screen_label_plural": screen_label_plural,
+                "search_importance": searchimp,
+                "show_as_link": link,
+                "show_in_facets": facet,
+                "show_in_result": result,
+                "show_in_search": search,
+                "type": type,
+                "use_in_network_search": networksearch,
+                "rule_extractor_enabled": ruleExtractor,
+                "predefined_extractor": predefinedExtractor,
+                "group_order": groupOrder,
+                "field_order": fieldOrder,
+                "free_text_search": free_text_search,
+                "scoring_coefficient": rankingMultiplier,
+                "enable_scoring_coefficient": esc
+                /*"rule_extraction_target": ruleextractTarget*/
+            }
+        });
+    }
+    else
+    {
+      
+        var data = JSON.stringify({
+            "field_name": name,
+            "field_object": {
+                "color": color,
+                "case_sensitive": caseSense,
+                "combine_fields": combinefields,
+                "description": description,
+                "glossaries": glossariesNewField,
+                "group_name": groupname,
+                "icon": icon,
+                "name": name,
+                "screen_label": screenlabel,
+                "screen_label_plural": screen_label_plural,
+                "search_importance": searchimp,
+                "show_as_link": link,
+                "show_in_facets": facet,
+                "show_in_result": result,
+                "show_in_search": search,
+                "type": type,
+                "use_in_network_search": networksearch,
+                "rule_extractor_enabled": ruleExtractor,
+                "predefined_extractor": predefinedExtractor,
+                "group_order": groupOrder,
+                "field_order": fieldOrder,
+                "free_text_search": free_text_search,
+                "scoring_coefficient": rankingMultiplier,
+                "enable_scoring_coefficient": esc
+                /*"rule_extraction_target": ruleextractTarget*/
+            }
+        });
+    }
 
     xhr.send(data);
 

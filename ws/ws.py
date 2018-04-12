@@ -720,8 +720,6 @@ class ProjectFields(Resource):
         if 'free_text_search' not in field_obj \
                 or not isinstance(field_obj['free_text_search'], bool):
                 field_obj['free_text_search'] = False
-        if 'scoring_coefficient' not in field_obj:
-                field_obj['scoring_coefficient'] = float(1.0)
         if 'enable_scoring_coefficient' not in field_obj:
                 field_obj['enable_scoring_coefficient'] = False
         if 'enable_scoring_coefficient' in field_obj and not isinstance(field_obj['enable_scoring_coefficient'],bool):
