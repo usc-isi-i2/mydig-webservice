@@ -43,7 +43,8 @@ poly = Polymer({
         this.confirmValue =0
         this.pipelineCall=0
         this.disableColor = "#666666"
-
+        this.addType =false
+        this.editType=true
         this.scope.getIconNames = function(iconset) {
         return iconset.getIconNames();
         ////console("heree");
@@ -572,7 +573,7 @@ poly = Polymer({
         if (this.fieldForm.screen_label == "") this.fieldForm.screen_label = this.fieldForm.name;
         if (this.fieldForm.screen_label_plural == "") this.fieldForm.screen_label_plural = this.fieldForm.screen_label;
         if (!this.fieldForm.group_name) this.fieldForm.group_name = "";
-        if (this.fieldForm.enable_scoring_coefficient){
+        if (!this.editType && this.fieldForm.enable_scoring_coefficient){
             this.$.updateSavedFields.body = JSON.stringify({
                 "field_name": this.fieldForm.name,
                 "field_object": {
@@ -634,7 +635,6 @@ poly = Polymer({
                     "group_order": parseInt(this.fieldForm.group_order),
                     "field_order": parseInt(this.fieldForm.field_order),
                     "free_text_search": this.fieldForm.free_text_search,
-                    "enable_scoring_coefficient": this.fieldForm.enable_scoring_coefficient
                 }
             });
         }
@@ -926,19 +926,21 @@ poly = Polymer({
 
             //console.log(this.fieldForm.scoring_coefficient)
 
-            if(this.fieldForm.scoring_coefficient == undefined || this.fieldForm.scoring_coefficient == ""){
-                this.fieldForm.scoring_coefficient =1
-                this.$$('#rankingm').value = "1.0"
-                /*console.log("hereee");*/
+            if(this.fieldForm.enable_scoring_coefficient==undefined || this.fieldForm.scoring_coefficient == undefined || this.fieldForm.scoring_coefficient == ""){
+                this.fieldForm.scoring_coefficient =1;
+                this.$$('#rankingm').value = "1.0";
+                this.$$('#rankingm').style.visibility = 'hidden';
+                this.editType = true;
+                //console.log("hereee");
             }
 
             if(this.fieldForm.enable_scoring_coefficient)
             {
-                this.fieldForm.visibility = "visible";
+                this.$$('#rankingm').style.visibility = 'visible';
             }
             else
             {
-                this.fieldForm.visibility = "hidden"
+                this.$$('#rankingm').style.visibility = 'hidden';
             }
         }
     },
@@ -973,6 +975,8 @@ poly = Polymer({
         this.$$("#free_text_search").checked = false;
         this.$$('#fieldRankingMultiplierInput').value="1.0";
         this.$$('#enable_scoring_coefficient').checked =false;
+        this.$$('#fieldRankingMultiplierInput').style.visibility ='hidden';
+        this.addType =true
 
         /*this.$$("#fieldRuleExtractorTarget").selected = "2";*/
     },
@@ -1040,6 +1044,39 @@ poly = Polymer({
                 }
             }
         }
+    },
+    checkAddType: function(){
+        if(this.$$('#fieldtypeinput').selectedItem!=undefined || this.$$('#fieldtypeinput').selectedItem !=null)
+        {var type = this.$$('#fieldtypeinput').selectedItem.value;
+        /*console.log(type)*/
+        if(type=='number')
+        {
+            this.addType = false
+           /* console.log(true)*/
+        }
+        else{
+            this.addType =true
+            this.$$('#enable_scoring_coefficient').checked =false;
+            this.$$('#fieldRankingMultiplierInput').style.visibility ='hidden';
+        }
+    }
+
+    },
+    checkEditType: function()
+    {
+        if( this.$$('#editTypeValue').selectedItem !=undefined || this.$$('#editTypeValue').selectedItem!=null)
+        {var type = this.$$('#editTypeValue').selectedItem.value;
+        if(type=='number')
+        {
+            this.editType =false
+
+        }
+        else{
+            this.editType =true
+             this.$$('#rankingm').style.visibility = 'hidden';
+            this.$$('#enableScoringCoefficientEdit').checked =false
+        }
+    }
     },
     addNewField: function(){
 
@@ -1119,14 +1156,13 @@ poly = Polymer({
             this.$$("#fieldOrderInput").value = "";
             this.$$("#free_text_search").checked = false;
             this.$$('#fieldRankingMultiplierInput').value="";
-            this.$$('#enable_scoring_coefficient').checked =false;
             
             /*document.getElementById("fieldRuleExtractorTarget").selected = "2";*/
 
         }
     }.bind(this);
 
-    if(esc){
+    if(!this.addType && esc){
         var data = JSON.stringify({
             "field_name": name,
             "field_object": {
@@ -1186,8 +1222,6 @@ poly = Polymer({
                 "group_order": groupOrder,
                 "field_order": fieldOrder,
                 "free_text_search": free_text_search,
-                "scoring_coefficient": rankingMultiplier,
-                "enable_scoring_coefficient": esc
                 /*"rule_extraction_target": ruleextractTarget*/
             }
         });

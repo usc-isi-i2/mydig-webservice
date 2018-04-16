@@ -720,14 +720,12 @@ class ProjectFields(Resource):
         if 'free_text_search' not in field_obj \
                 or not isinstance(field_obj['free_text_search'], bool):
                 field_obj['free_text_search'] = False
-        if 'enable_scoring_coefficient' not in field_obj:
-                field_obj['enable_scoring_coefficient'] = False
+        if field_obj['type']!='number' and ('enable_scoring_coefficient' in field_obj or 'scoring_coefficient' in field_obj):
+                return False, 'Invalid field attributes: scoring_coefficient, enable_scoring_coefficient'
         if 'enable_scoring_coefficient' in field_obj and not isinstance(field_obj['enable_scoring_coefficient'],bool):
                 return False, 'Invalid field attribute: enable_scoring_coefficient'
         if 'scoring_coefficient' in field_obj and not (isinstance(field_obj['scoring_coefficient'],float) or isinstance(field_obj['scoring_coefficient'],int)):
                 return False, 'Invalid field attribute: scoring_coefficient'
-        # if 'scoring_coefficient' not isinstance(field_obj['scoring_coefficient'], float):
-        #         return False, 'Invalid field attribute: scoring_coefficient'
         return True, None
 
 
@@ -2291,6 +2289,7 @@ class Actions(Resource):
             es = ES(config['es']['sample_url'])
             r = es.search(project_name, data[project_name]['master_config']['root_name'],
                           query, ignore_no_index=True, filter_path=['aggregations'])
+
 
             if r is not None:
                 for obj in r['aggregations']['group_by_tld']['buckets']:
