@@ -563,7 +563,7 @@
 
                     <paper-dropdown-menu id="typeFieldEdit" style="margin:0px;" class="projectInputStyle"
                                          label="Type*:">
-                        <paper-listbox id="editTypeValue" selected="{{_getType(fieldForm.type)}}" slot="dropdown-content">
+                        <paper-listbox id="editTypeValue" on-selected-item-changed="checkEditType" selected="{{_getType(fieldForm.type)}}" slot="dropdown-content">
                             <template is="dom-repeat" items="{{type}}" as="item">
                                 <paper-item value={{item}}>{{item}}</paper-item>
                             </template>
@@ -698,12 +698,10 @@
                     </div>
 
                     <div style="margin-top: 20px;width: 100%;display: flex">
-                    
+                    <div title="Enabled for Number Type Fields">
                         <paper-checkbox on-change="displayField" id="enableScoringCoefficientEdit"
-                                        checked="{{fieldForm.enable_scoring_coefficient}}" style="margin-top:30px;margin-right: 20px">Ranked
-                            Search</paper-checkbox>
-                        <paper-tooltip for="enable_scoring_coefficient">Enable ranked Search</paper-tooltip>
-                        <paper-input style="float:right;width:50%;visibility: {{fieldForm.visibility}}" class="projectInputStyle" label="Scoring Coefficient:"  value="{{fieldForm.scoring_coefficient}}" id="rankingm" auto-validate pattern="([0-9]*[.])?[0-9]+" error-message="Numbers or Floats only!"></paper-input>
+                                        checked="{{fieldForm.enable_scoring_coefficient}}" disabled="{{editType}}" style="margin-top:30px;margin-right: 20px">Use in Document Scoring</paper-checkbox></div>
+                        <paper-input style=" float:right; width:50%" class="projectInputStyle" label="Scoring Coefficient:"  value="{{fieldForm.scoring_coefficient}}" id="rankingm" auto-validate pattern="([0-9]*[.])?[0-9]+" error-message="Numbers or Floats only!"></paper-input>
                     <paper-tooltip fit-to-visible-bounds="true" position="left" for="rankingm">Affects search ranking by multiplying the elastic search score by value of this field times the value of the scoring coefficient.</paper-tooltip>
                     </div>
                    
@@ -790,7 +788,7 @@
 
 
                     <paper-dropdown-menu id="typeDropDown" style="margin:0px;" class="projectInputStyle" label="Type*:">
-                        <paper-listbox id="fieldtypeinput" slot="dropdown-content" selected="0">
+                        <paper-listbox id="fieldtypeinput"  on-selected-item-changed="checkAddType" slot="dropdown-content" selected="0">
                             <template is="dom-repeat" items="{{type}}" as="item">
                                 <paper-item value={{item}}>{{item}}</paper-item>
                             </template>
@@ -890,15 +888,15 @@
 
                     </div>
 
-                    <div style="margin-top: 20px;width: 100%;display: flex">
-                    
+                    <div style="margin-top: 20px;width: 100%;display: flex" >
+                    <div title="Enabled for Number Type Fields">
                         <paper-checkbox on-change="displayAddField" id="enable_scoring_coefficient"
-                                         style="margin-top:30px;margin-right: 20px">Ranked
-                            Search</paper-checkbox>
-                        <paper-tooltip for="enable_scoring_coefficient">Enable ranked Search</paper-tooltip>
+                                         style="margin-top:30px;margin-right: 20px;" disabled="{{addType}}" >Use in Document Scoring</paper-checkbox>
+                                         </div>
+
 
                          <paper-input style="float:right;width:50%;visibility: hidden" class="projectInputStyle" label="Scoring Coefficient:"  id="fieldRankingMultiplierInput" value="1" auto-validate pattern="([0-9]*[.])?[0-9]+" error-message="Numbers or Floats only!" ></paper-input>
-                    <paper-tooltip fit-to-visible-bounds="true" position="left" for="fieldRankingMultiplierInput">Affects search ranking by multiplying the elastic search score by value of this field times the value of the scoring coefficient.</paper-tooltip>
+                    <paper-tooltip fit-to-visible-bounds="true" for="fieldRankingMultiplierInput">Affects search ranking by multiplying the elastic search score by value of this field times the value of the scoring coefficient.</paper-tooltip>
                         
                     </div>
 
