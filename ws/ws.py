@@ -1974,6 +1974,7 @@ class Data(Resource):
             with data[project_name]['locks']['status']:
                 if tld in data[project_name]['status']['added_docs']:
                     data[project_name]['status']['added_docs'][tld] = 0
+                    data[project_name]['status']['desired_docs'][tld] = 0
                     set_status_dirty(project_name)
 
             # update data
