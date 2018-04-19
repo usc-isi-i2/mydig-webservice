@@ -107,6 +107,36 @@ w<!-- shared styles for all elements and index.html -->
         cursor : pointer;
       }
 
+       #pages {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 20px;
+      }
+
+      #pages > button {
+        user-select: none;
+        padding: 5px;
+        margin: 0 5px;
+        border-radius: 10%;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        outline: none;
+        cursor: pointer;
+      }
+
+      #pages > button:hover,
+      #pages > button:focus {
+        color: var(--default-primary-color);
+        background-color: #eee;
+      }
+
+      #pages > button[selected] {
+        font-weight: bold;
+        color: white;
+        background-color: var(--default-primary-color);
+      }
+
     </style>
   </template>
 </dom-module>

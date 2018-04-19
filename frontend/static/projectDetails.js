@@ -45,6 +45,7 @@ poly = Polymer({
         this.disableColor = "#666666"
         this.addType =false
         this.editType=true
+        this.page=1
         this.scope.getIconNames = function(iconset) {
         return iconset.getIconNames();
         ////console("heree");
@@ -1414,7 +1415,7 @@ poly = Polymer({
         ////console("refresh tld table");
         $.ajax({
             type: "GET",
-            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
+            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics&page='+this.page,
             dataType: "json",
             context: this,
             async: true,
@@ -1595,7 +1596,8 @@ poly = Polymer({
         this.$$("#fileProgress").value =percentage;
     },
     addToLandmark: function(e) {
-        var tld = $(e.currentTarget).attr("data-tld");
+        var tld = $(e.currentTarget)[0].value;
+        console.log(tld);
         payload = {
             "tlds": {
                [tld] : 100
