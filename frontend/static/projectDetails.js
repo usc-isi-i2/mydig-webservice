@@ -45,6 +45,7 @@ poly = Polymer({
         this.disableColor = "#666666"
         this.addType =false
         this.editType=true
+        this.page=1
         this.scope.getIconNames = function(iconset) {
         return iconset.getIconNames();
         ////console("heree");
@@ -1595,7 +1596,7 @@ poly = Polymer({
         this.$$("#fileProgress").value =percentage;
     },
     addToLandmark: function(e) {
-        var tld = $(e.currentTarget).attr("data-tld");
+        var tld = $(e.currentTarget)[0].value;
         payload = {
             "tlds": {
                [tld] : 100
