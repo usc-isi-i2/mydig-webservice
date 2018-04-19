@@ -1415,7 +1415,7 @@ poly = Polymer({
         ////console("refresh tld table");
         $.ajax({
             type: "GET",
-            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics&page='+this.page,
+            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
             dataType: "json",
             context: this,
             async: true,
@@ -1597,7 +1597,6 @@ poly = Polymer({
     },
     addToLandmark: function(e) {
         var tld = $(e.currentTarget)[0].value;
-        console.log(tld);
         payload = {
             "tlds": {
                [tld] : 100
