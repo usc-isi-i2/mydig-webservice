@@ -46,6 +46,8 @@ poly = Polymer({
         this.addType =false
         this.editType=true
         this.page=1
+        this.tot_pages=1
+        this.pages = Array.from({length: this.tot_pages}, (x,i) => i+1);
         this.scope.getIconNames = function(iconset) {
         return iconset.getIconNames();
         ////console("heree");
@@ -1415,7 +1417,7 @@ poly = Polymer({
         ////console("refresh tld table");
         $.ajax({
             type: "GET",
-            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
+            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics&page='+this.page,
             dataType: "json",
             context: this,
             async: true,
@@ -1472,12 +1474,13 @@ poly = Polymer({
                 }
                 );
 
-
-                this.total_tld = total_tld;
-                this.total_num =total_total_num;
-                this.total_desired_num =total_desired_num;
-                this.total_es_num = total_es_num;
-                this.total_es_original_num = total_es_original_num;
+                this.tot_pages = data['tot_pages']
+                this.pages =  Array.from({length: this.tot_pages}, (x,i) => i+1);
+                this.total_tld = data['total_tld']
+                this.total_num =data['total_num']
+                this.total_desired_num =data['desired_num']
+                this.total_es_num = data["es_num"];
+                this.total_es_original_num = data["es_original_num"];
                 this.tldTableData = newTldTableData;
 
                 ////console(this.tldTableData);
@@ -1513,7 +1516,35 @@ poly = Polymer({
             }
         });
     },
-   
+    selectPage: function(e)
+    {
+        
+        this.page = $(e.currentTarget)[0].id
+        this.refreshTldTable()
+        this.isEqual(this.page)
+
+    },
+    prevPage: function()
+    {
+        if(this.page-1>=1)
+        {
+            this.page = this.page-1
+            this.refreshTldTable()
+        }
+    },
+    nextPage: function()
+    {
+        if(this.page+1<=this.tot_pages)
+        {
+            this.page = this.page+1
+            this.refreshTldTable()
+        }
+    },
+    isEqual: function(page,item)
+    {
+        console.log(item==this.page)
+        return page==item 
+    },
     sortFields: function(obj1, obj2) {
         var a = obj1[0]["name"].toLowerCase();
         var b = obj2[0]["name"].toLowerCase();

@@ -333,6 +333,13 @@
                         </vaadin-grid-column>
                     </vaadin-grid>
                 </div>
+                <div id="pages">
+                    <button on-tap="prevPage">&lt;</button>
+                        <template is="dom-repeat" items="{{pages}}">
+                        <button on-tap="selectPage" id="{{item}}" selected$="{{isEqual(page,item)}}">{{item}}</button>
+                    </template>
+                    <button on-tap="nextPage">&gt;</button>
+                    </div>
 
 
                 
