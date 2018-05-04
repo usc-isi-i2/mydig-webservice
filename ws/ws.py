@@ -316,6 +316,7 @@ class AllProjects(Resource):
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines', False)
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype', 'break')
         data[project_name]['master_config']['show_original_search'] = input.get('show_original_search', 'V2')
+        data[project_name]['master_config']['page_length'] = input.get('page_length', 15)
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -399,6 +400,10 @@ class AllProjects(Resource):
             pro_obj['show_original_search'] = 'V2'
         if pro_obj['show_original_search'] not in ('V2', 'V1'):
             return False, 'invalid show_original_search'
+        if 'page_length' not in pro_obj:
+            pro_obj['page_length'] = 15
+        if not isinstance(pro_obj['page_length'], int):
+            return False, 'invalid page_length'
 
         return True, None
 
@@ -411,7 +416,9 @@ class Project(Resource):
             return rest.not_found()
         input = request.get_json(force=True)
 
+
         is_valid, message = AllProjects.validate(input)
+
         if not is_valid:
             return rest.bad_request(message)
 
@@ -423,6 +430,7 @@ class Project(Resource):
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines')
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype')
         data[project_name]['master_config']['show_original_search'] = input.get('show_original_search')
+        data[project_name]['master_config']['page_length'] = input.get('page_length')
         # data[project_name]['master_config']['index'] = es_index
 
         # write to file
@@ -662,7 +670,7 @@ class ProjectFields(Resource):
             field_obj['description'] = ''
         if 'type' not in field_obj or field_obj['type'] not in \
                 ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number',
-                 'text', "type"):
+                 'text', 'type'):
             return False, 'Invalid field attribute: type'
         if 'show_in_search' not in field_obj or \
                 not isinstance(field_obj['show_in_search'], bool):
@@ -675,7 +683,7 @@ class ProjectFields(Resource):
             return False, 'Invalid field attribute: show_as_link'
         if 'show_in_result' not in field_obj or \
                         field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description', 'nested',
-                                                            "series"):
+                                                            'series'):
             return False, 'Invalid field attribute: show_in_result'
         if 'color' not in field_obj:
             return False, 'Invalid field attribute: color'
@@ -2250,21 +2258,30 @@ class Actions(Resource):
 
         parser = reqparse.RequestParser()
         parser.add_argument('value', type=str)
+        parser.add_argument('page', type=str)
         args = parser.parse_args()
         if args['value'] is None:
             args['value'] = 'all'
 
+        if args['page'] is None:
+            args['page'] = 1
         if args['value'] in ('all', 'etk_status'):
             ret['etk_status'] = Actions._is_etk_running(project_name)
 
         if args['value'] in ('all', 'tld_statistics'):
             tld_list = dict()
 
+            total_num = 0
+            desired_num = 0
+            es_num=0
+            es_original_num = 0
             with data[project_name]['locks']['status']:
                 for tld in data[project_name]['status']['total_docs'].iterkeys():
                     if tld not in data[project_name]['status']['desired_docs']:
                         data[project_name]['status']['desired_docs'][tld] = 0
                     if tld in data[project_name]['status']['total_docs']:
+                        total_num += data[project_name]['status']['total_docs'][tld]
+                        desired_num +=data[project_name]['status']['desired_docs'][tld]
                         tld_obj = {
                             'tld': tld,
                             'total_num': data[project_name]['status']['total_docs'][tld],
@@ -2324,6 +2341,7 @@ class Actions(Resource):
                             'desired_num': 0
                         }
                     tld_list[tld]['es_num'] = obj['doc_count']
+                    es_num += obj['doc_count']
 
                 for obj in r['aggregations']['group_by_tld_original']['grouped']['buckets']:
                     # check if tld is in uploaded file
@@ -2337,8 +2355,21 @@ class Actions(Resource):
                             'desired_num': 0
                         }
                     tld_list[tld]['es_original_num'] = obj['doc_count']
+                    es_original_num += obj['doc_count']
 
-            ret['tld_statistics'] = tld_list.values()
+            
+            if 'page_length' in data[project_name]['master_config']:
+                page_len = data[project_name]['master_config']['page_length']
+            else:
+                page_len = 15
+            sorted_values = sorted(tld_list.values(), key=lambda x: x['tld'])
+            ret['total_tld']= len(sorted_values)
+            ret['tld_statistics'] = sorted_values[page_len*(int(args['page'])-1):page_len*(int(args['page'])-1)+page_len]
+            ret['tot_pages'] = len(sorted_values)/page_len if len(sorted_values)%page_len==0  else len(sorted_values)/page_len+1
+            ret['total_num'] = total_num
+            ret['desired_num'] = desired_num
+            ret['es_num'] = es_num
+            ret['es_original_num'] =  es_original_num
 
         return ret
 
