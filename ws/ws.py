@@ -662,7 +662,7 @@ class ProjectFields(Resource):
             field_obj['description'] = ''
         if 'type' not in field_obj or field_obj['type'] not in \
                 ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number',
-                 'text'):
+                 'text', "type"):
             return False, 'Invalid field attribute: type'
         if 'show_in_search' not in field_obj or \
                 not isinstance(field_obj['show_in_search'], bool):
@@ -674,7 +674,8 @@ class ProjectFields(Resource):
                         field_obj['show_as_link'] not in ('text', 'entity'):
             return False, 'Invalid field attribute: show_as_link'
         if 'show_in_result' not in field_obj or \
-                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description', 'nested'):
+                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description', 'nested',
+                                                            "series"):
             return False, 'Invalid field attribute: show_in_result'
         if 'color' not in field_obj:
             return False, 'Invalid field attribute: color'
