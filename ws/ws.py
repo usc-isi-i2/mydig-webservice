@@ -224,9 +224,9 @@ class ProjectDebug(Resource):
             size = request.args.get('size', '20')
             worker_id = request.args.get('worker_id', '*')
             cmd = 'tail -n {size} {dir_path}/etk_stdout_{worker_id}.txt'.format(
-                    size=size,
-                    dir_path=os.path.join(_get_project_dir_path(project_name),'working_dir'),
-                    worker_id=worker_id)
+                size=size,
+                dir_path=os.path.join(_get_project_dir_path(project_name), 'working_dir'),
+                worker_id=worker_id)
             logger.debug('getting etk_stdout: %s', cmd)
             proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
             return Response(proc.stdout.read(), mimetype='text/plain')
@@ -246,8 +246,8 @@ class Search(Resource):
         myargs = request.args
         if type == 'conjunctive':
             query = ConjunctiveQueryProcessor(project_name,
-                                          data[project_name]['master_config']['fields'],
-                                          data[project_name]['master_config']['root_name'], es, myargs=myargs)
+                                              data[project_name]['master_config']['fields'],
+                                              data[project_name]['master_config']['root_name'], es, myargs=myargs)
             return query.process()
         elif type == 'event':
             query = EventQueryProcessor(project_name,
@@ -379,32 +379,33 @@ class AllProjects(Resource):
     #     return rest.deleted()
 
 
-def validate(pro_obj):
-    """
-    :return: bool, message
-    """
-    if 'image_prefix' not in pro_obj or not isinstance(pro_obj['image_prefix'], basestring):
-        return False, 'invalid image_prefix'
-    if 'default_desired_num' not in pro_obj or (999999999 < pro_obj['default_desired_num'] < 0):
-        return False, 'invalid default_desired_num'
-    if 'show_images_in_facets' not in pro_obj or not isinstance(pro_obj['show_images_in_facets'], bool):
-        return False, 'invalid show_images_in_facets'
-    if 'show_images_in_search_form' not in pro_obj or not isinstance(pro_obj['show_images_in_search_form'], bool):
-        return False, 'invalid show_images_in_search_form'
-    if 'hide_timelines' not in pro_obj or not isinstance(pro_obj['hide_timelines'], bool):
-        return False, 'invalid hide_timelines'
-    if 'new_linetype' not in pro_obj or pro_obj['new_linetype'] not in ('break', 'newline'):
-        return False, 'invalid new_linetype'
-    if 'show_original_search' not in pro_obj:
-        pro_obj['show_original_search'] = 'V2'
-    if pro_obj['show_original_search'] not in ('V2','V1'):
-        return False, 'invalid show_original_search'
-    if 'page_length' not in pro_obj:
-        pro_obj['page_length'] = 15
-    if not isinstance(pro_obj['page_length'], int):
-        return False, 'invalid page_length'
+    @staticmethod
+    def validate(pro_obj):
+        """
+        :return: bool, message
+        """
+        if 'image_prefix' not in pro_obj or not isinstance(pro_obj['image_prefix'], basestring):
+            return False, 'invalid image_prefix'
+        if 'default_desired_num' not in pro_obj or (999999999 < pro_obj['default_desired_num'] < 0):
+            return False, 'invalid default_desired_num'
+        if 'show_images_in_facets' not in pro_obj or not isinstance(pro_obj['show_images_in_facets'], bool):
+            return False, 'invalid show_images_in_facets'
+        if 'show_images_in_search_form' not in pro_obj or not isinstance(pro_obj['show_images_in_search_form'], bool):
+            return False, 'invalid show_images_in_search_form'
+        if 'hide_timelines' not in pro_obj or not isinstance(pro_obj['hide_timelines'], bool):
+            return False, 'invalid hide_timelines'
+        if 'new_linetype' not in pro_obj or pro_obj['new_linetype'] not in ('break', 'newline'):
+            return False, 'invalid new_linetype'
+        if 'show_original_search' not in pro_obj:
+            pro_obj['show_original_search'] = 'V2'
+        if pro_obj['show_original_search'] not in ('V2', 'V1'):
+            return False, 'invalid show_original_search'
+        if 'page_length' not in pro_obj:
+            pro_obj['page_length'] = 15
+        if not isinstance(pro_obj['page_length'], int):
+            return False, 'invalid page_length'
 
-    return True, None
+        return True, None
 
 
 @api.route('/projects/<project_name>')
@@ -416,7 +417,8 @@ class Project(Resource):
         input = request.get_json(force=True)
 
 
-        is_valid, message = validate(input)
+        is_valid, message = AllProjects.validate(input)
+
         if not is_valid:
             return rest.bad_request(message)
 
@@ -667,7 +669,8 @@ class ProjectFields(Resource):
         if 'description' not in field_obj:
             field_obj['description'] = ''
         if 'type' not in field_obj or field_obj['type'] not in \
-                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number', 'text'):
+                ('string', 'location', 'username', 'date', 'email', 'hyphenated', 'phone', 'image', 'kg_id', 'number',
+                 'text', "type"):
             return False, 'Invalid field attribute: type'
         if 'show_in_search' not in field_obj or \
                 not isinstance(field_obj['show_in_search'], bool):
@@ -679,7 +682,8 @@ class ProjectFields(Resource):
                         field_obj['show_as_link'] not in ('text', 'entity'):
             return False, 'Invalid field attribute: show_as_link'
         if 'show_in_result' not in field_obj or \
-                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description', 'nested'):
+                        field_obj['show_in_result'] not in ('header', 'detail', 'no', 'title', 'description', 'nested',
+                                                            "series"):
             return False, 'Invalid field attribute: show_in_result'
         if 'color' not in field_obj:
             return False, 'Invalid field attribute: color'
@@ -707,7 +711,7 @@ class ProjectFields(Resource):
             field_obj['predefined_extractor'] = 'none'
         if 'rule_extraction_target' not in field_obj or \
                         field_obj['rule_extraction_target'] not in (
-                'title_only', 'description_only', 'title_and_description'):
+                        'title_only', 'description_only', 'title_and_description'):
             field_obj['rule_extraction_target'] = 'title_and_description'
         if 'case_sensitive' not in field_obj or \
                 not isinstance(field_obj['case_sensitive'], bool) or \
@@ -724,13 +728,15 @@ class ProjectFields(Resource):
                 del field_obj['group_order']
         if 'free_text_search' not in field_obj \
                 or not isinstance(field_obj['free_text_search'], bool):
-                field_obj['free_text_search'] = False
-        if field_obj['type']!='number' and ('enable_scoring_coefficient' in field_obj or 'scoring_coefficient' in field_obj):
-                return False, 'Invalid field attributes: scoring_coefficient, enable_scoring_coefficient'
-        if 'enable_scoring_coefficient' in field_obj and not isinstance(field_obj['enable_scoring_coefficient'],bool):
-                return False, 'Invalid field attribute: enable_scoring_coefficient'
-        if 'scoring_coefficient' in field_obj and not (isinstance(field_obj['scoring_coefficient'],float) or isinstance(field_obj['scoring_coefficient'],int)):
-                return False, 'Invalid field attribute: scoring_coefficient'
+            field_obj['free_text_search'] = False
+        if field_obj['type'] != 'number' and (
+                'enable_scoring_coefficient' in field_obj or 'scoring_coefficient' in field_obj):
+            return False, 'Invalid field attributes: scoring_coefficient, enable_scoring_coefficient'
+        if 'enable_scoring_coefficient' in field_obj and not isinstance(field_obj['enable_scoring_coefficient'], bool):
+            return False, 'Invalid field attribute: enable_scoring_coefficient'
+        if 'scoring_coefficient' in field_obj and not (
+            isinstance(field_obj['scoring_coefficient'], float) or isinstance(field_obj['scoring_coefficient'], int)):
+            return False, 'Invalid field attribute: scoring_coefficient'
         return True, None
 
 
@@ -1734,8 +1740,9 @@ class Data(Resource):
 
         if not args['sync']:
             t = threading.Thread(target=Data._update_catalog_worker,
-                args=(project_name, file_name, args['file_type'], src_file_path, dest_dir_path, args['log'],),
-                name='data_upload')
+                                 args=(project_name, file_name, args['file_type'], src_file_path, dest_dir_path,
+                                       args['log'],),
+                                 name='data_upload')
             t.start()
             data[project_name]['threads'].append(t)
 
@@ -1964,12 +1971,29 @@ class Data(Resource):
         '''
         es = ES(config['es']['sample_url'])
         for tld in tld_list:
+            # delete from kg
             try:
                 es.es.delete_by_query(index=project_name,
                                       doc_type=data[project_name]['master_config']['root_name'],
                                       body=query.format(tld=tld))
             except:
                 logger.exception('error in _delete_es_worker')
+
+            # update status
+            with data[project_name]['locks']['status']:
+                if tld in data[project_name]['status']['added_docs']:
+                    data[project_name]['status']['added_docs'][tld] = 0
+                    data[project_name]['status']['desired_docs'][tld] = 0
+                    set_status_dirty(project_name)
+
+            # update data
+            with data[project_name]['locks']['data']:
+                if tld in data[project_name]['data']:
+
+                    for doc_id in data[project_name]['data'][tld].iterkeys():
+                        data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+
+                    set_catalog_dirty(project_name)
 
     @staticmethod
     def generate_tld(file_name):
@@ -2303,7 +2327,6 @@ class Actions(Resource):
             es = ES(config['es']['sample_url'])
             r = es.search(project_name, data[project_name]['master_config']['root_name'],
                           query, ignore_no_index=True, filter_path=['aggregations'])
-
 
             if r is not None:
                 for obj in r['aggregations']['group_by_tld']['buckets']:
