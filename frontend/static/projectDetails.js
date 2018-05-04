@@ -120,6 +120,18 @@ poly = Polymer({
       /*  this.listen(this.$$("#yes"), 'tap', 'deleteAllFileData');*/
         this.listen(this.$$("#menuToggle"),'click', "toggleDrawer");
     },
+    showExtractions: function(){
+       console.log(this.$$('#extractionFields').style.visibility)
+        if(this.$$('#extractionFields').style.visibility == "hidden")
+            {
+                this.$$('#extractionFields').style.visibility == "visible";
+            }
+        else
+        {
+            this.$$('#extractionFields').style.visibility == "hidden";
+        }
+
+    },
     toggleDrawer: function() {
 
         if (this.$$("#drawerLayout").forceNarrow || !this.$$("#drawerLayout").narrow) {
@@ -1542,7 +1554,7 @@ poly = Polymer({
     },
     isEqual: function(page,item)
     {
-        console.log(item==this.page)
+        //console.log(item==this.page)
         return page==item 
     },
     sortFields: function(obj1, obj2) {
@@ -2033,7 +2045,7 @@ poly = Polymer({
 
         this.projectSettingsObject = [];
         this.projectSettingsObject = data.detail.response;
-        ////console(this.projectSettingsObject);
+        console.log(this.projectSettingsObject);
 
 
         if(this.projectSettingsObject.show_images_in_facets)
@@ -2079,6 +2091,7 @@ poly = Polymer({
 
     },
     projectUpdateDone: function(){
+        this.refreshTldTable();
         
     },
     saveProjectSettings: function() {
@@ -2101,6 +2114,7 @@ poly = Polymer({
         this.projectSettingsObject.show_images_in_facets = this.$$('#imageFacets').checked;
         this.projectSettingsObject.show_images_in_search_form =this.$$('#searchFormImages').checked;
         this.projectSettingsObject.hide_timelines =this.$$('#hideTimelines').checked;
+        this.projectSettingsObject.page_length =this.$$('#pageLength').value;
 
         /*if(projectSettingsObject.imagePrefix == undefined)
         {
@@ -2113,7 +2127,8 @@ poly = Polymer({
             "show_images_in_search_form": this.projectSettingsObject.show_images_in_search_form == undefined ? false : this.projectSettingsObject.show_images_in_search_form,
             "hide_timelines": this.projectSettingsObject.hide_timelines ==undefined ? false : this.projectSettingsObject.hide_timelines,
             "new_linetype": this.projectSettingsObject.new_linetype ==undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase(),
-            "show_original_search" : this.projectSettingsObject.show_original_search == undefined ? "V2" : this.projectSettingsObject.show_original_search
+            "show_original_search" : this.projectSettingsObject.show_original_search == undefined ? "V2" : this.projectSettingsObject.show_original_search,
+            "page_length" :  this.projectSettingsObject.page_length == undefined ? 15 : parseInt(this.projectSettingsObject.page_length)
         });
         this.$$('#projectSettingsDialog').close();
         this.$.updateProjectSettings.generateRequest();

@@ -316,6 +316,7 @@ class AllProjects(Resource):
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines', False)
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype', 'break')
         data[project_name]['master_config']['show_original_search'] = input.get('show_original_search', 'V2')
+        data[project_name]['master_config']['page_length'] = input.get('page_length', 15)
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -378,29 +379,32 @@ class AllProjects(Resource):
     #     return rest.deleted()
 
 
-    @staticmethod
-    def validate(pro_obj):
-        """
-        :return: bool, message
-        """
-        if 'image_prefix' not in pro_obj or not isinstance(pro_obj['image_prefix'], basestring):
-            return False, 'invalid image_prefix'
-        if 'default_desired_num' not in pro_obj or (999999999 < pro_obj['default_desired_num'] < 0):
-            return False, 'invalid default_desired_num'
-        if 'show_images_in_facets' not in pro_obj or not isinstance(pro_obj['show_images_in_facets'], bool):
-            return False, 'invalid show_images_in_facets'
-        if 'show_images_in_search_form' not in pro_obj or not isinstance(pro_obj['show_images_in_search_form'], bool):
-            return False, 'invalid show_images_in_search_form'
-        if 'hide_timelines' not in pro_obj or not isinstance(pro_obj['hide_timelines'], bool):
-            return False, 'invalid hide_timelines'
-        if 'new_linetype' not in pro_obj or pro_obj['new_linetype'] not in ('break', 'newline'):
-            return False, 'invalid new_linetype'
-        if 'show_original_search' not in pro_obj:
-            pro_obj['show_original_search'] = 'V2'
-        if pro_obj['show_original_search'] not in ('V2','V1'):
-            return False, 'invalid show_original_search'
+def validate(pro_obj):
+    """
+    :return: bool, message
+    """
+    if 'image_prefix' not in pro_obj or not isinstance(pro_obj['image_prefix'], basestring):
+        return False, 'invalid image_prefix'
+    if 'default_desired_num' not in pro_obj or (999999999 < pro_obj['default_desired_num'] < 0):
+        return False, 'invalid default_desired_num'
+    if 'show_images_in_facets' not in pro_obj or not isinstance(pro_obj['show_images_in_facets'], bool):
+        return False, 'invalid show_images_in_facets'
+    if 'show_images_in_search_form' not in pro_obj or not isinstance(pro_obj['show_images_in_search_form'], bool):
+        return False, 'invalid show_images_in_search_form'
+    if 'hide_timelines' not in pro_obj or not isinstance(pro_obj['hide_timelines'], bool):
+        return False, 'invalid hide_timelines'
+    if 'new_linetype' not in pro_obj or pro_obj['new_linetype'] not in ('break', 'newline'):
+        return False, 'invalid new_linetype'
+    if 'show_original_search' not in pro_obj:
+        pro_obj['show_original_search'] = 'V2'
+    if pro_obj['show_original_search'] not in ('V2','V1'):
+        return False, 'invalid show_original_search'
+    if 'page_length' not in pro_obj:
+        pro_obj['page_length'] = 15
+    if not isinstance(pro_obj['page_length'], int):
+        return False, 'invalid page_length'
 
-        return True, None
+    return True, None
 
 
 @api.route('/projects/<project_name>')
@@ -412,7 +416,7 @@ class Project(Resource):
         input = request.get_json(force=True)
 
 
-        is_valid, message = AllProjects.validate(input)
+        is_valid, message = validate(input)
         if not is_valid:
             return rest.bad_request(message)
 
@@ -424,6 +428,7 @@ class Project(Resource):
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines')
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype')
         data[project_name]['master_config']['show_original_search'] = input.get('show_original_search')
+        data[project_name]['master_config']['page_length'] = input.get('page_length')
         # data[project_name]['master_config']['index'] = es_index
 
         # write to file
@@ -2242,7 +2247,6 @@ class Actions(Resource):
         if args['value'] in ('all', 'tld_statistics'):
             tld_list = dict()
 
-            total_tld = 0
             total_num = 0
             desired_num = 0
             es_num=0
@@ -2252,7 +2256,6 @@ class Actions(Resource):
                     if tld not in data[project_name]['status']['desired_docs']:
                         data[project_name]['status']['desired_docs'][tld] = 0
                     if tld in data[project_name]['status']['total_docs']:
-                        total_tld +=1
                         total_num += data[project_name]['status']['total_docs'][tld]
                         desired_num +=data[project_name]['status']['desired_docs'][tld]
                         tld_obj = {
@@ -2307,7 +2310,6 @@ class Actions(Resource):
                     # check if tld is in uploaded file
                     tld = obj['key']
                     if tld not in tld_list:
-                        total_tld +=1
                         tld_list[tld] = {
                             'tld': tld,
                             'total_num': 0,
@@ -2322,7 +2324,6 @@ class Actions(Resource):
                     # check if tld is in uploaded file
                     tld = obj['key']
                     if tld not in tld_list:
-                        total_tld +=1
                         tld_list[tld] = {
                             'tld': tld,
                             'total_num': 0,
@@ -2334,9 +2335,12 @@ class Actions(Resource):
                     es_original_num += obj['doc_count']
 
             
-            page_len = 15
+            if 'page_length' in data[project_name]['master_config']:
+                page_len = data[project_name]['master_config']['page_length']
+            else:
+                page_len = 15
             sorted_values = sorted(tld_list.values(), key=lambda x: x['tld'])
-            ret['total_tld']= total_tld
+            ret['total_tld']= len(sorted_values)
             ret['tld_statistics'] = sorted_values[page_len*(int(args['page'])-1):page_len*(int(args['page'])-1)+page_len]
             ret['tot_pages'] = len(sorted_values)/page_len if len(sorted_values)%page_len==0  else len(sorted_values)/page_len+1
             ret['total_num'] = total_num
