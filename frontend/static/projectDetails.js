@@ -46,6 +46,8 @@ poly = Polymer({
         this.addType =false
         this.editType=true
         this.page=1
+        this.tot_pages=1
+        this.pages = Array.from({length: this.tot_pages}, (x,i) => i+1);
         this.scope.getIconNames = function(iconset) {
         return iconset.getIconNames();
         ////console("heree");
@@ -108,8 +110,8 @@ poly = Polymer({
 
         this.searchImportance = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
         this.show_as_linkArray = ["text", "entity"];
-        this.show_in_resultArray = ["header", "detail", "description", "no", "title", "nested"];
-        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id", "number","text"];
+        this.show_in_resultArray = ["header", "detail", "description", "no", "title", "nested","series"];
+        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id", "number","text","type"];
         this.predefined_extractor_Array = ["none", "address", "country", "email", "posting_date", "phone", "review_id", "social_media", "TLD"];
         this.extractionTargetArray = ["title_only", "description_only", "title_and_description"];
         //this.$.actions.focus();
@@ -117,6 +119,18 @@ poly = Polymer({
         var drawerLayout = this.$$('#drawerLayout');
       /*  this.listen(this.$$("#yes"), 'tap', 'deleteAllFileData');*/
         this.listen(this.$$("#menuToggle"),'click', "toggleDrawer");
+    },
+    showExtractions: function(){
+       console.log(this.$$('#extractionFields').style.visibility)
+        if(this.$$('#extractionFields').style.visibility == "hidden")
+            {
+                this.$$('#extractionFields').style.visibility == "visible";
+            }
+        else
+        {
+            this.$$('#extractionFields').style.visibility == "hidden";
+        }
+
     },
     toggleDrawer: function() {
 
@@ -1415,7 +1429,7 @@ poly = Polymer({
         ////console("refresh tld table");
         $.ajax({
             type: "GET",
-            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
+            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics&page='+this.page,
             dataType: "json",
             context: this,
             async: true,
@@ -1472,12 +1486,13 @@ poly = Polymer({
                 }
                 );
 
-
-                this.total_tld = total_tld;
-                this.total_num =total_total_num;
-                this.total_desired_num =total_desired_num;
-                this.total_es_num = total_es_num;
-                this.total_es_original_num = total_es_original_num;
+                this.tot_pages = data['tot_pages']
+                this.pages =  Array.from({length: this.tot_pages}, (x,i) => i+1);
+                this.total_tld = data['total_tld']
+                this.total_num =data['total_num']
+                this.total_desired_num =data['desired_num']
+                this.total_es_num = data["es_num"];
+                this.total_es_original_num = data["es_original_num"];
                 this.tldTableData = newTldTableData;
 
                 ////console(this.tldTableData);
@@ -1513,7 +1528,35 @@ poly = Polymer({
             }
         });
     },
-   
+    selectPage: function(e)
+    {
+        
+        this.page = $(e.currentTarget)[0].id
+        this.refreshTldTable()
+        this.isEqual(this.page)
+
+    },
+    prevPage: function()
+    {
+        if(this.page-1>=1)
+        {
+            this.page = this.page-1
+            this.refreshTldTable()
+        }
+    },
+    nextPage: function()
+    {
+        if(this.page+1<=this.tot_pages)
+        {
+            this.page = this.page+1
+            this.refreshTldTable()
+        }
+    },
+    isEqual: function(page,item)
+    {
+        //console.log(item==this.page)
+        return page==item 
+    },
     sortFields: function(obj1, obj2) {
         var a = obj1[0]["name"].toLowerCase();
         var b = obj2[0]["name"].toLowerCase();
@@ -2002,7 +2045,7 @@ poly = Polymer({
 
         this.projectSettingsObject = [];
         this.projectSettingsObject = data.detail.response;
-        ////console(this.projectSettingsObject);
+        console.log(this.projectSettingsObject);
 
 
         if(this.projectSettingsObject.show_images_in_facets)
@@ -2048,6 +2091,7 @@ poly = Polymer({
 
     },
     projectUpdateDone: function(){
+        this.refreshTldTable();
         
     },
     saveProjectSettings: function() {
@@ -2070,6 +2114,7 @@ poly = Polymer({
         this.projectSettingsObject.show_images_in_facets = this.$$('#imageFacets').checked;
         this.projectSettingsObject.show_images_in_search_form =this.$$('#searchFormImages').checked;
         this.projectSettingsObject.hide_timelines =this.$$('#hideTimelines').checked;
+        this.projectSettingsObject.page_length =this.$$('#pageLength').value;
 
         /*if(projectSettingsObject.imagePrefix == undefined)
         {
@@ -2082,7 +2127,8 @@ poly = Polymer({
             "show_images_in_search_form": this.projectSettingsObject.show_images_in_search_form == undefined ? false : this.projectSettingsObject.show_images_in_search_form,
             "hide_timelines": this.projectSettingsObject.hide_timelines ==undefined ? false : this.projectSettingsObject.hide_timelines,
             "new_linetype": this.projectSettingsObject.new_linetype ==undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase(),
-            "show_original_search" : this.projectSettingsObject.show_original_search == undefined ? "V2" : this.projectSettingsObject.show_original_search
+            "show_original_search" : this.projectSettingsObject.show_original_search == undefined ? "V2" : this.projectSettingsObject.show_original_search,
+            "page_length" :  this.projectSettingsObject.page_length == undefined ? 15 : parseInt(this.projectSettingsObject.page_length)
         });
         this.$$('#projectSettingsDialog').close();
         this.$.updateProjectSettings.generateRequest();
