@@ -239,8 +239,8 @@ class Search(Resource):
     @requires_auth
     def get(self, project_name, type):
         if project_name not in data:
+            logger.error('API Request received for %s' % (project_name))
             return rest.not_found()
-        logger.error('API Request received for %s' % (project_name))
 
         es = ES(config['es']['sample_url'])
         myargs = request.args
