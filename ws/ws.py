@@ -9,16 +9,13 @@ import types
 import werkzeug
 import codecs
 import csv
-import multiprocessing
 import subprocess
-import thread
 import threading
 import requests
 import gzip
 import tarfile
 import re
 import hashlib
-import traceback
 import time
 import datetime
 import random
@@ -39,7 +36,6 @@ from search.elastic_manager import ES
 import templates
 import rest
 from basic_auth import requires_auth, requires_auth_html
-import git_helper
 import etk_helper
 import data_persistence
 from search.conjunctive_query import ConjunctiveQueryProcessor
@@ -65,7 +61,6 @@ else:
     logger.addHandler(log_stdout)
 logger.setLevel(config['logging']['level'])
 logging.getLogger('werkzeug').setLevel(config['logging']['werkzeug'])
-# print logging.Logger.manager.loggerDict.get('werkzeug')
 
 # flask app
 app = Flask(__name__)
@@ -352,31 +347,12 @@ class AllProjects(Resource):
 
         start_threads_and_locks(project_name)
 
-        # git_helper.commit(files=[project_name + '/*'], message='create project {}'.format(project_name))
         logger.info('project %s created.' % project_name)
         return rest.created()
 
     @requires_auth
     def get(self):
         return data.keys()
-
-    # don't allow to delete all projects at one time
-    # @requires_auth
-    # def delete(self):
-    #     for project_name in data.keys():  # not iterkeys(), need to do del in iteration
-    #         try:
-    #             # project_lock.acquire(project_name)
-    #             del data[project_name]
-    #             shutil.rmtree(os.path.join(_get_project_dir_path(project_name)))
-    #         except Exception as e:
-    #             logger.error('deleting project %s: %s' % (project_name, e.message))
-    #             return rest.internal_error('deleting project %s error, halted.' % project_name)
-    #             # finally:
-    #             #     project_lock.remove(project_name)
-    #
-    #     git_helper.commit(message='delete all projects')
-    #     return rest.deleted()
-
 
     @staticmethod
     def validate(pro_obj):
@@ -427,8 +403,6 @@ class Project(Resource):
 
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='update project {}'.format(project_name))
         return rest.created()
 
     @requires_auth
@@ -496,8 +470,6 @@ class ProjectTags(Resource):
         data[project_name]['master_config']['tags'] = dict()
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='delete all tags: project {}'.format(project_name))
         return rest.deleted()
 
     @requires_auth
@@ -520,8 +492,6 @@ class ProjectTags(Resource):
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='create a tag: project {}, tag {}'.format(project_name, tag_name))
         return rest.created()
 
     @staticmethod
@@ -575,8 +545,6 @@ class Tag(Resource):
         data[project_name]['master_config']['tags'][tag_name] = tag_object
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='update a tag: project {}, tag {}'.format(project_name, tag_name))
         return rest.created()
 
     @requires_auth
@@ -592,8 +560,6 @@ class Tag(Resource):
         del data[project_name]['master_config']['tags'][tag_name]
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='delete a tag: project {}, tag {}'.format(project_name, tag_name))
         return rest.deleted()
 
 
@@ -617,8 +583,6 @@ class ProjectFields(Resource):
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='create a field: project {}, field {}'.format(project_name, field_name))
         return rest.created()
 
     @requires_auth
@@ -640,8 +604,6 @@ class ProjectFields(Resource):
 
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='delete all fields: project {}'.format(project_name))
         return rest.deleted()
 
     @staticmethod
@@ -761,8 +723,6 @@ class Field(Resource):
         data[project_name]['master_config']['fields'][field_name] = field_object
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='update a field: project {}, field {}'.format(project_name, field_name))
         return rest.created()
 
     @requires_auth
@@ -783,8 +743,6 @@ class Field(Resource):
 
         # write to file
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='delete a field: project {}, field {}'.format(project_name, field_name))
         return rest.deleted()
 
 
@@ -824,8 +782,6 @@ class SpacyRulesOfAField(Resource):
         # data[project_name]['master_config']['spacy_field_rules'] = {field_name: path}
         update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
-        # git_helper.commit(files=[path, project_name + '/master_config.json'],
-        #                   message='create / update spacy rules: project {}, field {}'.format(project_name, field_name))
 
         with codecs.open(path, 'r') as f:
             obj = json.loads(f.read())
@@ -874,8 +830,6 @@ class SpacyRulesOfAField(Resource):
         data[project_name]['master_config']['fields'][field_name]['number_of_rules'] = 0
         # del data[project_name]['master_config']['spacy_field_rules'][field_name]
         update_master_config_file(project_name)
-        # git_helper.commit(files=[path, project_name + '/master_config.json'],
-        #                   message='delete spacy rules: project {}, field {}'.format(project_name, field_name))
         return rest.deleted()
 
 
@@ -913,8 +867,6 @@ class ProjectGlossaries(Resource):
         # file.save(file_path)
 
         self.compute_statistics(project_name, name, json_file_path)
-        # git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
-        #                   message='create a glossary: project {}, glossary {}'.format(project_name, name))
 
         return rest.created()
 
@@ -939,8 +891,6 @@ class ProjectGlossaries(Resource):
             if 'glossaries' in v and v['glossaries']:
                 v['glossaries'] = []
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
-        #                   message='delete all glossaries: project {}'.format(project_name))
         return rest.deleted()
 
     @staticmethod
@@ -1017,8 +967,6 @@ class Glossary(Resource):
         write_to_file(content, file_path)
 
         ProjectGlossaries.compute_statistics(project_name, glossary_name, json_file_path)
-        # git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
-        #                   message='update a glossary: project {}, glossary {}'.format(project_name, name))
         return rest.created()
 
     @requires_auth
@@ -1059,8 +1007,6 @@ class Glossary(Resource):
             if 'glossaries' in v and glossary_name in v['glossaries']:
                 v['glossaries'].remove(glossary_name)
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json', project_name + '/glossaries/*'],
-        #                   message='delete a glossary: project {}, glossary {}'.format(project_name, glossary_name))
         return rest.deleted()
 
 
@@ -1086,9 +1032,6 @@ class ProjectTableAttributes(Resource):
 
         data[project_name]['master_config']['table_attributes'][attribute_name] = input
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='create / update table attributes: project {}, attribute {}'
-        #                   .format(project_name, attribute_name))
         return rest.created()
 
     @requires_auth
@@ -1107,8 +1050,6 @@ class ProjectTableAttributes(Resource):
             return rest.deleted()
         data[project_name]['master_config']['table_attributes'] = input
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='delete table attributes: project {}'.format(project_name))
         return rest.deleted()
 
     @staticmethod
@@ -1144,9 +1085,6 @@ class TableAttribute(Resource):
             return rest.bad_request('No such field')
         data[project_name]['master_config']['table_attributes'][attribute_name] = input
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='create / update table attributes: project {}, attribute {}'
-        #                   .format(project_name, attribute_name))
         return rest.created()
 
     @requires_auth
@@ -1171,9 +1109,6 @@ class TableAttribute(Resource):
 
         del data[project_name]['master_config']['table_attributes'][attribute_name]
         update_master_config_file(project_name)
-        # git_helper.commit(files=[project_name + '/master_config.json'],
-        #                   message='delete table attributes: project {}, attribute {}'
-        #                   .format(project_name, attribute_name))
         return rest.deleted()
 
 
@@ -1246,10 +1181,6 @@ class FieldAnnotations(Resource):
         # load into ES
         self.es_remove_field_annotation('full', project_name, kg_id, field_name)
         self.es_remove_field_annotation('sample', project_name, kg_id, field_name)
-        # commit to git
-        # git_helper.commit(files=[project_name + '/field_annotations/' + field_name + '.csv'],
-        #                   message='delete all field annotations: project {}, field {}, kg_id {}'
-        #                   .format(project_name, field_name, kg_id))
         return rest.deleted()
 
     @requires_auth
@@ -1276,10 +1207,6 @@ class FieldAnnotations(Resource):
         # load into ES
         self.es_update_field_annotation('full', project_name, kg_id, field_name, key, human_annotation)
         self.es_update_field_annotation('sample', project_name, kg_id, field_name, key, human_annotation)
-        # commit to git
-        # git_helper.commit(files=[project_name + '/field_annotations/' + field_name + '.csv'],
-        #                   message='create / update a field annotation: project {}, field {}, kg_id {}'
-        #                   .format(project_name, field_name, kg_id))
         return rest.created()
 
     @requires_auth
@@ -1423,10 +1350,6 @@ class FieldInstanceAnnotations(Resource):
         # load into ES
         FieldAnnotations.es_remove_field_annotation('full', project_name, kg_id, field_name, key)
         FieldAnnotations.es_remove_field_annotation('sample', project_name, kg_id, field_name, key)
-        # commit to git
-        # git_helper.commit(files=[project_name + '/field_annotations/' + field_name + '.csv'],
-        #                   message='delete a field annotation: project {}, field {}, kg_id {}, key {}'
-        #                   .format(project_name, field_name, kg_id, key))
         return rest.deleted()
 
 
@@ -1457,10 +1380,6 @@ class TagAnnotationsForEntityType(Resource):
 
         # write to file
         self.write_to_tag_file(project_name, tag_name)
-        # commit to git
-        # git_helper.commit(files=[project_name + '/entity_annotations/' + tag_name + '.csv'],
-        #                   message='delete all tag annotations: project {}, entity {}, tag {}'
-        #                   .format(project_name, entity_name, tag_name))
 
         return rest.deleted()
 
@@ -1509,10 +1428,6 @@ class TagAnnotationsForEntityType(Resource):
         # load to ES
         self.es_update_tag_annotation('full', project_name, kg_id, tag_name, human_annotation)
         self.es_update_tag_annotation('sample', project_name, kg_id, tag_name, human_annotation)
-        # commit to git
-        # git_helper.commit(files=[project_name + '/entity_annotations/' + tag_name + '.csv'],
-        #                   message='create /update a tag annotation: project {}, entity {}, tag {}'
-        #                   .format(project_name, entity_name, tag_name))
         return rest.created()
 
     @requires_auth
@@ -1637,10 +1552,6 @@ class TagAnnotationsForEntity(Resource):
         # remove from ES
         TagAnnotationsForEntityType.es_remove_tag_annotation('full', project_name, kg_id, tag_name)
         TagAnnotationsForEntityType.es_remove_tag_annotation('sample', project_name, kg_id, tag_name)
-        # commit to git
-        # git_helper.commit(files=[project_name + '/entity_annotations/' + tag_name + '.csv'],
-        #                   message='delete a tag annotation: project {}, entity {}, tag {}, kg_id {}'
-        #                   .format(project_name, entity_name, tag_name, kg_id))
 
         return rest.deleted()
 
@@ -2118,7 +2029,7 @@ class ActionProjectConfig(Resource):
                 tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
 
             landmark_config = ActionProjectConfig.landmark_export(project_name)
-            # print 'config', len(landmark_config)
+
             if len(landmark_config) > 0:
                 landmark_config_path = os.path.join(
                     _get_project_dir_path(project_name), 'working_dir/_landmark_config.json')
@@ -2441,7 +2352,7 @@ class Actions(Resource):
                 write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
             else:
                 new_extraction = False  # currently not in use
-                # print 'start extraction: {} ({})'.format(etk_config_version[:6], 'new' if new_extraction else 'prev')
+
 
         return new_extraction
 
@@ -2740,7 +2651,6 @@ class DataPushingWorker(threading.Thread):
 
         got_lock = data[project_name]['locks']['data'].acquire(False)
         try:
-            # print '_add_data_worker got data lock?', got_lock
             if not got_lock or self.stop_adding_data:
                 return
 
@@ -2833,7 +2743,6 @@ class MemoryDumpWorker(threading.Thread):
         }
 
     def run_function(self):
-        # print self.memory_timestamp, self.file_timestamp
         memory_timestamp = self.memory_timestamp
         if self.file_timestamp < memory_timestamp:
             self.function(**self.kwargs)
