@@ -35,16 +35,16 @@ from config import config
 from search.elastic_manager import ES
 import templates
 import rest
-from basic_auth import requires_auth, requires_auth_html
 import etk_helper
+from basic_auth import requires_auth, requires_auth_html
 import data_persistence
 from search.conjunctive_query import ConjunctiveQueryProcessor
 from search.event_query import EventQueryProcessor
 import requests.packages.urllib3
 
-sys.path.append(os.path.join(config['etk']['path'],
-                             'etk/structured_extractors/digTokenizerExtractor/digCrfTokenizer'))
-from crf_tokenizer import CrfTokenizer
+# sys.path.append(os.path.join(config['etk']['path'],
+#                              'etk/structured_extractors/digTokenizerExtractor/digCrfTokenizer'))
+# from crf_tokenizer import CrfTokenizer
 
 requests.packages.urllib3.disable_warnings()
 
@@ -291,9 +291,6 @@ class AllProjects(Resource):
         if not os.path.exists(project_dir_path):
             os.makedirs(project_dir_path)
 
-        # create global gitignore file
-        write_to_file('', os.path.join(project_dir_path, '.gitignore'))
-
         # initialize data structure
         data[project_name] = templates.get('project')
         data[project_name]['master_config'] = templates.get('master_config')
@@ -314,34 +311,27 @@ class AllProjects(Resource):
         update_master_config_file(project_name)
 
         # create other dirs and files
-        # .gitignore file should be created for empty folder will not be show in commit
         os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
-        write_to_file('', os.path.join(project_dir_path, 'field_annotations/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
-        write_to_file('', os.path.join(project_dir_path, 'entity_annotations/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'glossaries'))
-        write_to_file('', os.path.join(project_dir_path, 'glossaries/.gitignore'))
-        dst_dir = os.path.join(_get_project_dir_path(project_name), 'glossaries')
-        src_dir = config['default_glossaries_path']
-        for file_name in os.listdir(src_dir):
-            full_file_name = os.path.join(src_dir, file_name)
-            if os.path.isfile(full_file_name):
-                shutil.copy(full_file_name, dst_dir)
+        # dst_dir = os.path.join(_get_project_dir_path(project_name), 'glossaries')
+        # src_dir = config['default_glossaries_path']
+        # for file_name in os.listdir(src_dir):
+        #     full_file_name = os.path.join(src_dir, file_name)
+        #     if os.path.isfile(full_file_name):
+        #         shutil.copy(full_file_name, dst_dir)
         os.makedirs(os.path.join(project_dir_path, 'spacy_rules'))
-        write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
-        dst_dir = os.path.join(project_dir_path, 'spacy_rules')
-        src_dir = config['default_spacy_rules_path']
-        for file_name in os.listdir(src_dir):
-            full_file_name = os.path.join(src_dir, file_name)
-            if os.path.isfile(full_file_name):
-                shutil.copy(full_file_name, dst_dir)
-        write_to_file('', os.path.join(project_dir_path, 'spacy_rules/.gitignore'))
+        # dst_dir = os.path.join(project_dir_path, 'spacy_rules')
+        # src_dir = config['default_spacy_rules_path']
+        # for file_name in os.listdir(src_dir):
+        #     full_file_name = os.path.join(src_dir, file_name)
+        #     if os.path.isfile(full_file_name):
+        #         shutil.copy(full_file_name, dst_dir)
         os.makedirs(os.path.join(project_dir_path, 'data'))
-        write_to_file('*\n', os.path.join(project_dir_path, 'data/.gitignore'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir'))
-        write_to_file('*\n', os.path.join(project_dir_path, 'working_dir/.gitignore'))
+        os.makedirs(os.path.join(project_dir_path, 'working_dir/generated_em'))
+        os.makedirs(os.path.join(project_dir_path, 'working_dir/additional_ems'))
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
-        write_to_file('*\n', os.path.join(project_dir_path, 'landmark_rules/.gitignore'))
 
         update_status_file(project_name)  # create status file after creating the working_dir
 
@@ -359,7 +349,7 @@ class AllProjects(Resource):
         """
         :return: bool, message
         """
-        if 'image_prefix' not in pro_obj or not isinstance(pro_obj['image_prefix'], basestring):
+        if 'image_prefix' not in pro_obj or not isinstance(pro_obj['image_prefix'], str):
             return False, 'invalid image_prefix'
         if 'default_desired_num' not in pro_obj or (999999999 < pro_obj['default_desired_num'] < 0):
             return False, 'invalid default_desired_num'
@@ -917,16 +907,16 @@ class ProjectGlossaries(Resource):
         lines = lines.replace('\r', '\n')  # convert
         lines = lines.split('\n')
 
-        t = CrfTokenizer()
-        t.setRecognizeHtmlEntities(True)
-        t.setRecognizeHtmlTags(True)
-        t.setSkipHtmlTags(True)
+        # t = CrfTokenizer()
+        # t.setRecognizeHtmlEntities(True)
+        # t.setRecognizeHtmlTags(True)
+        # t.setSkipHtmlTags(True)
 
         for line in lines:
             line = line.strip()
             if len(line) == 0:  # trim empty line
                 continue
-            line = ' '.join(t.tokenize(line))
+            # line = ' '.join(t.tokenize(line))
             glossary.append(line)
         return json.dumps(glossary)
 
@@ -1110,49 +1100,6 @@ class TableAttribute(Resource):
         del data[project_name]['master_config']['table_attributes'][attribute_name]
         update_master_config_file(project_name)
         return rest.deleted()
-
-
-# @api.route('/projects/<project_name>/entities/<kg_id>/tags')
-# class EntityTags(Resource):
-#     @requires_auth
-#     def get(self, project_name, kg_id):
-#         if project_name not in data:
-#             return rest.not_found('Project {} not found'.format(project_name))
-#         entity_name = 'Ad'
-#         if entity_name not in data[project_name]['entities']:
-#             data[project_name]['entities'][entity_name] = dict()
-#         if kg_id not in data[project_name]['entities'][entity_name]:
-#             return rest.not_found('kg_id {} not found'.format(kg_id))
-#
-#         return data[project_name]['entities'][entity_name][kg_id]
-#
-#     @requires_auth
-#     def post(self, project_name, kg_id):
-#         if project_name not in data:
-#             return rest.not_found()
-#
-#         input = request.get_json(force=True)
-#         tags = input.get('tags', [])
-#         if len(tags) == 0:
-#             return rest.bad_request('No tags given')
-#         # tag should be exist
-#         for tag_name in tags:
-#             if tag_name not in data[project_name]['master_config']['tags']:
-#                 return rest.bad_request('Tag {} is not exist'.format(tag_name))
-#         # add tags to entity
-#         entity_name = 'Ad'
-#         for tag_name in tags:
-#             if entity_name not in data[project_name]['entities']:
-#                 data[project_name]['entities'][entity_name] = dict()
-#             if kg_id not in data[project_name]['entities'][entity_name]:
-#                 data[project_name]['entities'][entity_name][kg_id] = dict()
-#             if tag_name not in data[project_name]['entities'][entity_name][kg_id]:
-#                 data[project_name]['entities'][entity_name][kg_id][tag_name] = dict()
-#
-#         # write to file
-#         file_path = os.path.join(_get_project_dir_path(project_name), 'entity_annotations/entity_annotations.json')
-#         write_to_file(json.dumps(data[project_name]['entities'], indent=4), file_path)
-#         return rest.created()
 
 
 @api.route('/projects/<project_name>/entities/<kg_id>/fields/<field_name>/annotations')
@@ -1658,7 +1605,7 @@ class Data(Resource):
     def _update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
         def _write_log(content):
             with data[project_name]['locks']['catalog_log']:
-                log_file.write('<#{}> {}: {}\n'.format(thread.get_ident(), file_name, content))
+                log_file.write('<#{}> {}: {}\n'.format(threading.get_ident(), file_name, content))
 
         log_path = os.path.join(_get_project_dir_path(project_name),
                                 'working_dir/catalog_error.log') if log_on else os.devnull
@@ -2331,30 +2278,14 @@ class Actions(Resource):
 
     @staticmethod
     def _generate_etk_config(project_name):
-        new_extraction = True
-
-        custom_etk_config_file_path = os.path.join(
-            _get_project_dir_path(project_name), 'working_dir/custom_etk_config.json')
-        etk_config_file_path = os.path.join(
-            _get_project_dir_path(project_name), 'working_dir/etk_config.json')
-        if os.path.exists(custom_etk_config_file_path):
-            shutil.copy(custom_etk_config_file_path, etk_config_file_path)
-        else:
-            etk_config = etk_helper.generate_etk_config(data[project_name]['master_config'], config, project_name)
-            etk_config_version = hashlib.sha256(json.dumps(etk_config)).hexdigest().upper()
-            etk_config['etk_version'] = etk_config_version
-            etk_config_snapshot_file_path = os.path.join(
-                _get_project_dir_path(project_name), 'working_dir/etk_config_{}.json'.format(etk_config_version))
-            # etk_config needs to be rewrite every time
-            # since hash of the config can be the same to one of the previous versions
-            write_to_file(json.dumps(etk_config, indent=2), etk_config_file_path)
-            if not os.path.exists(etk_config_snapshot_file_path):
-                write_to_file(json.dumps(etk_config, indent=2), etk_config_snapshot_file_path)
-            else:
-                new_extraction = False  # currently not in use
-
-
-        return new_extraction
+        content = etk_helper.generate_base_etk_module(data[project_name]['master_config'])
+        revision = hashlib.sha256(content).hexdigest().upper()[:6]
+        output_path = os.path.join(_get_project_dir_path(project_name),
+                                   'working_dir/generated_em', 'em_{}.py'.format(revision))
+        archive_output_path = os.path.join(_get_project_dir_path(project_name),
+                                   'working_dir/generated_em', 'archive_em_{}.py'.format(revision))
+        write_to_file(content, output_path)
+        write_to_file(content, archive_output_path)
 
     @staticmethod
     def recreate_mapping(project_name):
@@ -2368,73 +2299,74 @@ class Actions(Resource):
         # 2. create etk config and snapshot
         Actions._generate_etk_config(project_name)
 
-        # add config for etl
-        # when creating kafka container, group id is not there. set consumer to read from start.
-        etl_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etl_config.json')
-        if not os.path.exists(etl_config_path):
-            etl_config = {
-                "input_args": {
-                    "auto_offset_reset": "earliest",
-                    "fetch_max_bytes": 52428800,
-                    "max_partition_fetch_bytes": 10485760,
-                    "max_poll_records": 10
-                },
-                "output_args": {
-                    "max_request_size": 10485760,
-                    "compression_type": "gzip"
-                }
-            }
-            write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
-
-        # 3. sandpaper
-        # 3.1 delete previous index
-        url = '{}/{}'.format(
-            config['es']['sample_url'],
-            project_name
-        )
-        try:
-            resp = requests.delete(url, timeout=10)
-        except:
-            pass  # ignore no index error
-        # 3.2 create new index
-        url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
-            config['sandpaper']['url'],
-            config['sandpaper']['ws_url'],
-            project_name,
-            data[project_name]['master_config']['index']['sample'],
-            config['es']['sample_url']
-        )
-        resp = requests.put(url, timeout=10)
-        if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to create index in sandpaper')
-        # 3.3 switch index
-        url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
-            config['sandpaper']['url'],
-            config['sandpaper']['ws_url'],
-            project_name,
-            data[project_name]['master_config']['index']['sample'],
-            config['es']['sample_url']
-        )
-        resp = requests.post(url, timeout=10)
-        if resp.status_code // 100 != 2:
-            return rest.internal_error('failed to switch index in sandpaper')
-
-        # 4. clean up added data status
-        logger.info('re-add data')
-        with data[project_name]['locks']['status']:
-            if 'added_docs' not in data[project_name]['status']:
-                data[project_name]['status']['added_docs'] = dict()
-            for tld in data[project_name]['status']['added_docs'].iterkeys():
-                data[project_name]['status']['added_docs'][tld] = 0
-        with data[project_name]['locks']['data']:
-            for tld in data[project_name]['data'].iterkeys():
-                for doc_id in data[project_name]['data'][tld]:
-                    data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
-        set_status_dirty(project_name)
-
-        # 5. restart extraction
-        data[project_name]['data_pushing_worker'].stop_adding_data = False
-        return Actions.etk_extract(project_name)
+        # # add config for etl
+        # # when creating kafka container, group id is not there. set consumer to read from start.
+        # etl_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etl_config.json')
+        # if not os.path.exists(etl_config_path):
+        #     etl_config = {
+        #         "input_args": {
+        #             "auto_offset_reset": "earliest",
+        #             "fetch_max_bytes": 52428800,
+        #             "max_partition_fetch_bytes": 10485760,
+        #             "max_poll_records": 10
+        #         },
+        #         "output_args": {
+        #             "max_request_size": 10485760,
+        #             "compression_type": "gzip"
+        #         }
+        #     }
+        #     write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
+        #
+        # # 3. sandpaper
+        # # 3.1 delete previous index
+        # url = '{}/{}'.format(
+        #     config['es']['sample_url'],
+        #     project_name
+        # )
+        # try:
+        #     resp = requests.delete(url, timeout=10)
+        # except:
+        #     pass  # ignore no index error
+        # # 3.2 create new index
+        # url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
+        #     config['sandpaper']['url'],
+        #     config['sandpaper']['ws_url'],
+        #     project_name,
+        #     data[project_name]['master_config']['index']['sample'],
+        #     config['es']['sample_url']
+        # )
+        # resp = requests.put(url, timeout=10)
+        # if resp.status_code // 100 != 2:
+        #     return rest.internal_error('failed to create index in sandpaper')
+        # # 3.3 switch index
+        # url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
+        #     config['sandpaper']['url'],
+        #     config['sandpaper']['ws_url'],
+        #     project_name,
+        #     data[project_name]['master_config']['index']['sample'],
+        #     config['es']['sample_url']
+        # )
+        # resp = requests.post(url, timeout=10)
+        # if resp.status_code // 100 != 2:
+        #     return rest.internal_error('failed to switch index in sandpaper')
+        #
+        # # 4. clean up added data status
+        # logger.info('re-add data')
+        # with data[project_name]['locks']['status']:
+        #     if 'added_docs' not in data[project_name]['status']:
+        #         data[project_name]['status']['added_docs'] = dict()
+        #     for tld in data[project_name]['status']['added_docs'].iterkeys():
+        #         data[project_name]['status']['added_docs'][tld] = 0
+        # with data[project_name]['locks']['data']:
+        #     for tld in data[project_name]['data'].iterkeys():
+        #         for doc_id in data[project_name]['data'][tld]:
+        #             data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+        # set_status_dirty(project_name)
+        #
+        # # 5. restart extraction
+        # data[project_name]['data_pushing_worker'].stop_adding_data = False
+        # return Actions.etk_extract(project_name)
+        return rest.accepted()
 
     @staticmethod
     def reload_blacklist(project_name):
