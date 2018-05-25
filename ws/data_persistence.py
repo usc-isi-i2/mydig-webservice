@@ -8,6 +8,7 @@ from config import config
 
 logger = logging.getLogger(config['logging']['name'])
 
+
 # 1.acquire file write lock
 # 2.write to file.new
 # 4.rename file to file.old
@@ -58,4 +59,3 @@ def prepare_data_file(file_path):
         os.remove(new_path)
     else:
         pass
-

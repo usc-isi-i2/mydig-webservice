@@ -11,8 +11,6 @@ from app_glossary import *
 from app_search import *
 from app_action import *
 
-from kafka import KafkaProducer, KafkaConsumer
-from kafka.errors import NoBrokersAvailable
 
 def ensure_sandpaper_is_on():
     try:
@@ -64,7 +62,6 @@ def graceful_killer(signum, frame):
             pass
         logger.info('threads exited, exiting main thread...')
     sys.exit()
-
 
 
 if __name__ == '__main__':

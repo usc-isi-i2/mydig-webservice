@@ -1,5 +1,6 @@
 from app_base import *
 
+
 @api.route('/projects/<project_name>/table_attributes')
 class ProjectTableAttributes(Resource):
     @requires_auth

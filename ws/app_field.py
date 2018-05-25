@@ -1,7 +1,6 @@
 from app_base import *
 
 
-
 @api.route('/projects/<project_name>/fields')
 class ProjectFields(Resource):
     @requires_auth
@@ -122,12 +121,13 @@ class ProjectFields(Resource):
                 or not isinstance(field_obj['free_text_search'], bool):
             field_obj['free_text_search'] = False
         if field_obj['type'] != 'number' and (
-                'enable_scoring_coefficient' in field_obj or 'scoring_coefficient' in field_obj):
+                        'enable_scoring_coefficient' in field_obj or 'scoring_coefficient' in field_obj):
             return False, 'Invalid field attributes: scoring_coefficient, enable_scoring_coefficient'
         if 'enable_scoring_coefficient' in field_obj and not isinstance(field_obj['enable_scoring_coefficient'], bool):
             return False, 'Invalid field attribute: enable_scoring_coefficient'
         if 'scoring_coefficient' in field_obj and not (
-            isinstance(field_obj['scoring_coefficient'], float) or isinstance(field_obj['scoring_coefficient'], int)):
+                    isinstance(field_obj['scoring_coefficient'], float) or isinstance(field_obj['scoring_coefficient'],
+                                                                                      int)):
             return False, 'Invalid field attribute: scoring_coefficient'
         return True, None
 

@@ -38,7 +38,11 @@ import rest
 from search.elastic_manager import ES
 
 import requests.packages.urllib3
+
 requests.packages.urllib3.disable_warnings()
+
+from kafka import KafkaProducer, KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 
 # logger
 logger = logging.getLogger(config['logging']['name'])
@@ -68,7 +72,6 @@ os_reserved_file_names = ('CON', 'PRN', 'AUX', 'NUL',
 # kafka
 kafka_producer = None
 
-
 # flask app
 app = Flask('mydig-webservice')
 app.config.update(MAX_CONTENT_LENGTH=1024 * 1024 * 1024 * 10)
@@ -82,6 +85,7 @@ def api_route(self, *args, **kwargs):
         return cls
 
     return wrapper
+
 
 api.route = types.MethodType(api_route, api)
 

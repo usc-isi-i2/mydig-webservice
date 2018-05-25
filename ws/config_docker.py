@@ -19,7 +19,7 @@ config = {
         }
     },
     'logging': {
-        'name': 'mydig-webservice.log', # name of logger
+        'name': 'mydig-webservice.log',  # name of logger
         'file_path': None,
         'format': '%(asctime)s [%(levelname)s] %(message)s',
         'level': logging.INFO,
@@ -52,7 +52,7 @@ config = {
         'ws_url': 'http://mydig_ws:9879'
     },
     'users': {
-        'admin': '123' # basic YWRtaW46MTIz
+        'admin': '123'  # basic YWRtaW46MTIz
     },
     'frontend': {
         'host': '0.0.0.0',
@@ -84,7 +84,7 @@ config = {
         'group_id': 'mydig',
         'upload': {
             'endpoint': 'http://mydig_ws:9879/projects/{project_name}/data?sync=true&log=false',
-            'file_name': 'ache', # file name in data folder
+            'file_name': 'ache',  # file name in data folder
             # send to endpoint when get more than max_size or max_wait_time
             # 'max_size': 10, # 10 docs
             # 'max_wait_time': 10 * 1000, # 10s, float('inf')

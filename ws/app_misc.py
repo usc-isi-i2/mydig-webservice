@@ -1,6 +1,7 @@
 import yaml
 from app_base import *
 
+
 @app.route('/spec')
 def spec():
     return render_template('swagger_index.html', title='MyDIG web service API reference', spec_path='spec.yaml')

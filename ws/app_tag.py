@@ -1,5 +1,6 @@
 from app_base import *
 
+
 @api.route('/projects/<project_name>/tags')
 class ProjectTags(Resource):
     @requires_auth

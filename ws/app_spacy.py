@@ -1,5 +1,6 @@
 from app_base import *
 
+
 @api.route('/projects/<project_name>/fields/<field_name>/spacy_rules')
 class SpacyRulesOfAField(Resource):
     @requires_auth
