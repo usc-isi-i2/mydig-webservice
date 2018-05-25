@@ -3,6 +3,10 @@ import threading
 import os
 import codecs
 
+import logging
+from config import config
+
+logger = logging.getLogger(config['logging']['name'])
 
 # 1.acquire file write lock
 # 2.write to file.new
@@ -28,8 +32,7 @@ def dump_data(data, file_path):
         if os.path.exists(old_path):
             os.remove(old_path)
     except Exception as e:
-        print e
-        print 'error in dump_data'
+        logger.exception()
 
 
 # when starting:
