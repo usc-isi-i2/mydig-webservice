@@ -342,7 +342,7 @@ class AllProjects(Resource):
 
     @requires_auth
     def get(self):
-        return data.keys()
+        return list(data.keys())
 
     @staticmethod
     def validate(pro_obj):
@@ -865,7 +865,7 @@ class ProjectGlossaries(Resource):
         if project_name not in data:
             return rest.not_found('Project {} not found'.format(project_name))
 
-        return data[project_name]['master_config']['glossaries'].keys()
+        return list(data[project_name]['master_config']['glossaries'].keys())
 
     @requires_auth
     def delete(self, project_name):
@@ -1231,10 +1231,10 @@ class FieldAnnotations(Resource):
                 csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
                 delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             writer.writeheader()
-            for kg_id_, kg_obj_ in field_obj.iteritems():
-                for field_name_, field_obj_ in kg_obj_.iteritems():
+            for kg_id_, kg_obj_ in field_obj.items():
+                for field_name_, field_obj_ in kg_obj_.items():
                     if field_name_ == field_name:
-                        for key_, key_obj_ in field_obj_.iteritems():
+                        for key_, key_obj_ in field_obj_.items():
                             writer.writerow(
                                 {'field_name': field_name_, 'kg_id': kg_id_,
                                  'key': key_, 'human_annotation': key_obj_['human_annotation']})
@@ -1312,7 +1312,7 @@ class TagAnnotationsForEntityType(Resource):
             return rest.not_found('Entity {} not found'.format(entity_name))
 
         for kg_id, kg_item in data[project_name]['entities'][entity_name].items():
-            # if tag_name in kg_item.iterkeys():
+            # if tag_name in kg_item.keys():
             #     if 'human_annotation' in kg_item[tag_name]:
             #         del kg_item[tag_name]['human_annotation']
 
@@ -1339,8 +1339,8 @@ class TagAnnotationsForEntityType(Resource):
 
         result = dict()
         if entity_name in data[project_name]['entities']:
-            for kg_id, kg_item in data[project_name]['entities'][entity_name].iteritems():
-                for tag_name_, annotation in kg_item.iteritems():
+            for kg_id, kg_item in data[project_name]['entities'][entity_name].items():
+                for tag_name_, annotation in kg_item.items():
                     if tag_name == tag_name_:
                         result[kg_id] = annotation
         return result
@@ -1448,9 +1448,9 @@ class TagAnnotationsForEntityType(Resource):
                 csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                 delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             writer.writeheader()
-            for entity_name_, entity_obj_ in tag_obj.iteritems():
-                for kg_id_, kg_obj_ in entity_obj_.iteritems():
-                    for tag_name_, tag_obj_ in kg_obj_.iteritems():
+            for entity_name_, entity_obj_ in tag_obj.items():
+                for kg_id_, kg_obj_ in entity_obj_.items():
+                    for tag_name_, tag_obj_ in kg_obj_.items():
                         if tag_name_ == tag_name and 'human_annotation' in tag_obj_:
                             writer.writerow(
                                 {'tag_name': tag_name_, 'entity_name': entity_name_,
@@ -1746,7 +1746,7 @@ class Data(Resource):
                     ret['error_log'] = tail_file(f, 200)
         else:
             with data[project_name]['locks']['status']:
-                for tld, num in data[project_name]['status']['total_docs'].iteritems():
+                for tld, num in data[project_name]['status']['total_docs'].items():
                     ret[tld] = num
         return ret
 
@@ -1794,7 +1794,7 @@ class Data(Resource):
             with data[project_name]['locks']['data']:
                 if tld in data[project_name]['data']:
                     # remove data file
-                    for k, v in data[project_name]['data'][tld].iteritems():
+                    for k, v in data[project_name]['data'][tld].items():
                         try:
                             os.remove(v['raw_content_path'])
                         except:
@@ -1839,7 +1839,7 @@ class Data(Resource):
             with data[project_name]['locks']['data']:
                 if tld in data[project_name]['data']:
 
-                    for doc_id in data[project_name]['data'][tld].iterkeys():
+                    for doc_id in data[project_name]['data'][tld].keys():
                         data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
 
                     set_catalog_dirty(project_name)
@@ -2020,7 +2020,7 @@ class ActionProjectEtkFilters(Resource):
 
         try:
             # validation
-            for tld, rules in filtering_rules.iteritems():
+            for tld, rules in filtering_rules.items():
                 if tld.strip() == '' or not isinstance(rules, list):
                     return rest.bad_request('Invalid TLD')
                 for rule in rules:
@@ -2118,7 +2118,7 @@ class Actions(Resource):
             tld_list = dict()
 
             with data[project_name]['locks']['status']:
-                for tld in data[project_name]['status']['total_docs'].iterkeys():
+                for tld in data[project_name]['status']['total_docs'].keys():
                     if tld not in data[project_name]['status']['desired_docs']:
                         data[project_name]['status']['desired_docs'][tld] = 0
                     if tld in data[project_name]['status']['total_docs']:
@@ -2195,7 +2195,7 @@ class Actions(Resource):
                         }
                     tld_list[tld]['es_original_num'] = obj['doc_count']
 
-            ret['tld_statistics'] = tld_list.values()
+            ret['tld_statistics'] = list(tld_list.values())
 
         return ret
 
@@ -2219,7 +2219,7 @@ class Actions(Resource):
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
 
-        for tld, desired_num in tld_list.iteritems():
+        for tld, desired_num in tld_list.items():
             desired_num = max(desired_num, 0)
             desired_num = min(desired_num, 999999999)
             with data[project_name]['locks']['status']:
@@ -2242,7 +2242,7 @@ class Actions(Resource):
         tld_list = input.get('tlds', {})
         payload = dict()
 
-        for tld, num_to_run in tld_list.iteritems():
+        for tld, num_to_run in tld_list.items():
             if tld in data[project_name]['data']:
 
                 # because the catalog can be huge, can not use a simple pythonic random here
@@ -2255,7 +2255,7 @@ class Actions(Resource):
 
                 # construct payload
                 idx = 0
-                for doc_id, catalog_obj in data[project_name]['data'][tld].iteritems():
+                for doc_id, catalog_obj in data[project_name]['data'][tld].items():
                     if idx not in selected:
                         idx += 1
                         continue
@@ -2279,7 +2279,7 @@ class Actions(Resource):
     @staticmethod
     def _generate_etk_config(project_name):
         content = etk_helper.generate_base_etk_module(data[project_name]['master_config'])
-        revision = hashlib.sha256(content).hexdigest().upper()[:6]
+        revision = hashlib.sha256(content.encode('utf-8')).hexdigest().upper()[:6]
         output_path = os.path.join(_get_project_dir_path(project_name),
                                    'working_dir/generated_em', 'em_{}.py'.format(revision))
         archive_output_path = os.path.join(_get_project_dir_path(project_name),
@@ -2299,73 +2299,73 @@ class Actions(Resource):
         # 2. create etk config and snapshot
         Actions._generate_etk_config(project_name)
 
-        # # add config for etl
-        # # when creating kafka container, group id is not there. set consumer to read from start.
-        # etl_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etl_config.json')
-        # if not os.path.exists(etl_config_path):
-        #     etl_config = {
-        #         "input_args": {
-        #             "auto_offset_reset": "earliest",
-        #             "fetch_max_bytes": 52428800,
-        #             "max_partition_fetch_bytes": 10485760,
-        #             "max_poll_records": 10
-        #         },
-        #         "output_args": {
-        #             "max_request_size": 10485760,
-        #             "compression_type": "gzip"
-        #         }
-        #     }
-        #     write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
-        #
-        # # 3. sandpaper
-        # # 3.1 delete previous index
-        # url = '{}/{}'.format(
-        #     config['es']['sample_url'],
-        #     project_name
-        # )
-        # try:
-        #     resp = requests.delete(url, timeout=10)
-        # except:
-        #     pass  # ignore no index error
-        # # 3.2 create new index
-        # url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
-        #     config['sandpaper']['url'],
-        #     config['sandpaper']['ws_url'],
-        #     project_name,
-        #     data[project_name]['master_config']['index']['sample'],
-        #     config['es']['sample_url']
-        # )
-        # resp = requests.put(url, timeout=10)
-        # if resp.status_code // 100 != 2:
-        #     return rest.internal_error('failed to create index in sandpaper')
-        # # 3.3 switch index
-        # url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
-        #     config['sandpaper']['url'],
-        #     config['sandpaper']['ws_url'],
-        #     project_name,
-        #     data[project_name]['master_config']['index']['sample'],
-        #     config['es']['sample_url']
-        # )
-        # resp = requests.post(url, timeout=10)
-        # if resp.status_code // 100 != 2:
-        #     return rest.internal_error('failed to switch index in sandpaper')
-        #
-        # # 4. clean up added data status
-        # logger.info('re-add data')
-        # with data[project_name]['locks']['status']:
-        #     if 'added_docs' not in data[project_name]['status']:
-        #         data[project_name]['status']['added_docs'] = dict()
-        #     for tld in data[project_name]['status']['added_docs'].iterkeys():
-        #         data[project_name]['status']['added_docs'][tld] = 0
-        # with data[project_name]['locks']['data']:
-        #     for tld in data[project_name]['data'].iterkeys():
-        #         for doc_id in data[project_name]['data'][tld]:
-        #             data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
-        # set_status_dirty(project_name)
-        #
-        # # 5. restart extraction
-        # data[project_name]['data_pushing_worker'].stop_adding_data = False
-        # return Actions.etk_extract(project_name)
+        # add config for etl
+        # when creating kafka container, group id is not there. set consumer to read from start.
+        etl_config_path = os.path.join(_get_project_dir_path(project_name), 'working_dir/etl_config.json')
+        if not os.path.exists(etl_config_path):
+            etl_config = {
+                "input_args": {
+                    "auto_offset_reset": "earliest",
+                    "fetch_max_bytes": 52428800,
+                    "max_partition_fetch_bytes": 10485760,
+                    "max_poll_records": 10
+                },
+                "output_args": {
+                    "max_request_size": 10485760,
+                    "compression_type": "gzip"
+                }
+            }
+            write_to_file(json.dumps(etl_config, indent=2), etl_config_path)
+
+        # 3. sandpaper
+        # 3.1 delete previous index
+        url = '{}/{}'.format(
+            config['es']['sample_url'],
+            project_name
+        )
+        try:
+            resp = requests.delete(url, timeout=10)
+        except:
+            pass  # ignore no index error
+        # 3.2 create new index
+        url = '{}/mapping?url={}&project={}&index={}&endpoint={}'.format(
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'],
+            config['es']['sample_url']
+        )
+        resp = requests.put(url, timeout=10)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to create index in sandpaper')
+        # 3.3 switch index
+        url = '{}/config?url={}&project={}&index={}&endpoint={}'.format(
+            config['sandpaper']['url'],
+            config['sandpaper']['ws_url'],
+            project_name,
+            data[project_name]['master_config']['index']['sample'],
+            config['es']['sample_url']
+        )
+        resp = requests.post(url, timeout=10)
+        if resp.status_code // 100 != 2:
+            return rest.internal_error('failed to switch index in sandpaper')
+
+        # 4. clean up added data status
+        logger.info('re-add data')
+        with data[project_name]['locks']['status']:
+            if 'added_docs' not in data[project_name]['status']:
+                data[project_name]['status']['added_docs'] = dict()
+            for tld in data[project_name]['status']['added_docs'].keys():
+                data[project_name]['status']['added_docs'][tld] = 0
+        with data[project_name]['locks']['data']:
+            for tld in data[project_name]['data'].keys():
+                for doc_id in data[project_name]['data'][tld]:
+                    data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+        set_status_dirty(project_name)
+
+        # 5. restart extraction
+        data[project_name]['data_pushing_worker'].stop_adding_data = False
+        return Actions.etk_extract(project_name)
         return rest.accepted()
 
     @staticmethod
@@ -2586,7 +2586,7 @@ class DataPushingWorker(threading.Thread):
             if not got_lock or self.stop_adding_data:
                 return
 
-            for tld in data[project_name]['data'].iterkeys():
+            for tld in data[project_name]['data'].keys():
                 if self.stop_adding_data:
                     break
 
@@ -2611,7 +2611,7 @@ class DataPushingWorker(threading.Thread):
                     # update mark in catalog
                     num_to_add = desired_num - added_num
                     added_num_this_round = 0
-                    for doc_id in data[project_name]['data'][tld].iterkeys():
+                    for doc_id in data[project_name]['data'][tld].keys():
 
                         if not self.stop_adding_data:
 
@@ -2738,7 +2738,7 @@ def ensure_kafka_is_on():
 
 def graceful_killer(signum, frame):
     logger.info('SIGNAL #%s received, notifying threads to exit...', signum)
-    for project_name in data.iterkeys():
+    for project_name in data.keys():
         try:
             stop_threads_and_locks(project_name)
         except:
@@ -2832,7 +2832,7 @@ if __name__ == '__main__':
                         if 'total_docs' not in data[project_name]['status']:
                             data[project_name]['status']['total_docs'] = dict()
                 # initialize total docs status every time
-                for tld in data[project_name]['data'].iterkeys():
+                for tld in data[project_name]['data'].keys():
                     data[project_name]['status']['total_docs'][tld] \
                         = len(data[project_name]['data'][tld])
                 update_status_file(project_name)
