@@ -26,7 +26,7 @@ class ActionProjectConfig(Resource):
                 tar.extractall(tmp_project_config_extracted_path)
 
             # master_config
-            with codecs.open(os.path.join(tmp_project_config_extracted_path, 'master_config.json'), 'r') as f:
+            with open(os.path.join(tmp_project_config_extracted_path, 'master_config.json'), 'r') as f:
                 new_master_config = json.loads(f.read())
             # TODO: validation and sanitizing
             # overwrite indices
@@ -59,24 +59,27 @@ class ActionProjectConfig(Resource):
                 os.path.join(tmp_project_config_extracted_path, 'landmark_rules'),
                 os.path.join(get_project_dir_path(project_name), 'landmark_rules')
             )
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'working_dir/generated_em'),
+                os.path.join(get_project_dir_path(project_name), 'working_dir/generated_em')
+            )
+            distutils.dir_util.copy_tree(
+                os.path.join(tmp_project_config_extracted_path, 'working_dir/additional_ems'),
+                os.path.join(get_project_dir_path(project_name), 'working_dir/additional_ems')
+            )
 
-            tmp_additional_etk_config = os.path.join(tmp_project_config_extracted_path,
-                                                     'working_dir/additional_etk_config')
-            if os.path.exists(tmp_additional_etk_config):
-                distutils.dir_util.copy_tree(tmp_additional_etk_config,
-                                             os.path.join(get_project_dir_path(project_name),
-                                                          'working_dir/additional_etk_config'))
+            # etl config
+            tmp_etl_config = os.path.join(tmp_project_config_extracted_path,
+                                                     'working_dir/etl_config.json')
+            if os.path.exists(tmp_etl_config):
+                shutil.copyfile(tmp_etl_config, os.path.join(get_project_dir_path(project_name),
+                                                             'working_dir/etl_config.json'))
 
-            tmp_custom_etk_config = os.path.join(tmp_project_config_extracted_path,
-                                                 'working_dir/custom_etk_config.json')
-            if os.path.exists(tmp_custom_etk_config):
-                shutil.copyfile(tmp_custom_etk_config,
-                                os.path.join(get_project_dir_path(project_name), 'working_dir/custom_etk_config.json'))
-
+            # landmark
             tmp_landmark_config_path = os.path.join(tmp_project_config_extracted_path,
                                                     'working_dir/_landmark_config.json')
             if os.path.exists(tmp_landmark_config_path):
-                with codecs.open(tmp_landmark_config_path, 'r') as f:
+                with open(tmp_landmark_config_path, 'r') as f:
                     ActionProjectConfig.landmark_import(project_name, f.read())
 
             return rest.created()
@@ -107,19 +110,19 @@ class ActionProjectConfig(Resource):
                     arcname='spacy_rules')
             tar.add(os.path.join(get_project_dir_path(project_name), 'landmark_rules'),
                     arcname='landmark_rules')
-            # custom_etk_config
-            custom_etk_config_path = os.path.join(get_project_dir_path(project_name),
-                                                  'working_dir/custom_etk_config.json')
-            if os.path.exists(custom_etk_config_path):
-                tar.add(custom_etk_config_path, arcname='working_dir/custom_etk_config.json')
-            # additional_etk_config
-            additional_etk_config_path = os.path.join(get_project_dir_path(project_name),
-                                                      'working_dir/additional_etk_config')
-            if os.path.exists(additional_etk_config_path):
-                tar.add(additional_etk_config_path, arcname='working_dir/additional_etk_config')
+            tar.add(os.path.join(get_project_dir_path(project_name), 'working_dir/generated_em'),
+                    arcname='working_dir/generated_em')
+            tar.add(os.path.join(get_project_dir_path(project_name), 'working_dir/additional_ems'),
+                    arcname='working_dir/additional_ems')
 
+            # etl config
+            etl_config_path = os.path.join(get_project_dir_path(project_name),
+                                                             'working_dir/etl_config.json')
+            if os.path.exists(etl_config_path):
+                tar.add(etl_config_path, arcname='working_dir/etl_config.json')
+
+            # landmark
             landmark_config = ActionProjectConfig.landmark_export(project_name)
-
             if len(landmark_config) > 0:
                 landmark_config_path = os.path.join(
                     get_project_dir_path(project_name), 'working_dir/_landmark_config.json')
@@ -550,7 +553,7 @@ class Actions(Resource):
                                      'glossaries', '{}.txt'.format(blacklist))
 
             query_conditions = []
-            with codecs.open(file_path, 'r') as f:
+            with open(file_path, 'r') as f:
                 for line in f:
                     key = line.strip()
                     if len(key) == 0:
@@ -676,9 +679,9 @@ class Actions(Resource):
     @staticmethod
     def _publish_to_kafka_input_queue(doc_id, catalog_obj, producer, topic):
         try:
-            with codecs.open(catalog_obj['json_path'], 'r') as f:
+            with open(catalog_obj['json_path'], 'r') as f:
                 doc_obj = json.loads(f.read())
-            with codecs.open(catalog_obj['raw_content_path'], 'r') as f:
+            with open(catalog_obj['raw_content_path'], 'r') as f:
                 doc_obj['raw_content'] = f.read()  # .decode('utf-8', 'ignore')
         except Exception as e:
             logger.exception('error in reading file from catalog')
