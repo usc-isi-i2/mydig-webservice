@@ -54,6 +54,7 @@ ${extractor_list}
             if e.tag == 'title' and e.tag in self.master_config_fields:
                 doc.kg.add_value(e.tag, e.value)
 
+        # inferlink
         if 'tld' in doc.cdr_document:
             tld = doc.cdr_document['tld']
             if tld in self.inferlink_extractors:
@@ -63,6 +64,7 @@ ${extractor_list}
                     if field_name in self.master_config_fields:
                         doc.kg.add_value(field_name, e.value)
 
+        # website
         if 'website' in doc.value:
             doc.kg.add_value('website', doc.value['website'])
         elif 'url' in doc.value:
@@ -73,6 +75,7 @@ ${extractor_list}
             except Exception as e:
                 print(e)
 
+        # other extractions
         for text in all_text:
 ${execution_list}
             pass

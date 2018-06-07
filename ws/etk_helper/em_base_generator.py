@@ -43,7 +43,7 @@ class EmBaseGenerator(object):
 
     def generate_em_base(self, master_config: dict,
                          glossary_dir = '', inferlink_dir = '',
-                         working_dir = '', spacy_dir = '') -> None:
+                         working_dir = '', spacy_dir = '') -> str:
 
         configs = master_config
         fields = configs['fields']
