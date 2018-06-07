@@ -28,9 +28,7 @@ class BaseETKModule(ETKModule):
         ETKModule.__init__(self, etk)
         self.readability_extractor = HTMLContentExtractor()
         self.meta_extractor = HTMLMetadataExtractor()
-        self.inferlink_extractor = InferlinkExtractor(InferlinkRuleSet(InferlinkRuleSet.load_rules_file('sample_inferlink_rules.json')))
         self.master_config_fields = etk.kg_schema.fields_dict
-
 ${extractor_list}
 
     def process_document(self, doc: Document):
@@ -56,11 +54,14 @@ ${extractor_list}
             if e.tag == 'title' and e.tag in self.master_config_fields:
                 doc.kg.add_value(e.tag, e.value)
 
-        inferlink_extractions = self.inferlink_extractor.extract(doc.cdr_document["raw_content"])
-        for e in inferlink_extractions:
-            field_name = re.sub(r'-\d$', '', e.tag)
-            if field_name in self.master_config_fields:
-                doc.kg.add_value(field_name, e.value)
+        if 'tld' in doc.cdr_document:
+            tld = doc.cdr_document['tld']
+            if tld in self.inferlink_extractors:
+                inferlink_extractions = self.inferlink_extractors[tld].extract(doc.cdr_document["raw_content"])
+                for e in inferlink_extractions:
+                    field_name = re.sub(r'-\d$', '', e.tag)
+                    if field_name in self.master_config_fields:
+                        doc.kg.add_value(field_name, e.value)
 
         if 'website' in doc.value:
             doc.kg.add_value('website', doc.value['website'])
@@ -74,12 +75,15 @@ ${extractor_list}
 
         for text in all_text:
 ${execution_list}
+            pass
 
         for text in strict_text:
 ${execution_list}
+            pass
 
         for text in relax_text:
 ${execution_list}
+            pass
 
     def document_selector(self, doc: Document) -> bool:
         """
