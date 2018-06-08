@@ -137,7 +137,7 @@ class ConjunctiveQueryProcessor(object):
             resp = self.es.mget(index=self.project_name, body=query, doc_type=self.project_root_name)
             if resp is not None and len(resp['docs']) > 0:
                 for json_doc in resp['docs']:
-                    result_map[json_doc['_source']['document_id']] = json_doc
+                    result_map[json_doc['_source']['doc_id']] = json_doc
         return result_map
 
     def validate_input(self):
@@ -208,7 +208,7 @@ class ConjunctiveQueryProcessor(object):
                 except Exception as e:
                     pass
             doc_id = []
-            doc_id.append(json_doc[self.SOURCE]['document_id'])
+            doc_id.append(json_doc[self.SOURCE]['doc_id'])
             minidoc['doc_id'] = doc_id
             minified_docs.append(minidoc)
         return minified_docs
