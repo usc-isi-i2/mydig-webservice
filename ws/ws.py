@@ -40,9 +40,9 @@ def ensure_etl_engine_is_on():
 
 
 def ensure_kafka_is_on():
-    global kafka_producer
+    global g_vars
     try:
-        kafka_producer = KafkaProducer(
+        g_vars['kafka_producer'] = KafkaProducer(
             bootstrap_servers=config['kafka']['servers'],
             max_request_size=10485760,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),

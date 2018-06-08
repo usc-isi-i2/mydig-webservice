@@ -611,7 +611,7 @@ class Actions(Resource):
             try:
                 logger.info('re-add doc %s (%s)', doc_id, tld)
                 ret, msg = Actions._publish_to_kafka_input_queue(
-                    doc_id, data[project_name]['data'][tld][doc_id], kafka_producer, input_topic)
+                    doc_id, data[project_name]['data'][tld][doc_id], g_vars['kafka_producer'], input_topic)
                 if not ret:
                     logger.error('Error of re-adding data to Kafka: %s', msg)
             except Exception as e:
@@ -707,7 +707,7 @@ class DataPushingWorker(threading.Thread):
         self.sleep_interval = sleep_interval
 
         # set up input kafka
-        self.producer = kafka_producer
+        self.producer = g_vars['kafka_producer']
         self.input_topic = project_name + '_in'
 
     def get_status(self):
