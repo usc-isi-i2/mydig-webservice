@@ -1,7 +1,6 @@
 import rest
-import urllib
-from conjunctive_query import ConjunctiveQueryProcessor
-from response_converter import DigOutputProcessor, TimeSeries
+from .conjunctive_query import ConjunctiveQueryProcessor
+from .response_converter import DigOutputProcessor, TimeSeries
 import logging
 from config import config
 
