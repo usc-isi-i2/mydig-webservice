@@ -93,7 +93,7 @@ api.route = types.MethodType(api_route, api)
 # utils
 
 def write_to_file(content, file_path):
-    with codecs.open(file_path, 'w') as f:
+    with open(file_path, 'w') as f:
         f.write(content)
 
 

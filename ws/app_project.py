@@ -124,7 +124,6 @@ class Project(Resource):
         if not is_valid:
             return rest.bad_request(message)
 
-        # data[project_name]['master_config']['configuration'] = project_config
         data[project_name]['master_config']['image_prefix'] = input.get('image_prefix')
         data[project_name]['master_config']['default_desired_num'] = input.get('default_desired_num')
         data[project_name]['master_config']['show_images_in_facets'] = input.get('show_images_in_facets')
@@ -132,7 +131,6 @@ class Project(Resource):
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines')
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype')
         data[project_name]['master_config']['show_original_search'] = input.get('show_original_search')
-        # data[project_name]['master_config']['index'] = es_index
 
         # write to file
         update_master_config_file(project_name)
@@ -159,6 +157,7 @@ class Project(Resource):
             return rest.internal_error('failed to kill_etk in ETL')
 
         # 2. delete logstash config
+        # TODO
         # since queue is empty, leave it here is not a problem
         # but for perfect solution, it needs to be deleted
 

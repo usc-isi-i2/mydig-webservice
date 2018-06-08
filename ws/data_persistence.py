@@ -21,7 +21,7 @@ def dump_data(data, file_path):
     old_path = file_path + '.old'
 
     try:
-        with codecs.open(new_path, 'w') as f:
+        with open(new_path, 'w') as f:
             f.write(data)
 
         # https://docs.python.org/2/library/os.html#os.rename

@@ -125,7 +125,7 @@ class FieldAnnotations(Resource):
     def write_to_field_file(project_name, field_name):
         file_path = os.path.join(get_project_dir_path(project_name), 'field_annotations/' + field_name + '.csv')
         field_obj = data[project_name]['field_annotations']
-        with codecs.open(file_path, 'w') as csvfile:
+        with open(file_path, 'w') as csvfile:
             writer = csv.DictWriter(
                 csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
                 delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -146,7 +146,7 @@ class FieldAnnotations(Resource):
             if ext != '.csv':
                 continue
             file_path = os.path.join(dir_path, file_name)
-            with codecs.open(file_path, 'r') as csvfile:
+            with open(file_path, 'r') as csvfile:
                 reader = csv.DictReader(
                     csvfile, fieldnames=['field_name', 'kg_id', 'key', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -342,7 +342,7 @@ class TagAnnotationsForEntityType(Resource):
     def write_to_tag_file(project_name, tag_name):
         file_path = os.path.join(get_project_dir_path(project_name), 'entity_annotations/' + tag_name + '.csv')
         tag_obj = data[project_name]['entities']
-        with codecs.open(file_path, 'w') as csvfile:
+        with open(file_path, 'w') as csvfile:
             writer = csv.DictWriter(
                 csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                 delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -363,7 +363,7 @@ class TagAnnotationsForEntityType(Resource):
             if ext != '.csv':
                 continue
             file_path = os.path.join(dir_path, file_name)
-            with codecs.open(file_path, 'r') as csvfile:
+            with open(file_path, 'r') as csvfile:
                 reader = csv.DictReader(
                     csvfile, fieldnames=['tag_name', 'entity_name', 'kg_id', 'human_annotation'],
                     delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)

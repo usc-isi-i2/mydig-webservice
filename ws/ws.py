@@ -91,7 +91,7 @@ if __name__ == '__main__':
                 master_config_file_path = os.path.join(project_dir_path, 'master_config.json')
                 if not os.path.exists(master_config_file_path):
                     logger.error('Missing master_config.json file for ' + project_name)
-                with codecs.open(master_config_file_path, 'r') as f:
+                with open(master_config_file_path, 'r') as f:
                     data[project_name]['master_config'] = json.loads(f.read())
 
                 # annotations
@@ -102,14 +102,14 @@ if __name__ == '__main__':
                 data_db_path = os.path.join(project_dir_path, 'data/_db.json')
                 data_persistence.prepare_data_file(data_db_path)
                 if os.path.exists(data_db_path):
-                    with codecs.open(data_db_path, 'r') as f:
+                    with open(data_db_path, 'r') as f:
                         data[project_name]['data'] = json.loads(f.read())
 
                 # status
                 status_path = os.path.join(get_project_dir_path(project_name), 'working_dir/status.json')
                 data_persistence.prepare_data_file(status_path)
                 if os.path.exists(status_path):
-                    with codecs.open(status_path, 'r') as f:
+                    with open(status_path, 'r') as f:
                         data[project_name]['status'] = json.loads(f.read())
                         if 'added_docs' not in data[project_name]['status']:
                             data[project_name]['status']['added_docs'] = dict()

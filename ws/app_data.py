@@ -58,7 +58,7 @@ class Data(Resource):
 
         log_path = os.path.join(get_project_dir_path(project_name),
                                 'working_dir/catalog_error.log') if log_on else os.devnull
-        log_file = codecs.open(log_path, 'a')
+        log_file = open(log_path, 'a')
         _write_log('start updating catalog')
 
         try:
@@ -67,7 +67,7 @@ class Data(Resource):
             if file_type == 'json_lines':
                 suffix = os.path.splitext(file_name)[-1]
                 f = gzip.open(src_file_path, 'r') \
-                    if suffix in ('.gz', '.gzip') else codecs.open(src_file_path, 'r')
+                    if suffix in ('.gz', '.gzip') else open(src_file_path, 'r')
 
                 for line in f:
                     if len(line.strip()) == 0:
@@ -123,9 +123,9 @@ class Data(Resource):
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
                     output_json_path = output_path_prefix + '.json'
-                    with codecs.open(output_raw_content_path, 'w') as output:
+                    with open(output_raw_content_path, 'w') as output:
                         output.write(obj['raw_content'])
-                    with codecs.open(output_json_path, 'w') as output:
+                    with open(output_json_path, 'w') as output:
                         del obj['raw_content']
                         output.write(json.dumps(obj, indent=2))
                     # update data db
@@ -187,7 +187,7 @@ class Data(Resource):
         if args['type'] == 'error_log':
             ret['error_log'] = list()
             if os.path.exists(log_path):
-                with codecs.open(log_path, 'r') as f:
+                with open(log_path, 'r') as f:
                     ret['error_log'] = tail_file(f, 200)
         else:
             with data[project_name]['locks']['status']:

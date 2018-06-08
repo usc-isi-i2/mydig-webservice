@@ -201,7 +201,7 @@ class ActionProjectConfig(Resource):
 #         config_path = os.path.join(get_project_dir_path(project_name),
 #                                    'working_dir/etk_filters.json')
 #         if os.path.exists(config_path):
-#             with codecs.open(config_path, 'r') as f:
+#             with open(config_path, 'r') as f:
 #                 ret = json.loads(f.read())
 #
 #         return ret

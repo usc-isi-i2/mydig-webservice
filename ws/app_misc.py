@@ -9,7 +9,7 @@ def spec():
 
 @app.route('/spec.yaml')
 def spec_file_path():
-    with codecs.open('spec.yaml', 'r') as f:
+    with open('spec.yaml', 'r') as f:
         c = yaml.load(f)
         c['host'] = request.host
     return Response(yaml.dump(c), mimetype='text/x-yaml')

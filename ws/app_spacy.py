@@ -38,7 +38,7 @@ class SpacyRulesOfAField(Resource):
         update_master_config_file(project_name)
         write_to_file(json.dumps(obj, indent=2), path)
 
-        with codecs.open(path, 'r') as f:
+        with open(path, 'r') as f:
             obj = json.loads(f.read())
         return rest.created(obj)
 
@@ -58,7 +58,7 @@ class SpacyRulesOfAField(Resource):
             return rest.not_found('no spacy rules')
 
         obj = dict()
-        with codecs.open(path, 'r') as f:
+        with open(path, 'r') as f:
             obj = json.loads(f.read())
 
         type = request.args.get('type', '')
