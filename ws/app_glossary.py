@@ -127,9 +127,15 @@ class Glossary(Resource):
         if glossary_name not in data[project_name]['master_config']['glossaries']:
             return rest.not_found('Glossary {} not found'.format(glossary_name))
 
-        file_path = ProjectGlossaries.get_glossary_path(project_name, glossary_name)
+        file_path = ProjectGlossaries.get_glossary_path(project_name,
+                    data[project_name]['master_config']['glossaries'][glossary_name]['path'])
 
-        os.remove(file_path)
+        try:
+            os.remove(file_path)
+        except:
+            # it's ok if the file is not there
+            pass
+
         del data[project_name]['master_config']['glossaries'][glossary_name]
         # remove glossary_name from field which contains it
         for k, v in data[project_name]['master_config']['fields'].items():
