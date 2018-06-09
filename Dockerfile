@@ -5,7 +5,7 @@ FROM uscisii2/etk:${ETK_VERSION}
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 RUN apt-get install -y nodejs
-RUN npm install -g serve
+RUN npm install -g serve@6.4.9
 
 # all packages and environments are in /app
 WORKDIR /app
