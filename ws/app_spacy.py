@@ -15,11 +15,6 @@ class SpacyRulesOfAField(Resource):
         obj['rules'] = input.get('rules', [])
         obj['test_text'] = input.get('test_text', '')
         obj['field_name'] = field_name
-        # obj = {
-        #     'rules': rules,
-        #     'test_text': test_text,
-        #     'field_name': field_name
-        # }
 
         url = 'http://{}:{}/test_spacy_rules'.format(
             config['etk']['daemon']['host'], config['etk']['daemon']['port'])

@@ -2,20 +2,19 @@
 # and install flask
 
 import json
-import spacy
 import sys
 import os
 sys.path.append(os.path.join('../ws'))
 from config import config
-sys.path.append(os.path.join(config['etk']['path'], 'etk'))
-import core
-
 from flask import Flask, request
+sys.path.append(os.path.join(config['etk']['path']))
+from etk.etk import ETK
+from etk.extractors.spacy_rule_extractor import SpacyRuleExtractor
+
 
 app = Flask(__name__)
 
-custom_nlp = spacy.load('en')
-c = core.Core()
+etk = ETK('./etk_spacy.log')
 
 
 @app.route('/')
@@ -29,26 +28,33 @@ def test_spacy_rules():
     try:
         obj = request.get_json(force=True)
 
-        d = dict()
-        d['simple_tokens_original_case'] = c.extract_tokens_from_crf(
-            c.extract_crftokens(obj['test_text'], lowercase=False))
-
-        config = dict()
-        config['field_name'] = obj['field_name']
-        if 'infer_rule' in obj and obj['infer_rule']:
-            p_filtered = [[x.decode('string_escape').decode('utf-8') for x in pp if x] for pp in obj['positive_examples']]
-            if not (p_filtered == [[]] or p_filtered == []):
-                infered_rule = c.infer_rule_using_custom_spacy(d, p_filtered)
-                obj["rules"].append(infered_rule)
-        results = c.extract_using_custom_spacy(d, config, field_rules=obj)
-
-        obj['test_tokens'] = d['simple_tokens_original_case']
-        obj['results'] = results
+        rule_extractor = SpacyRuleExtractor(
+            etk.default_nlp,
+            obj, "test_extractor")
+        tokens = rule_extractor.tokenizer.tokenize_to_spacy_doc(obj['test_text'])
+        obj['test_tokens'] = []
+        for t in tokens:
+            obj['test_tokens'].append({
+                'index': t.i,
+                'whitespace': t.whitespace_,
+                'text': t.text
+            })
+        obj['results'] = []
+        for extraction in rule_extractor.extract(obj['test_text']):
+            obj['results'].append({
+                'confidence': extraction.confidence,
+                'start_token': extraction.provenance['start_token'],
+                'end_token': extraction.provenance['end_token'],
+                'start_char': extraction.provenance['start_char'],
+                'end_char': extraction.provenance['end_char'],
+                'identifier': extraction.rule_id,
+                'text': extraction.value
+            })
 
         return json.dumps(obj), 201
 
     except Exception as e:
-        print e
+        print(e)
         return json.dumps({'message': 'exception: {}'.format(e.message)}), 400
 
 if __name__ == '__main__':
