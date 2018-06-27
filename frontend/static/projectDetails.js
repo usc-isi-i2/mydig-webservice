@@ -47,6 +47,8 @@ poly = Polymer({
         this.editType=true
         this.page=1
         this.tot_pages=1
+        this.actions_lock=0
+        this.locked_tld_obj = 0
         this.pages = Array.from({length: this.tot_pages}, (x,i) => i+1);
         this.scope.getIconNames = function(iconset) {
         return iconset.getIconNames();
@@ -180,6 +182,11 @@ poly = Polymer({
 */        if (this.$$('#newColorSelect').color == undefined) return "amber";
         this.newFieldColor= this.$$('#newColorSelect').color;
         return this.$$('#newColorSelect').color
+    },
+    toggleLock: function(e){
+        this.locked_tld_obj = $(e.currentTarget)[0];
+        this.actions_lock=1;
+       // console.log("toggled" +  this.actions_lock);
     },
     goToLandMark: function(e)
     {
@@ -1423,8 +1430,10 @@ poly = Polymer({
         });
     },
     refreshTldTable: function(useTimeout=false) {
+
         if(useTimeout) {
             setTimeout($.proxy(this.refreshTldTable, this, {useTimeout: true}), REFRESH_TLD_TABLE_INTERVAL);
+                    
         }
         ////console("refresh tld table");
         $.ajax({
@@ -1442,6 +1451,8 @@ poly = Polymer({
                 var total_desired_num = 0;
                 var total_es_original_num=0;
                 newTldTableData = [];
+
+            
                 //console(data);
                 data["tld_statistics"].forEach(function(obj) {
                     var disable_landmark_btn = obj["total_num"] < 10 ? true : false;
@@ -1463,6 +1474,9 @@ poly = Polymer({
                     }
                     ////console(disable_delete_btn);
                     ////console(disable_landmark_btn);
+
+                    
+                
                     newObj = {
                         "tld": obj["tld"].toLowerCase(),
                         "total_num": obj["total_num"],
@@ -1476,6 +1490,27 @@ poly = Polymer({
                         "disable_kg" : disable_kg_btn,
                         "color_kg" : ckg
                     };
+
+                    
+                    if( this.actions_lock==1 && this.locked_tld_obj.id == obj["tld"])
+                    {
+                        //console.log("here");
+                        newObj = {
+                        "tld": obj["tld"].toLowerCase(),
+                        "total_num": obj["total_num"],
+                        "es_num": obj["es_num"],
+                        "es_original_num":obj["es_original_num"],
+                        "desired_num": this.locked_tld_obj.value,
+                        "disable_Landmark": disable_landmark_btn,
+                        "color_l": cl,
+                        "color_btn": cbt,
+                        "disable_Delete" : disable_delete_btn,
+                        "disable_kg" : disable_kg_btn,
+                        "color_kg" : ckg
+                    };
+                    }
+
+
                     total_tld += 1;
                     total_total_num += obj["total_num"];
                     total_es_num += obj["es_num"];
@@ -1483,8 +1518,8 @@ poly = Polymer({
                     total_es_original_num += obj["es_original_num"];
                     newTldTableData.push(newObj);
 
-                }
-                );
+                }.bind(this)
+                )
 
                 this.tot_pages = data['tot_pages']
                 this.pages =  Array.from({length: this.tot_pages}, (x,i) => i+1);
@@ -1525,8 +1560,8 @@ poly = Polymer({
                         $(this).text("Desired (" + total_desired_num.toString() + ")");
                     }
                 });*/
-            }
-        });
+            }.bind(this)
+        })
     },
     selectPage: function(e)
     {
@@ -1813,6 +1848,7 @@ poly = Polymer({
     },
     updateSingleDesired: function(e)
     {
+        this.actions_lock =0;
         num = parseInt(e.srcElement.value);
         ////console(e.srcElement.id);
         id = e.srcElement.id;
@@ -1833,7 +1869,8 @@ poly = Polymer({
             data: JSON.stringify(payload),
             success: function (msg) {
                  //////console("updated");
-                this.refreshTldTable();
+                 
+                this.refreshTldTable(true);
             }
         });
     },
@@ -2091,6 +2128,7 @@ poly = Polymer({
 
     },
     projectUpdateDone: function(){
+        this.page=1;
         this.refreshTldTable();
         
     },

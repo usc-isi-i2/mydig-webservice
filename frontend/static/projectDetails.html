@@ -317,7 +317,7 @@
                                 
                             </vaadin-grid-sorter>
                             </template>
-                            <template><input value="{{item.desired_num::input}}" id={{item.tld}} on-blur="updateSingleDesired" ></template>
+                            <template><input value="{{item.desired_num::input}}" id={{item.tld}} on-blur="updateSingleDesired" on-focus="toggleLock"></template>
                         </vaadin-grid-column>
                         <vaadin-grid-column>
                             <template class="header" style="text-align: center;">
