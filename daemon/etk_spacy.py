@@ -48,7 +48,8 @@ def test_spacy_rules():
                 'start_char': extraction.provenance['start_char'],
                 'end_char': extraction.provenance['end_char'],
                 'identifier': extraction.rule_id,
-                'text': extraction.value
+                'text': extraction.value,
+                'token_based_match_mapping': extraction.token_based_match_mapping
             })
 
         return json.dumps(obj), 201
