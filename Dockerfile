@@ -1,4 +1,5 @@
 ARG ETK_VERSION
+ARG SPACY_UI_VERSION
 
 # mydig-webservice
 FROM uscisii2/etk:${ETK_VERSION}
@@ -17,7 +18,7 @@ RUN pip install -r /app/mydig-webservice/requirements.txt
 
 RUN git clone https://github.com/usc-isi-i2/spacy-ui.git && \
     cd spacy-ui && \
-    git checkout tags/2.0.3
+    git checkout tags/${SPACY_UI_VERSION}
 
 # persistent data
 #VOLUME /shared_data
