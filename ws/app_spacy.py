@@ -19,6 +19,7 @@ class SpacyRulesOfAField(Resource):
         url = 'http://{}:{}/test_spacy_rules'.format(
             config['etk']['daemon']['host'], config['etk']['daemon']['port'])
         resp = requests.post(url, data=json.dumps(obj), timeout=10)
+
         if resp.status_code // 100 != 2:
             if resp.status_code // 100 == 4:
                 j = json.loads(resp.content)
@@ -36,6 +37,11 @@ class SpacyRulesOfAField(Resource):
         with open(path, 'r') as f:
             obj = json.loads(f.read())
         return rest.created(obj)
+
+    @staticmethod
+    def calculate_timeout():
+        # TODO: timeout should based on the size of rules
+        pass
 
     @requires_auth
     def put(self, project_name, field_name):
