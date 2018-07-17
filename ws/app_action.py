@@ -70,7 +70,7 @@ class ActionProjectConfig(Resource):
 
             # etl config
             tmp_etl_config = os.path.join(tmp_project_config_extracted_path,
-                                                     'working_dir/etl_config.json')
+                                          'working_dir/etl_config.json')
             if os.path.exists(tmp_etl_config):
                 shutil.copyfile(tmp_etl_config, os.path.join(get_project_dir_path(project_name),
                                                              'working_dir/etl_config.json'))
@@ -117,7 +117,7 @@ class ActionProjectConfig(Resource):
 
             # etl config
             etl_config_path = os.path.join(get_project_dir_path(project_name),
-                                                             'working_dir/etl_config.json')
+                                           'working_dir/etl_config.json')
             if os.path.exists(etl_config_path):
                 tar.add(etl_config_path, arcname='working_dir/etl_config.json')
 
@@ -423,18 +423,26 @@ class Actions(Resource):
 
     @staticmethod
     def _generate_etk_config(project_name):
+        glossary_dir = os.path.join(get_project_dir_path(project_name), 'glossaries')
+        inferlink_dir = os.path.join(get_project_dir_path(project_name), 'landmark_rules')
+        working_dir = os.path.join(get_project_dir_path(project_name), 'working_dir')
+        spacy_dir = os.path.join(get_project_dir_path(project_name), 'spacy_rules')
         content = etk_helper.generate_base_etk_module(
             data[project_name]['master_config'],
-            glossary_dir = os.path.join(get_project_dir_path(project_name), 'glossaries'),
-            inferlink_dir = os.path.join(get_project_dir_path(project_name), 'landmark_rules'),
-            working_dir = os.path.join(get_project_dir_path(project_name), 'working_dir'),
-            spacy_dir = os.path.join(get_project_dir_path(project_name), 'spacy_rules')
+            glossary_dir=glossary_dir,
+            inferlink_dir=inferlink_dir,
+            working_dir=working_dir,
+            spacy_dir=spacy_dir
         )
         revision = hashlib.sha256(content.encode('utf-8')).hexdigest().upper()[:6]
         output_path = os.path.join(get_project_dir_path(project_name),
                                    'working_dir/generated_em', 'em_base.py'.format(revision))
         archive_output_path = os.path.join(get_project_dir_path(project_name),
                                            'working_dir/generated_em', 'archive_em_{}.py'.format(revision))
+        additional_ems_path = os.path.join(get_project_dir_path(project_name), 'working_dir/additional_ems')
+        generated_additional_ems_path = os.path.join(get_project_dir_path(project_name),
+                                                     'working_dir/generated_additional_ems')
+        etk_helper.generated_additional_ems(additional_ems_path, generated_additional_ems_path, glossary_dir, inferlink_dir, working_dir, spacy_dir)
         write_to_file(content, output_path)
         write_to_file(content, archive_output_path)
 
