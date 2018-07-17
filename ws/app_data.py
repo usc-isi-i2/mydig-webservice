@@ -295,7 +295,10 @@ class Data(Resource):
 
     @staticmethod
     def generate_doc_id(content):
-        return hashlib.sha256(content).hexdigest().upper()
+        try:
+            return hashlib.sha256(content).hexdigest().upper()
+        except:
+            return hashlib.sha256(content.encode('utf-8')).hexdigest().upper()
 
     @staticmethod
     def is_valid_doc_id(doc_id):
