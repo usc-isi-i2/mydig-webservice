@@ -1,8 +1,9 @@
 import os
 import json
+from . import em_additional_em_helper
 
 class EmBaseGenerator(object):
-    def __init__(self, template_path: str='template.tpl'):
+    def __init__(self, template_path: str = 'template.tpl'):
         with open(template_path, 'r') as f:
             self.template = f.read()
 
@@ -42,8 +43,8 @@ class EmBaseGenerator(object):
         }
 
     def generate_em_base(self, master_config: dict,
-                         glossary_dir = '', inferlink_dir = '',
-                         working_dir = '', spacy_dir = '') -> str:
+                         glossary_dir='', inferlink_dir='',
+                         working_dir='', spacy_dir='') -> str:
 
         configs = master_config
         fields = configs['fields']
@@ -54,7 +55,6 @@ class EmBaseGenerator(object):
             if 'glossaries' in fields[f] and fields[f]['glossaries']:
                 glossary_name = fields[f]['glossaries'][0]
                 glossary_path = ''
-                ngrams = 0
                 case_sensitive = False
                 if glossary_name in glossaries:
                     if 'path' in glossaries[glossary_name]:
@@ -65,7 +65,7 @@ class EmBaseGenerator(object):
                         case_sensitive = glossaries[glossary_name]['case_sensitive']
                 if glossary_path:
                     extractors.append(self.indent(
-                        self.generate_glossary_extractor(f, glossary_path, ngrams, case_sensitive), 8) + '\n')
+                        self.generate_glossary_extractor(f, glossary_path, case_sensitive=case_sensitive), 8) + '\n')
                     executions.append(self.indent(self.generate_execution(f), 12) + '\n')
             elif 'rule_extractor_enabled' in fields[f] and fields[f]['rule_extractor_enabled']:
                 spacy_rule_path = os.path.join(spacy_dir, '{id}.json'.format(id=f))
@@ -91,9 +91,9 @@ class EmBaseGenerator(object):
                 inferlink_extractors[tld] = rule_file
         extractors.append(self.indent(self.generate_inferlink_extractors(inferlink_extractors), 8))
 
-        final = self.template.replace('${extractor_list}', ''.join(extractors))\
+        final = self.template.replace('${extractor_list}', ''.join(extractors)) \
             .replace('${execution_list}', ''.join(executions))
-
+        final = em_additional_em_helper.replace_variables(final, glossary_dir)
         return final
 
     @staticmethod
@@ -108,8 +108,8 @@ class EmBaseGenerator(object):
     def generate_inferlink_extractors(inferlink_extractors):
         kvs = ""
         for tld, path in inferlink_extractors.items():
-            kvs += "    '{tld}': InferlinkExtractor(InferlinkRuleSet("""\
-            "InferlinkRuleSet.load_rules_file('{path}'))),\n".format(tld=tld, path=path)
+            kvs += "    '{tld}': InferlinkExtractor(InferlinkRuleSet(""" \
+                   "InferlinkRuleSet.load_rules_file('{path}'))),\n".format(tld=tld, path=path)
 
         return "self.inferlink_extractors = {\n" + kvs + "\n}"
 
@@ -121,7 +121,7 @@ class EmBaseGenerator(object):
 
     @staticmethod
     def generate_glossary_extractor(field_id: str, glossary_path: str,
-                                    ngrams: int=2, case_sensitive: bool=False) -> str:
+                                    ngrams: int = 2, case_sensitive: bool = False) -> str:
         template = "self.{id}_extractor = GlossaryExtractor(self.etk.load_glossary('{path}'), " \
                    "'{id}_extractor', self.etk.default_tokenizer, case_sensitive={case_sensitive}, ngrams={ngrams})"
         return template.format(id=field_id, path=glossary_path, case_sensitive=str(case_sensitive), ngrams=str(ngrams))
@@ -133,6 +133,6 @@ class EmBaseGenerator(object):
         return template.format(id=field_id, path=path)
 
     @staticmethod
-    def generate_extractor_simple(field_id: str, extractor_name: str, params: str=''):
+    def generate_extractor_simple(field_id: str, extractor_name: str, params: str = ''):
         template = "self.{id}_extractor = {name}({params})"
         return template.format(id=field_id, name=extractor_name, params=params)
