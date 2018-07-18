@@ -97,4 +97,4 @@ ${execution_list}
         Returns:
 
         """
-        return DefaultDocumentSelector().select_document(doc)
+        return doc.cdr_document.get("dataset", 'mydig_dataset') == "mydig_dataset"

@@ -1,5 +1,6 @@
 from app_base import *
 from tldextract import tldextract
+import io
 
 
 @api.route('/projects/<project_name>/data')
@@ -13,32 +14,63 @@ class Data(Resource):
         parse.add_argument('file_data', type=werkzeug.FileStorage, location='files')
         parse.add_argument('file_name')
         parse.add_argument('file_type')
+        parse.add_argument('dataset')
         parse.add_argument('sync')
         parse.add_argument('log')
         args = parse.parse_args()
+
+        file_type = args['file_type']
+        file_data = args['file_data']
+
+        dataset = args['dataset'] if args['dataset'] else 'mydig_dataset'
 
         if args['file_name'] is None:
             return rest.bad_request('Invalid file_name')
         file_name = args['file_name'].strip()
         if len(file_name) == 0:
             return rest.bad_request('Invalid file_name')
-        if args['file_data'] is None:
+        if file_data is None:
             return rest.bad_request('Invalid file_data')
-        if args['file_type'] is None:
+        if file_type is None:
             return rest.bad_request('Invalid file_type')
         args['sync'] = False if args['sync'] is None or args['sync'].lower() != 'true' else True
         args['log'] = True if args['log'] is None or args['log'].lower() != 'false' else False
 
+        if file_type == 'csv':
+            """
+                handle csv or tsv or xls or xlsx
+                -----------------------------------
+                TODO handled zipped files
+
+                1. Create a cdr object and add the field `raw_content_path`
+                2. store this file in the directory `user_uploaded_files`
+
+            """
+            user_uploaded_file_path = os.path.join(get_project_dir_path(project_name), 'user_uploaded_files', file_name)
+            file_data.save(user_uploaded_file_path)
+
+            new_file_data = dict()
+            new_file_data['raw_content'] = '<html><h1>USER Uploaded CSV file</h1></html>'
+            new_file_data['raw_content_path'] = user_uploaded_file_path
+            new_file_data['dataset'] = dataset
+            new_file_data['tld'] = dataset
+
+            file_name = '{}.jl'.format(file_name)
+            file_type = 'json_lines'
+
+            file_data = werkzeug.FileStorage(stream=io.BytesIO(bytes(json.dumps(new_file_data), encoding='utf-8')))
+
         # make root dir and save temp file
         src_file_path = os.path.join(get_project_dir_path(project_name), 'data', '{}.tmp'.format(file_name))
-        args['file_data'].save(src_file_path)
+
+        file_data.save(src_file_path)
         dest_dir_path = os.path.join(get_project_dir_path(project_name), 'data', file_name)
         if not os.path.exists(dest_dir_path):
             os.mkdir(dest_dir_path)
 
         if not args['sync']:
             t = threading.Thread(target=Data._update_catalog_worker,
-                                 args=(project_name, file_name, args['file_type'], src_file_path, dest_dir_path,
+                                 args=(project_name, file_name, file_type, src_file_path, dest_dir_path,
                                        args['log'],),
                                  name='data_upload')
             t.start()
@@ -46,7 +78,7 @@ class Data(Resource):
 
             return rest.accepted()
         else:
-            Data._update_catalog_worker(project_name, file_name, args['file_type'],
+            Data._update_catalog_worker(project_name, file_name, file_type,
                                         src_file_path, dest_dir_path, args['log'])
             return rest.created()
 
@@ -62,12 +94,9 @@ class Data(Resource):
         _write_log('start updating catalog')
 
         try:
-
-            # generate catalog
             if file_type == 'json_lines':
                 suffix = os.path.splitext(file_name)[-1]
-                f = gzip.open(src_file_path, 'r') \
-                    if suffix in ('.gz', '.gzip') else open(src_file_path, 'r')
+                f = gzip.open(src_file_path, 'r') if suffix in ('.gz', '.gzip') else open(src_file_path, 'r')
 
                 for line in f:
                     if len(line.strip()) == 0:
