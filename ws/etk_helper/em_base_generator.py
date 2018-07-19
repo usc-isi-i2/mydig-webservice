@@ -2,6 +2,7 @@ import os
 import json
 from . import em_additional_em_helper
 
+
 class EmBaseGenerator(object):
     def __init__(self, template_path: str = 'template.tpl'):
         with open(template_path, 'r') as f:
@@ -121,10 +122,13 @@ class EmBaseGenerator(object):
 
     @staticmethod
     def generate_glossary_extractor(field_id: str, glossary_path: str,
-                                    ngrams: int = 2, case_sensitive: bool = False) -> str:
-        template = "self.{id}_extractor = GlossaryExtractor(self.etk.load_glossary('{path}'), " \
+                                    ngrams: int = 2, case_sensitive: bool = False, read_json = False) -> str:
+        if '.json' in glossary_path:
+            read_json = True
+        template = "self.{id}_extractor = GlossaryExtractor(self.etk.load_glossary('{path}', read_json='{read_json_bool}'), " \
                    "'{id}_extractor', self.etk.default_tokenizer, case_sensitive={case_sensitive}, ngrams={ngrams})"
-        return template.format(id=field_id, path=glossary_path, case_sensitive=str(case_sensitive), ngrams=str(ngrams))
+        return template.format(id=field_id, path=glossary_path, case_sensitive=str(case_sensitive), ngrams=str(ngrams),
+                               read_json_bool=read_json)
 
     @staticmethod
     def generate_spacy_rule_extractor(field_id: str, path: str) -> str:
