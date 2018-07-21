@@ -687,9 +687,9 @@ class Actions(Resource):
     @staticmethod
     def _publish_to_kafka_input_queue(doc_id, catalog_obj, producer, topic):
         try:
-            with open(catalog_obj['json_path'], 'r') as f:
+            with open(catalog_obj['json_path'], 'r', encoding='utf-8') as f:
                 doc_obj = json.loads(f.read())
-            with open(catalog_obj['raw_content_path'], 'r') as f:
+            with open(catalog_obj['raw_content_path'], 'r', encoding='utf-8') as f:
                 doc_obj['raw_content'] = f.read()  # .decode('utf-8', 'ignore')
         except Exception as e:
             logger.exception('error in reading file from catalog')
