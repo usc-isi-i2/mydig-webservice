@@ -152,9 +152,9 @@ class Data(Resource):
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
                     output_json_path = output_path_prefix + '.json'
-                    with open(output_raw_content_path, 'w') as output:
+                    with open(output_raw_content_path, 'w', encoding='utf-8') as output:
                         output.write(obj['raw_content'])
-                    with open(output_json_path, 'w') as output:
+                    with open(output_json_path, 'w', encoding='utf-8') as output:
                         del obj['raw_content']
                         output.write(json.dumps(obj, indent=2))
                     # update data db
