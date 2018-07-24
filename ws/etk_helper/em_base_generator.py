@@ -94,7 +94,7 @@ class EmBaseGenerator(object):
 
         final = self.template.replace('${extractor_list}', ''.join(extractors)) \
             .replace('${execution_list}', ''.join(executions))
-        final = em_additional_em_helper.replace_variables(final, glossary_dir)
+        final = em_additional_em_helper.replace_variables(final, glossary_dir, inferlink_dir, spacy_dir)
         return final
 
     @staticmethod
