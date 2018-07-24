@@ -442,7 +442,8 @@ class Actions(Resource):
         additional_ems_path = os.path.join(get_project_dir_path(project_name), 'working_dir/additional_ems')
         generated_additional_ems_path = os.path.join(get_project_dir_path(project_name),
                                                      'working_dir/generated_additional_ems')
-        etk_helper.generated_additional_ems(additional_ems_path, generated_additional_ems_path, glossary_dir, inferlink_dir, working_dir, spacy_dir)
+        etk_helper.generated_additional_ems(additional_ems_path, generated_additional_ems_path, glossary_dir,
+                                            inferlink_dir, working_dir, spacy_dir)
         write_to_file(content, output_path)
         write_to_file(content, archive_output_path)
 
