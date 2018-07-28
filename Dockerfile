@@ -15,9 +15,9 @@ RUN mkdir /app/mydig-webservice
 ADD requirements.txt /app/mydig-webservice
 RUN pip install -r /app/mydig-webservice/requirements.txt
 
-RUN git clone https://github.com/usc-isi-i2/spacy-ui.git && \
+RUN git clone https://github.com/kimq0126/spacy-ui.git && \
     cd spacy-ui && \
-    git checkout tags/2.0.3
+    git checkout tags/2.0.9
 
 # persistent data
 #VOLUME /shared_data
