@@ -96,7 +96,9 @@ class Data(Resource):
         try:
             if file_type == 'json_lines':
                 suffix = os.path.splitext(file_name)[-1]
-                f = gzip.open(src_file_path, 'r') if suffix in ('.gz', '.gzip') else open(src_file_path, 'r')
+                f = gzip.open(src_file_path, mode='r', encoding='utf-8') \
+                    if suffix in ('.gz', '.gzip') \
+                    else open(src_file_path, mode='r', encoding='utf-8')
 
                 for line in f:
                     if len(line.strip()) == 0:

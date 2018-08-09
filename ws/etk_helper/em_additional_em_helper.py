@@ -18,10 +18,10 @@ def generated_additional_ems(additional_ems_path, generated_additional_ems_path,
     #
 
     for additional_em_path in glob.glob('{}/em_*.py'.format(additional_ems_path)):
-        f_in = open(additional_em_path)
+        f_in = open(additional_em_path, mode='r', encoding='utf-8')
         f = f_in.read()
         f = replace_variables(f, glossary_dir, inferlink_dir, spacy_dir)
-        f_out = open('{}/{}'.format(generated_additional_ems_path, os.path.basename(additional_em_path)), 'w')
+        f_out = open('{}/{}'.format(generated_additional_ems_path, os.path.basename(additional_em_path)), mode='w', encoding='utf-8')
         f_out.write(f)
         f_in.close()
         f_out.close()
