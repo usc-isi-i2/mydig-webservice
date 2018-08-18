@@ -9,3 +9,4 @@ pywebhdfs>=0.4
 kafka-python>=1.3.3
 tldextract>=2.0.2
 dateparser>=0.5.1
+happybase>=1.1.0

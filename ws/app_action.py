@@ -154,59 +154,6 @@ class ActionProjectConfig(Resource):
             logger.exception('landmark import error')
 
 
-# @api.route('/projects/<project_name>/actions/etk_filters')
-# class ActionProjectEtkFilters(Resource):
-#     @requires_auth
-#     def post(self, project_name):
-#         if project_name not in data:
-#             return rest.not_found('project {} not found'.format(project_name))
-#
-#         input = request.get_json(force=True)
-#         filtering_rules = input.get('filters', {})
-#
-#         try:
-#             # validation
-#             for tld, rules in filtering_rules.items():
-#                 if tld.strip() == '' or not isinstance(rules, list):
-#                     return rest.bad_request('Invalid TLD')
-#                 for rule in rules:
-#                     if 'field' not in rule or rule['field'].strip() == '':
-#                         return rest.bad_request('Invalid Field in TLD: {}'.format(tld))
-#                     if 'action' not in rule or rule['action'] not in ('no_action', 'keep', 'discard'):
-#                         return rest.bad_request('Invalid action in TLD: {}, Field {}'.format(tld, rule['field']))
-#                     if 'regex' not in rule:
-#                         return rest.bad_request('Invalid regex in TLD: {}, Field {}'.format(tld, rule['field']))
-#                     try:
-#                         re.compile(rule['regex'])
-#                     except re.error:
-#                         return rest.bad_request(
-#                             'Invalid regex in TLD: {}, Field: {}'.format(tld, rule['field']))
-#
-#             # write to file
-#             dir_path = os.path.join(get_project_dir_path(project_name), 'working_dir')
-#             if not os.path.exists(dir_path):
-#                 os.mkdir(dir_path)
-#             config_path = os.path.join(dir_path, 'etk_filters.json')
-#             write_to_file(json.dumps(input), config_path)
-#             return rest.created()
-#         except Exception as e:
-#             logger.exception('fail to import ETK filters')
-#             return rest.internal_error('fail to import ETK filters')
-#
-#     def get(self, project_name):
-#         if project_name not in data:
-#             return rest.not_found('project {} not found'.format(project_name))
-#
-#         ret = {'filters': {}}
-#         config_path = os.path.join(get_project_dir_path(project_name),
-#                                    'working_dir/etk_filters.json')
-#         if os.path.exists(config_path):
-#             with open(config_path, 'r') as f:
-#                 ret = json.loads(f.read())
-#
-#         return ret
-
-
 @api.route('/projects/<project_name>/actions/<action_name>')
 class Actions(Resource):
     @requires_auth

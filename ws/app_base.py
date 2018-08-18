@@ -36,6 +36,7 @@ import data_persistence
 import templates
 import rest
 from search.elastic_manager import ES
+from hbase.hbase_adapter import HBaseAdapter
 
 import requests.packages.urllib3
 
