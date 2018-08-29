@@ -14,11 +14,6 @@ class AllProjects(Resource):
         if project_name in data:
             return rest.exists('Project name already exists.')
 
-        # only use default settings when creating project
-        # is_valid, message = self.validate(input)
-        # if not is_valid:
-        #     return rest.bad_request(message)
-
         # create topics in etl engine
         url = config['etl']['url'] + '/create_project'
         payload = {
@@ -29,7 +24,8 @@ class AllProjects(Resource):
             return rest.internal_error('Error in ETL Engine when creating project {}'.format(project_name))
 
         # create hbase table
-        g_vars['hbase_adapter'].create_table('{}_catalog'.format(project_name), family_name='project_catalog')
+        hbase_table_name = '{}_catalog'.format(project_name)
+        g_vars['hbase_adapter'].create_table(hbase_table_name, family_name='project_catalog')
 
         # create project data structure, folders & files
         project_dir_path = get_project_dir_path(project_name)
@@ -45,7 +41,7 @@ class AllProjects(Resource):
             'full': project_name + '_deployed',
             'version': 0
         }
-        # data[project_name]['master_config']['configuration'] = project_config
+
         data[project_name]['master_config']['image_prefix'] = input.get('image_prefix', '')
         data[project_name]['master_config']['default_desired_num'] = input.get('default_desired_num', 0)
         data[project_name]['master_config']['show_images_in_facets'] = input.get('show_images_in_facets', False)
@@ -54,34 +50,29 @@ class AllProjects(Resource):
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines', False)
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype', 'break')
         data[project_name]['master_config']['show_original_search'] = input.get('show_original_search', 'V2')
+        data[project_name]['metadata']['project_name'] = project_name
+        data[project_name]['metadata']['hbase_table_name'] = hbase_table_name
+        
         update_master_config_file(project_name)
 
         # create other dirs and files
         os.makedirs(os.path.join(project_dir_path, 'field_annotations'))
         os.makedirs(os.path.join(project_dir_path, 'entity_annotations'))
         os.makedirs(os.path.join(project_dir_path, 'glossaries'))
-        # dst_dir = os.path.join(get_project_dir_path(project_name), 'glossaries')
-        # src_dir = config['default_glossaries_path']
-        # for file_name in os.listdir(src_dir):
-        #     full_file_name = os.path.join(src_dir, file_name)
-        #     if os.path.isfile(full_file_name):
-        #         shutil.copy(full_file_name, dst_dir)
         os.makedirs(os.path.join(project_dir_path, 'spacy_rules'))
-        # dst_dir = os.path.join(project_dir_path, 'spacy_rules')
-        # src_dir = config['default_spacy_rules_path']
-        # for file_name in os.listdir(src_dir):
-        #     full_file_name = os.path.join(src_dir, file_name)
-        #     if os.path.isfile(full_file_name):
-        #         shutil.copy(full_file_name, dst_dir)
-        os.makedirs(os.path.join(project_dir_path, 'data'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir/generated_em'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir/generated_additional_ems'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir/additional_ems'))
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
 
+        # TODO: OBSOLETE lets not do this anymore
+        os.makedirs(os.path.join(project_dir_path, 'data'))
+
+        # TODO: OBSOLETE no need of this once hbase is implemented
         update_status_file(project_name)  # create status file after creating the working_dir
 
+        # TODO: OBSOLETE is this needed?
         start_threads_and_locks(project_name)
 
         logger.info('project %s created.' % project_name)
