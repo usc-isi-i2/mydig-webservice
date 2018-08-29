@@ -1,8 +1,6 @@
 from app_base import *
 from app_action import *
 
-hbase_adapter = HBaseAdapter('hbase')
-
 
 @api.route('/projects')
 class AllProjects(Resource):
@@ -31,7 +29,7 @@ class AllProjects(Resource):
             return rest.internal_error('Error in ETL Engine when creating project {}'.format(project_name))
 
         # create hbase table
-        hbase_adapter.create_table('{}_catalog'.format(project_name), family_name='project_catalog')
+        g_vars['hbase_adapter'].create_table('{}_catalog'.format(project_name), family_name='project_catalog')
 
         # create project data structure, folders & files
         project_dir_path = get_project_dir_path(project_name)

@@ -10,6 +10,7 @@ from app_spacy import *
 from app_glossary import *
 from app_search import *
 from app_action import *
+import happybase
 
 
 def ensure_sandpaper_is_on():
@@ -53,6 +54,15 @@ def ensure_kafka_is_on():
         ensure_kafka_is_on()
 
 
+def ensure_hbase_is_on():
+    global g_vars
+    try:
+        g_vars['hbase_adapter'] = HBaseAdapter('hbase')
+    except:
+        time.sleep(5)
+        ensure_hbase_is_on()
+
+
 def graceful_killer(signum, frame):
     logger.info('SIGNAL #%s received, notifying threads to exit...', signum)
     for project_name in data.keys():
@@ -73,6 +83,8 @@ if __name__ == '__main__':
         ensure_etl_engine_is_on()
         logger.info('ensure kafka is on...')
         ensure_kafka_is_on()
+        logger.info('ensure hbase is on...')
+        ensure_hbase_is_on()
 
         logger.info('register signal handler...')
         signal.signal(signal.SIGINT, graceful_killer)
