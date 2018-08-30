@@ -23,9 +23,12 @@ class AllProjects(Resource):
         if resp.status_code // 100 != 2:
             return rest.internal_error('Error in ETL Engine when creating project {}'.format(project_name))
 
-        # create hbase table
-        hbase_table_name = '{}_catalog'.format(project_name)
-        g_vars['hbase_adapter'].create_table(hbase_table_name, family_name='project_catalog')
+        # create hbase tables
+        hbase_catalog_table_name = '{}_catalog'.format(project_name)
+        g_vars['hbase_adapter'].create_table(hbase_catalog_table_name, family_name='project_catalog')
+
+        hbase_etk_status_table_name = '{}_etk_status'.format(project_name)
+        g_vars['hbase_adapter'].create_table(hbase_etk_status_table_name, family_name='etk_status')
 
         # create project data structure, folders & files
         project_dir_path = get_project_dir_path(project_name)
@@ -50,9 +53,11 @@ class AllProjects(Resource):
         data[project_name]['master_config']['hide_timelines'] = input.get('hide_timelines', False)
         data[project_name]['master_config']['new_linetype'] = input.get('new_linetype', 'break')
         data[project_name]['master_config']['show_original_search'] = input.get('show_original_search', 'V2')
-        data[project_name]['metadata']['project_name'] = project_name
-        data[project_name]['metadata']['hbase_table_name'] = hbase_table_name
-        
+
+        data[project_name]['master_config']['metadata']['project_name'] = project_name
+        data[project_name]['master_config']['metadata']['hbase_catalog_table_name'] = hbase_catalog_table_name
+        data[project_name]['master_config']['metadata']['hbase_etk_status_table_name'] = hbase_etk_status_table_name
+
         update_master_config_file(project_name)
 
         # create other dirs and files
@@ -150,6 +155,12 @@ class Project(Resource):
         data[project_name]['data_pushing_worker'].stop_adding_data = True
         if not Actions._etk_stop(project_name, clean_up_queue=True):
             return rest.internal_error('failed to kill_etk in ETL')
+
+        # 1.1 delete the hbase tables, catalog and etk_status
+        g_vars['hbase_adapter'].delete_table(
+            data[project_name]['master_config']['metadata']['hbase_catalog_table_name'])
+        g_vars['hbase_adapter'].delete_table(
+            data[project_name]['master_config']['metadata']['hbase_etk_status_table_name'])
 
         # 2. delete logstash config
         # TODO

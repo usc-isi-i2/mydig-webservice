@@ -57,8 +57,8 @@ def ensure_kafka_is_on():
 def ensure_hbase_is_on():
     global g_vars
     try:
-        g_vars['hbase_adapter'] = HBaseAdapter('hbase')
-    except:
+        g_vars['hbase_adapter'] = HBaseAdapter()
+    except Exception as e:
         time.sleep(5)
         ensure_hbase_is_on()
 
