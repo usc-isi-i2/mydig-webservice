@@ -74,6 +74,12 @@ def graceful_killer(signum, frame):
     sys.exit()
 
 
+def create_dataset_view_table():
+    # one global table for all the projects
+    # https://github.com/usc-isi-i2/dig-etl-engine/issues/254 has more details
+    g_vars['hbase_adapter'].create_table('dataset_view', 'dataset')
+
+
 if __name__ == '__main__':
     try:
         # prerequisites
@@ -85,6 +91,9 @@ if __name__ == '__main__':
         ensure_kafka_is_on()
         logger.info('ensure hbase is on...')
         ensure_hbase_is_on()
+
+        # step 1: create dataset_view hbase table
+        create_dataset_view_table()
 
         logger.info('register signal handler...')
         signal.signal(signal.SIGINT, graceful_killer)

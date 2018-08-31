@@ -14,7 +14,7 @@ class HBaseAdapter(object):
     </property>
     """
 
-    def __init__(self, host='hbase', connection_pool_size=10, timeout=60000000):
+    def __init__(self, host='hbase', timeout=60000000):
         self._conn_host = host
         self._timeout = timeout
 
