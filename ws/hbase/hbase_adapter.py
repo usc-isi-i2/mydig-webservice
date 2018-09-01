@@ -69,12 +69,21 @@ class HBaseAdapter(object):
             return table.put(record_id, record)
         raise Exception('table: {} not found'.format(table_name))
 
-    def insert_records_batch(self, records, table_name):
+    def insert_records_batch(self, records, table_name, batch_size=100):
+        num_records = len(records)
+        if num_records <= batch_size:
+            self.insert_records_bulk(records, table_name)
+        else:
+            count = 0
+            while count <= num_records:
+                self.insert_records_bulk(records[count:count + batch_size], table_name)
+                count += batch_size
+
+    def insert_records_bulk(self, records, table_name):
         """
         Adds records into hbase in batch mode
         :param records: list of records to be inserted, each record a tuple (id, data)
         :param table_name: table in hbase where records will be shipped to
-        :return: exception in case of failure
         """
         table = self.get_table(table_name)
         batch = table.batch()
@@ -86,3 +95,7 @@ class HBaseAdapter(object):
         c = happybase.Connection(host=self._conn_host, timeout=self._timeout)
 
         c.delete_table(table_name, disable=True)
+
+    def scan_table(self, table_name, row_prefix):
+        table = self.get_table(table_name)
+        return table.scan(row_prefix=row_prefix)
