@@ -209,19 +209,38 @@ class Actions(Resource):
         if args['value'] in ('all', 'tld_statistics'):
             tld_list = dict()
 
-            with data[project_name]['locks']['status']:
-                for tld in data[project_name]['status']['total_docs'].keys():
-                    if tld not in data[project_name]['status']['desired_docs']:
-                        data[project_name]['status']['desired_docs'][tld] = 0
-                    if tld in data[project_name]['status']['total_docs']:
-                        tld_obj = {
-                            'tld': tld,
-                            'total_num': data[project_name]['status']['total_docs'][tld],
-                            'es_num': 0,
-                            'es_original_num': 0,
-                            'desired_num': data[project_name]['status']['desired_docs'][tld]
-                        }
-                        tld_list[tld] = tld_obj
+            # TODO remove this after hbase integration
+            # with data[project_name]['locks']['status']:
+            #     for tld in data[project_name]['status']['total_docs'].keys():
+            #         if tld not in data[project_name]['status']['desired_docs']:
+            #             data[project_name]['status']['desired_docs'][tld] = 0
+            #         if tld in data[project_name]['status']['total_docs']:
+            #             tld_obj = {
+            #                 'tld': tld,
+            #                 'total_num': data[project_name]['status']['total_docs'][tld],
+            #                 'es_num': 0,
+            #                 'es_original_num': 0,
+            #                 'desired_num': data[project_name]['status']['desired_docs'][tld]
+            #             }
+            #             tld_list[tld] = tld_obj
+
+            # scan the hbase table dataset_view to get this now
+            row_prefix = '{}_'.format(project_name)
+            hbase_scan_tlds = list(
+                g_vars['hbase_adapter'].scan_table('dataset_view', bytes(row_prefix, encoding='utf-8')))
+
+            # [(b'bling_backpage.com', {b'dataset:total_docs': b'1'})]
+            for t in hbase_scan_tlds:
+                tld = t[0].decode('utf-8').split('_')[1]
+                total_num = int(t[1][b'dataset:total_docs'].decode('utf-8'))
+                tld_obj = {
+                    'tld': tld,
+                    'total_num': total_num,
+                    'es_num': 0,
+                    'es_original_num': 0,
+                    'desired_num': 0
+                }
+                tld_list[tld] = tld_obj
 
             # query es count if doc exists
             query = """
