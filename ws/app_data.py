@@ -100,6 +100,12 @@ class Data(Resource):
                     if suffix in ('.gz', '.gzip') \
                     else open(src_file_path, mode='r', encoding='utf-8')
 
+                line_tuples = list()
+
+                # the rationale for having a dataset_dict is to handle the case where there can be multiple datasets
+                # in the same uploaded file
+                dataset_dict = dict()
+
                 for line in f:
                     if len(line.strip()) == 0:
                         continue
@@ -150,38 +156,85 @@ class Data(Resource):
                         obj['original_type'] = obj['type']
                         del obj['type']
 
-                    # split raw_content and json
-                    output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
-                    output_raw_content_path = output_path_prefix + '.html'
-                    output_json_path = output_path_prefix + '.json'
-                    with open(output_raw_content_path, 'w', encoding='utf-8') as output:
-                        output.write(obj['raw_content'])
-                    with open(output_json_path, 'w', encoding='utf-8') as output:
-                        del obj['raw_content']
-                        output.write(json.dumps(obj, indent=2))
-                    # update data db
-                    tld = obj.get('tld', Data.extract_tld(obj['url']))
-                    with data[project_name]['locks']['data']:
-                        data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
-                        # if doc_id is already there, still overwrite it
-                        exists_before = True if obj['doc_id'] in data[project_name]['data'][tld] else False
-                        data[project_name]['data'][tld][obj['doc_id']] = {
-                            'raw_content_path': output_raw_content_path,
-                            'json_path': output_json_path,
-                            'url': obj['url'],
-                            'add_to_queue': False
-                        }
-                    # update status
-                    if not exists_before:
-                        with data[project_name]['locks']['status']:
-                            data[project_name]['status']['total_docs'][tld] = \
-                                data[project_name]['status']['total_docs'].get(tld, 0) + 1
+                    # prepare records for hbase _catalog table
+                    """
+                        rowid: the id of the row in hbase, designed as: `<dataset>_doc_id`
+                        document: the cdr json document
+                        date_added: date when this document was added to the project
+                        date_processed: date when this document was scheduled to be processed by etk
+                        file_name: the user uploaded file this json belongs to
+                        dataset: dataset specified by user for this document
+                        status: NEW - 0 and SCHEDULED To Be Processed - 1 
+                        identifier: doc_id for this row
+                    """
+                    record = dict()
+                    if 'dataset' in obj:
+                        dataset = obj['dataset']
+                    elif 'tld' in obj:
+                        dataset = obj['tld']
+                    else:
+                        dataset = Data.extract_tld(obj['url'])
+                    if dataset not in dataset_dict:
+                        dataset_dict[dataset] = 0
+                    # increase the count of records for this dataset in the file
+                    dataset_dict[dataset] += 1
 
-                    # update data db & status file
-                    set_catalog_dirty(project_name)
-                    set_status_dirty(project_name)
+                    col = 'project_catalog'
+                    row_id = '{}_{}'.format(dataset, obj['doc_id'])
+                    record['{}:document'.format(col)] = json.dumps(obj)
+                    record['{}:date_added'.format(col)] = datetime.datetime.now().isoformat()
+                    record['{}:file_name'.format(col)] = file_name
+                    record['{}:dataset'.format(col)] = dataset
+                    record['{}:status'.format(col)] = '0'
+                    record['{}:identifier'.format(col)] = obj['doc_id']
+                    line_tuples.append((row_id, record))
+
+                    # TODO remove this code once it has been replaced by hbase
+                    # split raw_content and json
+                    # output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
+                    # output_raw_content_path = output_path_prefix + '.html'
+                    # output_json_path = output_path_prefix + '.json'
+                    # with open(output_raw_content_path, 'w', encoding='utf-8') as output:
+                    #     output.write(obj['raw_content'])
+                    # with open(output_json_path, 'w', encoding='utf-8') as output:
+                    #     del obj['raw_content']
+                    #     output.write(json.dumps(obj, indent=2))
+                    # # update data db
+                    # tld = obj.get('tld', Data.extract_tld(obj['url']))
+                    # with data[project_name]['locks']['data']:
+                    #     data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
+                    #     # if doc_id is already there, still overwrite it
+                    #     exists_before = True if obj['doc_id'] in data[project_name]['data'][tld] else False
+                    #     data[project_name]['data'][tld][obj['doc_id']] = {
+                    #         'raw_content_path': output_raw_content_path,
+                    #         'json_path': output_json_path,
+                    #         'url': obj['url'],
+                    #         'add_to_queue': False
+                    #     }
+                    # # update status
+                    # if not exists_before:
+                    #     with data[project_name]['locks']['status']:
+                    #         data[project_name]['status']['total_docs'][tld] = \
+                    #             data[project_name]['status']['total_docs'].get(tld, 0) + 1
+                    #
+                    # # update data db & status file
+                    # set_catalog_dirty(project_name)
+                    # set_status_dirty(project_name)
 
                 f.close()
+                # insert these lines to hbase table <projet_name>_catalog
+                g_vars['hbase_adapter'].insert_records_batch(line_tuples,
+                                                             data[project_name]['master_config']['metadata'][
+                                                                 'hbase_catalog_table_name'])
+
+                # now update the dataset_view hbase table
+                for d in list(dataset_dict):
+                    g_vars['hbase_adapter'].insert_record_value('{}_{}'.format(project_name, d),
+                                                                str(dataset_dict[d]),
+                                                                'dataset_view',
+                                                                'dataset',
+                                                                'total_docs')
+
 
             elif file_type == 'html':
                 pass
