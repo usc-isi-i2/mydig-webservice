@@ -25,10 +25,10 @@ class AllProjects(Resource):
 
         # create hbase tables
         hbase_catalog_table_name = '{}_catalog'.format(project_name)
-        g_vars['hbase_adapter'].create_table(hbase_catalog_table_name, family_name='project_catalog')
+        g_vars['hbase_adapter'].create_table(hbase_catalog_table_name, 'project_catalog')
 
         hbase_etk_status_table_name = '{}_etk_status'.format(project_name)
-        g_vars['hbase_adapter'].create_table(hbase_etk_status_table_name, family_name='etk_status')
+        g_vars['hbase_adapter'].create_table(hbase_etk_status_table_name, 'etk_status')
 
         # create project data structure, folders & files
         project_dir_path = get_project_dir_path(project_name)
