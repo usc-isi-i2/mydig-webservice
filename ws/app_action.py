@@ -225,20 +225,24 @@ class Actions(Resource):
             #             tld_list[tld] = tld_obj
 
             # scan the hbase table dataset_view to get this now
-            row_prefix = '{}_'.format(project_name)
+            row_prefix = '{}{}'.format(project_name, constants.DIG_DELIMITER)
             hbase_scan_tlds = list(
                 g_vars['hbase_adapter'].scan_table('dataset_view', bytes(row_prefix, encoding='utf-8')))
 
-            # [(b'bling_backpage.com', {b'dataset:total_docs': b'1'})]
+            # [(b'bling_backpage.com', {b'dataset:total_docs': b'1', b'dataset:desired': b'2'})]
             for t in hbase_scan_tlds:
-                tld = t[0].decode('utf-8').split('_')[1]
-                total_num = int(t[1][b'dataset:total_docs'].decode('utf-8'))
+                tld = t[0].decode('utf-8').split(constants.DIG_DELIMITER)[1]
+                total_num = int(t[1][
+                                    bytes('{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_TOTAL_DOCS),
+                                          encoding='utf-8')].decode('utf-8'))
+                desired_num = int(t[1][bytes('{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_DESIRED),
+                                             encoding='utf-8')].decode('utf-8'))
                 tld_obj = {
                     'tld': tld,
                     'total_num': total_num,
                     'es_num': 0,
                     'es_original_num': 0,
-                    'desired_num': 0
+                    'desired_num': desired_num
                 }
                 tld_list[tld] = tld_obj
 
@@ -330,15 +334,24 @@ class Actions(Resource):
         input = request.get_json(force=True)
         tld_list = input.get('tlds', {})
 
+        tld_tuple_list = list()
         for tld, desired_num in tld_list.items():
             desired_num = max(desired_num, 0)
             desired_num = min(desired_num, 999999999)
-            with data[project_name]['locks']['status']:
-                if tld not in data[project_name]['status']['desired_docs']:
-                    data[project_name]['status']['desired_docs'][tld] = dict()
-                data[project_name]['status']['desired_docs'][tld] = desired_num
 
-        set_status_dirty(project_name)
+            # update hbase table dataset_view, create a batch
+            row = dict()
+            row['{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_DESIRED)] = str(desired_num)
+            tld_tuple_list.append(('{}{}{}'.format(project_name, constants.DIG_DELIMITER, tld), row))
+
+            # TODO remove this after hbase integration completion
+            # with data[project_name]['locks']['status']:
+            #     if tld not in data[project_name]['status']['desired_docs']:
+            #         data[project_name]['status']['desired_docs'][tld] = dict()
+            #     data[project_name]['status']['desired_docs'][tld] = desired_num
+
+        # set_status_dirty(project_name)
+        g_vars['hbase_adapter'].insert_records_batch(tld_tuple_list, constants.DATASET_HBASE_TABLE)
         return rest.created()
 
     @staticmethod

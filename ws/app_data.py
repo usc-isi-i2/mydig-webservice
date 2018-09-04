@@ -180,7 +180,7 @@ class Data(Resource):
                     dataset_dict[dataset] += 1
 
                     col = 'project_catalog'
-                    row_id = '{}_{}'.format(dataset, obj['doc_id'])
+                    row_id = '{}{}{}'.format(dataset, constants.DIG_DELIMITER, obj['doc_id'])
                     record['{}:document'.format(col)] = json.dumps(obj)
                     record['{}:date_added'.format(col)] = datetime.datetime.now().isoformat()
                     record['{}:file_name'.format(col)] = file_name
@@ -229,11 +229,18 @@ class Data(Resource):
 
                 # now update the dataset_view hbase table
                 for d in list(dataset_dict):
-                    g_vars['hbase_adapter'].insert_record_value('{}_{}'.format(project_name, d),
-                                                                str(dataset_dict[d]),
-                                                                'dataset_view',
-                                                                'dataset',
-                                                                'total_docs')
+                    g_vars['hbase_adapter'].insert_record_value(
+                        '{}{}{}'.format(project_name, constants.DIG_DELIMITER, d),
+                        str(dataset_dict[d]),
+                        constants.DATASET_HBASE_TABLE,
+                        constants.DATASET_COLUMN_FAMILY,
+                        constants.DATASET_TOTAL_DOCS)
+                    g_vars['hbase_adapter'].insert_record_value(
+                        '{}{}{}'.format(project_name, constants.DIG_DELIMITER, d),
+                        '0',
+                        constants.DATASET_HBASE_TABLE,
+                        constants.DATASET_COLUMN_FAMILY,
+                        constants.DATASET_DESIRED)
 
 
             elif file_type == 'html':
