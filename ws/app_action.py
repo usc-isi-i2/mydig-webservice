@@ -227,7 +227,7 @@ class Actions(Resource):
             # scan the hbase table dataset_view to get this now
             row_prefix = '{}{}'.format(project_name, constants.DIG_DELIMITER)
             hbase_scan_tlds = list(
-                g_vars['hbase_adapter'].scan_table('dataset_view', bytes(row_prefix, encoding='utf-8')))
+                g_vars['hbase_adapter'].scan_table(constants.DATASET_HBASE_TABLE, bytes(row_prefix, encoding='utf-8')))
 
             # [(b'bling_backpage.com', {b'dataset:total_docs': b'1', b'dataset:desired': b'2'})]
             for t in hbase_scan_tlds:

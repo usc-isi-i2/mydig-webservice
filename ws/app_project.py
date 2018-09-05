@@ -156,11 +156,20 @@ class Project(Resource):
         if not Actions._etk_stop(project_name, clean_up_queue=True):
             return rest.internal_error('failed to kill_etk in ETL')
 
-        # 1.1 delete the hbase tables, catalog and etk_status
+        # 1.1 delete the hbase tables, project_catalog and etk_status
         g_vars['hbase_adapter'].delete_table(
             data[project_name]['master_config']['metadata']['hbase_catalog_table_name'])
         g_vars['hbase_adapter'].delete_table(
             data[project_name]['master_config']['metadata']['hbase_etk_status_table_name'])
+
+        # delete entries from dataset_view table
+        row_prefix = '{}{}'.format(project_name, constants.DIG_DELIMITER)
+        hbase_scan_tlds = list(
+            g_vars['hbase_adapter'].scan_table(constants.DATASET_HBASE_TABLE, bytes(row_prefix, encoding='utf-8'),
+                                               filter=b'FirstKeyOnlyFilter()'))
+        rowids = [x[0] for x in hbase_scan_tlds]
+
+        g_vars["hbase_adapter"].delete_rows(rowids, constants.DATASET_HBASE_TABLE)
 
         # 2. delete logstash config
         # TODO

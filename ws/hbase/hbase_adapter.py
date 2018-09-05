@@ -96,6 +96,23 @@ class HBaseAdapter(object):
 
         c.delete_table(table_name, disable=True)
 
-    def scan_table(self, table_name, row_prefix):
+    def scan_table(self, table_name, row_prefix, filter=None):
         table = self.get_table(table_name)
-        return table.scan(row_prefix=row_prefix)
+        return table.scan(row_prefix=row_prefix, filter=filter)
+
+    def delete_rows(self, rowids, table_name, batch_size=100):
+        num_rows = len(rowids)
+        if num_rows <= batch_size:
+            self.delete_rows_batch(rowids, table_name)
+        else:
+            count = 0
+            while count <= num_rows:
+                self.delete_rows_batch(rowids[count:count + batch_size], table_name)
+                count += batch_size
+
+    def delete_rows_batch(self, rowids, table_name):
+        table = self.get_table(table_name)
+        batch = table.batch()
+        for rowid in rowids:
+            batch.delete(rowid)
+        batch.send()
