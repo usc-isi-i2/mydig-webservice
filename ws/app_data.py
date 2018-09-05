@@ -229,18 +229,15 @@ class Data(Resource):
 
                 # now update the dataset_view hbase table
                 for d in list(dataset_dict):
-                    g_vars['hbase_adapter'].insert_record_value(
-                        '{}{}{}'.format(project_name, constants.DIG_DELIMITER, d),
-                        str(dataset_dict[d]),
-                        constants.DATASET_HBASE_TABLE,
-                        constants.DATASET_COLUMN_FAMILY,
-                        constants.DATASET_TOTAL_DOCS)
-                    g_vars['hbase_adapter'].insert_record_value(
-                        '{}{}{}'.format(project_name, constants.DIG_DELIMITER, d),
-                        '0',
-                        constants.DATASET_HBASE_TABLE,
-                        constants.DATASET_COLUMN_FAMILY,
-                        constants.DATASET_DESIRED)
+                    hbase_row_id = '{}{}{}'.format(project_name, constants.DIG_DELIMITER, d)
+                    dataset_record = dict()
+                    dataset_record['{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_TOTAL_DOCS)] = str(
+                        dataset_dict[d])
+                    dataset_record['{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_DESIRED)] = '0'
+                    dataset_record['{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_ADDED_DOCS)] = '0'
+
+                    g_vars['hbase_adapter'].insert_record(hbase_row_id, dataset_record, constants.DATASET_HBASE_TABLE)
+
 
 
             elif file_type == 'html':
