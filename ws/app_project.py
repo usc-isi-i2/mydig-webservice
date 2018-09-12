@@ -76,6 +76,7 @@ class AllProjects(Resource):
         os.makedirs(os.path.join(project_dir_path, 'working_dir/generated_additional_ems'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir/additional_ems'))
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
+        os.makedirs(os.path.join(project_dir_path, 'user_uploaded_files'))
 
         update_status_file(project_name)  # create status file after creating the working_dir
 
