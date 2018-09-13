@@ -97,4 +97,4 @@ ${execution_list}
         Returns:
 
         """
-        return doc.cdr_document.get("dataset", '') == "mydig_dataset"
+        return 'dataset' not in doc.cdr_document

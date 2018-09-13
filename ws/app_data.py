@@ -221,6 +221,7 @@ class Data(Resource):
                     # set_catalog_dirty(project_name)
                     # set_status_dirty(project_name)
 
+
                 f.close()
                 # insert these lines to hbase table <projet_name>_catalog
                 g_vars['hbase_adapter'].insert_records_batch(line_tuples,

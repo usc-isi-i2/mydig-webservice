@@ -70,6 +70,7 @@ class AllProjects(Resource):
         os.makedirs(os.path.join(project_dir_path, 'working_dir/generated_additional_ems'))
         os.makedirs(os.path.join(project_dir_path, 'working_dir/additional_ems'))
         os.makedirs(os.path.join(project_dir_path, 'landmark_rules'))
+        os.makedirs(os.path.join(project_dir_path, 'user_uploaded_files'))
 
         # TODO: OBSOLETE lets not do this anymore
         os.makedirs(os.path.join(project_dir_path, 'data'))
