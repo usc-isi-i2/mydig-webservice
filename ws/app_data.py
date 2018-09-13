@@ -154,13 +154,16 @@ class Data(Resource):
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
                     output_json_path = output_path_prefix + '.json'
+                    tld = obj.get('tld', Data.extract_tld(obj['url']))
+                    if 'tld' not in obj:
+                        obj['tld'] = tld
                     with open(output_raw_content_path, 'w', encoding='utf-8') as output:
                         output.write(obj['raw_content'])
                     with open(output_json_path, 'w', encoding='utf-8') as output:
                         del obj['raw_content']
                         output.write(json.dumps(obj, indent=2))
+
                     # update data db
-                    tld = obj.get('tld', Data.extract_tld(obj['url']))
                     with data[project_name]['locks']['data']:
                         data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
                         # if doc_id is already there, still overwrite it
