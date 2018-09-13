@@ -724,22 +724,26 @@ class DataPushingWorker(threading.Thread):
             if not got_lock or self.stop_adding_data:
                 return
 
-            for tld in data[project_name]['data'].keys():
+            # step 1. get all the tld information from the hbase table dataset_view
+            row_prefix = '{}{}'.format(project_name, constants.DIG_DELIMITER)
+            hbase_scan_tlds = list(
+                g_vars['hbase_adapter'].scan_table(constants.DATASET_HBASE_TABLE, bytes(row_prefix, encoding='utf-8')))
+
+            # [(b'bling_backpage.com', {b'dataset:total_docs': b'1', b'dataset:desired': b'2'})]
+            for t in hbase_scan_tlds:
                 if self.stop_adding_data:
                     break
 
-                with data[project_name]['locks']['status']:
-                    if tld not in data[project_name]['status']['added_docs']:
-                        data[project_name]['status']['added_docs'][tld] = 0
-                    if tld not in data[project_name]['status']['desired_docs']:
-                        data[project_name]['status']['desired_docs'][tld] = \
-                            data[project_name]['master_config'].get('default_desired_num', 0)
-                    if tld not in data[project_name]['status']['total_docs']:
-                        data[project_name]['status']['total_docs'][tld] = 0
+                tld = t[0].decode('utf-8').split(constants.DIG_DELIMITER)[1]
+                total_num = int(t[1][
+                                    bytes('{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_TOTAL_DOCS),
+                                          encoding='utf-8')].decode('utf-8'))
+                desired_num = int(t[1][bytes('{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_DESIRED),
+                                             encoding='utf-8')].decode('utf-8'))
+                added_num = int(t[1][
+                                    bytes('{}:{}'.format(constants.DATASET_COLUMN_FAMILY, constants.DATASET_ADDED_DOCS),
+                                          encoding='utf-8')].decode('utf-8'))
 
-                added_num = data[project_name]['status']['added_docs'][tld]
-                total_num = data[project_name]['status']['total_docs'][tld]
-                desired_num = data[project_name]['status']['desired_docs'][tld]
                 desired_num = min(desired_num, total_num)
 
                 # only add docs to queue if desired num is larger than added num
@@ -783,6 +787,66 @@ class DataPushingWorker(threading.Thread):
                             data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
                         set_catalog_dirty(project_name)
                         set_status_dirty(project_name)
+
+            # for tld in data[project_name]['data'].keys():
+            #     if self.stop_adding_data:
+            #         break
+            #
+            #     # with data[project_name]['locks']['status']:
+            #     #     if tld not in data[project_name]['status']['added_docs']:
+            #     #         data[project_name]['status']['added_docs'][tld] = 0
+            #     #     if tld not in data[project_name]['status']['desired_docs']:
+            #     #         data[project_name]['status']['desired_docs'][tld] = \
+            #     #             data[project_name]['master_config'].get('default_desired_num', 0)
+            #     #     if tld not in data[project_name]['status']['total_docs']:
+            #     #         data[project_name]['status']['total_docs'][tld] = 0
+            #
+            #     added_num = data[project_name]['status']['added_docs'][tld]
+            #     total_num = data[project_name]['status']['total_docs'][tld]
+            #     desired_num = data[project_name]['status']['desired_docs'][tld]
+            #     desired_num = min(desired_num, total_num)
+            #
+            #     # only add docs to queue if desired num is larger than added num
+            #     if desired_num > added_num:
+            #         self.is_adding_data = True
+            #
+            #         # update mark in catalog
+            #         num_to_add = desired_num - added_num
+            #         added_num_this_round = 0
+            #         for doc_id in data[project_name]['data'][tld].keys():
+            #
+            #             if not self.stop_adding_data:
+            #
+            #                 # finished
+            #                 if num_to_add <= 0:
+            #                     break
+            #
+            #                 # already added
+            #                 if data[project_name]['data'][tld][doc_id]['add_to_queue']:
+            #                     continue
+            #
+            #                 # mark data
+            #                 data[project_name]['data'][tld][doc_id]['add_to_queue'] = True
+            #                 num_to_add -= 1
+            #                 added_num_this_round += 1
+            #
+            #                 # publish to kafka queue
+            #                 ret, msg = Actions._publish_to_kafka_input_queue(
+            #                     doc_id, data[project_name]['data'][tld][doc_id], producer, input_topic)
+            #                 if not ret:
+            #                     logger.error('Error of pushing data to Kafka: %s', msg)
+            #                     # roll back
+            #                     data[project_name]['data'][tld][doc_id]['add_to_queue'] = False
+            #                     num_to_add += 1
+            #                     added_num_this_round -= 1
+            #
+            #         self.is_adding_data = False
+            #
+            #         if added_num_this_round > 0:
+            #             with data[project_name]['locks']['status']:
+            #                 data[project_name]['status']['added_docs'][tld] = added_num + added_num_this_round
+            #             set_catalog_dirty(project_name)
+            #             set_status_dirty(project_name)
 
         except Exception as e:
             logger.exception('exception in Actions._add_data_worker() data lock')
