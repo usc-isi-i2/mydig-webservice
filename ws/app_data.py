@@ -36,9 +36,9 @@ class Data(Resource):
         args['sync'] = False if args['sync'] is None or args['sync'].lower() != 'true' else True
         args['log'] = True if args['log'] is None or args['log'].lower() != 'false' else False
 
-        if file_type == 'csv':
+        if file_type == 'csv' or file_type == 'html':
             """
-                handle csv or tsv or xls or xlsx
+                handle csv or tsv or xls or xlsx or html
                 -----------------------------------
                 TODO handled zipped files
 
@@ -50,15 +50,19 @@ class Data(Resource):
             file_data.save(user_uploaded_file_path)
 
             new_file_data = dict()
-            new_file_data['raw_content'] = '<html><h1>USER Uploaded CSV file</h1></html>'
-            new_file_data['raw_content_path'] = user_uploaded_file_path
+            if file_type == 'csv':
+                new_file_data['raw_content'] = '<html><h1>USER Uploaded CSV file</h1></html>'
+                new_file_data['raw_content_path'] = user_uploaded_file_path
+            elif file_type == 'html':
+                new_file_data['raw_content'] = open(user_uploaded_file_path, mode='rb').read().decode('utf-8')
+
             new_file_data['dataset'] = dataset
             new_file_data['tld'] = dataset
 
+            file_data = werkzeug.FileStorage(stream=io.BytesIO(bytes(json.dumps(new_file_data), encoding='utf-8')))
+
             file_name = '{}.jl'.format(file_name)
             file_type = 'json_lines'
-
-            file_data = werkzeug.FileStorage(stream=io.BytesIO(bytes(json.dumps(new_file_data), encoding='utf-8')))
 
         # make root dir and save temp file
         src_file_path = os.path.join(get_project_dir_path(project_name), 'data', '{}.tmp'.format(file_name))
