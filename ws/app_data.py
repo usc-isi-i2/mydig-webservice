@@ -75,7 +75,7 @@ class Data(Resource):
         if not args['sync']:
             t = threading.Thread(target=Data._update_catalog_worker,
                                  args=(project_name, file_name, file_type, src_file_path, dest_dir_path,
-                                       args['log'],),
+                                       args['log'], dataset),
                                  name='data_upload')
             t.start()
             data[project_name]['threads'].append(t)
@@ -83,11 +83,12 @@ class Data(Resource):
             return rest.accepted()
         else:
             Data._update_catalog_worker(project_name, file_name, file_type,
-                                        src_file_path, dest_dir_path, args['log'])
+                                        src_file_path, dest_dir_path, args['log'], dataset=dataset)
             return rest.created()
 
     @staticmethod
-    def _update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True):
+    def _update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True,
+                               dataset=None):
         def _write_log(content):
             with data[project_name]['locks']['catalog_log']:
                 log_file.write('<#{}> {}: {}\n'.format(threading.get_ident(), file_name, content))
@@ -132,9 +133,12 @@ class Data(Resource):
                             _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
 
                     # url
+                    tld_from_url = None
                     if 'url' not in obj:
                         obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
                         _write_log('Generated URL for object: {}'.format(obj['url']))
+                    else:
+                        tld_from_url = Data.extract_tld(obj['url'])
 
                     # timestamp_crawl
                     if 'timestamp_crawl' not in obj:
@@ -158,9 +162,16 @@ class Data(Resource):
                     output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
                     output_raw_content_path = output_path_prefix + '.html'
                     output_json_path = output_path_prefix + '.json'
-                    tld = obj.get('tld', Data.extract_tld(obj['url']))
+
                     if 'tld' not in obj:
+                        if tld_from_url is not None:
+                            tld = tld_from_url
+                        else:
+                            tld = dataset if dataset is not None else obj.get('tld', Data.extract_tld(obj['url']))
                         obj['tld'] = tld
+
+                    tld = obj['tld']
+
                     with open(output_raw_content_path, 'w', encoding='utf-8') as output:
                         output.write(obj['raw_content'])
                     with open(output_json_path, 'w', encoding='utf-8') as output:
