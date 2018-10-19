@@ -108,96 +108,98 @@ class Data(Resource):
                 for line in f:
                     if len(line.strip()) == 0:
                         continue
-                    obj = json.loads(line)
+                    objs = json.loads(line)
+                    if not isinstance(objs, list):
+                        objs =[objs]
+                    for obj in objs:
+                        # raw_content
+                        if 'raw_content' not in obj:
+                            obj['raw_content'] = ''
 
-                    # raw_content
-                    if 'raw_content' not in obj:
-                        obj['raw_content'] = ''
-
-                    # doc_id
-                    obj['doc_id'] = obj.get('doc_id', obj.get('_id', ''))
-                    if not Data.is_valid_doc_id(obj['doc_id']):
-                        if len(obj['doc_id']) > 0:  # has doc_id but invalid
-                            old_doc_id = obj['doc_id']
-                            obj['doc_id'] = base64.b64encode(old_doc_id)
-                            _write_log('base64 encoded doc_id from {} to {}'
-                                       .format(old_doc_id, obj['doc_id']))
+                        # doc_id
+                        obj['doc_id'] = obj.get('doc_id', obj.get('_id', ''))
                         if not Data.is_valid_doc_id(obj['doc_id']):
-                            # generate doc_id
-                            # if there's raw_content, generate id based on raw_content
-                            # if not, use the whole object
-                            if len(obj['raw_content']) != 0:
-                                obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
-                            else:
-                                obj['doc_id'] = Data.generate_doc_id(json.dumps(obj, sort_keys=True))
-                            _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
+                            if len(obj['doc_id']) > 0:  # has doc_id but invalid
+                                old_doc_id = obj['doc_id']
+                                obj['doc_id'] = base64.b64encode(old_doc_id)
+                                _write_log('base64 encoded doc_id from {} to {}'
+                                           .format(old_doc_id, obj['doc_id']))
+                            if not Data.is_valid_doc_id(obj['doc_id']):
+                                # generate doc_id
+                                # if there's raw_content, generate id based on raw_content
+                                # if not, use the whole object
+                                if len(obj['raw_content']) != 0:
+                                    obj['doc_id'] = Data.generate_doc_id(obj['raw_content'])
+                                else:
+                                    obj['doc_id'] = Data.generate_doc_id(json.dumps(obj, sort_keys=True))
+                                _write_log('Generated doc_id for object: {}'.format(obj['doc_id']))
 
-                    # url
-                    tld_from_url = None
-                    if 'url' not in obj:
-                        obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
-                        _write_log('Generated URL for object: {}'.format(obj['url']))
-                    else:
-                        tld_from_url = Data.extract_tld(obj['url'])
-
-                    # timestamp_crawl
-                    if 'timestamp_crawl' not in obj:
-                        # obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                        obj['timestamp_crawl'] = datetime.datetime.now().isoformat()
-                    else:
-                        try:
-                            parsed_date = dateparser.parse(obj['timestamp_crawl'])
-                            obj['timestamp_crawl'] = parsed_date.isoformat()
-                        except:
-                            _write_log('Can not parse timestamp_crawl: {}'.format(obj['doc_id']))
-                            continue
-
-                    # type
-                    # this type will conflict with the attribute in logstash
-                    if 'type' in obj:
-                        obj['original_type'] = obj['type']
-                        del obj['type']
-
-                    # split raw_content and json
-                    output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
-                    output_raw_content_path = output_path_prefix + '.html'
-                    output_json_path = output_path_prefix + '.json'
-
-                    if 'tld' not in obj:
-                        if tld_from_url is not None:
-                            tld = tld_from_url
+                        # url
+                        tld_from_url = None
+                        if 'url' not in obj:
+                            obj['url'] = '{}/{}'.format(Data.generate_tld(file_name), obj['doc_id'])
+                            _write_log('Generated URL for object: {}'.format(obj['url']))
                         else:
-                            tld = dataset if dataset is not None else obj.get('tld', Data.extract_tld(obj['url']))
-                        obj['tld'] = tld
+                            tld_from_url = Data.extract_tld(obj['url'])
 
-                    tld = obj['tld']
+                        # timestamp_crawl
+                        if 'timestamp_crawl' not in obj:
+                            # obj['timestamp_crawl'] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                            obj['timestamp_crawl'] = datetime.datetime.now().isoformat()
+                        else:
+                            try:
+                                parsed_date = dateparser.parse(obj['timestamp_crawl'])
+                                obj['timestamp_crawl'] = parsed_date.isoformat()
+                            except:
+                                _write_log('Can not parse timestamp_crawl: {}'.format(obj['doc_id']))
+                                continue
 
-                    with open(output_raw_content_path, 'w', encoding='utf-8') as output:
-                        output.write(obj['raw_content'])
-                    with open(output_json_path, 'w', encoding='utf-8') as output:
-                        del obj['raw_content']
-                        output.write(json.dumps(obj, indent=2))
+                        # type
+                        # this type will conflict with the attribute in logstash
+                        if 'type' in obj:
+                            obj['original_type'] = obj['type']
+                            del obj['type']
 
-                    # update data db
-                    with data[project_name]['locks']['data']:
-                        data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
-                        # if doc_id is already there, still overwrite it
-                        exists_before = True if obj['doc_id'] in data[project_name]['data'][tld] else False
-                        data[project_name]['data'][tld][obj['doc_id']] = {
-                            'raw_content_path': output_raw_content_path,
-                            'json_path': output_json_path,
-                            'url': obj['url'],
-                            'add_to_queue': False
-                        }
-                    # update status
-                    if not exists_before:
-                        with data[project_name]['locks']['status']:
-                            data[project_name]['status']['total_docs'][tld] = \
-                                data[project_name]['status']['total_docs'].get(tld, 0) + 1
+                        # split raw_content and json
+                        output_path_prefix = os.path.join(dest_dir_path, obj['doc_id'])
+                        output_raw_content_path = output_path_prefix + '.html'
+                        output_json_path = output_path_prefix + '.json'
 
-                    # update data db & status file
-                    set_catalog_dirty(project_name)
-                    set_status_dirty(project_name)
+                        if 'tld' not in obj:
+                            if tld_from_url is not None:
+                                tld = tld_from_url
+                            else:
+                                tld = dataset if dataset is not None else obj.get('tld', Data.extract_tld(obj['url']))
+                            obj['tld'] = tld
+
+                        tld = obj['tld']
+
+                        with open(output_raw_content_path, 'w', encoding='utf-8') as output:
+                            output.write(obj['raw_content'])
+                        with open(output_json_path, 'w', encoding='utf-8') as output:
+                            del obj['raw_content']
+                            output.write(json.dumps(obj, indent=2))
+
+                        # update data db
+                        with data[project_name]['locks']['data']:
+                            data[project_name]['data'][tld] = data[project_name]['data'].get(tld, dict())
+                            # if doc_id is already there, still overwrite it
+                            exists_before = True if obj['doc_id'] in data[project_name]['data'][tld] else False
+                            data[project_name]['data'][tld][obj['doc_id']] = {
+                                'raw_content_path': output_raw_content_path,
+                                'json_path': output_json_path,
+                                'url': obj['url'],
+                                'add_to_queue': False
+                            }
+                        # update status
+                        if not exists_before:
+                            with data[project_name]['locks']['status']:
+                                data[project_name]['status']['total_docs'][tld] = \
+                                    data[project_name]['status']['total_docs'].get(tld, 0) + 1
+
+                        # update data db & status file
+                        set_catalog_dirty(project_name)
+                        set_status_dirty(project_name)
 
                 f.close()
 
