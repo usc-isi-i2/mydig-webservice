@@ -1432,7 +1432,7 @@ poly = Polymer({
                         ////console(disable_delete_btn);
                         ////console(disable_landmark_btn);
                         newObj = {
-                            "tld": obj["tld"].toLowerCase(),
+                            "tld": obj["tld"],
                             "total_num": obj["total_num"],
                             "es_num": obj["es_num"],
                             "es_original_num": obj["es_original_num"],
