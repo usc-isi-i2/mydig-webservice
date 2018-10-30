@@ -230,14 +230,14 @@ class ConjunctiveQueryProcessor(object):
         if "/" in term or "." in term:
             must_clause = {
                 "match": {
-                    "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(
+                    "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.parse.unquote(
                         args[term])
                 }
             }
         else:
             must_clause = {
                 "match": {
-                    "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(
+                    "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.parse.unquote(
                         args[term])
                 }
             }
