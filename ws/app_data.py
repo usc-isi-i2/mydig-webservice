@@ -51,13 +51,15 @@ class Data(Resource):
 
             new_file_data = dict()
             if file_type == 'csv':
-                new_file_data['raw_content'] = '<html><h1>USER Uploaded CSV file</h1></html>'
+                # new_file_data['raw_content'] = '<html><h1>USER Uploaded CSV file</h1></html>'
+                new_file_data['raw_content'] = ''
                 new_file_data['raw_content_path'] = user_uploaded_file_path
             elif file_type == 'html':
                 new_file_data['raw_content'] = open(user_uploaded_file_path, mode='rb').read().decode('utf-8')
 
             new_file_data['dataset'] = dataset
             new_file_data['tld'] = dataset
+            new_file_data['file_name'] = file_name
 
             file_data = werkzeug.FileStorage(stream=io.BytesIO(bytes(json.dumps(new_file_data), encoding='utf-8')))
 
