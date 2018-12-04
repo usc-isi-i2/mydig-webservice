@@ -330,7 +330,7 @@ class ConjunctiveQueryProcessor(object):
         else:
             docs = resp['hits']['hits']
             for json_doc in docs:
-                for field in json_doc[self.SOURCE][self.KG_PREFIX].keys():
+                for field in list(json_doc[self.SOURCE][self.KG_PREFIX]):
                     if field not in fields:
                         del json_doc[self.SOURCE][self.KG_PREFIX][field]
             resp['hits']['hits'] = docs
