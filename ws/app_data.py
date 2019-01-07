@@ -36,6 +36,7 @@ class Data(Resource):
         args['sync'] = False if args['sync'] is None or args['sync'].lower() != 'true' else True
         args['log'] = True if args['log'] is None or args['log'].lower() != 'false' else False
 
+        user_uploaded_file_path = None
         if file_type == 'csv' or file_type == 'html':
             """
                 handle csv or tsv or xls or xlsx or html
@@ -51,7 +52,6 @@ class Data(Resource):
 
             new_file_data = dict()
             if file_type == 'csv':
-                # new_file_data['raw_content'] = '<html><h1>USER Uploaded CSV file</h1></html>'
                 new_file_data['raw_content'] = ''
                 new_file_data['raw_content_path'] = user_uploaded_file_path
             elif file_type == 'html':
@@ -77,20 +77,20 @@ class Data(Resource):
         if not args['sync']:
             t = threading.Thread(target=Data._update_catalog_worker,
                                  args=(project_name, file_name, file_type, src_file_path, dest_dir_path,
-                                       args['log'], dataset),
+                                       args['log'], dataset, user_uploaded_file_path),
                                  name='data_upload')
             t.start()
             data[project_name]['threads'].append(t)
 
             return rest.accepted()
         else:
-            Data._update_catalog_worker(project_name, file_name, file_type,
-                                        src_file_path, dest_dir_path, args['log'], dataset=dataset)
+            Data._update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, args['log'],
+                                        dataset=dataset, user_uploaded_file_path=user_uploaded_file_path)
             return rest.created()
 
     @staticmethod
     def _update_catalog_worker(project_name, file_name, file_type, src_file_path, dest_dir_path, log_on=True,
-                               dataset=None):
+                               dataset=None, user_uploaded_file_path=None):
         def _write_log(content):
             with data[project_name]['locks']['catalog_log']:
                 log_file.write('<#{}> {}: {}\n'.format(threading.get_ident(), file_name, content))
@@ -112,7 +112,7 @@ class Data(Resource):
                         continue
                     objs = json.loads(line)
                     if not isinstance(objs, list):
-                        objs =[objs]
+                        objs = [objs]
                     for obj in objs:
                         # raw_content
                         if 'raw_content' not in obj:
@@ -191,7 +191,8 @@ class Data(Resource):
                                 'raw_content_path': output_raw_content_path,
                                 'json_path': output_json_path,
                                 'url': obj['url'],
-                                'add_to_queue': False
+                                'add_to_queue': False,
+                                'user_uploaded_file_path': user_uploaded_file_path if user_uploaded_file_path else ''
                             }
                         # update status
                         if not exists_before:
@@ -301,6 +302,12 @@ class Data(Resource):
                             os.remove(v['json_path'])
                         except:
                             pass
+                        try:
+                            if v['user_uploaded_file_path'].strip() != '':
+                                os.remove(v['user_uploaded_file_path'])
+                        except:
+                            pass
+
                     # remove from catalog
                     del data[project_name]['data'][tld]
                     set_catalog_dirty(project_name)
