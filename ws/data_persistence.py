@@ -3,6 +3,11 @@ import threading
 import os
 import codecs
 
+import logging
+from config import config
+
+logger = logging.getLogger(config['logging']['name'])
+
 
 # 1.acquire file write lock
 # 2.write to file.new
@@ -16,7 +21,7 @@ def dump_data(data, file_path):
     old_path = file_path + '.old'
 
     try:
-        with codecs.open(new_path, 'w') as f:
+        with open(new_path, 'w') as f:
             f.write(data)
 
         # https://docs.python.org/2/library/os.html#os.rename
@@ -28,8 +33,7 @@ def dump_data(data, file_path):
         if os.path.exists(old_path):
             os.remove(old_path)
     except Exception as e:
-        print e
-        print 'error in dump_data'
+        logger.exception()
 
 
 # when starting:
@@ -55,4 +59,3 @@ def prepare_data_file(file_path):
         os.remove(new_path)
     else:
         pass
-

@@ -21,55 +21,53 @@ poly = Polymer({
         this.tableAttributes = [];
         this.fieldNames = [];
         this.etkStatus = false;
-        this.scope =[]
-        this.scope.parentNode={}
-        this.iconsetRepeat ={}
+        this.scope = []
+        this.scope.parentNode = {}
+        this.iconsetRepeat = {}
         this.newField = {}
         this.fieldForm = {}
         this.newFieldColor = "#ffb300"
         this.editFieldColor = "#263238"
         this.disablelandMark = false;
-        this.disableDelete =false;
+        this.disableDelete = false;
         this.total_tld = 0;
         this.total_num = 0;
         this.total_es_num = 0;
         this.total_desired_num = 0;
-        this.total_es_original_num=0;
-        this.loadFlag =0;
-        this.dialogText =""
-        this.confirmText =""
-        this.confirmButton =""
-        this.fucntionButton  = ""
-        this.confirmValue =0
-        this.pipelineCall=0
+        this.total_es_original_num = 0;
+        this.loadFlag = 0;
+        this.dialogText = ""
+        this.confirmText = ""
+        this.confirmButton = ""
+        this.fucntionButton = ""
+        this.confirmValue = 0
+        this.pipelineCall = 0
         this.disableColor = "#666666"
-        this.addType =false
-        this.editType=true
-        this.page=1
-        this.tot_pages=1
-        this.pages = Array.from({length: this.tot_pages}, (x,i) => i+1);
-        this.scope.getIconNames = function(iconset) {
-        return iconset.getIconNames();
-        ////console("heree");
-      };
+        this.addType = false
+        this.editType = true
+        this.page = 1
+        this.scope.getIconNames = function (iconset) {
+            return iconset.getIconNames();
+            ////console("heree");
+        };
 
-      this.iconsetRepeat = new Polymer.IronMeta({type: 'iconset'}).list;
-      ////console(this.iconsetRepeat[0]._icons);
+        this.iconsetRepeat = new Polymer.IronMeta({type: 'iconset'}).list;
+        ////console(this.iconsetRepeat[0]._icons);
 
-      /*for(var i=0;i<iconsetRepeat.size();i++)
-      {
-        if(i==0)
-            {
-                scope[i]=[]
-            }
-        scope[i].push
-      }
-*/
+        /*for(var i=0;i<iconsetRepeat.size();i++)
+         {
+         if(i==0)
+         {
+         scope[i]=[]
+         }
+         scope[i].push
+         }
+         */
         this.scope.parentNode.getIconNames = this.scope.getIconNames;
 
-       /* this.iconsets = this.iconset;*/
-       /* ////console(iconset.getOwnPropertyNames());
-        ////console(Polymer.getOwnPropertyNames())*/
+        /* this.iconsets = this.iconset;*/
+        /* ////console(iconset.getOwnPropertyNames());
+         ////console(Polymer.getOwnPropertyNames())*/
 
         this.$.projectNameHeader.textContent = "Project: " + projectName;
 
@@ -80,7 +78,7 @@ poly = Polymer({
 
         this.tldTableData = [];
         // this.$.tldTable.sort = this.sortCaseInsensitive;
-       
+
 
         $(document).on('tap', '.btnAddToLandmark', this.addToLandmark);
 
@@ -110,81 +108,67 @@ poly = Polymer({
 
         this.searchImportance = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
         this.show_as_linkArray = ["text", "entity"];
-        this.show_in_resultArray = ["header", "detail", "description", "no", "title", "nested","series"];
-        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id", "number","text","type"];
+        this.show_in_resultArray = ["header", "detail", "description", "no", "title", "nested"];
+        this.type = ["string", "date", "email", "hyphenated", "location", "image", "phone", "username", "kg_id", "number", "text"];
         this.predefined_extractor_Array = ["none", "address", "country", "email", "posting_date", "phone", "review_id", "social_media", "TLD"];
         this.extractionTargetArray = ["title_only", "description_only", "title_and_description"];
         //this.$.actions.focus();
 
         var drawerLayout = this.$$('#drawerLayout');
-      /*  this.listen(this.$$("#yes"), 'tap', 'deleteAllFileData');*/
-        this.listen(this.$$("#menuToggle"),'click', "toggleDrawer");
+        /*  this.listen(this.$$("#yes"), 'tap', 'deleteAllFileData');*/
+        this.listen(this.$$("#menuToggle"), 'click', "toggleDrawer");
     },
-    showExtractions: function(){
-       console.log(this.$$('#extractionFields').style.visibility)
-        if(this.$$('#extractionFields').style.visibility == "hidden")
-            {
-                this.$$('#extractionFields').style.visibility == "visible";
-            }
-        else
-        {
-            this.$$('#extractionFields').style.visibility == "hidden";
-        }
-
-    },
-    toggleDrawer: function() {
+    toggleDrawer: function () {
 
         if (this.$$("#drawerLayout").forceNarrow || !this.$$("#drawerLayout").narrow) {
             this.$$("#drawerLayout").forceNarrow = !this.$$("#drawerLayout").forceNarrow;
             this.$$("#menuToggle").style.color = "#ffff";
-        }  else {
+        } else {
             this.$$("#drawerLayout").drawer.toggle();
             this.$$("#menuToggle").style.color = "#00000";
         }
     },
-    submitGlossaryFormData: function(){
+    submitGlossaryFormData: function () {
         var glossName = this.$$("#glossary_nameInput").value;
-    if (/\s/.test(glossName)) {
-        return;
-    }
-    var file = this.$$("#glossary_fileInput").inputElement.inputElement.files[0];
-    var url = backend_url + "projects/" + projectName + "/glossaries";
-//------------
-    var formData = new FormData();
-
-    formData.append("glossary_name", glossName);
-    formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
-    // ////console(formData);
-
-    var request = new XMLHttpRequest()
-    request.open("POST", url);
-//  request.setRequestHeader("Content-type", "application/json");
-    request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 201) {
- 
-            this.$$("#glossary_nameInput").value = "";
-           this.$$("#addGlossaryDialog").toggle();
-           this.$$("#getGlossary").generateRequest();
+        if (/\s/.test(glossName)) {
+            return;
         }
-    }.bind(this);
+        var file = this.$$("#glossary_fileInput").inputElement.inputElement.files[0];
+        var url = backend_url + "projects/" + projectName + "/glossaries";
+        var formData = new FormData();
 
-    request.send(formData);
+        formData.append("glossary_name", glossName);
+        formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
+        // ////console(formData);
+
+        var request = new XMLHttpRequest()
+        request.open("POST", url);
+//  request.setRequestHeader("Content-type", "application/json");
+        request.onreadystatechange = function () {
+            if (request.readyState === 4 && request.status === 201) {
+
+                this.$$("#glossary_nameInput").value = "";
+                this.$$("#addGlossaryDialog").toggle();
+                this.$$("#getGlossary").generateRequest();
+            }
+        }.bind(this);
+
+        request.send(formData);
 
     },
-    getIconNames: function(iconset) {
+    getIconNames: function (iconset) {
         return iconset.getIconNames();
-      },
-    setNewIconColor: function()
-    {
+    },
+    setNewIconColor: function () {
         /*////console(this.$$('#newColorSelect').node);
-*/        if (this.$$('#newColorSelect').color == undefined) return "amber";
-        this.newFieldColor= this.$$('#newColorSelect').color;
+         */
+        if (this.$$('#newColorSelect').color == undefined) return "amber";
+        this.newFieldColor = this.$$('#newColorSelect').color;
         return this.$$('#newColorSelect').color
     },
-    goToLandMark: function(e)
-    {
+    goToLandMark: function (e) {
         //////console("there" + e.target.value);
-       window.open("http://www."+e.target.value, '_blank');
+        window.open("http://www." + e.target.value, '_blank');
     },
     _getColor: function () {
         if (this.$$('#colorSelect').color == undefined) return "#ffb300";
@@ -201,32 +185,35 @@ poly = Polymer({
         ////console(this.editFieldColor);
 
         this.$$('#papericonEditSet').style.fill = this.editFieldColor;
-       /* getComputedStyle(this.$$('#iconField'))*/
-      this.$$('#iconField').style.color = this.editFieldColor ;
+        /* getComputedStyle(this.$$('#iconField'))*/
+        this.$$('#iconField').style.color = this.editFieldColor;
         return this.colorSet[this.$$('#colorSelect2').color];
 
 
     },
     _getColorSelected: function (color) {
         /*return 0*/
-        
-        if (color!= undefined)
-        {
+
+        if (color != undefined) {
             ////console("color is "+this.colorSet[color]);
-            if(this.colorSet[color] == undefined){
+            if (this.colorSet[color] == undefined) {
 
                 ////console("here");
-                this.editFieldColor = Object.keys(this.colorSet).find(key => this.colorSet[key] === color);
-            return Object.keys(this.colorSet).find(key => this.colorSet[key] === color)}
-             else{
+                this.editFieldColor = Object.keys(this.colorSet).find(key => this.colorSet[key] === color
+            )
+                ;
+                return Object.keys(this.colorSet).find(key => this.colorSet[key] === color
+            )
+            }
+            else {
                 this.editFieldColor = color;
                 return color;
             }
         }
-            this.editFieldColor = "#ffb300";
-            this.$$('#papericonEditSet').style.fill = this.editFieldColor;
-            return "#ffb300";
-        
+        this.editFieldColor = "#ffb300";
+        this.$$('#papericonEditSet').style.fill = this.editFieldColor;
+        return "#ffb300";
+
     },
     _getTableDropDown: function (name) {
         if (name != undefined && name != "") {
@@ -389,9 +376,9 @@ poly = Polymer({
         this.$.updateSavedTags.generateRequest();
         editTagsDialog.toggle();
     },
-    updateDesiredDialogFunction:function(){
+    updateDesiredDialogFunction: function () {
         this.$$('#updateDesiredDialog').toggle();
-       
+
     },
     updateDone: function () {
         var obj = {};
@@ -417,36 +404,34 @@ poly = Polymer({
         this.fieldName = e.model.item[0].name;
         this.$$('#sureToDeleteDialog').toggle();
         /*var dialog = document.querySelector('#sureToDeleteDialog');
-        this.setDialog(true);
-        dialog.open();*/
-        },
-        callImportFileFormDialog: function (e) {
+         this.setDialog(true);
+         dialog.open();*/
+    },
+    callImportFileFormDialog: function (e) {
         this.$$('#importFileFormDialog').toggle();
         /*var dialog = document.querySelector('#sureToDeleteDialog');
-        this.setDialog(true);
-        dialog.open();*/
-        },
-        importProjectFunction: function () {
+         this.setDialog(true);
+         dialog.open();*/
+    },
+    importProjectFunction: function () {
         this.$$('#importProjectConfigDialog').toggle();
         /*var dialog = document.querySelector('#sureToDeleteDialog');
-        this.setDialog(true);
-        dialog.open();*/
-        },
-        deleteAllFileData: function(e) {
+         this.setDialog(true);
+         dialog.open();*/
+    },
+    deleteAllFileData: function (e) {
 
-        if($(e.currentTarget)[0].id != "yes")
-        {
+        if ($(e.currentTarget)[0].id != "yes") {
             this.confirmText = "Are you sure to delete all data?"
             this.confirmButton = "Delete"
             this.listen(this.$$("#yes"), 'tap', 'deleteAllFileData');
             this.$$('#confirmDialog').toggle();
             return
         }
-       
-        
 
-        payload = {"tlds":[], "from": "file"};
-        this.tldTableData.forEach(function(obj){
+
+        payload = {"tlds": [], "from": "file"};
+        this.tldTableData.forEach(function (obj) {
             payload["tlds"].push(obj["tld"]);
         });
 
@@ -466,17 +451,17 @@ poly = Polymer({
             }
         });
     },
-  /*  setDialog: function (open) {
-            if (open) {
-                var node = document.querySelector('#sureToDeleteDialog');
-                var textnode = document.querySelector("body");
-                textnode.appendChild(node);
-            } else {
-                var node = document.querySelector('#sureToDeleteDialog');
-                var textnode = document.querySelector("top-nav");
-                textnode.appendChild(node);
-            }
-        },*/
+    /*  setDialog: function (open) {
+     if (open) {
+     var node = document.querySelector('#sureToDeleteDialog');
+     var textnode = document.querySelector("body");
+     textnode.appendChild(node);
+     } else {
+     var node = document.querySelector('#sureToDeleteDialog');
+     var textnode = document.querySelector("top-nav");
+     textnode.appendChild(node);
+     }
+     },*/
     sureToContinueExtractionFunction: function () {
         sureToContinueExtraction.toggle();
     },
@@ -489,8 +474,7 @@ poly = Polymer({
 
     },
     deleteGlossaryFunction: function (e) {
-        if($(e.currentTarget)[0].id != "yes")
-        {
+        if ($(e.currentTarget)[0].id != "yes") {
             this.confirmText = "Are you sure to delete this glossary ?"
             this.confirmButton = "Delete"
             this.confirmValue = e.model.item[0];
@@ -507,7 +491,7 @@ poly = Polymer({
     },
     editFieldFunction: function (e) {
         var fieldFormName = e.model.item[0].name;
-         this.$.editFieldsDialog.toggle();
+        this.$.editFieldsDialog.toggle();
 
         //console(fieldFormName);
 
@@ -517,9 +501,8 @@ poly = Polymer({
 
         this.$.editField.generateRequest();
 
-       /* ////console(fieldForm.icon);*/
+        /* ////console(fieldForm.icon);*/
 
-       
 
     },
     editGlossaryFunction: function (e) {
@@ -527,8 +510,7 @@ poly = Polymer({
         this.glossaryForm = e.model.item[0];
         this.$$("#editGlossariesDialog").toggle();
     },
-    openFile: function(e)
-    {
+    openFile: function (e) {
         var input = event.target;
         var reader = new FileReader();
         reader.onload = function () {
@@ -537,33 +519,32 @@ poly = Polymer({
         };
         reader.readAsText(this.$$('#glossary_file').inputElement.inputElement.files[0]);
     },
-    updateGlossaryFormData: function()
-    {
+    updateGlossaryFormData: function () {
         var glossName = this.$$('#glossary_name').value;
         var file = this.$$('#glossary_file').inputElement.inputElement.files[0]
         /*////console($('#glossInput')[0].files[0]);*/
 
 
-    var url = backend_url + "projects/" + projectName + "/glossaries/" + glossName;
-    //------------
-    var formData = new FormData();
+        var url = backend_url + "projects/" + projectName + "/glossaries/" + glossName;
+        //------------
+        var formData = new FormData();
 
-    formData.append("glossary_name", glossName);
-    formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
-    // ////console(formData);
+        formData.append("glossary_name", glossName);
+        formData.append("glossary_file", file); // number 123456 is immediately converted to a string "123456"
+        // ////console(formData);
 
-    var request = new XMLHttpRequest();
-    request.open("POST", url);
-    //  request.setRequestHeader("Content-type", "application/json");
+        var request = new XMLHttpRequest();
+        request.open("POST", url);
+        //  request.setRequestHeader("Content-type", "application/json");
 
-    request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 201) {
-            this.$$("#editGlossariesDialog").toggle();
-            this.$$("#getGlossary").generateRequest();
-        }
-    }.bind(this);
+        request.onreadystatechange = function () {
+            if (request.readyState === 4 && request.status === 201) {
+                this.$$("#editGlossariesDialog").toggle();
+                this.$$("#getGlossary").generateRequest();
+            }
+        }.bind(this);
 
-    request.send(formData);
+        request.send(formData);
     },
     updateField: function (e) {
         var obj = {};
@@ -588,7 +569,7 @@ poly = Polymer({
         if (this.fieldForm.screen_label == "") this.fieldForm.screen_label = this.fieldForm.name;
         if (this.fieldForm.screen_label_plural == "") this.fieldForm.screen_label_plural = this.fieldForm.screen_label;
         if (!this.fieldForm.group_name) this.fieldForm.group_name = "";
-        if (!this.editType && this.fieldForm.enable_scoring_coefficient){
+        if (!this.editType && this.fieldForm.enable_scoring_coefficient) {
             this.$.updateSavedFields.body = JSON.stringify({
                 "field_name": this.fieldForm.name,
                 "field_object": {
@@ -621,8 +602,7 @@ poly = Polymer({
                 }
             });
         }
-        else
-        {
+        else {
             this.$.updateSavedFields.body = JSON.stringify({
                 "field_name": this.fieldForm.name,
                 "field_object": {
@@ -660,7 +640,7 @@ poly = Polymer({
     },
     done: function (data) {
         /*this.$$('#samplePageForce').checked = "";
-        this.$$('#etkForce').checked = "";*/
+         this.$$('#etkForce').checked = "";*/
         this.$$('#modalDialog').open();
     },
     successDone: function () {
@@ -719,8 +699,7 @@ poly = Polymer({
             }
         }
     },
-    updateProgress: function()
-    {
+    updateProgress: function () {
 
     },
     getFieldGlossariesForAdd: function () {
@@ -891,13 +870,13 @@ poly = Polymer({
         this.$$('#spacyRulesTextArea').value = '{"rules": [],"test_text": "string"}';
     },
     setIcon: function (e) {
-       /* ////console($(e.currentTarget));
-        ////console($(e.currentTarget)[0]);
-        ////console($(e.currentTarget)[0].__data.icon);*/
+        /* ////console($(e.currentTarget));
+         ////console($(e.currentTarget)[0]);
+         ////console($(e.currentTarget)[0].__data.icon);*/
         this.$$('#fieldInputIcon').icon = $(e.currentTarget)[0].__data.icon;
         this.$$('#papericonSet').toggle();
     },
-    toggleEditIcons: function(){
+    toggleEditIcons: function () {
         this.$$('#editDialogIcons').style.fill = this.$$("#colorSelect2").color;
         this.$$('#papericonEditSet').toggle();
     },
@@ -941,20 +920,18 @@ poly = Polymer({
 
             //console.log(this.fieldForm.scoring_coefficient)
 
-            if(this.fieldForm.enable_scoring_coefficient==undefined || this.fieldForm.scoring_coefficient == undefined || this.fieldForm.scoring_coefficient == ""){
-                this.fieldForm.scoring_coefficient =1;
+            if (this.fieldForm.enable_scoring_coefficient == undefined || this.fieldForm.scoring_coefficient == undefined || this.fieldForm.scoring_coefficient == "") {
+                this.fieldForm.scoring_coefficient = 1;
                 this.$$('#rankingm').value = "1.0";
                 this.$$('#rankingm').style.visibility = 'hidden';
                 this.editType = true;
                 //console.log("hereee");
             }
 
-            if(this.fieldForm.enable_scoring_coefficient)
-            {
+            if (this.fieldForm.enable_scoring_coefficient) {
                 this.$$('#rankingm').style.visibility = 'visible';
             }
-            else
-            {
+            else {
                 this.$$('#rankingm').style.visibility = 'hidden';
             }
         }
@@ -967,12 +944,12 @@ poly = Polymer({
         this.$$("#fielddescriptioninput").value = "";
         this.$$("#fieldscreenlabelinput").value = "";
         this.$$("#fieldscreenlabelPluralinput").value = "";
-       /* this.$$("#fieldcolorinput").value = "amber";*/
+        /* this.$$("#fieldcolorinput").value = "amber";*/
         this.$$("#getCaseSenstive").checked = "";
 
 
         this.$$("#fieldgroupnameinput").value = "";
-/*        this.$$("#fieldiconinput").value = "";*/
+        /*        this.$$("#fieldiconinput").value = "";*/
         this.$$('#fieldInputIcon').icon = "star";
         this.$$("#fieldsearchinput").selected = 0;
         this.$$("#fieldtypeinput").selected = 0;
@@ -985,13 +962,13 @@ poly = Polymer({
         this.$$("#fieldresultinput").selected = 0;
         this.$$("#fieldsearchinput2").checked = false;
         this.$$("#fieldnetworkinput").checked = false;
-        this.$$('#groupOrderInput').value="";
-        this.$$('#fieldOrderInput').value="";
+        this.$$('#groupOrderInput').value = "";
+        this.$$('#fieldOrderInput').value = "";
         this.$$("#free_text_search").checked = false;
-        this.$$('#fieldRankingMultiplierInput').value="1.0";
-        this.$$('#enable_scoring_coefficient').checked =false;
-        this.$$('#fieldRankingMultiplierInput').style.visibility ='hidden';
-        this.addType =true
+        this.$$('#fieldRankingMultiplierInput').value = "1.0";
+        this.$$('#enable_scoring_coefficient').checked = false;
+        this.$$('#fieldRankingMultiplierInput').style.visibility = 'hidden';
+        this.addType = true
 
         /*this.$$("#fieldRuleExtractorTarget").selected = "2";*/
     },
@@ -1002,7 +979,6 @@ poly = Polymer({
         // ////console(this.fieldForm.blacklists);
         // ////console(this.fieldFormBlacklists);
 
-        
 
         // clean up checked state
         for (var j = 0; j < this.glossaries.length; j++) {
@@ -1060,189 +1036,185 @@ poly = Polymer({
             }
         }
     },
-    checkAddType: function(){
-        if(this.$$('#fieldtypeinput').selectedItem!=undefined || this.$$('#fieldtypeinput').selectedItem !=null)
-        {var type = this.$$('#fieldtypeinput').selectedItem.value;
-        /*console.log(type)*/
-        if(type=='number')
-        {
-            this.addType = false
-           /* console.log(true)*/
+    checkAddType: function () {
+        if (this.$$('#fieldtypeinput').selectedItem != undefined || this.$$('#fieldtypeinput').selectedItem != null) {
+            var type = this.$$('#fieldtypeinput').selectedItem.value;
+            /*console.log(type)*/
+            if (type == 'number') {
+                this.addType = false
+                /* console.log(true)*/
+            }
+            else {
+                this.addType = true
+                this.$$('#enable_scoring_coefficient').checked = false;
+                this.$$('#fieldRankingMultiplierInput').style.visibility = 'hidden';
+            }
         }
-        else{
-            this.addType =true
-            this.$$('#enable_scoring_coefficient').checked =false;
-            this.$$('#fieldRankingMultiplierInput').style.visibility ='hidden';
-        }
-    }
 
     },
-    checkEditType: function()
-    {
-        if( this.$$('#editTypeValue').selectedItem !=undefined || this.$$('#editTypeValue').selectedItem!=null)
-        {var type = this.$$('#editTypeValue').selectedItem.value;
-        if(type=='number')
-        {
-            this.editType =false
+    checkEditType: function () {
+        if (this.$$('#editTypeValue').selectedItem != undefined || this.$$('#editTypeValue').selectedItem != null) {
+            var type = this.$$('#editTypeValue').selectedItem.value;
+            if (type == 'number') {
+                this.editType = false
 
+            }
+            else {
+                this.editType = true
+                this.$$('#rankingm').style.visibility = 'hidden';
+                this.$$('#enableScoringCoefficientEdit').checked = false
+            }
         }
-        else{
-            this.editType =true
-             this.$$('#rankingm').style.visibility = 'hidden';
-            this.$$('#enableScoringCoefficientEdit').checked =false
-        }
-    }
     },
-    addNewField: function(){
+    addNewField: function () {
 
-    var xhr = new XMLHttpRequest();
-    var url = backend_url + "projects/" + projectName + "/fields";
-    var name = this.$$("#fieldnameinput").value;
-    if (/\s/.test(name)) {
-        return;
-    }
-    var description = this.$$("#fielddescriptioninput").value;
-    var screenlabel = this.$$("#fieldscreenlabelinput").value;
-    var screen_label_plural = this.$$("#fieldscreenlabelPluralinput").value;
-    if (screenlabel == "") screenlabel = name;
-    if (screen_label_plural == "") screen_label_plural = screenlabel;
-
-    if (this.colorSet[this.newFieldColor] ==undefined)
-        var color = "#ffb300";
-    else
-        var color = this.colorSet[this.newFieldColor];
-    var type = this.$$("#fieldtypeinput").selectedItem.value;
-    var predefinedExtractor = "";
-    if (this.$$("#fieldpredefinedExtractor").selectedItem) {
-        predefinedExtractor = this.$$("#fieldpredefinedExtractor").selectedItem.value;
-    }
-
-    var groupname = this.$$("#fieldgroupnameinput").value;
-    var icon = this.$$("#fieldInputIcon").icon;
-    var searchimp = parseInt(this.$$("#fieldsearchinput").selectedItem.value);
-    var ruleExtractor = this.$$("#fieldRuleExtractor").checked;
-    var combinefields = this.$$("#fieldcombinedfieldsinput").checked;
-    var facet = this.$$("#fieldfacetinput").checked;
-    var link = this.$$("#fieldlinkinput").selectedItem.value;
-    var result = this.$$("#fieldresultinput").selectedItem.value;
-    var search = this.$$("#fieldsearchinput2").checked;
-    var networksearch = this.$$("#fieldnetworkinput").checked;
-    var groupOrder = parseInt(this.$$("#groupOrderInput").value);
-    var fieldOrder = parseInt(this.$$("#fieldOrderInput").value);
-     var free_text_search = this.$$("#field_free_text_search").checked;
-     var rankingMultiplier = parseFloat(this.$$('#fieldRankingMultiplierInput').value);
-     var esc = this.$$("#enable_scoring_coefficient").checked;
-
-   /* var ruleextractTarget = this.$$("#fieldRuleExtractorTarget").selectedItem.value;*/
-    var caseSense = this.$$("#getCaseSenstive").checked;
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-type", "application/json");
-
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 201) {
-            this.$$("#addFieldDialog").toggle();
-            this.$$("#getFields").generateRequest();
-            glossariesNewField = [];
-            this.$$("#fieldnameinput").value = "";
-            this.$$("#fielddescriptioninput").value = "";
-            this.$$("#fieldscreenlabelinput").value = "";
-            this.$$("#fieldscreenlabelPluralinput").value = "";
-           /* this.$$("#fieldcolorinput").value = "amber";*/
-           this.newFieldColor = "#ffb300";
-           this.$$('#newColorSelect').color = this.newFieldColor;
-
-            this.$$("#getCaseSenstive").checked = "";
-
-
-            this.$$("#fieldgroupnameinput").value = "";
-            this.$$("#fieldInputIcon").icon = "star";
-            this.$$("#fieldsearchinput").selected = 0;
-            this.$$("#fieldtypeinput").selected = 0;
-            this.$$("#fieldRuleExtractor").checked = false;
-            this.$$("#fieldpredefinedExtractor").selected = 0;
-
-            this.$$("#fieldcombinedfieldsinput").checked = false;
-            this.$$("#fieldfacetinput").checked = false;
-            this.$$("#fieldlinkinput").selected = 0;
-            this.$$("#fieldresultinput").selected = 0;
-            this.$$("#fieldsearchinput2").checked = false;
-            this.$$("#fieldnetworkinput").checked = false;
-            this.$$("#groupOrderInput").value = "";
-            this.$$("#fieldOrderInput").value = "";
-            this.$$("#free_text_search").checked = false;
-            this.$$('#fieldRankingMultiplierInput').value="";
-            
-            /*document.getElementById("fieldRuleExtractorTarget").selected = "2";*/
-
+        var xhr = new XMLHttpRequest();
+        var url = backend_url + "projects/" + projectName + "/fields";
+        var name = this.$$("#fieldnameinput").value;
+        if (/\s/.test(name)) {
+            return;
         }
-    }.bind(this);
+        var description = this.$$("#fielddescriptioninput").value;
+        var screenlabel = this.$$("#fieldscreenlabelinput").value;
+        var screen_label_plural = this.$$("#fieldscreenlabelPluralinput").value;
+        if (screenlabel == "") screenlabel = name;
+        if (screen_label_plural == "") screen_label_plural = screenlabel;
 
-    if(!this.addType && esc){
-        var data = JSON.stringify({
-            "field_name": name,
-            "field_object": {
-                "color": color,
-                "case_sensitive": caseSense,
-                "combine_fields": combinefields,
-                "description": description,
-                "glossaries": glossariesNewField,
-                "group_name": groupname,
-                "icon": icon,
-                "name": name,
-                "screen_label": screenlabel,
-                "screen_label_plural": screen_label_plural,
-                "search_importance": searchimp,
-                "show_as_link": link,
-                "show_in_facets": facet,
-                "show_in_result": result,
-                "show_in_search": search,
-                "type": type,
-                "use_in_network_search": networksearch,
-                "rule_extractor_enabled": ruleExtractor,
-                "predefined_extractor": predefinedExtractor,
-                "group_order": groupOrder,
-                "field_order": fieldOrder,
-                "free_text_search": free_text_search,
-                "scoring_coefficient": rankingMultiplier,
-                "enable_scoring_coefficient": esc
-                /*"rule_extraction_target": ruleextractTarget*/
-            }
-        });
-    }
-    else
-    {
-      
-        var data = JSON.stringify({
-            "field_name": name,
-            "field_object": {
-                "color": color,
-                "case_sensitive": caseSense,
-                "combine_fields": combinefields,
-                "description": description,
-                "glossaries": glossariesNewField,
-                "group_name": groupname,
-                "icon": icon,
-                "name": name,
-                "screen_label": screenlabel,
-                "screen_label_plural": screen_label_plural,
-                "search_importance": searchimp,
-                "show_as_link": link,
-                "show_in_facets": facet,
-                "show_in_result": result,
-                "show_in_search": search,
-                "type": type,
-                "use_in_network_search": networksearch,
-                "rule_extractor_enabled": ruleExtractor,
-                "predefined_extractor": predefinedExtractor,
-                "group_order": groupOrder,
-                "field_order": fieldOrder,
-                "free_text_search": free_text_search,
-                /*"rule_extraction_target": ruleextractTarget*/
-            }
-        });
-    }
+        if (this.colorSet[this.newFieldColor] == undefined)
+            var color = "#ffb300";
+        else
+            var color = this.colorSet[this.newFieldColor];
+        var type = this.$$("#fieldtypeinput").selectedItem.value;
+        var predefinedExtractor = "";
+        if (this.$$("#fieldpredefinedExtractor").selectedItem) {
+            predefinedExtractor = this.$$("#fieldpredefinedExtractor").selectedItem.value;
+        }
 
-    xhr.send(data);
+        var groupname = this.$$("#fieldgroupnameinput").value;
+        var icon = this.$$("#fieldInputIcon").icon;
+        var searchimp = parseInt(this.$$("#fieldsearchinput").selectedItem.value);
+        var ruleExtractor = this.$$("#fieldRuleExtractor").checked;
+        var combinefields = this.$$("#fieldcombinedfieldsinput").checked;
+        var facet = this.$$("#fieldfacetinput").checked;
+        var link = this.$$("#fieldlinkinput").selectedItem.value;
+        var result = this.$$("#fieldresultinput").selectedItem.value;
+        var search = this.$$("#fieldsearchinput2").checked;
+        var networksearch = this.$$("#fieldnetworkinput").checked;
+        var groupOrder = parseInt(this.$$("#groupOrderInput").value);
+        var fieldOrder = parseInt(this.$$("#fieldOrderInput").value);
+        var free_text_search = this.$$("#field_free_text_search").checked;
+        var rankingMultiplier = parseFloat(this.$$('#fieldRankingMultiplierInput').value);
+        var esc = this.$$("#enable_scoring_coefficient").checked;
+
+        /* var ruleextractTarget = this.$$("#fieldRuleExtractorTarget").selectedItem.value;*/
+        var caseSense = this.$$("#getCaseSenstive").checked;
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 201) {
+                this.$$("#addFieldDialog").toggle();
+                this.$$("#getFields").generateRequest();
+                glossariesNewField = [];
+                this.$$("#fieldnameinput").value = "";
+                this.$$("#fielddescriptioninput").value = "";
+                this.$$("#fieldscreenlabelinput").value = "";
+                this.$$("#fieldscreenlabelPluralinput").value = "";
+                /* this.$$("#fieldcolorinput").value = "amber";*/
+                this.newFieldColor = "#ffb300";
+                this.$$('#newColorSelect').color = this.newFieldColor;
+
+                this.$$("#getCaseSenstive").checked = "";
+
+
+                this.$$("#fieldgroupnameinput").value = "";
+                this.$$("#fieldInputIcon").icon = "star";
+                this.$$("#fieldsearchinput").selected = 0;
+                this.$$("#fieldtypeinput").selected = 0;
+                this.$$("#fieldRuleExtractor").checked = false;
+                this.$$("#fieldpredefinedExtractor").selected = 0;
+
+                this.$$("#fieldcombinedfieldsinput").checked = false;
+                this.$$("#fieldfacetinput").checked = false;
+                this.$$("#fieldlinkinput").selected = 0;
+                this.$$("#fieldresultinput").selected = 0;
+                this.$$("#fieldsearchinput2").checked = false;
+                this.$$("#fieldnetworkinput").checked = false;
+                this.$$("#groupOrderInput").value = "";
+                this.$$("#fieldOrderInput").value = "";
+                this.$$("#free_text_search").checked = false;
+                this.$$('#fieldRankingMultiplierInput').value = "";
+
+                /*document.getElementById("fieldRuleExtractorTarget").selected = "2";*/
+
+            }
+        }.bind(this);
+
+        if (!this.addType && esc) {
+            var data = JSON.stringify({
+                "field_name": name,
+                "field_object": {
+                    "color": color,
+                    "case_sensitive": caseSense,
+                    "combine_fields": combinefields,
+                    "description": description,
+                    "glossaries": glossariesNewField,
+                    "group_name": groupname,
+                    "icon": icon,
+                    "name": name,
+                    "screen_label": screenlabel,
+                    "screen_label_plural": screen_label_plural,
+                    "search_importance": searchimp,
+                    "show_as_link": link,
+                    "show_in_facets": facet,
+                    "show_in_result": result,
+                    "show_in_search": search,
+                    "type": type,
+                    "use_in_network_search": networksearch,
+                    "rule_extractor_enabled": ruleExtractor,
+                    "predefined_extractor": predefinedExtractor,
+                    "group_order": groupOrder,
+                    "field_order": fieldOrder,
+                    "free_text_search": free_text_search,
+                    "scoring_coefficient": rankingMultiplier,
+                    "enable_scoring_coefficient": esc
+                    /*"rule_extraction_target": ruleextractTarget*/
+                }
+            });
+        }
+        else {
+
+            var data = JSON.stringify({
+                "field_name": name,
+                "field_object": {
+                    "color": color,
+                    "case_sensitive": caseSense,
+                    "combine_fields": combinefields,
+                    "description": description,
+                    "glossaries": glossariesNewField,
+                    "group_name": groupname,
+                    "icon": icon,
+                    "name": name,
+                    "screen_label": screenlabel,
+                    "screen_label_plural": screen_label_plural,
+                    "search_importance": searchimp,
+                    "show_as_link": link,
+                    "show_in_facets": facet,
+                    "show_in_result": result,
+                    "show_in_search": search,
+                    "type": type,
+                    "use_in_network_search": networksearch,
+                    "rule_extractor_enabled": ruleExtractor,
+                    "predefined_extractor": predefinedExtractor,
+                    "group_order": groupOrder,
+                    "field_order": fieldOrder,
+                    "free_text_search": free_text_search,
+                    /*"rule_extraction_target": ruleextractTarget*/
+                }
+            });
+        }
+
+        xhr.send(data);
 
     },
     saveTempGlossaries: function () {
@@ -1289,11 +1261,10 @@ poly = Polymer({
         return item[0].glossaries && item[0].glossaries.length && item[0].glossaries.length > 0;
 
     },
-    submitImportProjectConfigForm: function(e) {
+    submitImportProjectConfigForm: function (e) {
 
 
-         if($(e.currentTarget)[0].id != "yes")
-        {
+        if ($(e.currentTarget)[0].id != "yes") {
             this.confirmText = "Are you sure to upload and overwrite current project config?"
             this.confirmButton = "Overwrite"
             this.listen(this.$$("#yes"), 'tap', 'submitImportProjectConfigForm');
@@ -1301,12 +1272,12 @@ poly = Polymer({
             return
         }
         /*if(window.confirm("Are you sure to upload and overwrite current project config?") == false) {
-            return;
-        }*/
+         return;
+         }*/
 
         var importFileFormData = new FormData();
         var file = this.$$('#projectInput').inputElement.inputElement.files[0]
-       /* ////console($("#importProjectConfigDialog paper-input[type=file] input")[0].files[0]);*/
+        /* ////console($("#importProjectConfigDialog paper-input[type=file] input")[0].files[0]);*/
         importFileFormData.append("file_data", file);
 
         $.ajax({
@@ -1325,7 +1296,7 @@ poly = Polymer({
                 this.updateDone();
                 this.unlisten(this.$$("#yes"), 'tap', 'submitImportProjectConfigForm');
             },
-            error: function() {
+            error: function () {
                 this.dialogText = "Failed to import project config";
                 this.$$('#alertDialog').toggle();
                 this.unlisten(this.$$("#yes"), 'tap', 'submitImportProjectConfigForm');
@@ -1333,7 +1304,7 @@ poly = Polymer({
             }
         });
     },
-    exportProject: function() {
+    exportProject: function () {
         // $.ajax({
         //     type: "GET",
         //     url: backend_url + "projects/" + projectName + '/actions/master_config',
@@ -1370,10 +1341,10 @@ poly = Polymer({
                 element.click();
                 document.body.removeChild(element);
                 window.URL.revokeObjectURL(url);
-            } else if(request.readyState === 4 && request.status != 200) {
+            } else if (request.readyState === 4 && request.status != 200) {
                 this.dialogText = "Failed to export project config";
                 this.$$('#alertDialog').toggle();
-                
+
             }
         }
         request.send();
@@ -1381,12 +1352,11 @@ poly = Polymer({
 //	uploadSamplePages:function() {
 //		uploadZipFileDialog.toggle();
 //	}
-    deleteFileData: function(e) {
+    deleteFileData: function (e) {
 
 
-        if($(e.currentTarget)[0].id != "yes")
-        {
-            this.confirmText = "Are you sure to delete the data of "+$(e.currentTarget)[0].value+" TLD?"
+        if ($(e.currentTarget)[0].id != "yes") {
+            this.confirmText = "Are you sure to delete the data of " + $(e.currentTarget)[0].value + " TLD?"
             this.confirmButton = "DELETE"
             this.confirmValue = $(e.currentTarget)[0].value
             this.listen(this.$$("#yes"), 'tap', 'deleteFileData');
@@ -1394,12 +1364,12 @@ poly = Polymer({
             return
         }
         /*if(window.confirm("Are you sure to data of this TLD?") == false) {
-            return;
-        }*/
+         return;
+         }*/
 
         var tld = $(e.currentTarget)[0].value;
         ////console($(e.currentTarget)[0].value);
-        payload = {"tlds":[tld], "from": "file"};
+        payload = {"tlds": [tld], "from": "file"};
 
         $.ajax({
             type: "DELETE",
@@ -1414,22 +1384,21 @@ poly = Polymer({
                 ////console("success");
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteFileData');
             },
-            error :function(xhr, ajaxOptions, thrownError)
-            {
+            error: function (xhr, ajaxOptions, thrownError) {
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteFileData');
                 ////console("error");
                 ////console(xhr);
             }
         });
     },
-    refreshTldTable: function(useTimeout=false) {
-        if(useTimeout) {
+    refreshTldTable: function (useTimeout=false) {
+        if (useTimeout) {
             setTimeout($.proxy(this.refreshTldTable, this, {useTimeout: true}), REFRESH_TLD_TABLE_INTERVAL);
         }
         ////console("refresh tld table");
         $.ajax({
             type: "GET",
-            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics&page='+this.page,
+            url: backend_url + "projects/" + projectName + '/actions/extract?value=tld_statistics',
             dataType: "json",
             context: this,
             async: true,
@@ -1440,135 +1409,105 @@ poly = Polymer({
                 var total_total_num = 0;
                 var total_es_num = 0;
                 var total_desired_num = 0;
-                var total_es_original_num=0;
+                var total_es_original_num = 0;
                 newTldTableData = [];
                 //console(data);
-                data["tld_statistics"].forEach(function(obj) {
-                    var disable_landmark_btn = obj["total_num"] < 10 ? true : false;
-                    var disable_delete_btn = obj["total_num"] < 1 ? true : false;
-                    var disable_kg_btn = obj["es_num"] < 1 ? true : false;
-                    cbt = "#263238";
-                    cl = "#263238";
-                    ckg = "#263238";
+                data["tld_statistics"].forEach(function (obj) {
+                        var disable_landmark_btn = obj["total_num"] < 10 ? true : false;
+                        var disable_delete_btn = obj["total_num"] < 1 ? true : false;
+                        var disable_kg_btn = obj["es_num"] < 1 ? true : false;
+                        cbt = "#263238";
+                        cl = "#263238";
+                        ckg = "#263238";
 
-                    if (disable_delete_btn) {
-                       cbt = "#B0B0B0";
-                    }
-                    if (disable_landmark_btn) {
-                        cl = "#B0B0B0";
-                    }
-                    if (disable_kg_btn)
-                    {
-                        ckg = "#B0B0B0";
-                    }
-                    ////console(disable_delete_btn);
-                    ////console(disable_landmark_btn);
-                    newObj = {
-                        "tld": obj["tld"].toLowerCase(),
-                        "total_num": obj["total_num"],
-                        "es_num": obj["es_num"],
-                        "es_original_num":obj["es_original_num"],
-                        "desired_num": obj["desired_num"],
-                        "disable_Landmark": disable_landmark_btn,
-                        "color_l": cl,
-                        "color_btn": cbt,
-                        "disable_Delete" : disable_delete_btn,
-                        "disable_kg" : disable_kg_btn,
-                        "color_kg" : ckg
-                    };
-                    total_tld += 1;
-                    total_total_num += obj["total_num"];
-                    total_es_num += obj["es_num"];
-                    total_desired_num += obj["desired_num"];
-                    total_es_original_num += obj["es_original_num"];
-                    newTldTableData.push(newObj);
+                        if (disable_delete_btn) {
+                            cbt = "#B0B0B0";
+                        }
+                        if (disable_landmark_btn) {
+                            cl = "#B0B0B0";
+                        }
+                        if (disable_kg_btn) {
+                            ckg = "#B0B0B0";
+                        }
+                        ////console(disable_delete_btn);
+                        ////console(disable_landmark_btn);
+                        newObj = {
+                            "tld": obj["tld"],
+                            "total_num": obj["total_num"],
+                            "es_num": obj["es_num"],
+                            "es_original_num": obj["es_original_num"],
+                            "desired_num": obj["desired_num"],
+                            "disable_Landmark": disable_landmark_btn,
+                            "color_l": cl,
+                            "color_btn": cbt,
+                            "disable_Delete": disable_delete_btn,
+                            "disable_kg": disable_kg_btn,
+                            "color_kg": ckg
+                        };
+                        total_tld += 1;
+                        total_total_num += obj["total_num"];
+                        total_es_num += obj["es_num"];
+                        total_desired_num += obj["desired_num"];
+                        total_es_original_num += obj["es_original_num"];
+                        newTldTableData.push(newObj);
 
-                }
+                    }
                 );
 
-                this.tot_pages = data['tot_pages']
-                this.pages =  Array.from({length: this.tot_pages}, (x,i) => i+1);
-                this.total_tld = data['total_tld']
-                this.total_num =data['total_num']
-                this.total_desired_num =data['desired_num']
-                this.total_es_num = data["es_num"];
-                this.total_es_original_num = data["es_original_num"];
+
+                this.total_tld = total_tld;
+                this.total_num = total_total_num;
+                this.total_desired_num = total_desired_num;
+                this.total_es_num = total_es_num;
+                this.total_es_original_num = total_es_original_num;
                 this.tldTableData = newTldTableData;
 
                 ////console(this.tldTableData);
 
-                if(this.loadFlag==0)
-                    {
-                        this.loadFlag =1;
-                        this.$$('#tldHeader').click();
-                    }
+                if (this.loadFlag == 0) {
+                    this.loadFlag = 1;
+                    this.$$('#tldHeader').click();
+                }
 
                 //Polymer.dom(this.$$('#tldHeader')).click();
-                /*////console(Polymer.dom(*//*));*/
+                /*////console(Polymer.dom(*/
+                /*));*/
                 //this.$.tldTable.reload();
 
                 // because default paper-datatable doesn't support dynamic headera
                 // this is a hacking, need to change if there's a good way
                 // ////console(this.$.tldTableTLD.header);
                 // this.$.tldTableTLD.header = 'TLD (' + total_tld.toString() + ')';
-               /* $("#tldTable div#container table thead tr th span").each(function(index) {
-                    if(index == 0) {
-                        $(this).text("TLD (" + total_tld.toString() + ")");
-                    }
-                    else if(index == 1) {
-                        $(this).text("Total (" + total_total_num.toString() + ")");
-                    }
-                    else if(index == 2) {
-                        $(this).text("KG (" + total_es_num.toString() + ")");
-                    }
-                    else if(index == 3) {
-                        $(this).text("Desired (" + total_desired_num.toString() + ")");
-                    }
-                });*/
+                /* $("#tldTable div#container table thead tr th span").each(function(index) {
+                 if(index == 0) {
+                 $(this).text("TLD (" + total_tld.toString() + ")");
+                 }
+                 else if(index == 1) {
+                 $(this).text("Total (" + total_total_num.toString() + ")");
+                 }
+                 else if(index == 2) {
+                 $(this).text("KG (" + total_es_num.toString() + ")");
+                 }
+                 else if(index == 3) {
+                 $(this).text("Desired (" + total_desired_num.toString() + ")");
+                 }
+                 });*/
             }
         });
     },
-    selectPage: function(e)
-    {
-        
-        this.page = $(e.currentTarget)[0].id
-        this.refreshTldTable()
-        this.isEqual(this.page)
 
-    },
-    prevPage: function()
-    {
-        if(this.page-1>=1)
-        {
-            this.page = this.page-1
-            this.refreshTldTable()
-        }
-    },
-    nextPage: function()
-    {
-        if(this.page+1<=this.tot_pages)
-        {
-            this.page = this.page+1
-            this.refreshTldTable()
-        }
-    },
-    isEqual: function(page,item)
-    {
-        //console.log(item==this.page)
-        return page==item 
-    },
-    sortFields: function(obj1, obj2) {
+    sortFields: function (obj1, obj2) {
         var a = obj1[0]["name"].toLowerCase();
         var b = obj2[0]["name"].toLowerCase();
         if (a < b) return -1;
         else if (a > b) return 1;
         else return 0;
     },
-    sortCaseInsensitive: function(a, b) {
+    sortCaseInsensitive: function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     },
-    refreshPipelineStatus: function(useTimeout=false) {
-        if(useTimeout) {
+    refreshPipelineStatus: function (useTimeout=false) {
+        if (useTimeout) {
             setTimeout($.proxy(this.refreshPipelineStatus, this, {useTimeout: true}), REFRESH_PIPELINE_STATUS_INTERVAL);
         }
         ////console("refresh pipeline status");
@@ -1581,7 +1520,7 @@ poly = Polymer({
             processData: false,
             success: function (data) {
                 // ////console(data);
-                if(data["etk_status"]) {
+                if (data["etk_status"]) {
                     this.updatePipelineBtn(true);
                 } else {
                     this.updatePipelineBtn(false);
@@ -1589,7 +1528,7 @@ poly = Polymer({
             }
         });
     },
-    submitImportFileForm: function() {
+    submitImportFileForm: function () {
         var importFileFormData = new FormData();
         var file = this.$$("#fileInput").inputElement.inputElement.files[0]
         importFileFormData.append("file_data", file);
@@ -1608,11 +1547,11 @@ poly = Polymer({
             async: true,
             processData: false,
             contentType: false,
-            xhr: function() {
+            xhr: function () {
                 // ////console(this.context);
                 var xhr = new window.XMLHttpRequest();
                 xhr.upload.context = this.context;
-                xhr.upload.addEventListener("progress", function(evt) {
+                xhr.upload.addEventListener("progress", function (evt) {
                     // ////console(evt.target.context);
                     if (evt.lengthComputable) {
                         var percentComplete = evt.loaded / evt.total;
@@ -1630,19 +1569,19 @@ poly = Polymer({
             success: function (data) {
                 this.refreshTldTable();
             },
-            complete: function() {
+            complete: function () {
                 this.$.progressDialog.toggle();
             }
         });
     },
-    updateProgressBar: function(percentage) {
-        this.$$("#fileProgress").value =percentage;
+    updateProgressBar: function (percentage) {
+        this.$$("#fileProgress").value = percentage;
     },
-    addToLandmark: function(e) {
+    addToLandmark: function (e) {
         var tld = $(e.currentTarget)[0].value;
         payload = {
             "tlds": {
-               [tld] : 100
+                [tld]: 100
             }
         };
         // ////console(payload);
@@ -1662,46 +1601,44 @@ poly = Polymer({
         });
         // ////console(tld);
     },
-    openDIGUI: function() {
+    openDIGUI: function () {
         var url = digui_url + "?project=" + projectName;
         window.open(url, '_blank');
     },
-    openLandmarkTool: function() {
+    openLandmarkTool: function () {
         var url = landmark_url + "#/project/select?prefix=" + projectName;
         window.open(url, '_blank');
     },
-    openKibana: function() {
+    openKibana: function () {
         var url = kibana_url;
         window.open(url, '_blank');
     },
-    switchPipeline: function(e) {
+    switchPipeline: function (e) {
         ////console("current pipeline status: " + this.etkStatus);
         // force to update button status
         // //(overwrite default behavior of paper-toggle-button)
-         if($(e.currentTarget)[0].value!=1)
+        if ($(e.currentTarget)[0].value != 1)
             this.updatePipelineBtn(this.etkStatus);
 
         ////console(this.etkStatus);
         ////console(this.confirmValue);
-        
-       
 
-        if(this.etkStatus) { // current on, need to turn off
-       
-        if($(e.currentTarget)[0].id != "yes")
-        {
-            this.confirmText = "Turn off pipeline ?"
-            this.confirmButton = "YES"
-            this.confirmValue =1
-            /*this.confirmValue = $(e.currentTarget)[0].value*/
 
-            this.listen(this.$$("#yes"), 'tap', 'switchPipeline');
-            this.$$('#confirmDialog').toggle();
-            return
-            
-        }
-        
-     
+        if (this.etkStatus) { // current on, need to turn off
+
+            if ($(e.currentTarget)[0].id != "yes") {
+                this.confirmText = "Turn off pipeline ?"
+                this.confirmButton = "YES"
+                this.confirmValue = 1
+                /*this.confirmValue = $(e.currentTarget)[0].value*/
+
+                this.listen(this.$$("#yes"), 'tap', 'switchPipeline');
+                this.$$('#confirmDialog').toggle();
+                return
+
+            }
+
+
             $.ajax({
                 type: "DELETE",
                 url: backend_url + "projects/" + projectName + '/actions/extract',
@@ -1711,33 +1648,32 @@ poly = Polymer({
                 context: this,
                 success: function (msg) {
                     this.updatePipelineBtn(false);
-                    this.pipelineCall =0
+                    this.pipelineCall = 0
                 },
-                error: function(msg) {
+                error: function (msg) {
                     this.dialogText = "Can not turn off pipeline";
-                this.$$('#alertDialog').toggle();
-                this.pipelineCall =0
+                    this.$$('#alertDialog').toggle();
+                    this.pipelineCall = 0
                     ////console(msg);
                 }
             });
 
-            this.confirmValue =0
-        } 
+            this.confirmValue = 0
+        }
         else {
-          
-           if($(e.currentTarget)[0].id != "yes")
-            {
-            this.confirmText = "Turn on pipeline ?"
-            this.confirmButton = "YES"
-            this.confirmValue =1
-            //console("here")
-            /*this.confirmValue = $(e.currentTarget)[0].value*/
-            this.listen(this.$$("#yes"), 'tap', 'switchPipeline');
-            /*this.functionButton = "switchPipeline"*/
-            this.$$('#confirmDialog').toggle();
-            return
+
+            if ($(e.currentTarget)[0].id != "yes") {
+                this.confirmText = "Turn on pipeline ?"
+                this.confirmButton = "YES"
+                this.confirmValue = 1
+                //console("here")
+                /*this.confirmValue = $(e.currentTarget)[0].value*/
+                this.listen(this.$$("#yes"), 'tap', 'switchPipeline');
+                /*this.functionButton = "switchPipeline"*/
+                this.$$('#confirmDialog').toggle();
+                return
             }
-            
+
             $.ajax({
                 type: "POST",
                 url: backend_url + "projects/" + projectName + '/actions/extract',
@@ -1747,21 +1683,21 @@ poly = Polymer({
                 context: this,
                 success: function (msg) {
                     this.updatePipelineBtn(true);
-                    this.pipelineCall =0
+                    this.pipelineCall = 0
                 },
-                error: function(msg) {
-                   /* alert("Can not turn on pipeline (Make sure you've created config and mapping)");*/
+                error: function (msg) {
+                    /* alert("Can not turn on pipeline (Make sure you've created config and mapping)");*/
                     this.dialogText = "Can not turn on pipeline (Make sure you've created config and mapping)";
-                this.$$('#alertDialog').toggle();
-                this.pipelineCall =0
+                    this.$$('#alertDialog').toggle();
+                    this.pipelineCall = 0
                     ////console(msg);
                 }
             });
-            this.confirmValue =0
+            this.confirmValue = 0
         }
     },
-    updatePipelineBtn: function(pipeline_on) {
-        if(pipeline_on) {
+    updatePipelineBtn: function (pipeline_on) {
+        if (pipeline_on) {
             this.etkStatus = true;
             // this.$.btnSwitchPipeline.textContent = "Turn off Pipeline";
             this.$.btnSwitchPipeline.checked = true;
@@ -1771,10 +1707,9 @@ poly = Polymer({
             this.$.btnSwitchPipeline.checked = false;
         }
     },
-    recreateMapping: function(e) {
+    recreateMapping: function (e) {
 
-        if($(e.currentTarget)[0].id != "yes")
-        {
+        if ($(e.currentTarget)[0].id != "yes") {
             this.confirmText = "Are you sure to recreate ElasticSearch Mapping and restart pipeline?"
             this.confirmButton = "YES"
             /*this.confirmValue = $(e.currentTarget)[0].value*/
@@ -1783,8 +1718,8 @@ poly = Polymer({
             return
         }
         /*if(window.confirm("Are you sure to recreate ElasticSearch Mapping and restart pipeline?") == false) {
-            return;
-        }*/
+         return;
+         }*/
         // loadingDialog.toggle();
         // ////console("recreate");
         $.ajax({
@@ -1803,7 +1738,7 @@ poly = Polymer({
                 //console(msg);
                 this.unlisten(this.$$("#yes"), 'tap', 'recreateMapping');
             },
-            error: function(msg) {
+            error: function (msg) {
                 this.dialogText = "Cannot recreate Mapping";
                 this.$$('#alertDialog').toggle();
                 this.unlisten(this.$$("#yes"), 'tap', 'recreateMapping');
@@ -1811,18 +1746,17 @@ poly = Polymer({
             }
         });
     },
-    updateSingleDesired: function(e)
-    {
+    updateSingleDesired: function (e) {
         num = parseInt(e.srcElement.value);
         ////console(e.srcElement.id);
         id = e.srcElement.id;
         /*num = num <= 9999999999 ? num : 999999999;
-        num = num >= 0 ? num : 0;*/
-        payload = {"tlds":{}};
-        payload["tlds"][[id]]= num;
+         num = num >= 0 ? num : 0;*/
+        payload = {"tlds": {}};
+        payload["tlds"][[id]] = num;
         //////console(payload)
 
-         $.ajax({
+        $.ajax({
             type: "POST",
             url: backend_url + "projects/" + projectName + '/actions/desired_num',
             async: true,
@@ -1832,20 +1766,20 @@ poly = Polymer({
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(payload),
             success: function (msg) {
-                 //////console("updated");
+                //////console("updated");
                 this.refreshTldTable();
             }
         });
     },
-    updateDesiredNumber: function() {
+    updateDesiredNumber: function () {
         var num = parseInt(this.$.globalDesiredNumber.value);
         this.$$('#updateDesiredDialog').toggle();
         num = num <= 9999999999 ? num : 999999999;
         num = num >= 0 ? num : 0;
         ////console("im here")
 
-        payload = {"tlds":{}};
-        this.tldTableData.forEach(function(obj){
+        payload = {"tlds": {}};
+        this.tldTableData.forEach(function (obj) {
             payload["tlds"][[obj["tld"]]] = num;
             //////console(obj["tld"]);
         });
@@ -1867,11 +1801,11 @@ poly = Polymer({
             }
         });
     },
-    toggleIcons()
+    toggleIcons: function()
     {
         this.$$("#papericonSet").toggle();
     },
-    addDataToQueue: function() {
+    addDataToQueue: function () {
 
         $.ajax({
             type: "POST",
@@ -1887,11 +1821,10 @@ poly = Polymer({
             }
         });
     },
-    toggleGlossary: function()
-    {
+    toggleGlossary: function () {
         this.$$('#addGlossaryDialog').toggle();
     },
-    fetchCatalogError: function() {
+    fetchCatalogError: function () {
         $.ajax({
             type: "GET",
             url: backend_url + "projects/" + projectName + '/data?type=error_log',
@@ -1901,23 +1834,23 @@ poly = Polymer({
             processData: false,
             success: function (msg) {
                 // ////console(msg["error_log"]);
-              Polymer.dom(this.$$("#logDialogContent")).innerHTML ="";
-              var s="";
-                msg["error_log"].forEach(function(ele) {
-                   s=s+"<p>"+ele+"</p>";
+                Polymer.dom(this.$$("#logDialogContent")).innerHTML = "";
+                var s = "";
+                msg["error_log"].forEach(function (ele) {
+                    s = s + "<p>" + ele + "</p>";
                     /*this.$$("#logDialogContent").html("blahaahah")*/
                 });
-                 Polymer.dom(this.$$("#logDialogContent")).innerHTML =s;
+                Polymer.dom(this.$$("#logDialogContent")).innerHTML = s;
                 this.$.logDialog.toggle();
             }
         });
     },
-    updateFilters: function() {
+    updateFilters: function () {
         try {
             var payload = {"filters": JSON.parse(this.$$('#editFiltersTextArea').value)};
-        } catch(e) {
+        } catch (e) {
             this.dialogText = "Invalid JSON";
-                this.$$('#alertDialog').toggle();
+            this.$$('#alertDialog').toggle();
             return;
         }
         // ////console(JSON.stringify(payload));
@@ -1935,15 +1868,15 @@ poly = Polymer({
             },
             error: function (data) {
                 // ////console(data);
-                if(data.status === 400) {
+                if (data.status === 400) {
                     this.dialogText = 'Invalid filters: ' + data.responseJSON.error_message;
                     this.$$('#alertDialog').toggle();
-                    
+
                 }
             }
         });
     },
-    editFilters: function() {
+    editFilters: function () {
         // fill in latest filters
         $.ajax({
             type: "GET",
@@ -1962,48 +1895,48 @@ poly = Polymer({
 
 
     /*
-        navigation
-    */
-    navAction: function() {
+     navigation
+     */
+    navAction: function () {
         this.$.navTabAction.style.backgroundColor = NAV_BG_COLOR;
         this.$.navTabField.style.backgroundColor = null;
-      /*  this.$.navTabTag.style.backgroundColor = null;*/
+        /*  this.$.navTabTag.style.backgroundColor = null;*/
         this.$.navTabGlossary.style.backgroundColor = null;
-      /*  this.$.navTabTable.style.backgroundColor = null;*/
+        /*  this.$.navTabTable.style.backgroundColor = null;*/
 
-      /*  this.$.tabTag.opened = false;*/
+        /*  this.$.tabTag.opened = false;*/
         this.$.tabAction.opened = true;
         this.$.tabGlossary.opened = false;
         this.$.tabField.opened = false;
-       /* */
+        /* */
     },
     navGlossary: function () {
         this.$.navTabAction.style.backgroundColor = null;
         this.$.navTabField.style.backgroundColor = null;
-       /* this.$.navTabTag.style.backgroundColor = null;*/
+        /* this.$.navTabTag.style.backgroundColor = null;*/
         this.$.navTabGlossary.style.backgroundColor = NAV_BG_COLOR;
-      /*  this.$.navTabTable.style.backgroundColor = null;*/
+        /*  this.$.navTabTable.style.backgroundColor = null;*/
 
         this.$.tabField.opened = false;
-/*        this.$.tabTag.opened = false;*/
+        /*        this.$.tabTag.opened = false;*/
         this.$.tabGlossary.opened = true;
         this.$.tabAction.opened = false;
-/*        this.$.tabTable.opened = false;*/
+        /*        this.$.tabTable.opened = false;*/
     },
-    navField: function() {
+    navField: function () {
         this.$.navTabAction.style.backgroundColor = null;
         this.$.navTabField.style.backgroundColor = NAV_BG_COLOR;
         // this.$.navTabTag.style.backgroundColor = null;
         this.$.navTabGlossary.style.backgroundColor = null;
-    /*    this.$.navTabTable.style.backgroundColor = null;*/
+        /*    this.$.navTabTable.style.backgroundColor = null;*/
 
-   /*     this.$.tabTag.opened = false;*/
+        /*     this.$.tabTag.opened = false;*/
         this.$.tabGlossary.opened = false;
         this.$.tabField.opened = true;
         this.$.tabAction.opened = false;
-       /* this.$.tabTable.opened = false;*/
+        /* this.$.tabTable.opened = false;*/
     },
-    navTable: function() {
+    navTable: function () {
         this.$.navTabAction.style.backgroundColor = null;
         this.$.navTabField.style.backgroundColor = null;
         this.$.navTabTag.style.backgroundColor = null;
@@ -2016,7 +1949,7 @@ poly = Polymer({
         this.$.tabAction.opened = false;
         this.$.tabTable.opened = true;
     },
-    navTag: function() {
+    navTag: function () {
         this.$.navTabAction.style.backgroundColor = null;
         this.$.navTabField.style.backgroundColor = null;
         this.$.navTabTag.style.backgroundColor = NAV_BG_COLOR;
@@ -2029,76 +1962,73 @@ poly = Polymer({
         this.$.tabAction.opened = false;
         this.$.tabTable.opened = false;
     },
-    projectSettingsFunction : function() {
-        var url = "/mydig/projects/" +projectName;
+    projectSettingsFunction: function () {
+        var url = "/mydig/projects/" + projectName;
 
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
         this.$.getProjectSettings.headers = obj;
-        this.$.getProjectSettings.url = "/mydig/projects/" +projectName;
+        this.$.getProjectSettings.url = "/mydig/projects/" + projectName;
 
         this.$.getProjectSettings.generateRequest();
 
         this.$$('#projectSettingsDialog').toggle();
     },
-    ProjectSettingsDialogSetup: function(data) {
+    ProjectSettingsDialogSetup: function (data) {
 
         this.projectSettingsObject = [];
         this.projectSettingsObject = data.detail.response;
-        console.log(this.projectSettingsObject);
+        ////console(this.projectSettingsObject);
 
 
-        if(this.projectSettingsObject.show_images_in_facets)
-            this.$$('#imageFacets').checked=true;
-        else this.$$('#imageFacets').checked=false;
-        if(this.projectSettingsObject.show_images_in_search_form)
-            this.$$('#searchFormImages').checked=true;
-        else this.$$('#searchFormImages').checked=false;
-        if(this.projectSettingsObject.hide_timelines)
-            this.$$('#hideTimelines').checked=true;
-        else this.$$('#hideTimelines').checked=false;
-
+        if (this.projectSettingsObject.show_images_in_facets)
+            this.$$('#imageFacets').checked = true;
+        else this.$$('#imageFacets').checked = false;
+        if (this.projectSettingsObject.show_images_in_search_form)
+            this.$$('#searchFormImages').checked = true;
+        else this.$$('#searchFormImages').checked = false;
+        if (this.projectSettingsObject.hide_timelines)
+            this.$$('#hideTimelines').checked = true;
+        else this.$$('#hideTimelines').checked = false;
 
 
         /*for (var j = 0; j < this.glossaries.length; j++) {
-            this.$$('#' + this.glossaries[j][0]).checked = "";
+         this.$$('#' + this.glossaries[j][0]).checked = "";
 
-        }*/
+         }*/
         /*if (this.fieldForm) {
-            if (this.fieldForm.glossaries) {
-                for (var i = 0; i < this.fieldForm.glossaries.length; i++) {
-                    for (var j = 0; j < this.glossaries.length; j++) {
-                        if (this.fieldForm.glossaries[i] == this.glossaries[j][0]) {
-                            this.$$('#' + this.glossaries[j][0]).checked = "true";
-                            break;
-                        }
-                    }
-                }
-            }
+         if (this.fieldForm.glossaries) {
+         for (var i = 0; i < this.fieldForm.glossaries.length; i++) {
+         for (var j = 0; j < this.glossaries.length; j++) {
+         if (this.fieldForm.glossaries[i] == this.glossaries[j][0]) {
+         this.$$('#' + this.glossaries[j][0]).checked = "true";
+         break;
+         }
+         }
+         }
+         }
 
-            if (this.fieldForm.blacklists) {
-                for (var i = 0; i < this.fieldForm.blacklists.length; i++) {
-                    for (var j = 0; j < this.glossaries.length; j++) {
-                        if (this.fieldForm.blacklists[i] == this.glossaries[j][0]) {
-                            this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
-                            break;
-                        }
-                    }
-                }
-            }
-        }*/
+         if (this.fieldForm.blacklists) {
+         for (var i = 0; i < this.fieldForm.blacklists.length; i++) {
+         for (var j = 0; j < this.glossaries.length; j++) {
+         if (this.fieldForm.blacklists[i] == this.glossaries[j][0]) {
+         this.$$('#bl-' + this.glossaries[j][0]).checked = "true";
+         break;
+         }
+         }
+         }
+         }
+         }*/
 
 
     },
-    projectUpdateDone: function(){
-        this.refreshTldTable();
-        
+    projectUpdateDone: function () {
+
     },
-    saveProjectSettings: function() {
+    saveProjectSettings: function () {
         var obj = {};
         // obj.Authorization = "Basic " + btoa(username + ":" + password);
         var predefinedExtr = "";
-
 
 
         //console
@@ -2110,51 +2040,44 @@ poly = Polymer({
         this.projectSettingsObject.show_original_search = this.$$('#showOriginalSearch').value;
         ////console(this.projectSettingsObject.new_linetype);
         this.projectSettingsObject.image_prefix = this.$$("#imagePrefix").value;
-        this.projectSettingsObject.default_desired_num =  parseInt(this.$$('#defaultDesiredNum').value);
+        this.projectSettingsObject.default_desired_num = parseInt(this.$$('#defaultDesiredNum').value);
         this.projectSettingsObject.show_images_in_facets = this.$$('#imageFacets').checked;
-        this.projectSettingsObject.show_images_in_search_form =this.$$('#searchFormImages').checked;
-        this.projectSettingsObject.hide_timelines =this.$$('#hideTimelines').checked;
-        this.projectSettingsObject.page_length =this.$$('#pageLength').value;
+        this.projectSettingsObject.show_images_in_search_form = this.$$('#searchFormImages').checked;
+        this.projectSettingsObject.hide_timelines = this.$$('#hideTimelines').checked;
 
         /*if(projectSettingsObject.imagePrefix == undefined)
-        {
-            projectSettingsObject.imagePrefix = ""
-        }*/
+         {
+         projectSettingsObject.imagePrefix = ""
+         }*/
         this.$.updateProjectSettings.body = JSON.stringify({
-            "image_prefix": this.projectSettingsObject.image_prefix == undefined ? "" : this.projectSettingsObject.image_prefix ,
+            "image_prefix": this.projectSettingsObject.image_prefix == undefined ? "" : this.projectSettingsObject.image_prefix,
             "default_desired_num": this.projectSettingsObject.default_desired_num == undefined ? 0 : this.projectSettingsObject.default_desired_num,
             "show_images_in_facets": this.projectSettingsObject.show_images_in_facets == undefined ? false : this.projectSettingsObject.show_images_in_facets,
             "show_images_in_search_form": this.projectSettingsObject.show_images_in_search_form == undefined ? false : this.projectSettingsObject.show_images_in_search_form,
-            "hide_timelines": this.projectSettingsObject.hide_timelines ==undefined ? false : this.projectSettingsObject.hide_timelines,
-            "new_linetype": this.projectSettingsObject.new_linetype ==undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase(),
-            "show_original_search" : this.projectSettingsObject.show_original_search == undefined ? "V2" : this.projectSettingsObject.show_original_search,
-            "page_length" :  this.projectSettingsObject.page_length == undefined ? 15 : parseInt(this.projectSettingsObject.page_length)
+            "hide_timelines": this.projectSettingsObject.hide_timelines == undefined ? false : this.projectSettingsObject.hide_timelines,
+            "new_linetype": this.projectSettingsObject.new_linetype == undefined ? "break" : this.projectSettingsObject.new_linetype.toLowerCase(),
+            "show_original_search": this.projectSettingsObject.show_original_search == undefined ? "V2" : this.projectSettingsObject.show_original_search
         });
         this.$$('#projectSettingsDialog').close();
         this.$.updateProjectSettings.generateRequest();
-        
 
 
     },
-    get_newlineType: function(value)
-    {
+    get_newlineType: function (value) {
         arr = ["break", "newline"]
         ////console(value);
-       if (value != undefined && value != "") return arr.indexOf(value);
+        if (value != undefined && value != "") return arr.indexOf(value);
         else return 0;
     },
-    get_OriginalSearch: function(value)
-    {
+    get_OriginalSearch: function (value) {
         arr = ["V2", "V1"]
-       /* console.log(value);*/
-       if (value != undefined && value != "") return arr.indexOf(value);
+        /* console.log(value);*/
+        if (value != undefined && value != "") return arr.indexOf(value);
         else return 0;
     },
-    deleteKG:function(e)
-    {
-        if($(e.currentTarget)[0].id != "yes")
-        {
-            this.confirmText = "Are you sure to delete the KG of "+$(e.currentTarget)[0].value+" TLD?"
+    deleteKG: function (e) {
+        if ($(e.currentTarget)[0].id != "yes") {
+            this.confirmText = "Are you sure to delete the KG of " + $(e.currentTarget)[0].value + " TLD?"
             this.confirmButton = "DELETE"
             this.confirmValue = $(e.currentTarget)[0].value
             this.listen(this.$$("#yes"), 'tap', 'deleteKG');
@@ -2163,12 +2086,12 @@ poly = Polymer({
         }
 
         /*if(window.confirm("Are you sure to data of this TLD?") == false) {
-            return;
-        }*/
+         return;
+         }*/
 
         var tld = $(e.currentTarget)[0].value;
         ////console($(e.currentTarget)[0].value);
-        payload = {"tlds":[tld], "from": "kg"};
+        payload = {"tlds": [tld], "from": "kg"};
 
         $.ajax({
             type: "DELETE",
@@ -2183,39 +2106,34 @@ poly = Polymer({
                 //console("success");
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteKG');
             },
-            error :function(xhr, ajaxOptions, thrownError)
-            {
+            error: function (xhr, ajaxOptions, thrownError) {
                 this.unlisten(this.$$("#yes"), 'tap', 'deleteKG');
                 //console("error");
                 ////console(xhr);
             }
         });
 
-/*        backend_url + "projects/" + projectName + '/data'
-payload:
-{
-  "tlds": [...],
-  "from": "kg"
-}*/
+        /*        backend_url + "projects/" + projectName + '/data'
+         payload:
+         {
+         "tlds": [...],
+         "from": "kg"
+         }*/
     },
-    displayField : function()
-    {
-        if(this.$$('#enableScoringCoefficientEdit').checked){
-         this.$$('#rankingm').style.visibility = "visible";
-     }
-     else
-     {
-        this.$$('#rankingm').style.visibility = "hidden";
-     }
+    displayField: function () {
+        if (this.$$('#enableScoringCoefficientEdit').checked) {
+            this.$$('#rankingm').style.visibility = "visible";
+        }
+        else {
+            this.$$('#rankingm').style.visibility = "hidden";
+        }
     },
-    displayAddField : function()
-    {
-        if(this.$$('#enable_scoring_coefficient').checked){
-         this.$$('#fieldRankingMultiplierInput').style.visibility = "visible";
-     }
-     else
-     {
-        this.$$('#fieldRankingMultiplierInput').style.visibility = "hidden";
-     }
+    displayAddField: function () {
+        if (this.$$('#enable_scoring_coefficient').checked) {
+            this.$$('#fieldRankingMultiplierInput').style.visibility = "visible";
+        }
+        else {
+            this.$$('#fieldRankingMultiplierInput').style.visibility = "hidden";
+        }
     }
 });

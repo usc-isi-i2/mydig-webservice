@@ -6,6 +6,7 @@ import default_resources
 def get(name):
     return copy.deepcopy(eval(name))
 
+
 status = {
     'desired_docs': {
         # number of docs to run set by user
@@ -22,36 +23,32 @@ status = {
 }
 
 project = {
-    'master_config': {}, # master_config
-    'entities': {}, # 'kg-id': entity
+    'master_config': {},  # master_config
+    'entities': {},  # 'kg-id': entity
     'field_annotations': {},
-    'data': {}, # tlds -> meta data, protected by catalog lock
+    'data': {},  # tlds -> meta data, protected by catalog lock
     'status': copy.deepcopy(status),
     'locks': {
-        'data': None, # for data[project_name]['data']
-        'status': None, # for data[project_name]['status']
+        'data': None,  # for data[project_name]['data']
+        'status': None,  # for data[project_name]['status']
         'catalog_log': None,
     },
-    'data_pushing_worker': None, # daemon to periodically check if data needs to push to kafka,
+    'data_pushing_worker': None,  # daemon to periodically check if data needs to push to kafka,
     'status_memory_dump_worker': None,
     'catalog_memory_dump_worker': None,
-    'threads': [] # all threads exclude above workers
+    'threads': []  # all threads exclude above workers
 }
 
 master_config = {
     'configuration': copy.deepcopy(default_resources.default_configuration) \
         if hasattr(default_resources, 'default_configuration') else {},
     'table_attributes': {},
-    'glossaries': copy.deepcopy(default_resources.default_glossaries) \
-        if hasattr(default_resources, 'default_glossaries') else {},
-    'glossary_dicts': copy.deepcopy(default_resources.default_glossary_dicts) \
-        if hasattr(default_resources, 'default_glossary_dicts') else {},
+    'glossaries': {},
+    'glossary_dicts': {},
     'root_name': 'ads',
     'sources': [],
-    'fields': copy.deepcopy(default_resources.default_fields) \
-        if hasattr(default_resources, 'default_fields') else {},
-    'tags': copy.deepcopy(default_resources.default_tags) \
-        if hasattr(default_resources, 'default_tags') else {},
+    'fields': {},
+    'tags': {},
     'index': {
         'sample': '',
         'full': '',
@@ -59,6 +56,28 @@ master_config = {
     },
     'image_prefix': ''
 }
+
+# master_config = {
+#     'configuration': copy.deepcopy(default_resources.default_configuration) \
+#         if hasattr(default_resources, 'default_configuration') else {},
+#     'table_attributes': {},
+#     'glossaries': copy.deepcopy(default_resources.default_glossaries) \
+#         if hasattr(default_resources, 'default_glossaries') else {},
+#     'glossary_dicts': copy.deepcopy(default_resources.default_glossary_dicts) \
+#         if hasattr(default_resources, 'default_glossary_dicts') else {},
+#     'root_name': 'ads',
+#     'sources': [],
+#     'fields': copy.deepcopy(default_resources.default_fields) \
+#         if hasattr(default_resources, 'default_fields') else {},
+#     'tags': copy.deepcopy(default_resources.default_tags) \
+#         if hasattr(default_resources, 'default_tags') else {},
+#     'index': {
+#         'sample': '',
+#         'full': '',
+#         'version': 0
+#     },
+#     'image_prefix': ''
+# }
 
 # data = {
 #     'tld1': {

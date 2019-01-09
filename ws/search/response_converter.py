@@ -3,7 +3,7 @@ import numbers
 
 class TimeSeries(object):
     def __init__(self, ts, metadata, dimensions, percent_change=False, impute_method='previous',
-                 maximum_value=999999.9):
+                 maximum_value=999999.9, impute_values=True):
         self.ts = ts
         self.metadata = metadata
         self.dimensions = dimensions
@@ -11,7 +11,8 @@ class TimeSeries(object):
         self.impute_method = impute_method
         self.maximum_value = maximum_value
 
-        self.impute_values()
+        if impute_values:
+            self.impute_values()
         if self.percent_change:
             self.ts = self.pct_change()
 

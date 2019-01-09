@@ -11,11 +11,11 @@ if [ ${restart} != "no" ]; then
     python -u etk_spacy.py --dummy-this-is-mydig-daemon &
 #    echo "starting daemon (ACHE)"
 #    python -u ache_consumer.py --dummy-this-is-mydig-daemon &
-    echo "starting daemon (RSS Feed Crawler)"
-    python -u rss_consumer.py --dummy-this-is-mydig-daemon &
-
-    echo "starting daemon (External Crawler)"
-    python -u external_crawler_consumer.py --dummy-this-is-mydig-daemon &
+#    echo "starting daemon (RSS Feed Crawler)"
+#    python -u rss_consumer.py --dummy-this-is-mydig-daemon &
+#
+#    echo "starting daemon (External Crawler)"
+#    python -u external_crawler_consumer.py --dummy-this-is-mydig-daemon &
 fi
 
 echo "done"

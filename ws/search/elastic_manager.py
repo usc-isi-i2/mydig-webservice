@@ -3,6 +3,10 @@ from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from elasticsearch import TransportError
 import requests,sys,traceback
+import logging
+from config import config
+
+logger = logging.getLogger(config['logging']['name'])
 
 class ES(object):
     def __init__(self, es_url, http_auth=None):
@@ -25,7 +29,7 @@ class ES(object):
             try:
                 return self.load_data(index, doc_type, doc, doc_id)
             except Exception as e:
-                print e
+                logger.exception()
                 return None
 
     def create_index(self, index_name, es_mapping):
@@ -59,7 +63,6 @@ class ES(object):
         if not isinstance(ids, list):
             ids = [ids]
         query = "{\"query\": {\"ids\": {\"values\":" + json.dumps(ids) + "}}}"
-        print query
         try:
             return self.es.search(index=index, doc_type=doc_type, body=query, filter_path=['hits.hits._source'])
         except:
@@ -67,21 +70,19 @@ class ES(object):
             try:
                 return self.es.search(index=index, doc_type=doc_type, body=query, filter_path=['hits.hits._source'])
             except Exception as e:
-                print e
+                logger.exception()
                 return None
 
     def search(self, index, doc_type, query, ignore_no_index=False, **other_params):
-        # print query
         try:
             return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
         except TransportError as e:
             if e.error != 'index_not_found_exception' and ignore_no_index:
-                print e
+                logger.exception()
         except Exception as e:
-            print e
+            logger.exception()
 
     def es_search(self, index, doc_type, query, scroll, ignore_no_index=False, **other_params):
-        # print query
         if not scroll:
             try:
                 return self.es.search(index=index, doc_type=doc_type, body=query, **other_params)
@@ -109,26 +110,16 @@ class ES(object):
 
                 data['hits']['hits'] = docs[:docs_count]
                 data['hits']['total'] = docs_count
-                print "scroll complete with " + str(docs_count)
                 return data
             except Exception as e:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                lines = ''.join(lines)
-                print lines
+                logger.exception()
                 return e
-            
-
 
     def mget(self,index,doc_type,body):
         try:
             return self.es.mget(index=index,doc_type=doc_type,body=body)
         except TransportError as e:
             if e.error != 'index_not_found_exception':
-                print e
+                logger.exception()
         except Exception as e:
-            print e
-
-if __name__ == '__main__':
-    es = ES('http://10.1.94.103:9201')
-    print es.retrieve_doc('dig-etk-gt','ads', ["092F55350A6125D8550D7652F867EBB9EB027C8EADA2CC1BAC0BEB1F48FE6D2B","33A5467DEA140814ED4C3A65EEB638029F4986EA7D7685E9D5957C3E5337C4EB"])
+            logger.exception()

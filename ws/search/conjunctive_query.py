@@ -230,14 +230,16 @@ class ConjunctiveQueryProcessor(object):
         if "/" in term or "." in term:
             must_clause = {
                 "match": {
-                    "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(
+                    "knowledge_graph." + extraction['field_name'] + "." + extraction[
+                        'valueorkey']: urllib.parse.unquote(
                         args[term])
                 }
             }
         else:
             must_clause = {
                 "match": {
-                    "knowledge_graph." + extraction['field_name'] + "." + extraction['valueorkey']: urllib.unquote(
+                    "knowledge_graph." + extraction['field_name'] + "." + extraction[
+                        'valueorkey']: urllib.parse.unquote(
                         args[term])
                 }
             }
@@ -292,11 +294,16 @@ class ConjunctiveQueryProcessor(object):
         self.num_results = int(self.num_results)
         self.fr = int(self.fr)
         clause_list = []
-        for query_term in self.myargs:
+        query_terms = list(self.myargs.lists())
+        for query_term_tuple in query_terms:
+            query_term = query_term_tuple[0]
+            query_value = query_term_tuple[1]
             if not query_term.startswith("_") and "$" not in query_term:
-                clause_list.append(self.generate_match_clause(query_term, self.myargs))
+                for qv in query_value:
+                    clause_list.append(self.generate_match_clause(query_term, {query_term: qv}))
             elif not query_term.startswith("_"):
-                clause_list.append(self.generate_range_clause(query_term, self.myargs))
+                for qv in query_value:
+                    clause_list.append(self.generate_range_clause(query_term, {query_term: qv}))
         full_query = {}
         if len(clause_list) > 0:
             full_query['query'] = {
@@ -330,7 +337,7 @@ class ConjunctiveQueryProcessor(object):
         else:
             docs = resp['hits']['hits']
             for json_doc in docs:
-                for field in json_doc[self.SOURCE][self.KG_PREFIX].keys():
+                for field in list(json_doc[self.SOURCE][self.KG_PREFIX]):
                     if field not in fields:
                         del json_doc[self.SOURCE][self.KG_PREFIX][field]
             resp['hits']['hits'] = docs

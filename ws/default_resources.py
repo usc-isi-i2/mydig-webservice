@@ -1,4 +1,3 @@
-
 default_glossary_dicts = {
     'state_to_country': {
         'path': 'state_country_dict.json'
@@ -28,15 +27,15 @@ default_glossary_dicts = {
 
 default_glossaries = {
     'cities': {
-      'path': 'cities.json.gz',
-      'entry_count': 13132,
-      'ngram_distribution': {
-        '1': 11112,
-        '2': 1463,
-        '3': 352,
-        '4': 111,
-        '5': 79
-      }
+        'path': 'cities.json.gz',
+        'entry_count': 13132,
+        'ngram_distribution': {
+            '1': 11112,
+            '2': 1463,
+            '3': 352,
+            '4': 111,
+            '5': 79
+        }
     },
     'countries': {
         'path': 'countries.json.gz',

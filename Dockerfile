@@ -5,7 +5,7 @@ FROM uscisii2/etk:${ETK_VERSION}
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 RUN apt-get install -y nodejs
-RUN npm install -g serve
+RUN npm install -g serve@6.4.9
 
 # all packages and environments are in /app
 WORKDIR /app
@@ -17,7 +17,7 @@ RUN pip install -r /app/mydig-webservice/requirements.txt
 
 RUN git clone https://github.com/usc-isi-i2/spacy-ui.git && \
     cd spacy-ui && \
-    git checkout tags/1.1.2
+    git checkout tags/2.0.6
 
 # persistent data
 #VOLUME /shared_data
