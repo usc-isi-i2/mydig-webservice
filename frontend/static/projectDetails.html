@@ -233,13 +233,13 @@
 
       <app-drawer-layout id ="drawerLayout" force-narrow>
         <app-drawer slot="drawer" id="options" swipeOpen>
-                <app-toolbar style="margin-top: 170px" >
+                <app-toolbar style="margin-top: 180px" >
                     <div>
                       <paper-item  id="navTabAction" on-tap="navAction">Actions</paper-item>
                       <!-- <paper-item id="navTabTable" on-tap="navTable">Tables</paper-item> -->
                       <paper-item id="navTabField" on-tap="navField">Fields</paper-item>
                       <!-- <paper-item id="navTabTag" on-tap="navTag">Tags</paper-item> -->
-                      <paper-item id="navTabGlossary" on-tap="navGlossary">Glossaries</paper-item>               
+                      <paper-item id="navTabGlossary" on-tap="navGlossary">Glossaries</paper-item>
                     </div>
                 </app-toolbar>
         </app-drawer>
@@ -248,8 +248,6 @@
 
  
           <iron-collapse id="tabAction">
-                
-
                 <div style="margin: 1em;padding-left: 10px;padding-top: 20px;padding-bottom: 10px" >
                         <span style=" float:left;text-transform: uppercase;">Pipeline
                             :</span>
@@ -333,6 +331,13 @@
                         </vaadin-grid-column>
                     </vaadin-grid>
                 </div>
+                <div id="pages">
+                    <button on-tap="prevPage">&lt;</button>
+                        <template is="dom-repeat" items="{{pages}}">
+                        <button on-tap="selectPage" id="{{item}}" selected$="{{isEqual(page,item)}}">{{item}}</button>
+                    </template>
+                    <button on-tap="nextPage">&gt;</button>
+                    </div>
 
 
                 
@@ -1097,7 +1102,11 @@
             <!-- DIALOG FOR PROJECT SETTINGS -->
             <paper-dialog id="projectSettingsDialog" modal>
                 <paper-input label="Image Prefix : " value="{{projectSettingsObject.image_prefix}}" id="imagePrefix"></paper-input>
-                <paper-input label="Default Desired Number : " value="{{projectSettingsObject.default_desired_num}}" id="defaultDesiredNum" error-message="Numbers only!" auto-validate pattern="[0-9]*"></paper-input>
+
+                <div style="margin-top: 0px;width:100%">
+                <paper-input style="width:50%;float:left;" label="Default Desired Number : " value="{{projectSettingsObject.default_desired_num}}" id="defaultDesiredNum" error-message="Numbers only!" auto-validate pattern="[0-9]*"></paper-input>
+                <paper-input style="width:50%;float:right;" label="TLD's Per Page:" value="{{projectSettingsObject.page_length}}" id="pageLength" error-message="Numbers only!" auto-validate pattern="[0-9]*"></paper-input>
+                </div>
 
 
                 <paper-checkbox class="projectInputStyle" id="hideTimelines">Hide Timelines</paper-checkbox>

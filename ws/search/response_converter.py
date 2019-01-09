@@ -42,7 +42,7 @@ class TimeSeries(object):
         for i in range(len(ts) - 1):
             this_tup = ts[i]
             next_tup = ts[i + 1]
-            if this_tup[len(this_tup) - 1] and not next_tup[len(next_tup) - 1]:
+            if this_tup[len(this_tup) - 1] is not None and next_tup[len(next_tup) - 1] is None:
                 next_tup[len(next_tup) - 1] = this_tup[len(this_tup) - 1]
         return ts
 
